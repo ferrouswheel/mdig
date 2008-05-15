@@ -1,0 +1,476 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<xsd:annotation>
+		<xsd:documentation xml:lang="en">
+			MDiG - Modular dispersal in GIS model definition schema
+			Copyright 2006 Joel Pitt. All rights reserved.
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:element name="model">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="user" minOccurs="0" type="userType"/>
+				<xsd:element name="name" type="xsd:string"/>
+				<xsd:element name="description" minOccurs="0" type="xsd:string"/>
+				<xsd:element name="random" type="randomType"/>
+				<xsd:element name="regions">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="region" type="regionType" minOccurs="1" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="period" type="periodType"/>
+				<xsd:element name="output" type="outputType"/>
+				<xsd:element name="lifestages">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="lifestage" type="lifestageType" minOccurs="1" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				
+				<xsd:element name="instances" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="completed" type="completedType" minOccurs="1" maxOccurs="unbounded"/>
+						</xsd:sequence>
+						<xsd:attribute name="baseDir" type="xsd:string" use="optional"/>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="version" type="xsd:decimal" fixed="0.2"/>
+		</xsd:complexType>
+		
+		<xsd:key name="regionId">
+			<xsd:selector xpath="regions/region"/>
+			<xsd:field xpath="@id"/>
+		</xsd:key>
+		<xsd:keyref name="regionIdRef" refer="regionId">
+			<xsd:selector xpath="instances/completed/region"/>
+			<xsd:field xpath="@id"/>
+    		</xsd:keyref>
+		
+			<xsd:keyref name="regionIdRefinitialDistribution" refer="regionId">
+				<xsd:selector xpath="lifestages/lifestage/initialDistribution"/>
+			<xsd:field xpath="@region"/>
+    		</xsd:keyref>
+		
+		<xsd:key name="varId">
+			<xsd:selector xpath="./lifestages/lifestage/event/param/variable"/>
+			<xsd:field xpath="@id"/>
+		</xsd:key>
+		
+	</xsd:element>
+	
+	<xsd:complexType name="userType">
+		<xsd:sequence>
+			<xsd:element name="email" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="randomType">
+		<xsd:sequence>
+			<xsd:element name="initialSeed" minOccurs="0" type="xsd:integer"/>
+			<xsd:element name="replicates" type="xsd:integer"/>
+			<xsd:element name="offset" minOccurs="0" type="xsd:integer"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<!--<xsd:complexType name="randomStateType">
+		<xsd:attribute name="a" type="xsd:short"/>
+		<xsd:attribute name="b" type="xsd:short"/>
+		<xsd:attribute name="c" type="xsd:short"/>
+	</xsd:complexType>-->
+	
+	<xsd:complexType name="regionType">
+		<xsd:sequence>
+			<xsd:element name="resolution" type="xsd:decimal" minOccurs="0"/>
+			<xsd:element name="extents" minOccurs="0">
+				<xsd:complexType>
+					<xsd:attribute name="north" type="xsd:decimal" use="required"/>
+					<xsd:attribute name="south" type="xsd:decimal" use="required"/>
+					<xsd:attribute name="west" type="xsd:decimal" use="required"/>
+					<xsd:attribute name="east" type="xsd:decimal" use="required"/>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="background" type="mapType" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID" use="required"/>
+		<xsd:attribute name="name" type="xsd:string" use="optional"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="periodType">
+		<xsd:sequence>
+			<xsd:element name="startTime" type="xsd:decimal"/>
+			<xsd:element name="endTime" type="xsd:decimal"/>
+			<xsd:element name="step" type="xsd:decimal" minOccurs="0"/>
+			<xsd:element name="timeUnit" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="numberOfTimeIntervals" type="xsd:decimal" minOccurs="0"/>
+			<xsd:element name="timeIntervalUnit" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="outputType">
+		<xsd:sequence>
+			<xsd:element name="raster" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="interval" type="xsd:decimal"/>
+						<xsd:element name="lifestage" type="xsd:string" minOccurs="0"/>
+						<!--<xsd:element name="analyses" minOccurs="0" maxOccurs="1">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="analysis" type="analysisType" minOccurs="1" maxOccurs="unbounded"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>-->
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="png" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="interval" type="xsd:decimal"/>
+						<xsd:element name="lifestage" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="showTime" type="xsd:boolean" minOccurs="0"/>
+						<xsd:element name="showGrid" minOccurs="0">
+							<xsd:complexType>
+								<xsd:simpleContent>
+									<xsd:extension base="xsd:boolean">
+										<xsd:attribute name="size" type="xsd:decimal" use="optional"/>
+									</xsd:extension>
+								</xsd:simpleContent>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="initialDistributionType">
+		<xsd:choice>
+			<xsd:group ref="mapGroupType"/>
+			<xsd:element name="sites" type="coordsType"/>
+		</xsd:choice>
+		<xsd:attribute name="region" type="xsd:IDREF"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="coordsType">
+		<xsd:sequence>
+			<xsd:element name="s" minOccurs="1" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:attribute name="x" type="xsd:decimal" use="required"/>
+					<xsd:attribute name="y" type="xsd:decimal" use="required"/>
+					<xsd:attribute name="count" type="xsd:decimal" use="optional"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="phenologyType">
+		<xsd:sequence>
+			<xsd:group ref="mapGroupType"/>
+		</xsd:sequence>
+		<xsd:attribute name="region" type="xsd:IDREF" use="optional"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="mapType">
+		<xsd:choice>
+			<xsd:group ref="mapGroupType"/>
+			<!--<xsd:element name="map" type="xsd:string"/>
+			<xsd:element name="value" type="xsd:decimal"/>
+			<xsd:element name="mapcalc" type="xsd:string"/>-->
+		</xsd:choice>
+	</xsd:complexType>
+	
+	<xsd:group name="mapGroupType">
+		<xsd:choice>
+			<xsd:element name="map" type="xsd:string"/>
+			<xsd:element name="value" type="xsd:decimal"/>
+			<xsd:element name="mapcalc">
+				<xsd:complexType>
+				<xsd:simpleContent>
+					<xsd:extension base="xsd:string">
+						<xsd:attribute name="refresh" type="xsd:boolean" use="optional" default="false"/>
+					</xsd:extension>
+				</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:group>
+	
+	<xsd:complexType name="lifestageType">
+		<xsd:sequence>
+			<xsd:element name="initialDistribution" type="initialDistributionType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="phenology" type="phenologyType" minOccurs="1" maxOccurs="unbounded"/>
+			<xsd:element name="event" type="eventType" maxOccurs="unbounded"/>
+			<xsd:element name="analyses" minOccurs="0" maxOccurs="1">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="analysis" type="analysisType" minOccurs="0" maxOccurs="unbounded"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="populationBased" type="xsd:boolean"/>
+		<xsd:attribute name="name" type="xsd:string"/>
+	</xsd:complexType>
+	
+	<xsd:group name="paramGroup">
+		<xsd:sequence>
+			<xsd:element name="param" minOccurs="0" maxOccurs="unbounded" type="parameterType"/>
+			<xsd:element name="flag" minOccurs="0" maxOccurs="unbounded" type="flagType"/>
+		</xsd:sequence>
+	</xsd:group>
+	
+	<xsd:group name="analysisParamGroup">
+		<xsd:sequence>
+			<xsd:element name="param" minOccurs="0" maxOccurs="unbounded" type="analysisParameterType"/>
+			<xsd:element name="flag" minOccurs="0" maxOccurs="unbounded" type="flagType"/>
+			<xsd:element name="output" minOccurs="1" maxOccurs="1">
+				<xsd:complexType>
+					<xsd:choice>
+						<xsd:element name="file" type="analysisFileType"/>
+					</xsd:choice>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	
+	<xsd:complexType name="analysisFileType">
+		<xsd:simpleContent>
+		<xsd:extension base="xsd:string">
+			<xsd:attribute name="generate" type="xsd:boolean" use="optional" default="true"/>
+			<xsd:attribute name="ext" type="xsd:string" use="optional" default=""/>
+			<xsd:attribute name="append" type="xsd:boolean" use="optional" default="true"/>
+			<xsd:attribute name="date" type="xsd:boolean" use="optional" default="true"/>
+		</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	
+	<xsd:complexType name="eventType">
+		<xsd:sequence>
+			<xsd:group ref="paramGroup"/>
+			<xsd:element name="ifNotPopulationBased" minOccurs="0" maxOccurs="1">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:group ref="paramGroup"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ifPopulationBased" minOccurs="0" maxOccurs="1">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:group ref="paramGroup"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="name" type="xsd:string"/>
+		<xsd:attribute name="sequence" type="xsd:integer"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="analysisType">
+		<xsd:sequence>
+			<xsd:group ref="analysisParamGroup"/>
+			<xsd:element name="ifNotPopulationBased" minOccurs="0" maxOccurs="1">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:group ref="analysisParamGroup"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ifPopulationBased" minOccurs="0" maxOccurs="1">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:group ref="analysisParamGroup"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="name" type="xsd:string"/>
+		<xsd:attribute name="sequence" type="xsd:integer"/>
+	</xsd:complexType>
+	
+	<xsd:group name="valueOrVariableGroup">
+		<xsd:choice>
+			<xsd:element name="value" type="xsd:string"/>
+			<xsd:element name="variable" type="variableType"/>
+		</xsd:choice>
+	</xsd:group>
+	
+	<xsd:complexType name="parameterType">
+		<xsd:choice>
+			<xsd:group ref="valueOrVariableGroup"/>
+			<xsd:element name="seed"/>
+			<xsd:element name="inputMap"/>
+			<xsd:element name="outputMap"/>
+		</xsd:choice>
+		<xsd:attribute name="name" type="xsd:string"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="analysisParameterType">
+		<xsd:choice>
+			<xsd:element name="value" type="xsd:string"/>
+			<xsd:element name="currentMap"/>
+			<xsd:element name="previousMap"/>
+			<xsd:element name="initialMap"/>
+			<xsd:element name="currentTime"/>
+			<xsd:element name="vector" type="xsd:string"/>
+		</xsd:choice>
+		<xsd:attribute name="name" type="xsd:string"/>
+	</xsd:complexType>
+	
+	
+	<xsd:complexType name="flagType">
+		<xsd:attribute name="name" type="xsd:string"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="valueOrVariableType">
+		<xsd:choice>
+			<xsd:group ref="valueOrVariableGroup"/>
+		</xsd:choice>
+	</xsd:complexType>
+	
+	<xsd:complexType name="variableType">
+		<xsd:sequence>
+			<xsd:element name="value" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="range" minOccurs="0" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:attribute name="start" type="xsd:decimal"/>
+					<xsd:attribute name="end" type="xsd:decimal"/>
+					<xsd:attribute name="step" type="xsd:decimal"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="completedType">
+		<xsd:sequence>
+			<!--<xsd:element name="name" type="xsd:string"/>-->
+			<xsd:element name="region">
+				<xsd:complexType>
+					<xsd:attribute name="id" type="xsd:IDREF"/>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="variable" minOccurs="0" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="xsd:string">
+							<xsd:attribute name="id" type="xsd:IDREF"/>
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+			
+			
+			
+			<xsd:element name="replicates" minOccurs="0" maxOccurs="1">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="replicate" type="replicateType" minOccurs="0" maxOccurs="unbounded"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			
+			
+			<xsd:element name="envelopes" minOccurs="0" maxOccurs="1">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="lifestage" minOccurs="1" maxOccurs="unbounded">
+							<xsd:complexType>
+								<xsd:choice minOccurs="0" maxOccurs="unbounded">
+									<xsd:element name="analyses" minOccurs="0">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="analysis" type="analysisResultType" minOccurs="0" maxOccurs="unbounded"/>
+											</xsd:sequence>
+											<xsd:attribute name="compressed" type="xsd:string" use="optional"/>
+										</xsd:complexType>
+									</xsd:element>
+									
+									<xsd:element name="envelope" minOccurs="1" maxOccurs="unbounded">
+										<xsd:complexType>
+											<xsd:simpleContent>
+												<xsd:extension base="xsd:string">
+													<xsd:attribute name="time" type="xsd:decimal"/>
+												</xsd:extension>
+											</xsd:simpleContent>
+										</xsd:complexType>
+									</xsd:element>
+								</xsd:choice>
+								<xsd:attribute name="id" type="xsd:IDREF"/>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			
+			
+		</xsd:sequence>
+		
+	</xsd:complexType>
+	
+	<xsd:complexType name="analysisResultType">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="name" type="xsd:string"/>
+				<xsd:attribute name="time" type="xsd:string" use="optional"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	
+	<xsd:complexType name="replicateType">
+		<xsd:sequence>
+			<xsd:element name="seed" type="xsd:decimal"/>
+			
+			<xsd:element name="lifestage" minOccurs="1" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:choice minOccurs="0" maxOccurs="2">
+						<xsd:element name="analyses" minOccurs="0">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="analysis" type="analysisResultType" minOccurs="0" maxOccurs="unbounded"/>
+								</xsd:sequence>
+								<xsd:attribute name="compressed" type="xsd:string" use="optional"/>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="maps" minOccurs="0">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="map" minOccurs="1" maxOccurs="unbounded">
+										<xsd:complexType>
+											<xsd:simpleContent>
+												<xsd:extension base="xsd:string">
+													<xsd:attribute name="time" type="xsd:decimal"/>
+												</xsd:extension>
+											</xsd:simpleContent>
+										</xsd:complexType>
+									</xsd:element>
+								</xsd:sequence>
+								<xsd:attribute name="compressed" type="xsd:string"/>
+								<xsd:attribute name="mapset" type="xsd:string"/>
+							</xsd:complexType>
+							</xsd:element>
+					</xsd:choice>
+					<xsd:attribute name="id" type="xsd:IDREF"/>
+				</xsd:complexType>
+			</xsd:element>
+			
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<!--<xsd:complexType name="test">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="name" type="xsd:string" use="required"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>-->
+	
+</xsd:schema>

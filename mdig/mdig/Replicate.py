@@ -1,0 +1,390 @@
+#!/usr/bin/env python2.4
+"""
+Replicate module. Part of MDiG - Modular Dispersal in GIS
+Copyright 2006, Joel Pitt
+"""
+
+import lxml.etree
+import random
+import logging
+import shutil
+import string
+import os
+import pdb
+
+import GRASSInterface 
+import MDiGConfig
+import OutputFormats
+from GrassMap import MapMissingException
+import XMLModel
+
+class Replicate:
+	"""
+	Replicate is a class for each replication simulated for an ExperimentInstance
+	"""
+
+	def __init__(self,node,instance):
+		self.instance = instance
+		self.log = logging.getLogger("mdig.replicate")
+		
+		self.grass_i = GRASSInterface.getG()
+		
+		self.temp_map_names={}
+		self.active = False
+		self.current_t = -1
+		self.initial_maps = {}
+		self.previous_maps = None
+		self.saved_maps = None
+		self.map_intervals = None
+
+		if node is None:
+			self.node = self.instance.experiment.addReplicate(self.instance.node)
+			self.complete = False
+			self.setSeed(self.instance.experiment.getNextRandomValue())
+		else:
+			# if node is provided then create replicate node from xml
+			self.node = node
+			self.complete = self.check_complete()
+
+		self.random = random.Random()
+		self.random.seed(self.getSeed())
+		
+	def check_complete(self):
+		complete = True
+		missing_maps = {}
+		ls_keys = self.instance.experiment.getLifestageIDs()
+		for ls_key in ls_keys:
+			try:
+				self.getSavedMaps(ls_key)
+			except MapMissingException, e:
+				missing_maps[ls_key]=e.missing_maps
+				complete=False
+				self.log.warning("Maps missing from replicate %s", repr(missing_maps[ls_key]))
+
+		# If all maps listed in xml are present, then check there is one for
+		# every year that is expected to have map output
+		if complete:
+			exp = self.instance.experiment
+			period = exp.getPeriod()
+			for ls_key in ls_keys:
+				maps = self.getSavedMaps(ls_key)
+				for t in exp.mapYearGenerator(ls_key):
+					if maps is None:
+						complete = False
+						break
+					elif str(t) not in maps:
+						complete = False
+						break
+		return complete
+			
+		
+	def _loadSavedMaps(self):
+		self.saved_maps = {}
+		self.map_intervals = {}
+		missing_maps=[]
+		ls_keys = self.instance.experiment.getLifestageIDs()
+		for ls_key in ls_keys:
+			self.map_intervals[ls_key] = 0 # If no maps node exist then interval is 0
+			ls_maps_node = self.node.xpath('lifestage[@id="%s"]/maps' % ls_key)
+			
+			if len(ls_maps_node) == 1:
+				self.saved_maps[ls_key] = {}
+				if "interval" in ls_maps_node[0].attrib:
+					self.map_intervals[ls_key] = int(ls_maps_node.attrib["interval"])
+				else: self.map_intervals[ls_key] = 1
+
+				for m in ls_maps_node[0]:
+					if m.tag == "map":
+						time_step=m.attrib["time"]
+						if not GRASSInterface.getG().checkMap(m.text):
+							missing_maps.append(m.text)
+						else:
+							self.saved_maps[ls_key][time_step] = m.text
+			elif len(ls_maps_node) > 1:
+				raise XMLModel.InvalidXMLException, "More than one maps node"
+
+		if missing_maps:
+			raise MapMissingException(missing_maps)
+	
+	def getSavedMaps(self, ls_id):
+		"""
+		Get maps that are saved in XML and rasterOutput
+		"""
+		if self.saved_maps is None:
+			try:
+				self._loadSavedMaps()
+			except MapMissingException, e:
+				raise
+		
+		if ls_id in self.saved_maps:
+			return self.saved_maps[ls_id]
+		else: return None
+		
+	def nullBitmask(self, generate_=True):
+		""" Create null bitmasks for raster maps"""
+		ls_keys = self.instance.experiment.getLifestageIDs()
+		for ls_key in ls_keys:
+			maps=self.getSavedMaps(ls_key)
+			for m in maps.values():
+				GRASSInterface.getG().nullBitmask(m,generate=generate_)
+			
+	
+	def setSeed(self,s):
+		seed_node=lxml.etree.SubElement(self.node,'seed')
+		seed_node.text = repr(s)
+		self.seed = s
+		
+	def getSeed(self):
+		if "node" not in dir(self): pdb.set_trace()
+		seed_node=self.node.find('seed')
+		return int(seed_node.text)
+	
+	def getPreviousMaps(self,ls_id):
+		""" Return map names
+		
+		for lifestage with id ls_id
+		
+		"""
+		if self.previous_maps == None:
+			self.previous_maps = {}
+			ls_keys = self.instance.experiment.getLifestageIDs()
+			for ls_key in ls_keys:
+				self.previous_maps[ls_key] = []
+		
+		maps = self.previous_maps[ls_id]
+		return maps
+		
+	def getPreviousMap(self,ls_id,offset=1):
+		maps = self.getPreviousMaps(ls_id)
+		if offset <= len(maps):
+			return maps[-offset]
+		else:
+			return None
+	
+	def pushPreviousMap(self,ls_id,map_name):
+		maps = self.getPreviousMaps(ls_id)
+		maps.append(map_name)
+		
+	def getInitialMap(self,ls_id):
+		return self.initial_maps[ls_id]
+	
+	def reset(self):
+		# Map are removed/overwritten automatically
+		self.node.getparent().remove(self.node)
+		del self.node
+		self.node = self.instance.experiment.addReplicate(self.instance.node)
+		self.complete = False
+		self.setSeed(self.instance.experiment.getNextRandomValue())
+
+	def run(self):
+		
+		self.reset()
+
+		self.active = True
+		self.instance.addActiveRep(self)
+		
+		exp = self.instance.experiment
+		
+		
+		self.log.log(logging.INFO, "Replicate %d/%d of exp. instance [var_keys: %s, vars: %s ]"\
+					 % (self.instance.replicates.index(self) + 1, exp.getNumberOfReplicates(),\
+					    repr(self.instance.var_keys),repr(self.instance.variables)))
+		
+		# Set the GRASS region 
+		current_region = exp.getRegion(self.instance.r_id)
+		self.grass_i.setRegion(current_region)
+		
+		# Get the initial distribution maps for the region
+		self.initial_maps = exp.getInitialMaps(self.instance.r_id)
+		initial_maps = self.initial_maps
+
+		ls_keys = exp.getLifestageIDs()
+		
+		for lifestage_key in ls_keys:
+			# Create temporary map names
+			# - input is in [0], output in [1]
+			self.temp_map_names[lifestage_key] = [GRASSInterface.generateMapName(lifestage_key),
+			GRASSInterface.generateMapName(lifestage_key)]
+			
+			# Set up phenology maps
+			ls = exp.getLifestage(lifestage_key)
+			
+			for a in ls.analyses():
+				a.preRun(self)
+		
+		# If in debug mode print out the names of the initial maps
+		mdig_config = MDiGConfig.getConfig()
+		if mdig_config is not None and mdig_config.DEBUG:
+			str_maps=''
+			for m in initial_maps.values():
+				str_maps += ' ' + m.getMapFilename()
+			self.log.debug("Initial maps: " + str_maps)
+		
+		period = exp.getPeriod()
+		self.log.debug("Simulation period is " + str(period))
+		
+		for t in range(period[0],period[1]+1):
+			self.log.log(logging.INFO, "t=%d", t)
+			self.current_t = t
+			#pdb.set_trace()
+			
+			for ls_id in self.instance.experiment.getLifestageIDs():
+				self.pushPreviousMap(ls_id,GRASSInterface.generateMapName(lifestage_key))
+				if t == period[0]:
+					self.grass_i.copyMap(initial_maps[ls_id].getMapFilename(),self.getPreviousMap(ls_id),True)
+				else:
+					self.grass_i.copyMap(self.temp_map_names[ls_id][0],self.getPreviousMap(ls_id),True)
+				
+				if mdig_config.remove_null:
+					self.grass_i.nullBitmask(self.getPreviousMap(ls_id),generate=False)
+			
+			phenologyIterator = exp.phenologyIterator(self.instance.r_id)
+			
+			for current_interval, p_lifestages in phenologyIterator:
+				for lifestage in p_lifestages:
+					ls_key = lifestage.name
+					self.log.log(logging.INFO, 'Interval %d - Lifestage "%s" started',current_interval,ls_key)
+					if t == period[0]:
+						# copy initial map to a working map, overwrite if necessary
+						self.grass_i.copyMap(initial_maps[ls_key].getMapFilename(),self.temp_map_names[ls_key][0],True)
+						
+				
+					lifestage.run(current_interval,self,self.temp_map_names[ls.name])
+				
+					#self.temp_map_names[ls_key].reverse()
+			
+			# Run Analyses for each lifestage
+			for ls_id in self.instance.experiment.getLifestageIDs():
+				self.log.log(logging.INFO, 'Interval %d completed.',current_interval)
+				l = self.instance.experiment.getLifestage(ls_id)
+				analyses = l.analyses()
+				self.log.log(logging.INFO, 'Interval %d - Running analyses',current_interval)
+				#pdb.set_trace()
+				for a in analyses:
+					a.run(self.temp_map_names[ls_key][0], self.temp_map_names[ls_key][1], self, l.populationBased)
+				self.log.log(logging.INFO, 'Interval %d - Analyses complete',current_interval)
+			
+			self.fireTimeCompleted(t)
+
+		self.instance.removeActiveRep(self)
+		self.instance.experiment.saveModel()
+		self.active = False
+		self.current_t = -1
+		self.complete = True
+		self.cleanUp()
+	
+	def addAnalysisResult(self,ls_id,result):
+		"""
+		Result is a tuple with (command executed, filename of output)
+		"""
+
+		mdig_config = MDiGConfig.getConfig()
+		
+		current_dir = os.path.dirname(os.path.abspath(result[1]))
+		filename = os.path.basename(result[1])
+		
+		# move filename to analysis directory
+		if current_dir != os.path.abspath(mdig_config.analysis_dir):
+			# if file exists and overwrite_flag is specified then overwrite
+			if os.path.isfile( os.path.join(mdig_config.analysis_dir,filename) ):
+				if mdig_config.overwrite_flag:
+					os.remove( os.path.join(mdig_config.analysis_dir,filename) )
+				else:
+					self.log.error( "Can't add analysis because filename %s already exists and "\
+					 "overwrite_flag is not set." % filename)
+					return
+			
+			shutil.move(result[1], mdig_config.analysis_dir)
+		
+		filename = os.path.basename(filename)
+		
+		all_ls = self.node.xpath("lifestage")
+		
+		ls_node = None
+		for a_ls_node in all_ls:
+			if a_ls_node.attrib["id"] == ls_id:
+				ls_node = a_ls_node
+				break
+		
+		if ls_node is None:
+			ls_node = lxml.etree.SubElement(self.node,'lifestage')
+			ls_node.attrib["id"] = ls_id
+				
+		# find analyses node
+		analyses = ls_node.find('analyses')
+		if analyses is None:
+			analyses = lxml.etree.SubElement(ls_node,'analyses')
+		
+		# get analysis nodes
+		all_a = analyses.xpath("analysis")
+		
+		a = None
+		for i_a in all_a:
+			# check for existing analysis command node
+			if i_a.attrib["name"] == result[0]:
+				# analysis already in file, update filename
+				a = i_a
+			# check filename isn't used in another analysis
+			elif i_a.text == filename:
+				self.log.warning("Removing analysis node that uses same output file")
+				# Remove analysis node
+		
+		# add new node if it doesn't exist
+		if a is None:
+			a = lxml.etree.SubElement(analyses,'analysis')
+			a.attrib["name"] = result[0]
+			
+		# set analysis node text to filename
+		a.text = filename
+
+	def cleanUp(self):
+		for l in self.temp_map_names.values():
+			self.grass_i.removeMap(l[0])
+			self.grass_i.removeMap(l[1])
+		for ls_key in self.instance.experiment.getLifestageIDs():
+			prev_maps = self.getPreviousMaps(ls_key)
+			for m in prev_maps:
+				self.grass_i.removeMap(m)
+		self.previous_maps = None
+						
+	def fireTimeCompleted(self,t):
+		for l in self.instance.listeners:
+			#pdb.set_trace()
+			ls_filename = l.replicateUpdate(self,t)
+			
+			if l.__class__ == OutputFormats.RasterOutput and ls_filename[0] is not None:
+				self.addCompletedRasterMap(self.current_t, ls_filename[0], ls_filename[1], l.interval)
+			
+	def addCompletedRasterMap(self,t,ls,file_name,interval=1):
+		mdig_config = MDiGConfig.getConfig()
+		
+		# If the command line has specified that the null bitmask
+		# of completed raster maps should be removed:
+		if mdig_config.remove_null:
+			GRASSInterface.getG().nullBitmask(file_name,generate="False")
+		
+		# TODO: Check if the filename has already been associated with an analysis
+		
+		ls_node = self.node.xpath('lifestage[@id="%s"]' % ls)
+		if len(ls_node) == 0:
+			ls_node.append(lxml.etree.SubElement(self.node,'lifestage'))
+			ls_node[0].attrib["id"] = ls
+			ls_node[0].text = '\n'
+
+		maps_node = ls_node[0].xpath('maps')
+		if len(maps_node) == 0:
+			new_maps_node = lxml.etree.SubElement(ls_node[0],'maps')
+			if interval != 1:
+				new_maps_node.attrib['interval']=interval
+			maps_node.append(new_maps_node)
+		
+		correct_m = None
+		for m in maps_node[0]:
+			if string.atoi(m.attrib["time"]) == t:
+				correct_m = m
+		if correct_m is None:
+			# Not found, so add:
+			correct_m=lxml.etree.SubElement(maps_node[0],'map')
+		
+		correct_m.attrib["time"]="%d" % t
+		correct_m.text = file_name

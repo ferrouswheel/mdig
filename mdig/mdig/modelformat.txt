@@ -1,0 +1,112 @@
+Explanation of MDiG XML model definition file.
+
+Here MDiG will be used to refer a system that conforms to the MDiG file and simulation specification.
+
+- USER
+
+<user><email>pittj2@lincoln.ac.nz</email></user>
+
+This section allows an email to be specified which the system should attempt to email once the simulation is finished. This primarily for the case that MDiG is used as a web-based interface so that jobs can be submitted and then MDiG will email the user on completion with a URL to the results (requesting a login with necessary).
+
+- NAME
+
+<name> lhumile2 </name>
+
+Needs to be a simple alphanumeric name for use in filenames etc.
+
+- DESCRIPTION
+
+<description> Argentine Ant </description>
+
+Further description of the model and/or organism. Primarily for users to explain their model when they pass it to researchers.
+
+- RANDOM
+
+<random>
+	<initialSeed> 1 </initialSeed>
+	<replicates> 1 </replicates>
+	<lastState>25</lastState>
+</random>
+
+Sets up the random number generator and number of simulation replicates, initialSeed indicates the seed to be used for the first replicate. replicates is the number of times to repeat each permutation of parameters. lastState indicates the state of the random number generator when MDiG last finished running simulations on the model (in the case that not all simulations were finished last time MDiG was run using this model definition file.
+
+- REGIONS
+
+Indicates a list of regions to carry out simulations on.
+	
+Each region entry has the format:
+	
+<region id="a" name="test">
+	<resolution>150</resolution>
+	<extents north="6609068" south="6354012" west="2568074" east="2829814"/>
+	<background>
+		<map>aa_background</map>
+	</background>
+</region>
+
+The "id" of the region is used for completed simulations to refer to, the "name" parameter loads an existing region with the given name. In GRASS this is equivalent to "g.region region=test". Any sub elements override the parameters of this loaded region. 
+Resolution indicates the raster resolution for simulation.
+Extents indicates the boundaries of the simulation region.
+Background specifies what should be displayed first when updating the map display. This is a "map type"
+
+-Map types: tree sections that accept map types can have the following values:
+A <map> sub element is the name of a map in the current location using with optional mapset (using @ GRASS format). For ArcGIS - the at format would probably indicate a sub directory of the working directory.
+A <value> sub element indicates a constant value across the current region.
+A <mapcalc> sub element specifies a Map Algebra expression. This can have an optional attribute "refresh" which means the map should be regenerated everytime it is accessed. This is in the case of random elements or dependencies on changing maps.
+
+- PERIOD
+
+<period>
+	<startTime> 1990 </startTime>
+	<endTime> 2006 </endTime>
+	<step> 1 </step> 
+	<timeUnit> Year </timeUnit>
+	<numberOfTimeIntervals> 365 </numberOfTimeIntervals>
+	<numberOfTimeIntervalUnit> Day </numberOfTimeIntervalUnit>
+</period>
+
+Indicates the start and end time of the simulation. Optionally, it also specifies, the length of each discrete time step (<step>). The units of time that simulation is dealing with (<timeUnit>). How the timeUnit should be divided for timing of lifestages.
+
+The total range for phenology events to occur is [1 (<numberOfTimeIntervals> * <step>)]
+
+The default values for <step>, <timeUnit>, <numberOfTimeIntervals> and <timeIntervalUnit> are shown.
+
+- OUTPUT
+
+<output>
+	<raster>
+		<interval>1</interval>
+		<lifestage>all</lifestage>
+	</raster>
+	<png>
+		<interval>1</interval>
+		<showTime>true</showTime>
+		<showGrid size="500">false</showGrid>
+	</png>
+</output>
+
+Output indicates what direct output (The population distribution maps) of the simulation/model should be saved. <raster> allows for the raster maps that are generated to be permanently saved - and referenced in the completed instances. <interval> indicates how many maps should be skipped (1= indicates none). Note that if the time step is > 1 then the interval is NOT the difference between time values. <lifestage> indicates the id of the lifestage to save the distribution of.
+
+<png> allows for graphics to be output while the simulation is being performed. Has the same format as <raster>, but can also overlay a grid <showGrid> with resolution <size>, and display the simulation time <showTime>.
+
+- LIFESTAGES
+
+Lifestages contains all the lifestage elements
+
+-- LIFESTAGE
+
+Each lifestage has the following sub elements:
+
+<initialDistribution>: Indicates the the initial distribution for the current lifestage. Has a parameter "region" that expects a region ID to indicate what region the distribution if for.
+   - can either be a map type. Or a coordinates list such as, e.g:
+	<sites>
+		<s x="2671900" y="6474300"/>
+		<s x="2674500" y="6471400"/>
+		<s x="2672400" y="6474500"/>
+		<s x="2671900" y="6474400"/>
+		<s x="2672400" y="6474500"/>
+	</sites>
+	Coordinates are read in as vector points, and then converted to a raster. Count is an optional parameter to the sites <s>, used when the lifestage is population based.
+
+<phenology>: Indicates when the lifestage occurs. Needs a region ID in the "region" parameter
+	- expects a map type. The values of which indicate when in the range 1:<step>*<numberOfIntervals> the lifestage should occur.

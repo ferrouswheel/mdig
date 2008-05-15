@@ -1,0 +1,146 @@
+<?xml version="1.0"?>
+<model>
+	<user><email>pittj2@lincoln.ac.nz</email></user>
+	
+	<name> speciesname </name>
+	<description> Something about the species </description>
+	
+	<random>
+		<!-- Starting seed for replicates -->
+		<initialSeed> 1 </initialSeed>
+		<!-- Number of times to repeat simulation for each combination of parameters -->
+		<replicates> 2 </replicates>
+		<!-- The last state of the rnadom number generator in case the simulation didn't
+			 finish last time -->
+		<lastState>25</lastState>
+   	</random>
+	
+	<regions>
+		<!-- Simulation may be run at different resolutions or in different regions -->
+		<region id="a"> <!-- id is for referral from replicates below,
+					    name loads region from file -->
+			<!-- Resolution to run simulation in -->
+			<resolution>1</resolution>
+			<!-- Extent of the region in coordinates -->
+			<extents north="10" south="-10" west="-10" east="10" latlong="false"/>
+			<!-- for displaying behind the distribution when display flag is on -->
+			<background>
+				<!-- accept a variety of map expressions - use same type for other places a map can be used. -->
+				<map>aa_risk</map>
+				<!--or <value></value>-->
+			</background>
+		</region>
+		
+	</regions>
+	
+	<period>
+		<!-- Time period to run the simulation for -->
+		<startYear> <value> 1 </value> </startYear> <!-- refer to a variable id or use value -->
+		<endYear> <value> 3 </value> </endYear>
+		<!--<step> <value> 1 </value> </step>--> <!--Optionally indicate that simulation steps by step amount-->
+	</period>
+	
+	<output>
+		<!-- Define how to output results -->
+		
+		<!-- Output a map every year -->
+		<raster>
+			<interval>1</interval>
+			<lifestage>kernel</lifestage>
+			
+			<analyses>
+				<analysis name="r.stats">
+					<param name="input">
+						<currentMap/>
+					</param>
+					<flag name="c"/>
+					<flag name="n"/>
+				</analysis>
+			</analyses>
+		</raster>
+		
+		<!-- Output a PNG graphic with overlayed data -->
+		<png>
+			<interval>1</interval>
+			<showYear>true</showYear>
+			<showGrid>false</showGrid>
+		</png>
+	</output>
+	
+	<lifestages>
+		<!-- Define each lifestage -->
+		<lifestage name="kernel" populationBased="false">
+			<!-- Define initial population for region -->
+			<invasion region="a">
+				<!--<map name="randomsites3" lifestage="ant" boolean="true"/>-->
+				<sites>
+					<s x="0" y="0"/>
+				</sites>
+				
+				<!-- Note: mapcalc can be refreshed if it is a randomly created map -->
+   			</invasion>
+			
+			<!-- Define when the lifestage occurs
+				 can be a value or a map -->
+			<phenology region="a">
+				<value> 1 </value>
+				<!--<map> test </map>-->
+			</phenology>
+			
+			<!-- list dispersal events and there parameters -->
+			<event name="r.dispersal.kernel">
+				<param name="kernel">
+					<value>general</value> 
+				</param>
+				<param name="d_a">
+					<variable id="test"> <range start="5" end="5" step="1"/> </variable>
+				</param>
+				<param name="d_b">
+					<variable id="test2"> <range start="10" end="10" step="1"/> </variable>
+				</param>
+				<param name="frequency">
+					<value> 3 </value>
+				</param>
+				<param name="seed">
+					<seed/>
+				</param>
+				<ifNotPopulationBased>
+					<flag name="b"/>
+				</ifNotPopulationBased>
+			</event>
+			
+			
+			
+		</lifestage>
+	</lifestages>
+	
+	<!-- Following section records those replications that have been completed
+		 and where the results have been stored -->
+	<instances>
+		<completed>
+			<name>general</name>
+			<region id="a"/>
+			<variable id="test">1</variable>
+			<variable id="test2">10</variable>
+			<replicates>
+				<replicate>
+					<compressed>s1</compressed>
+					<seed>25</seed> <!--Random state at beginning of replicate-->
+				</replicate>
+			</replicates>
+		</completed>
+		<completed>
+			<name>general</name>
+			<region id="a"/>
+			<variable id="test">5</variable>
+			<variable id="test2">10</variable>
+			<replicates>
+				<replicate>
+					<compressed>s1</compressed>
+					<seed>25</seed>
+				</replicate>
+			</replicates>
+		</completed>
+	</instances>
+	
+</model>

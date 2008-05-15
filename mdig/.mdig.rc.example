@@ -1,0 +1,14 @@
+# MDIGConfig file
+
+# Only used if not already in GRASS environment.
+# Not very well tested though, so best to make sure
+# you are in GRASS
+#
+# GISRC = "c:\Documents and Settings\user\.grassrc6
+# GISBASE = "c:\grass6\"
+
+# MSYS executable directory should be in the system path.
+# If it isn't it can be set explicitly here
+#
+# MSYS_BIN = "c:\msys\1.0\bin"
+

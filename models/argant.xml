@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<model>
+	<user><email>pittj2@lincoln.ac.nz</email></user>
+	
+	<name> lhumiletest </name>
+	<description> Argentine Ant </description>
+	
+	<random>
+		<!-- Starting seed for replicates -->
+		<initialSeed> 1 </initialSeed>
+		<!-- Number of times to repeat simulation for each combination of parameters -->
+		<replicates> 2 </replicates>
+		<!-- The last state of the rnadom number generator in case the simulation didn't
+			 finish last time -->
+		<lastState>25</lastState>
+   	</random>
+	
+	<regions>
+		<!-- Simulation may be run at different resolutions or in different regions -->
+		<region id="a" name="mdig_test"> <!-- id is for referral from replicates below,
+					    name loads region from file -->
+			<!-- Resolution to run simulation in -->
+			<resolution>150</resolution>
+			<!-- Extent of the region in coordinates -->
+			<!--<extents north="6609068" south="6354012" west="2568074" east="2829814"/>-->
+			<!-- for displaying behind the distribution when display flag is on -->
+			<background>
+				<!-- accept a variety of map expressions - use same type for other places a map can be used. -->
+				<map>aa_landcover</map><!--<map>aa_background</map>-->
+				<!--or <value></value>-->
+			</background>
+		</region>
+		
+	</regions>
+	
+	<period>
+		<!-- Time period to run the simulation for -->
+		<startTime> 1990 </startTime> <!-- refer to a variable id or use value -->
+		<endTime> 1995 </endTime>
+		<!--<step> <value> 1 </value> </step>--> <!--Optionally indicate that simulation steps by step amount-->
+	</period>
+	
+	<output>
+		<!-- Define how to output results -->
+		
+		<!-- Output a map every year -->
+		<raster>
+			<interval>1</interval>
+			<lifestage>all</lifestage>
+		</raster>
+		
+		<!-- Output a PNG graphic with overlayed data -->
+		<png>
+			<interval>1</interval>
+			<showTime>true</showTime>
+			<showGrid>false</showGrid>
+		</png>
+	</output>
+	
+	<lifestages>
+		<!-- Define each lifestage -->
+		<lifestage name="all" populationBased="false">
+			<!-- Define initial population for region -->
+			<initialDistribution region="a">
+				<!--<map name="randomsites3" lifestage="ant" boolean="true"/>-->
+				<sites>
+					<s x="2671900" y="6474300"/>
+					<s x="2674500" y="6471400"/>
+					<s x="2672400" y="6474500"/>
+					<s x="2671900" y="6474400"/>
+					<s x="2672400" y="6474500"/>
+				</sites>
+				
+				<!-- Note: mapcalc can be refreshed if it is a randomly created map -->
+			</initialDistribution>
+			
+			<!-- Define when the lifestage occurs
+				 can be a value or a map -->
+			<phenology region="a">
+				<value> 1 </value>
+				<!--<map> test </map>-->
+			</phenology>
+			
+			<!-- list dispersal events and there parameters -->
+			<event name="r.dispersal.neighbour">
+				<param name="shape">
+					<value>186</value> 
+				</param>
+				<param name="radius">
+					<value>1</value>
+				</param>
+				<ifNotPopulationBased>
+					<flag name="b"/>
+				</ifNotPopulationBased>
+			</event>
+			
+			<event name="r.dispersal.kernel">
+				<param name="kernel">
+					<value>general</value> 
+				</param>
+				<param name="d_a">
+					<value>3000</value>
+				</param>
+				<param name="d_b">
+					<value>0.5</value>
+				</param>
+				<param name="frequency">
+					<value> 0.50 </value>
+				</param>
+				<param name="seed">
+					<seed/>
+				</param>
+				<ifNotPopulationBased>
+					<flag name="b"/>
+				</ifNotPopulationBased>
+			</event>
+			
+			<event name="r.dispersal.survival">
+				<param name="survival">
+					<value>aa_survival@lhumile</value>
+				</param>
+				<param name="seed">
+					<seed/>
+				</param>
+				<ifNotPopulationBased>
+					<flag name="b"/>
+				</ifNotPopulationBased>
+			</event>
+			
+			<!-- Analysis here is for analysis at the end of each year/timestep-->
+			<analyses>
+				<analysis name="r.stats">
+					<param name="input">
+						<previousMap/>
+					</param>
+					<flag name="c"/>
+					<flag name="n"/>
+					<output>
+						<file generate="true" ext=".dat" append="true" date="true"></file>
+					</output>
+				</analysis>
+			</analyses>
+			
+		</lifestage>
+		
+		<!-- Analysis here can access all lifestages maps -->
+<!--		<analyses>
+		</analyses> -->
+
+	</lifestages>
+	
+	<!-- Analysis here is done at the end of each replicate -->
+<!--	<analyses>
+	</analyses>-->
+	
+</model>

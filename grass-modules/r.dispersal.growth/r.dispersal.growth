@@ -1,0 +1,230 @@
+#!/bin/sh
+#
+############################################################################
+#
+# MODULE:	r.dispersal.growth
+# AUTHOR(S):	Joel Pitt
+# PURPOSE:	
+#
+# COPYRIGHT:	(C) 2001,2004,2005 by the GRASS Development Team
+#
+#		This program is free software under the GNU General Public
+#		License (>=v2). Read the file COPYING that comes with GRASS
+#		for details.
+#
+#############################################################################
+
+
+#%Module
+#% description: Use survival map to randomly decide whether a population survives or not
+#%End
+#%option
+#% key: INPUT
+#% gisprompt: old,cell,raster
+#% type: string
+#% description: Raster map to filter
+#% required : yes
+#%end
+#%option
+#% key: output
+#% gisprompt: cell,raster
+#% type: string
+#% description: Output raster map filtered
+#% required : yes
+#%end
+#%option
+#% key: function
+#% type: string
+#% description: Type of function to use for growth (skellam,beverton,ricker, keitt, wang)
+## Doesn't allow answer selection in scripts. 
+##% answers: skellam,beverton,ricker,keitt,wang
+#% required: no
+#% answer: skellam
+#%end
+#%option
+#% key: capacity_map
+#% gisprompt: old,cell,raster
+#% type: string
+#% description: Capacity  map
+#% required : no
+#%end
+#%option
+#% key: capacity
+#% type: integer
+#% description: Capacity value
+#% required : no
+#%end
+#%option
+#% key: growth_map
+#% gisprompt: old,cell,raster
+#% type: string
+#% description: Growth rate map
+#% required : no
+#%end
+#%option
+#% key: growth
+#% type: double
+#% description: Growth rate (Net growth for Beverton-Holt, Keitt, Wang. Intrinsic for Ricker and Skellam)
+#% required : no
+#% answer : 1.0
+#%end
+#%option
+#% key: threshold
+#% type: double
+#% description: Threshold value for allee effect of keitt growth (0.0-1.0)
+#% required: no
+#% answer: 0.2
+#%end
+#%flag
+#% key: o
+#% description: overwrite output (does nothing, only for r.dispersal support)
+#%end
+#%flag
+#% key: b
+#% description: boolean mode (doesn't make sense, exits quietly if present)
+#%end
+
+if [ "$GISBASE" = "" ] ; then
+ echo "You must be in GRASS GIS to run this program." >&2
+ exit 1
+fi
+
+if [ "$1" != "@ARGS_PARSED@" ] ; then
+  exec g.parser "$0" "$@"
+fi
+     
+eval `g.gisenv`
+: ${GISBASE?} ${GISDBASE?} ${LOCATION_NAME?} ${MAPSET?}
+LOCATION=$GISDBASE/$LOCATION_NAME/$MAPSET
+
+# what to do in case of user break:
+exitprocedure()
+{
+ echo "User break!"
+ #shall we delete any TMP files?
+ exit 1
+}
+# shell check for user break (signal list: trap -l)
+trap "exitprocedure" 2 3 15
+
+program=`basename $0`
+
+#Check INPUT and output is given:
+if [ ! $GIS_OPT_INPUT ]
+then
+ echo "Please provide an INPUT name"
+ exit 1
+fi
+if [ ! $GIS_OPT_OUTPUT ]
+then
+ echo "Please provide an output name"
+ exit 1
+fi
+
+if [ $GIS_OPT_B ] && [ $GIS_OPT_B = "1" ]
+then
+# Growth does nothing in boolean mode.
+ exit 0
+fi
+
+#check if INPUT file exists
+#if test -f $LOCATION/cell/$GIS_OPT_INPUT
+if [ -z `g.findfile elem=cell file="$GIS_OPT_INPUT" | grep ^file | cut -f2 -d=` ] ; then
+    echo "<$GIS_OPT_INPUT> does not exist! Aborting."
+    exit 1
+fi
+
+INPUT=$GIS_OPT_INPUT
+output=$GIS_OPT_OUTPUT
+
+# Decide what value for capacity to use.
+if [ $GIS_OPT_CAPACITY ]
+then
+	capacity=$GIS_OPT_CAPACITY
+fi
+if [ $GIS_OPT_CAPACITY_map ]
+then
+	if [ -z `g.findfile elem=cell file="$GIS_OPT_CAPACITY_map | grep ^file | cut -f2 -d=` ] ; then
+    	echo "<$GIS_OPT_CAPACITY_map> does not exist! Aborting."
+    	exit 1
+    else
+    	capacity=$GIS_OPT_CAPACITY_map
+	fi
+fi
+
+# Decide what value for growth to use.
+growth=$GIS_OPT_GROWTH
+if [ $GIS_OPT_GROWTH_map ]
+then
+	if [ -z `g.findfile elem=cell file="$GIS_OPT_GROWTH_map | grep ^file | cut -f2 -d=` ] ; then
+    	echo "<$GIS_OPT_GROWTH_map> does not exist! Aborting."
+    	exit 1
+	else
+		growth=$GIS_OPT_GROWTH_map
+	fi
+fi
+
+echo "$INPUT $output $capacity $GIS_OPT_FUNCTION $growth"
+
+type=`r.info -t map=$INPUT`
+type=`echo $type | sed -e 's/datatype=//'`
+
+case "$GIS_OPT_FUNCTION" in
+	"beverton")
+		if [ $capacity ]
+		then
+			r.mapcalc "$output=($INPUT * $growth) / (1 + ((($growth - 1) / $capacity) * $INPUT))"
+
+		else
+			echo "Beverton-Holt stock recruitment growth needs capacity value"
+		fi
+		;;
+	"ricker")
+		if [ $capacity ]
+		then
+			r.mapcalc "$output=$INPUT * exp($growth * (1 - ($INPUT / $capacity)))"
+		else
+			echo "Ricker curve growth needs capacity value"
+		fi
+		;;
+	"wang")
+		if [ $capacity ]
+		then
+			r.mapcalc "$output = eval(t1=$INPUT/$capacity, $capacity*($growth*(t1^2)) / (1+(($growth-1)*t1^2)))"
+		else
+			echo "Wang allee growth needs capacity value"
+		fi
+		;;
+	"keitt")
+		if [ $capacity & $threshold ]
+		then
+			r.mapcalc "$output = eval(t1=$INPUT/$capacity, $growth*t1*(($capacity-t1)/$capacity)*((t1-$threshold)/$capacity))"
+		else
+			echo "Keitt allee growth needs capacity and threshold value"
+		fi
+		;;
+	"skellam"|*)
+		if [ $GIS_OPT_FUNCTION != "skellam" ]
+		then
+			echo "Unknown growth function \"$GIS_OPT_FUNCTION\""
+		fi
+		
+		if [ $capacity ]
+		then
+			r.mapcalc "$GIS_OPT_OUTPUT = eval(t1=(1 - ($GIS_OPT_INPUT / $capacity)), $GIS_OPT_INPUT + ($GIS_OPT_INPUT * $GIS_OPT_GROWTH * t1) )"
+		else
+			echo "Warning: Skellam growth will be unbounded due to lack of capacity value."
+			r.mapcalc "$GIS_OPT_OUTPUT = $GIS_OPT_INPUT + ($GIS_OPT_INPUT * $GIS_OPT_GROWTH)"
+		fi
+		;;
+esac
+
+if [ $type = "CELL" ]
+then
+	r.mapcalc "$GIS_OPT_OUTPUT = int($GIS_OPT_OUTPUT)"
+elif [ $type = "FCELL" ]
+then
+	r.mapcalc "$GIS_OPT_OUTPUT = float($GIS_OPT_OUTPUT)"
+fi
+
+#echo "Done."

@@ -1,0 +1,122 @@
+#!/usr/bin/env python2.4
+""" 
+GrassMap module. Part of MDiG - Modular Dispersal in GIS
+Copyright 2006, Joel Pitt
+"""
+
+import logging
+
+import MDiGConfig
+import GRASSInterface
+
+class GrassMap:
+	"""
+	GrassMap - encapsulates a map object, generating/refreshing it as needed
+	"""
+	
+	def __init__(self,xml_node=None,filename=None):
+		# Get the logger object
+		self.log = logging.getLogger("mdig.map")
+		# Set the xml_node if one exists for this map
+		self.xml_node = xml_node
+		# Set the filename is one exists
+		self.filename = filename
+
+		# Initialise values
+		self.map_type=None # type of map: raster or vector
+		self.xml_map_type=None # type of map as defined by xml
+		self.value=None # For maps that are just a constant value or for a mapcalc expression
+		self.ready=False # Is the map ready for use?
+		self.refresh=False # Should the map be refreshed any time someone attempts to obtain the filename?
+		self.temporary = True # Should this map be deleted on quit?
+	
+		mdig_config = MDiGConfig.getConfig()
+		
+		if self.xml_node is not None:
+			# Read xml settings if this map is based on an xml node
+			self._readXML()
+		elif self.filename is not None:
+			# If a filename was passed, check it's type and if it exists
+			self.map_type = GRASSInterface.getG().checkMap(self.filename)
+			if self.map_type is None:
+				# ... raise an exception if it doesn't
+				raise MapMissingException([self.filename])
+		
+		if self.xml_map_type in ["map",None]:
+			# Only maps specified in xml that are not existing maps
+			# are temporary by default
+			self.temporary = False
+		
+	def _readXML(self):
+		"""
+		Parse map node XML
+		"""
+		for node in self.xml_node:
+			# If node is "sites" then it contains a list of coordinates
+			if node.tag == "sites":
+				self.xml_map_type = "sites"
+				self.value=[]
+				for s in node:
+					x=int(s.attrib["x"])
+					y=int(s.attrib["y"])
+					if "count" in s.attrib.keys():
+						count=float(s.attrib["count"])
+					else:
+						count=1
+					self.value.append( (x,y,count) )
+			# If node is "map" it contains the name of an existing map
+			elif node.tag == "map":
+					
+				self.xml_map_type="name"
+				self.value=node.text
+				self.filename = node.text
+				# Don't need to check map exists because it is done in __init__
+			
+			# If node is "value" it creates a raster map with a constant value
+			elif node.tag == "value":
+				self.xml_map_type="value"
+				self.value=node.text
+				
+			# If node is "mapcalc" it computes the result of a mapcalc expression
+			elif node.tag == "mapcalc":
+				self.xml_map_type="mapcalc"
+				self.value=node.text
+				if 'refresh' in node.attrib.keys():
+					if lower(node.attrib['refresh']) == "true":
+						self.refresh = True
+
+	def changeMapType(self,maptype,value):
+		"""
+		Convert map between raster/vector (not implemented)
+		"""
+		# TODO implement conversion between raster/vector
+		raise NameError, "changeMapType: Method not implemented"
+			
+	def getMapFilename(self):
+		"""
+		Retrieve filename for the map. If this is the first time retrieving the
+		map filename, or if the map is set to refresh itself every time it is
+		retrieved, then generate it.
+		"""
+		if self.filename is None or self.refresh:
+			# If the map needs to be refreshed and has already been initiated
+			# then destroy the old map...
+			if self.refresh and self.ready:
+				GRASSInterface.getG().destructMap(self.filename)
+			
+			self.filename, self.map_type = GRASSInterface.getG().initMap(self)
+			self.ready = True
+		return self.filename
+	
+	def cleanUp(self):
+		"""
+		Just removes map if it is temporary
+		"""
+		if self.temporary:
+			GRASSInterface.getG().destructMap(self.filename)
+
+class MapMissingException(Exception):
+	def __init__(self,maps):
+		self.missing_maps = maps
+
+	

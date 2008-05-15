@@ -1,0 +1,160 @@
+#!/usr/bin/env python2.4
+""" MDiGConfig class
+
+MDiGConfig contains config information for the command line options used and loads information
+from ~/.mdig.rc
+
+Copyright 2006, Joel Pitt
+
+"""
+
+import os
+import sys
+import pdb
+import logging
+
+# ConfigObj from http://www.voidspace.org.uk/python/configobj.html
+sys.path.append(os.path.join(sys.path[0], 'support'))
+from configobj import ConfigObj
+
+if sys.platform == "win32":                # on a Windows port
+	try:
+		from win32com.shell import shellcon, shell
+		home_dir = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0);
+		# create mdig path if necessary
+		home_dir = os.path.join(home_dir,"mdig");
+		if not os.path.isdir(home_dir):
+			os.mkdir(home_dir);
+		
+	except ImportError:
+		raise ImportError, "The win32com module could not be found"
+else:                                      # else on POSIX box
+	home_dir = os.path.expanduser("~")
+
+mdig_config = None
+
+def getConfig():
+	global mdig_config
+	if mdig_config is None:
+		mdig_config = MDiGConfig()
+		logging.getLogger("mdig.config").debug("Created new MDiGConfig instance")
+	return mdig_config
+
+# Get Home dir regardless of OS and use sensible value within Windows
+def getHomeDir() :
+    if sys.platform != 'win32' :
+        return os.path.expanduser( '~' )
+
+    def valid(path) :
+        if path and os.path.isdir(path) :
+            return True
+        return False
+    def env(name) :
+        return os.environ.get( name, '' )
+
+    homeDir = env( 'USERPROFILE' )
+    if not valid(homeDir) :
+        homeDir = env( 'HOME' )
+        if not valid(homeDir) :
+            homeDir = '%s%s' % (env('HOMEDRIVE'),env('HOMEPATH'))
+            if not valid(homeDir) :
+                homeDir = env( 'SYSTEMDRIVE' )
+                if homeDir and (not homeDir.endswith('\\')) :
+                    homeDir += '\\'
+                if not valid(homeDir) :
+                    homeDir = 'C:\\'
+    return homeDir
+ 
+class MDiGConfig(ConfigObj):
+	
+	# using configobj interface:
+	# use has_key("test") to see if config key exists
+	# write to write to a file.
+
+	config_file = ".mdigrc"
+	config_path = None
+	
+	show_monitor = False
+	overwrite_flag = False
+	DEBUG = 0
+	
+	base_dir = None # root directory for all output
+	
+	analysis_step = None
+	analysis_lifestage = None
+	analysis_command = None
+	analysis_dir = "analysis" # dir for analysis results
+	prob_envelope_only = False
+	combined_analysis = False
+	analysis_filename = None
+	analysis_print_time = False
+	analysis_add_to_xml = True
+	analysis_cmd_file = None
+	
+	maps_dir = "maps" # archived maps dir
+	output_dir = "output"
+	
+	time = None
+	
+	model_file = None
+	action_keyword = None
+
+	# Admin tools
+	remove_null = False
+	generate_null = False
+	check_maps = False
+	move_mapset = None
+	##
+
+	rerun_instances = False
+	check_model = True
+    
+	def __init__(self):
+		if os.path.isfile(self.config_file):
+			self.config_path="./"
+		else:
+			self.config_path=home_dir
+		ConfigObj.__init__(self,"/".join([self.config_path,self.config_file]))
+
+		# setup msys directory if necessary
+		if sys.platform == 'win32' and self.has_key("MSYS_BIN"):
+		    os.environ["PATH"] += ";" + self["MSYS_BIN"]
+
+	
+	def setBaseDir(self,_base):
+		base_dir=_base
+		self.makepaths()
+		
+	def makepaths(self):
+		if self.base_dir is None:
+			base_d = './'
+		else:
+			base_d = self.base_dir
+		filename = os.path.join(base_d, self.analysis_dir)
+		makepath(filename)
+		filename = os.path.join(base_d, self.maps_dir)
+		makepath(filename)
+		filename = os.path.join(base_d, self.output_dir)
+		makepath(filename)
+
+def makepath(path):
+
+    """ creates missing directories for the given path and
+        returns a normalized absolute version of the path.
+
+    - if the given path already exists in the filesystem
+      the filesystem is not modified.
+
+    - otherwise makepath creates directories along the given path
+      using the dirname() of the path. You may append
+      a '/' to the path if you want it to be a directory path.
+
+    from holger@trillke.net 2002/03/18
+    """
+
+    from os import makedirs
+    from os.path import normpath,dirname,exists,abspath
+
+    dpath = normpath(path)
+    if not exists(dpath): makedirs(dpath)
+    return normpath(abspath(path))

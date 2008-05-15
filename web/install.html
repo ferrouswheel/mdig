@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<meta name="Generator" content="Microsoft Word 12 (filtered)">
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:0 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:10.0pt;
+	margin-left:0cm;
+	line-height:115%;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+h1
+	{mso-style-link:"Heading 1 Char";
+	margin-right:0cm;
+	margin-left:0cm;
+	font-size:24.0pt;
+	font-family:"Times New Roman","serif";}
+h2
+	{mso-style-link:"Heading 2 Char";
+	margin-right:0cm;
+	margin-left:0cm;
+	font-size:18.0pt;
+	font-family:"Times New Roman","serif";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.Heading1Char
+	{mso-style-name:"Heading 1 Char";
+	mso-style-link:"Heading 1";
+	font-family:"Times New Roman","serif";
+	font-weight:bold;}
+span.Heading2Char
+	{mso-style-name:"Heading 2 Char";
+	mso-style-link:"Heading 2";
+	font-family:"Times New Roman","serif";
+	font-weight:bold;}
+span.twikinewlink
+	{mso-style-name:twikinewlink;}
+.MsoChpDefault
+	{font-size:10.0pt;}
+@page Section1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 72.0pt 72.0pt 72.0pt;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ ol
+	{margin-bottom:0cm;}
+ul
+	{margin-bottom:0cm;}
+-->
+</style><title>Installing MDiG and basic use</title><meta content="Joel Pitt" name="author"></head>
+<body link="blue" vlink="purple">
+
+<div class="Section1">
+
+<p class="MsoNormal" style="line-height: normal;"><b><span style="font-size: 24pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">Install from scratch for non-developers </span></b></p>
+
+<ol start="1" type="1">
+ <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">Download <a href="http://fruitionnz.com/mdig/mdig-complete-v0.1.exe" target="_top">mdig-install-v0.1.exe</a> [~50 MB] and <a href="http://fruitionnz.com/mdig/python-and-tcl.exe" target="_top">python-and-tcl.exe</a> [~40 MB].</span></li><li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">To
+install you'll need approximately 520 MB space free on your HDD,
+including space for the downloaded archives and install programs (these
+can be deleted afterwards however).<br></span></li>
+ <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">Run python-and-tcl.exe - extract to
+     a temporary directory. Go to that directory. </span></li>
+ <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">Install Python (run
+     python-2.5.2.msi) to c:\python25 </span></li>
+ <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">Install Python packages.
+     PIL-1.1.6.win32-py2.5, pywin32-210.win32-py2.5, lxml-1.3.2.win32-py2.5.
+     Default install options should be fine, as they automatically detect the
+     python directory. When installing pywin32, check the end result (if any),
+     it may say it can't find mfc71.dll, in which case, this file (included
+     with python-and-tcl.exe) needs to be copied to c:\windows\system32. </span></li>
+ <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">Install ActiveState TCL (run
+     ActiveTcl8.4.18.0.284097-win32-ix86-threaded.exe). </span></li>
+ <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">Run mdig-package-v0.1.eve, extract
+     to c:\ (or elsewhere) it will create a directory mdig-complete, let us
+     call the path to this directory $MDIGROOT in future discussion (so
+     $MDIGROOT if installed to c:\ would equal c:\mdig-complete). </span></li>
+</ol>
+
+<p class="MsoNormal" style="line-height: normal;"><a name="Usage"></a><b><span style="font-size: 18pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">Usage </span></b></p>
+
+<ol start="1" type="1">
+ <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">Go to Start-&gt;run, enter
+     "cmd" and a command line should pop up. </span></li>
+ <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">change to the $MDIGROOT directory,
+     e.g. cd $MDIGROOT </span></li>
+ <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">The first time you start GRASS, you
+     probably want to use the GUI. This is easier to use for creating new
+     locations, but to run grass you'll need to use the text console. How to
+     create locations: </span></li>
+ <ol start="1" type="1">
+  <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">Run "grass63.bat -tcltk"
+      (to quit, type exit, answer y to "Terminate Batch Job").
+      "-tcltk" indicates you want to run the GUI. </span></li>
+  <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">a window should pop up. enter
+      $MDIGROOT/gisdata as the "gis data directory" (or copy
+      $MDIGROOT/gisdata to where you want to store grass gis files and use this
+      new path). This data directory is where GRASS stores all it's gis data,
+      metadata, projection information etc. You shouldn't store other types of
+      GIS data in this directory, as it'll quickly become confusing. Think of
+      it as a repository of information just for GRASS/MDiG. You can import GIS
+      data from other systems into this directory later. </span></li>
+  <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">you should now see a project
+      location "nzmg" - this is a predefined location with projection
+      and datum information for the New Zealand Mapping Grid. It also has one
+      mapset... </span></li>
+  <ul type="square">
+   <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">A word about locations/mapsets
+       etc. The database is the directory to store GIS data in. Data has to be
+       here for GRASS to access it, but there are commands for importing GIS
+       data from elsewhere. The location "nzmg" defines the
+       projection and geographic datum. Maps that are imported between
+       locations are automatically projected, and certain types of external GIS
+       files are projected when imported too. Each mapset is series of related
+       maps. Usually the PERMANENT mapset is used for the original copies of
+       source data maps, and other mapsets are created for each project (maps
+       from each mapset can be accessed regardless of the working mapset, but
+       the working mapset will be checked first. </span></li>
+  </ul>
+  <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">To create a new location select
+      one of the appropriate buttons under "Define new location
+      with..." </span></li>
+ </ol>
+ <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">To run mdig, close the GRASS GUI,
+     and run GRASS again with "grass63.bat -text".</span><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;"><img style="width: 669px; height: 337px;" alt="" src="usage-run-grass.PNG"></span></li><li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">You will now be asked to enter the location - to use the predefined NZMG location, enter "nzmg"
+in location, "PERMANENT" in mapset and $MDIGROOT/gisdata for database.
+Then push escape and then enter to continue. If you've already run
+grass, these should be filled out with the last used details.<img style="width: 654px; height: 337px;" alt="" src="usage-set-location.PNG"></span></li><li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">This should now start GRASS in
+     console mode. From here change to the $MDIGROOT\mdig directory (e.g.
+     "cd c:\mdig-complete\mdig"). Then run "mdig.py".
+     Without any options, it will show the command line format/help. If it
+     runs, then python is correctly installed in the path.<img style="width: 667px; height: 495px;" alt="" src="usage-run-mdig.PNG"> </span></li>
+ <li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">An example spread model is defined
+     in $MDIGROOT\mdig\test.xml. To run it, run "mdig.py run
+     test.xml" - if it complains about anything, then please rerun with
+     "mdig.py run -D test.xml" (-D outputs debugging information) and
+     send the the error output to Joel.</span></li><li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">To
+get help for an individual action, you type "mdig.py &lt;action&gt;
+--help" and replace &lt;action&gt; by the action you are interested in.</span></li><li class="MsoNormal" style="line-height: normal;"><span style="font-size: 12pt; font-family: &quot;Times New Roman&quot;,&quot;serif&quot;;">To display the output of the simulation as it's running, use the -m flag with the <span style="font-weight: bold;">run</span> action. This will pop up a new window that gets updated with the latest map after each time-step.</span></li>
+</ol>
+
+<p class="MsoNormal">&nbsp;</p>
+
+</div>
+
+</body></html>

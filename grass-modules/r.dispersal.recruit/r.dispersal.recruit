@@ -1,0 +1,121 @@
+#!/bin/sh
+#
+############################################################################
+#
+# MODULE:	r.dispersal.recruit
+# AUTHOR(S):	Joel Pitt
+# PURPOSE:	
+#
+# COPYRIGHT:	(C) 2001,2004,2005 by the GRASS Development Team
+#
+#		This program is free software under the GNU General Public
+#		License (>=v2). Read the file COPYING that comes with GRASS
+#		for details.
+#
+#############################################################################
+
+
+#%Module
+#% description: Recruit individuals from one lifestage to another with percentage mortality
+#%End
+#%option
+#% key: from
+#% gisprompt: old,cell,raster
+#% type: string
+#% description: Raster map to take individuals from
+#% required : yes
+#%end
+#%option
+#% key: to
+#% gisprompt: cell,raster
+#% type: string
+#% description: Raster map to deliver individuals to
+#% required : yes
+#%end
+#%option
+#% key: mortalitymap
+#% gisprompt: old,cell,raster
+#% type: string
+#% description: Percentage mortality on recruitment (with values 0-100)
+#% required : no
+#%end
+#%option
+#% key: mortality
+#% type: double
+#% description: Percentage mortality on recruitment
+#% required : no
+#%end
+#%flag
+#% key: o
+#% description: overwrite output (does nothing, only for r.dispersal support)
+#%end
+
+if test "$GISBASE" = ""; then
+ echo "You must be in GRASS GIS to run this program." >&2
+ exit 1
+fi
+
+if [ "$1" != "@ARGS_PARSED@" ] ; then
+  exec g.parser "$0" "$@"
+fi
+     
+eval `g.gisenv`
+: ${GISBASE?} ${GISDBASE?} ${LOCATION_NAME?} ${MAPSET?}
+LOCATION=$GISDBASE/$LOCATION_NAME/$MAPSET
+
+# what to do in case of user break:
+exitprocedure()
+{
+ echo "User break!"
+ #shall we delete any TMP files?
+ exit 1
+}
+# shell check for user break (signal list: trap -l)
+trap "exitprocedure" 2 3 15
+
+program=`basename $0`
+
+#test:
+if [ ! $GIS_OPT_FROM ]
+then
+ echo "Please provide a from name"
+ exit 1
+fi
+if [ ! $GIS_OPT_TO ]
+then
+ echo "Please provide a to name"
+ exit 1
+fi
+
+#check if input file exists
+#if test -f $LOCATION/cell/$GIS_OPT_FROM
+if [ -z `g.findfile elem=cell file="$GIS_OPT_FROM" | grep ^file | cut -f2 -d=` ] ; then
+    echo "<$GIS_OPT_FROM> does not exist! Aborting."
+    exit 1
+fi
+
+if [ $GIS_OPT_MORTALITY ]
+then
+	MORT=$GIS_OPT_MORTALITY
+elif [ $GIS_OPT_MORTALITYMAP ]
+then
+	MORT=$GIS_OPT_MORTALITYMAP
+fi
+
+if [ ! $MORT ]
+then
+	echo "No mortality percentage given, assuming none."
+	MORT="0.0"
+fi
+
+tempfile=r.dispersal.recruit.temp
+
+if [ -z `g.findfile elem=cell file="$GIS_OPT_TO" | grep ^file | cut -f2 -d=` ] ; then
+	r.mapcalc "$GIS_OPT_TO = ($GIS_OPT_FROM * $MORT)"
+else
+	r.mapcalc "$GIS_OPT_TO = if (isnull($GIS_OPT_TO), ($GIS_OPT_FROM * $MORT), $GIS_OPT_TO + ($GIS_OPT_FROM * $MORT)"
+fi
+r.mapcalc "$GIS_OPT_FROM = if($GIS_OPT_TO, null(), $GIS_OPT_FROM)"
+
+
+
