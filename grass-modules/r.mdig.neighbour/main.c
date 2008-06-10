@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- * MODULE:       r.dispersal.neighbour
+ * MODULE:       r.mdig.neighbour
  * AUTHOR(S):    Joel Pitt
  * PURPOSE:      Spreads present cells to neighbours. 
  *

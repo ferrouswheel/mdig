@@ -1,6 +1,6 @@
 MODULE_TOPDIR = ../../..
 
-PGM=r.dispersal.survival
+PGM=r.mdig.survival
 
 include $(MODULE_TOPDIR)/include/Make/Script.make
 

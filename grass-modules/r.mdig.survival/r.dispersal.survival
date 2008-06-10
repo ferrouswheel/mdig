@@ -2,7 +2,7 @@
 #
 ############################################################################
 #
-# MODULE:	r.dispersal.survival
+# MODULE:	r.mdig.survival
 # AUTHOR(S):	Joel Pitt
 # PURPOSE:	
 #
@@ -107,7 +107,7 @@ if [ -z `g.findfile elem=cell file="$GIS_OPT_INPUT" | grep ^file | cut -f2 -d=` 
     exit 1
 fi
 
-#TEMP_FILE_NAME=r.dispersal.survival.temp
+#TEMP_FILE_NAME=r.mdig.survival.temp
 echo GRASS_RND_SEED=$GIS_OPT_SEED
 export GRASS_RND_SEED=$GIS_OPT_SEED
 echo r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"

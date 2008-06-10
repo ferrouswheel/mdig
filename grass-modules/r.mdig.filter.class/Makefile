@@ -1,6 +1,6 @@
 MODULE_TOPDIR = ../../..
 
-PGM=r.dispersal.filter.class
+PGM=r.mdig.filter.class
 
 include $(MODULE_TOPDIR)/include/Make/Script.make
 

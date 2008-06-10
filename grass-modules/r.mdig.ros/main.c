@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- * MODULE:       r.dispersal.ros
+ * MODULE:       r.mdig.ros
  * AUTHOR(S):    Joel Pitt
  * PURPOSE:      Calculate the rate of spread in radial arcs, or
  *               in a specified direction

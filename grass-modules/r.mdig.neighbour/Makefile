@@ -1,6 +1,6 @@
 MODULE_TOPDIR = ../../..
 
-PGM = r.dispersal.neighbour
+PGM = r.mdig.neighbour
 
 LIBES = $(DISPLAYLIB) $(RASTERLIB) $(GISLIB)
 DEPENDENCIES = $(DISPLAYDEP) $(RASTERDEP) $(GISDEP)

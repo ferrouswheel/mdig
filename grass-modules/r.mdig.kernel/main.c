@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- * MODULE:       r.dispersal.kernel
+ * MODULE:       r.mdig.kernel
  * AUTHOR(S):    Joel Pitt
  * PURPOSE:      Spreads present cells at random to remote sites. 
  *

@@ -2,7 +2,7 @@
 #
 ############################################################################
 #
-# MODULE:	r.dispersal.filter.class
+# MODULE:	r.mdig.filter.class
 # AUTHOR(S):	Joel Pitt
 # PURPOSE:	
 #
@@ -94,10 +94,10 @@ if [ -z `g.findfile elem=cell file="$GIS_OPT_input" | grep ^file | cut -f2 -d=` 
     exit 1
 fi
 
-TEMP_FILE_NAME=r.dispersal.filter.class.temp
+TEMP_FILE_NAME=r.mdig.filter.class.temp
 #echo "Locating and filtering input values in NULL areas..."
 r.recode input=$GIS_OPT_filter output=$TEMP_FILE_NAME < $GIS_OPT_recode
-r.dispersal.filter.maxpop input=$GIS_OPT_input output=$GIS_OPT_output filter=$TEMP_FILE_NAME
+r.mdig.filter.maxpop input=$GIS_OPT_input output=$GIS_OPT_output filter=$TEMP_FILE_NAME
 g.remove rast=$TEMP_FILE_NAME > /dev/null
 
 #echo "Done."

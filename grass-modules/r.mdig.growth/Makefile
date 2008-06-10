@@ -1,6 +1,6 @@
 MODULE_TOPDIR = ../../..
 
-PGM=r.dispersal.growth
+PGM=r.mdig.growth
 
 include $(MODULE_TOPDIR)/include/Make/Script.make
 

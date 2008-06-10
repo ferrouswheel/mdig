@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- * MODULE:       r.dispersal.stats
+ * MODULE:       r.mdig.stats
  * AUTHOR(S):    Joel Pitt
  * PURPOSE:      Find distances between present cells in two raster maps,
  * skewness of distance (and variance of skew).

@@ -2,7 +2,7 @@
 #
 ############################################################################
 #
-# MODULE:	r.dispersal.recruit
+# MODULE:	r.mdig.recruit
 # AUTHOR(S):	Joel Pitt
 # PURPOSE:	
 #
@@ -108,7 +108,7 @@ then
 	MORT="0.0"
 fi
 
-tempfile=r.dispersal.recruit.temp
+tempfile=r.mdig.recruit.temp
 
 if [ -z `g.findfile elem=cell file="$GIS_OPT_TO" | grep ^file | cut -f2 -d=` ] ; then
 	r.mapcalc "$GIS_OPT_TO = ($GIS_OPT_FROM * $MORT)"

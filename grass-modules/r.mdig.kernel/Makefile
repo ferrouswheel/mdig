@@ -1,6 +1,6 @@
 MODULE_TOPDIR = ../../..
 
-PGM = r.dispersal.kernel
+PGM = r.mdig.kernel
 
 LIBES = -L/mingw/GnuWin32/lib/ $(DISPLAYLIB) $(RASTERLIB) $(GISLIB) -lm -lgsl -lgslcblas
 DEPENDENCIES = $(DISPLAYDEP) $(RASTERDEP) $(GISDEP)
