@@ -1,0 +1,10 @@
+To compile modules
+
+$ make MODULE_TOPDIR=/path/to/grass/src
+
+Then from /path/to/grass/src
+
+$ sudo make install
+
+to install the modules with the main grass distribution.
+

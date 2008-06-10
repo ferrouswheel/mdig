@@ -1,15 +1,16 @@
 MODULE_TOPDIR = ../..
 
 SUBDIRS = \
-	r.dispersal.neighbour \
-	r.dispersal.kernel \
-	r.dispersal.growth \
-	r.dispersal.survival \
-	r.dispersal.recruit \
-	r.dispersal.filter.maxpop \
-	r.dispersal.filter.class \
-	r.dispersal.stats \
-	r.dispersal.ros
+	r.mdig.neighbour \
+	r.mdig.kernel \
+	r.mdig.growth \
+	r.mdig.survival \
+	r.mdig.recruit \
+	r.mdig.filter.maxpop \
+	r.mdig.filter.class \
+	r.mdig.stats \
+	r.mdig.ros \
+	r.mdig.localspread
 		
 include $(MODULE_TOPDIR)/include/Make/Dir.make
 
