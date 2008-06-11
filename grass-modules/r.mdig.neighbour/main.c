@@ -387,7 +387,7 @@ main(int argc, char *argv[])
 	shape   = atoi(n_shape->answer);
 	spread_proportion = atof(n_proportion->answer);
 	is_boolean = (f_bool->answer);
-	if (f_overwrite->answer) check_zero=1;
+	if (f_check_zero->answer) check_zero=1;
 
 	/* find map in mapset */
 	mapset = G_find_cell2 (name, "");
