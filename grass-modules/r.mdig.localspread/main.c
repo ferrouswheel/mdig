@@ -22,7 +22,7 @@
 
 #include "is_present.h"
 
-#define DEBUG
+//#define DEBUG
 
 int nrows, ncols;
 void* in_rast;
@@ -86,9 +86,9 @@ void print_rows(output_row* p, int ncols)
 // Get spread area, needed to disperse individuals
 // across an area evenly
 #ifdef DEBUG
-#define WITHIN_DIAMETER float dist = sqrt((i*ewres)*(i*ewres) + (j*nsres)*(j*nsres) ); printf("%.2f,",dist); if (dist < radius) { count++; found = 1; }
-#elif
-#define WITHIN_DIAMETER float dist = sqrt((i*ewres)*(i*ewres) + (j*nsres)*(j*nsres) ); if (dist < radius) { count++; found = 1; }
+#define WITHIN_DIAMETER float dist = sqrt((i*ewres)*(i*ewres) + (j*nsres)*(j*nsres) ); printf("%.2f,",dist); if (dist <= radius) { count++; found = 1; }
+#else
+#define WITHIN_DIAMETER float dist = sqrt((i*ewres)*(i*ewres) + (j*nsres)*(j*nsres) ); if (dist <= radius) { count++; found = 1; }
 #endif
 int get_spread_area(int radius) {
     // TODO: this is inefficient, maybe calculate area using
@@ -191,7 +191,7 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
 	
 	// go back as many output rows as necessary to get the
 	// furthest possible for spread.
-	while (r < (spread_value / nsres)) {
+	while (r <= (spread_value / nsres)) {
 	    if (!f_row->prev) break;
 	    f_row = f_row->prev;
 	    r++;
@@ -210,7 +210,7 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
 		ns_d *= ns_d;
 		ew_d *= ew_d;
 		// if cell within spread_value
-		if (sqrt(ns_d + ew_d) < spread_value) {
+		if (sqrt(ns_d + ew_d) <= spread_value) {
 #ifdef DEBUG
 		    printf("d=%.f < spread value\n",sqrt(ns_d + ew_d));
 #endif
@@ -232,7 +232,7 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
 		}
 	    }
 	    // move output row fwd only if not the last row
-	    if (i < spread_value/nsres) {
+	    if (i <= spread_value/nsres) {
 		if (!f_row->next) {
 		    f_row->next = new_output_row(ncols,data_type);
 		    f_row->next->prev = f_row;
@@ -271,41 +271,238 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
 #endif
 }
 
-void d_calc(void* x, output_row* out, double spread_value, int col) {
-    DCELL d;
-    unsigned int i, j;
+void f_calc(FCELL* x, output_row* out, double spread_value, int col)
+{
+    FCELL c;
+    int i, j;
+    unsigned int individuals;
+    unsigned int mean_individuals;
+    unsigned int extra_individuals;
     int position;
-    double mean_individuals;
-    double individuals;
 
-    d = ((DCELL *) in_rast)[col];
+    num_spread_cells = get_spread_area(spread_value);
+
+    c = ((FCELL *) x)[col];
 
     if (is_boolean) {
-        mean_individuals = 1.0;
-        d = 1.0;
-        individuals	= 0.0;
+        mean_individuals = 1;
+        c = 1;
+        individuals	= 0;
     } else {
-        individuals = d * spread_proportion;
-        d -= individuals;
+        // How to spread c individuals?
+        // Try and do it evenly, but some will no doubt get
+        // more than others since we are dealing with integers.
+        // Alternative - for the moment extra_individuals
+        // will be assigned to center cell
+        individuals = c * spread_proportion;
+        c -= individuals;
         mean_individuals = individuals / num_spread_cells;
+        extra_individuals = individuals % num_spread_cells;
     }
 
+    if (mean_individuals) {
+	output_row* f_row;
+	int r = 0;
+
+	f_row = out;
+	
+	// go back as many output rows as necessary to get the
+	// furthest possible for spread.
+	while (r <= (spread_value / nsres)) {
+	    if (!f_row->prev) break;
+	    f_row = f_row->prev;
+	    r++;
+	}
+	// f_row is now r rows above the current row being processed.
+#ifdef DEBUG
+	printf("spread_value = %.2f, r = %d\n",spread_value,r);
+	printf("i=%d, max = %d", -r, (int) (spread_value/nsres));
+#endif
+	// move from r rows back, through current row, to future rows within spread_value
+	for (i=-r; i <= (int) (spread_value/nsres); i++) {
+	    for (j=-(int)(spread_value/ewres); j <= (spread_value/ewres); j++) {
+		double ns_d, ew_d;
+		ns_d = (i*nsres);
+		ew_d = (j*ewres);
+		ns_d *= ns_d;
+		ew_d *= ew_d;
+		// if cell within spread_value
+		if (sqrt(ns_d + ew_d) <= spread_value) {
+#ifdef DEBUG
+		    printf("d=%.f < spread value\n",sqrt(ns_d + ew_d));
+#endif
+		    position = col+j;
+                    // Check we are not outside the boundary of the region
+                    if ((position >= 0 ) && (position < ncols )) {
+#ifdef DEBUG
+			printf("in bounds\n");
+#endif
+                        if (is_boolean)
+                            ((FCELL*) f_row->outrast)[position] = (FCELL) 1;
+                        else
+                            if (G_is_c_null_value(f_row->outrast + position))
+                                ((FCELL*) f_row->outrast)[position] = mean_individuals;
+                            else
+                                ((FCELL*) f_row->outrast)[position] += mean_individuals;
+		    }
+
+		}
+	    }
+	    // move output row fwd only if not the last row
+	    if (i <= spread_value/nsres) {
+		if (!f_row->next) {
+		    f_row->next = new_output_row(ncols,data_type);
+		    f_row->next->prev = f_row;
+		}
+		f_row = f_row->next;
+
+	    }
+
+#ifdef DEBUG
+	    printf("\n");
+#endif
+
+	}
+        position = col;
+        if (is_boolean)
+            ((FCELL*) out->outrast)[position] = (FCELL) 1;
+        else
+            if (G_is_c_null_value(out->outrast + position))
+                ((FCELL*) out->outrast)[position] = c + extra_individuals;
+            else
+                ((FCELL*) out->outrast)[position] += c + extra_individuals;
+    } else {
+        position = col;
+
+        if (is_boolean)
+            ((FCELL*) out->outrast)[position] = (FCELL) 1;
+        else
+            if (G_is_c_null_value(out->outrast + position))
+                ((FCELL*) out->outrast)[position] = c + individuals;
+            else
+                ((FCELL*) out->outrast)[position] += c + individuals;
+    }
+
+#ifdef DEBUG
+	printf("\n");
+#endif
 }
 
-void f_calc(FCELL* x, output_row* out, double spread_value, int col) {
-    FCELL f;
-    unsigned int i, j;
+void d_calc(DCELL* x, output_row* out, double spread_value, int col)
+{
+    DCELL c;
+    int i, j;
+    unsigned int individuals;
+    unsigned int mean_individuals;
+    unsigned int extra_individuals;
     int position;
-    float mean_individuals;
-    float individuals;
 
-    f = ((FCELL *) x)[col];
+    num_spread_cells = get_spread_area(spread_value);
 
-    individuals = f * spread_proportion;
-    f -= individuals;
-    mean_individuals = individuals / num_spread_cells;
+    c = ((DCELL *) x)[col];
 
+    if (is_boolean) {
+        mean_individuals = 1;
+        c = 1;
+        individuals	= 0;
+    } else {
+        // How to spread c individuals?
+        // Try and do it evenly, but some will no doubt get
+        // more than others since we are dealing with integers.
+        // Alternative - for the moment extra_individuals
+        // will be assigned to center cell
+        individuals = c * spread_proportion;
+        c -= individuals;
+        mean_individuals = individuals / num_spread_cells;
+        extra_individuals = individuals % num_spread_cells;
+    }
 
+    if (mean_individuals) {
+	output_row* f_row;
+	int r = 0;
+
+	f_row = out;
+	
+	// go back as many output rows as necessary to get the
+	// furthest possible for spread.
+	while (r <= (spread_value / nsres)) {
+	    if (!f_row->prev) break;
+	    f_row = f_row->prev;
+	    r++;
+	}
+	// f_row is now r rows above the current row being processed.
+#ifdef DEBUG
+	printf("spread_value = %.2f, r = %d\n",spread_value,r);
+	printf("i=%d, max = %d", -r, (int) (spread_value/nsres));
+#endif
+	// move from r rows back, through current row, to future rows within spread_value
+	for (i=-r; i <= (int) (spread_value/nsres); i++) {
+	    for (j=-(int)(spread_value/ewres); j <= (spread_value/ewres); j++) {
+		double ns_d, ew_d;
+		ns_d = (i*nsres);
+		ew_d = (j*ewres);
+		ns_d *= ns_d;
+		ew_d *= ew_d;
+		// if cell within spread_value
+		if (sqrt(ns_d + ew_d) <= spread_value) {
+#ifdef DEBUG
+		    printf("d=%.f < spread value\n",sqrt(ns_d + ew_d));
+#endif
+		    position = col+j;
+                    // Check we are not outside the boundary of the region
+                    if ((position >= 0 ) && (position < ncols )) {
+#ifdef DEBUG
+			printf("in bounds\n");
+#endif
+                        if (is_boolean)
+                            ((DCELL*) f_row->outrast)[position] = (DCELL) 1;
+                        else
+                            if (G_is_c_null_value(f_row->outrast + position))
+                                ((DCELL*) f_row->outrast)[position] = mean_individuals;
+                            else
+                                ((DCELL*) f_row->outrast)[position] += mean_individuals;
+		    }
+
+		}
+	    }
+	    // move output row fwd only if not the last row
+	    if (i <= spread_value/nsres) {
+		if (!f_row->next) {
+		    f_row->next = new_output_row(ncols,data_type);
+		    f_row->next->prev = f_row;
+		}
+		f_row = f_row->next;
+
+	    }
+
+#ifdef DEBUG
+	    printf("\n");
+#endif
+
+	}
+        position = col;
+        if (is_boolean)
+            ((DCELL*) out->outrast)[position] = (DCELL) 1;
+        else
+            if (G_is_c_null_value(out->outrast + position))
+                ((DCELL*) out->outrast)[position] = c + extra_individuals;
+            else
+                ((DCELL*) out->outrast)[position] += c + extra_individuals;
+    } else {
+        position = col;
+
+        if (is_boolean)
+            ((DCELL*) out->outrast)[position] = (DCELL) 1;
+        else
+            if (G_is_c_null_value(out->outrast + position))
+                ((DCELL*) out->outrast)[position] = c + individuals;
+            else
+                ((DCELL*) out->outrast)[position] += c + individuals;
+    }
+
+#ifdef DEBUG
+	printf("\n");
+#endif
 }
 
 int main(int argc, char *argv[]) {
@@ -564,7 +761,9 @@ int main(int argc, char *argv[]) {
 
         }
 
+#ifdef DEBUG
 	print_rows(start_row,ncols);
+#endif
 	if (!current_row->next) {
 	    current_row->next = new_output_row(ncols,data_type);
 	    current_row->next->prev = current_row;
