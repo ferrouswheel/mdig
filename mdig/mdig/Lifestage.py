@@ -245,7 +245,8 @@ class Lifestage:
 
 	def cleanUpMaps(self):
 		for grassmap in self.initial_maps.values():
-			GRASSInterface.getG().destructMap(grassmap)
+			del grassmap
+            #GRASSInterface.getG().destructMap(grassmap)
 			
 	def updateXML(self):
 		self.xml_node.attrib["name"] = self.name

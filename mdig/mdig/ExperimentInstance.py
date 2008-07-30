@@ -182,6 +182,10 @@ class ExperimentInstance:
 
 			if str(t) not in previous_envelopes[ls[0]]: #TODO make it work with a list of lifestages
 				missing_years.append(t)
+			# check if map exists
+			else:
+				if GRASSInterface.getG().checkMap(previous_envelopes[ls[0]][str(t)]) is None:
+					missing_years.append(t)
 
 		return missing_years
 		
