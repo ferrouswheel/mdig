@@ -438,6 +438,9 @@ class GRASSInterface:
         
         if len(maps_to_combine) > 10000:
             self.log.warning("Probability envelope not deisgned for more than 10000 maps")
+        elif len(maps_to_combine) == 0: 
+            self.log.error("No maps provided for combining into probability envelope")
+            return None
         
         # Only do 100 maps at a time, since GRASS can only open so many files.
         max_maps = 100

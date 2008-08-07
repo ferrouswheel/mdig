@@ -882,40 +882,59 @@ class Experiment:
         if instance not in self.activeInstances:
             self.activeInstances.append(instance)
     
-    def intervalModulus(self, ls_id, t):
+    def intervalModulus(self, interval, t):
         """
         Check that modulus of value - start of simulation period is 0
         Used for checking whether a map should be output etc.
         """
-        interval = self.getMapOutputInterval(ls_id)
         if interval == 0:
             # If interval is zero we have to avoid divide by zero
             return 0
+        elif interval == -1:
+            # Always return 1 if there is not valid raster output interval
+            return 1
         period = self.getPeriod()
         multiple = (t - period[0]) / interval
         remainder = (t - period[0]) - (multiple * interval)
         return remainder
 
-    def mapYearGenerator(self, ls_id):
+    def intervalModulusByLifestage(self, ls_id, year):
+        """
+        Check that modulus of value - start of simulation period is 0
+        Used for checking whether a map should be output etc.
+        Get interval from lifestage
+        """
+        interval = self.getMapOutputInterval(ls_id)
+        return self.intervalModulus(interval, year)
+
+    def mapYearGenerator(self, ls_id, period=[]):
         """
         Generate years that maps are supposed to be generated for a given lifestage
         """
         interval = self.getMapOutputInterval(ls_id)
-        if interval > 0:
+        if interval <= 0:
+            return
+        if not period:
             period = self.getPeriod()
-            t = period[0]
-            while t <= period[1]:
-                yield t
-                t = t + interval
+        period = self.getPeriod()
+        t = period[0]
+        while t <= period[1]:
+            yield t
+            t = t + interval
         
     def getMapOutputInterval(self,ls_id):
         nodes = self.xml_model.xpath('/model/output/raster')
+            
         for n in nodes:
             ls_node = [ls for ls in n.getchildren() if ls.tag == "lifestage"]
-            if ls_node[0].text == ls_id:
+            if len(ls_node) > 1:
+                self.warning("More than 1 raster output, will only return "
+                        "interval the first.")
+            if ls_node[0].text.strip() == ls_id:
                 i_node = [i for i in n.getchildren() if i.tag == "interval"]
                 return int(i_node[0].text)
-        return 1
+        self.log.warning("No raster output for lifestage " + ls_id)
+        return -1
 
     def moveMapset(self, new_mapset):
         """
