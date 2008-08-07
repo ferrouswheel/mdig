@@ -260,6 +260,7 @@ class ExperimentInstance:
 	
 	def updateProbabilityEnvelope(self, ls, start, end):
 		
+        # Set the region in case it hasn't been yet
 		current_region = self.experiment.getRegion(self.r_id)
 		GRASSInterface.getG().setRegion(current_region)
 		

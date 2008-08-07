@@ -320,7 +320,10 @@ class GRASSInterface:
         name = region.getName()
         if name is not None:
             self.log.debug("Setting region to %s", name)
-            return self.runCommand('g.region region=%s' % name, ignoreOnFail=[256])
+            if self.runCommand('g.region region=%s' % name,
+                    ignoreOnFail=[256]) == 1:
+                self.log.error("Region doesn't exist")
+                sys.exit(1)
             
         else:
             extents = region.getExtents()
@@ -341,7 +344,10 @@ class GRASSInterface:
             res = region.getResolution()
             
             self.log.debug("Setting region using extents %s and res %f", extent_string, res)
-            return self.runCommand(command_string + extent_string + 'res=' + repr(res),ignoreOnFail=[256])
+            if self.runCommand(command_string + extent_string + 'res='
+                    + repr(res),ignoreOnFail=[256]) == 1:
+                self.log.error("Region couldn't be set")
+                sys.exit(1)
                     
     def getMapInfo(self,map_name):
         # Have to check all possible types of maps
