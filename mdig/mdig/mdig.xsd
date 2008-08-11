@@ -408,6 +408,7 @@
                             </xsd:complexType>
                         </xsd:element>
                     </xsd:sequence>
+                    <xsd:attribute name="ts" type="xsd:float"/>
                 </xsd:complexType>
             </xsd:element>
             

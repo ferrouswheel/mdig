@@ -364,6 +364,9 @@ class Replicate:
         was completed.
         """
         self.node.attrib['ts'] = repr(time.time())
+
+    def getTimeStamp(self):
+        return float(self.node.attrib['ts'])
     
     def addCompletedRasterMap(self,t,ls,file_name,interval=1):
         mdig_config = MDiGConfig.getConfig()

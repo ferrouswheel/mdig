@@ -9,6 +9,7 @@ import logging
 import shutil
 import re
 import os
+import time
 import pdb
 
 import lxml
@@ -169,18 +170,22 @@ class ExperimentInstance:
 
         return prob_env
                     
-    def areEnvelopesUpToDate(self, ls, start, end):
+    def areEnvelopesUpToDate(self, ls, start, end, force=False):
         previous_envelopes = self.getProbabilityEnvelopes()
         missing_years = {}
-        
-        # if there are no envelopes yet
-        if previous_envelopes is None:
+
+        envelopes_current = self.areEnvelopesNewerThanReplicates()
+        if not envelopes_current and not force:
+            self.log.warning("Envelopes are older than some replicates use -p to"
+                    " regenerate.")
+
+        # if there are no envelopes yet or we want to overwrite them 
+        if force or previous_envelopes is None:
             for l in ls:
                 missing_years[l] = [y for y in
                     self.experiment.mapYearGenerator(l, [start,end])]
             return missing_years
 
-        # otherwise
         for l in ls:
             interval = self.experiment.getMapOutputInterval(l)
             if interval < 0:
@@ -196,15 +201,21 @@ class ExperimentInstance:
                     missing_years[l].append(t)
                 else:
                     # yes... then check if map exists
-                    if GRASSInterface.getG().checkMap(previous_envelopes[l][str(t)]) is None \
-                        or not isEnvelopeNewerThanReplicates(previous_envelopes[l][str(t)]):
+                    if GRASSInterface.getG().checkMap(previous_envelopes[l][str(t)]) is None:
                         missing_years[l].append(t)
         return missing_years
 
-    def isEnvelopeNewerThanReplicates(self, env):
-        # TODO: envelopes are not up to date if older than the replicates
-        # Implement after Replicates are timestamped
+    def areEnvelopesNewerThanReplicates(self):
+        for i in self.replicates:
+            if i.getTimeStamp() > self.getEnvelopesTimeStamp():
+                return False
         return True
+
+    def getEnvelopesTimeStamp(self):
+        es = self.node.xpath('envelopes')
+        if es:
+            return float(es[0].attrib['ts'])
+        return 0
 
     def addAnalysisResult(self,ls_id,result):
         """
@@ -275,13 +286,14 @@ class ExperimentInstance:
         a.text = filename
         
     
-    def updateProbabilityEnvelope(self, ls, start, end):
+    def updateProbabilityEnvelope(self, ls, start, end, force=False):
         
         # Set the region in case it hasn't been yet
         current_region = self.experiment.getRegion(self.r_id)
         GRASSInterface.getG().setRegion(current_region)
         
-        missing_envelopes = self.areEnvelopesUpToDate(ls, start, end)
+        missing_envelopes = self.areEnvelopesUpToDate(ls, start, end,
+                force=force)
         if not missing_envelopes or not self.isComplete(): return
         
         for l in ls:
@@ -319,12 +331,13 @@ class ExperimentInstance:
                 if prob_env is not None:
                     self._addEnvelope(prob_env,l,t)
                     
-    def _addEnvelope(self, env_name, lifestage_id, time):
+    def _addEnvelope(self, env_name, lifestage_id, t):
         # Add envelope to completed/envelopes/lifestage[id=l]/envelope[t=t]
         
         es = self.node.find('envelopes')
         if es is None:
             es = lxml.etree.SubElement(self.node,'envelopes')
+        es.attrib['ts'] = repr(time.time())
             
         ls = es.xpath('lifestage[@id="%s"]' % lifestage_id)
         
@@ -335,11 +348,11 @@ class ExperimentInstance:
         else:
             ls = ls[0]
             
-        env = es.xpath('envelope[@time="%d"]' % time)
+        env = es.xpath('envelope[@time="%d"]' % t)
         if len(env) == 0:
             
             env = lxml.etree.SubElement(ls,'envelope')
-            env.attrib["time"] = repr(time)
+            env.attrib["time"] = repr(t)
             
         env.text = env_name
     

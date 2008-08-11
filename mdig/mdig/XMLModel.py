@@ -742,14 +742,15 @@ class Experiment:
             self.log.debug( "Updating prob. envelope for instance %s" % repr(i) )
             period = self.getPeriod()
             if time is None:
-                i.updateProbabilityEnvelope(ls, period[0], period[1])
+                i.updateProbabilityEnvelope(ls, period[0], period[1],
+                        force=force)
             else:
                 if time < 0:
                     time = time + period[1]
                 if time < period[0] or time > period[1]:
                     self.logger.error( "while creating probability envelope: time %d is outside of range [%d, %d]" % ( time, period[0], period[1] ) )
                     sys.exit(2)
-                i.updateProbabilityEnvelope(ls, time, time)
+                i.updateProbabilityEnvelope(ls, time, time, force=force)
                 
         
         
