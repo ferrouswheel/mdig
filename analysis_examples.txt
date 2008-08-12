@@ -1,0 +1,6 @@
+To work area of simulations (also can be used to work out whether the population
+dies out:
+
+-f area -t (not -c because this has to be per replicate)
+
+r.stats -c %0 | awk "BEGIN {notNULL = 0} /^[^*]/ {notNULL+=\$2} END {print notNULL}"

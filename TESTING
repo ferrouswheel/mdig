@@ -1,0 +1,9 @@
+Testing plan
+
+Create separate tests for framework and modules
+For modules, create before and after maps and make sure they have no difference,
+    implement as a shell script to be run within GRASS.
+For the framework, implement a GRASSInterface stub that behaves similarly, but
+doesn't actually run commands or require GRASS. Implement as Python. Will need
+to store a repository of maps that exist.
+

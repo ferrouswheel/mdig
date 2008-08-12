@@ -1,8 +1,19 @@
 #!/usr/bin/env python2.4
 """ 
+Copyright (C) 2008 Joel Pitt, Fruition Technology
 
-Copyright 2006, Joel Pitt
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import logging
@@ -14,19 +25,37 @@ import OutputFormats
 import GRASSInterface
 
 class Analysis:
+    """ Represents an analysis that is run across replicate maps.
+
+    @todo: Allow class to create new analyses.
+    @todo: Create AnalysisResult class.
+    @todo: Split and subclass Analysis into ReplicateAnalysis, and
+    EnvelopeAnalysis, UnifyReplicateAnalysis.
+    """
     
     def __init__(self, node):
+        # logger
         self.log = logging.getLogger("mdig.analysis")
+        # associated node in xml model tree
         self.xml_node = node
 
     def getCommand(self):
+        """ Get the name of the command this analysis runs
+
+        @return: Command name
+        """
+
         if "name" in self.xml_node.attrib.keys():
             return self.xml_node.attrib["name"]
         else:
             self.log.error('Analysis has no "name" attribute')
+        return None
 
     def getParams(self):
-        # recursively called when if(Not)PopulationBased nodes are encountered
+        """ Get parameters for analysis command.
+
+        @return: dictionary with parameter name keys and parameter values.
+        """
         nodes = self.xml_node.xpath("param|flag")
         
         params={}
@@ -50,6 +79,15 @@ class Analysis:
         return params
 
     def preRun(self,rep):
+        """ Set up environment so analysis can run without trouble
+
+        Removes the analysis output file if it already exists, but only if it is
+        set up to append to the output file. Otherwise the files are overwritten
+        anyway (assuming --o is set).
+
+        @todo: Check overwrite flag before overwrite. Throw AnalysisFileExists,
+        inherit from FileExists exception.
+        """
         if self.isRedirectedStdOut() and self.isAppend():
             fn = self._makeFilename(rep)
             try:
@@ -57,11 +95,20 @@ class Analysis:
             except (IOError, OSError):
                 pass
 
-    def run(self,in_name,out_name,rep,is_popn):
+    def run(self,in_name,rep):
+        """ Run the analysis on a replicate.
+
+        @param in_name: The name of the current map.
+        @param rep: The replicate to run on.
+
+        @todo: remove in_name as the output and use getPreviousMap once it's
+        implemented in replicate.
+        """
         p=self.getParams()
         
         ls_id = self.getLifestageID()
         
+        # fill in map parameters
         for p_name,val_tuple in p.items():
             value = val_tuple[0]
             if len(val_tuple) > 1:
@@ -72,6 +119,7 @@ class Analysis:
             if value == "currentMap":
                 p[p_name]=in_name
             elif value == "previousMap":
+                # TODO currently getPreviousMaps is broken
                 if a is not None:
                     p[p_name]=rep.getPreviousMap(ls_id,a)
                 else:
@@ -82,31 +130,45 @@ class Analysis:
                     return
             elif value == "initialMap":
                 p[p_name]=rep.getInitialMap(ls_id)
+        # put all the parameters and command into a command string
         cmd=self.createCommandString(p)
         
         fn = ""
+        # base_cmd has the input map parameter removed for recording
+        # in xml.
         base_cmd = ""
         if self.isRedirectedStdOut():
             fn = self._makeFilename(rep)
-            base_cmd = cmd.strip()
-            
+            # if generating a file for each time step then check file
+            # doesn't exist
+            if not self.isAppend() and os.exists(fn):
+                if not MDiGConfig().overwrite_flag:
+                    raise AnalysisOutputFileExists()
+                else:
+                    os.remove(fn)
+
+            # remove input map parameter from base_cmd
             res=re.search("(input=\w+)",base_cmd)
             if res is not None:
                 base_cmd = base_cmd.replace(res.groups()[0], "")
 
+        # if the analysis requires the timestep to be written/appended
+        # to the output file then do so
         if self.isInterval():
             fh = open(fn, 'a')
             fh.write('%d ' % rep.current_t)
             fh.close()
         
-        # create the filename
+        # add the output filename to the command
         if self.isAppend():
             cmd += " >> "
         else:
             cmd += " > "
             
+        # run command!
         GRASSInterface.getG().runCommand(cmd + fn)
             
+        # if a file was generated then add this to the replicate
         if self.isRedirectedStdOut():
             rep.addAnalysisResult(ls_id,(base_cmd,fn))
 
@@ -186,4 +248,9 @@ class Analysis:
                 cmd += "-" + p_name + " "
             else:
                 cmd += p_name + "=" + str(value) + " "
+        cmd.strip()
         return cmd
+
+class AnalysisOutputFileExists (Exception):
+    pass
+

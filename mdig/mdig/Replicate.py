@@ -22,6 +22,9 @@ import XMLModel
 class Replicate:
     """
     Replicate is a class for each replication simulated for an ExperimentInstance
+
+    @todo: load/store and use previous maps. getPreviousMap doesn't work as
+    intended.
     """
 
     def __init__(self,node,instance):
@@ -262,7 +265,7 @@ class Replicate:
                 self.log.log(logging.INFO, 'Interval %d - Running analyses',current_interval)
                 #pdb.set_trace()
                 for a in analyses:
-                    a.run(self.temp_map_names[ls_key][0], self.temp_map_names[ls_key][1], self, l.populationBased)
+                    a.run(self.temp_map_names[ls_key][0], self)
                 self.log.log(logging.INFO, 'Interval %d - Analyses complete',current_interval)
             
             self.fireTimeCompleted(t)
