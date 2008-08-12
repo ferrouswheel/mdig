@@ -476,6 +476,12 @@ def setupLogger():
     
     return logger
 
+# call graph
+#import pycallgraph
+#pycallgraph.settings['include_stdlib']=False
+#pycallgraph.start_trace()
 if __name__ == "__main__":
     main(sys.argv[1:])
+    #pycallgraph.make_dot_graph('test.png')
+
     
