@@ -59,6 +59,7 @@ enum { GENERAL, CAUCHY, EXPONENTIAL, LOG } distribution;
 double dist_a, dist_b, freq;
 double (*dist_function)(double, double, double)=NULL;
 long seed;
+unsigned int maturity_age;
 
 #define JUMP_INC 10000
 unsigned int jumps_count = 0, jumps_max = 0;
@@ -103,6 +104,21 @@ void expand_jump_array() {
 void calc(void* x, int col, int row) {
     int events = 0, i;
 
+    switch (data_type) {
+    case CELL_TYPE:
+	if (((CELL*)x)[col] < maturity_age) return;
+	break;
+    case FCELL_TYPE:
+	if (((FCELL*)x)[col] < maturity_age) return;
+	break;
+    case DCELL_TYPE:
+	if (((DCELL*)x)[col] < maturity_age) return;
+	break;
+    default:
+	G_fatal_error ("Unknown data_type");
+	break;
+    }
+
     events = get_number_of_events(UNIFORM_RANDOM, freq);
     total_counter += events;
     for (i=0; i < events; i++) {
@@ -117,8 +133,6 @@ void calc(void* x, int col, int row) {
         angle = UNIFORM_RANDOM * (2.0 * M_PI);
 
         // Divide by resolution so that distance is res independent
-        // This makes no difference for res 1.0 experiments luckily,
-        // otherwise I'd have to redo them all!
         a=(sin(angle) * dist)/ewres;
         b=(cos(angle) * dist)/nsres;
 
@@ -391,7 +405,8 @@ void process_jumps() {
 }
 
 void parse_options(int argc, char* argv[]) {
-    struct Option *input, *output, *o_dist, *o_freq, *o_dist_a, *o_dist_b, *o_seed;
+    struct Option *input, *output, *o_dist, *o_freq;
+    struct Option *o_dist_a, *o_dist_b, *o_seed, *o_agem;
     struct Flag *f_bool, *f_overwrite, *f_verbose, *f_check_zero;
 
     char buffer[64];
@@ -449,6 +464,14 @@ void parse_options(int argc, char* argv[]) {
     o_seed->answer     = buffer;
     o_seed->description= "Optional seed value for random number generator";
 
+    o_agem = G_define_option() ;
+    o_agem->key        = "agem";
+    o_agem->type       = TYPE_INTEGER;
+    o_agem->required   = NO;
+    o_agem->answer     = "0";
+    o_agem->description= "Age of maturity. Implies map values contain population age. \n"
+	"Only cells > this value generate events.";
+
     /* Define the different flags */
 
     f_bool = G_define_flag() ;
@@ -479,6 +502,7 @@ void parse_options(int argc, char* argv[]) {
     is_boolean = f_bool->answer;
     is_overwrite = f_overwrite->answer;
     is_verbose = !(f_verbose->answer);
+    maturity_age = atoi(o_agem->answer);
     if (f_check_zero->answer) check_zero = 1;
 
     if (o_dist_a->answer) dist_a = atof(o_dist_a->answer);

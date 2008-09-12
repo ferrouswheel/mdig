@@ -35,6 +35,7 @@ int is_boolean;
 
 unsigned int num_spread_cells;
 unsigned int diameter, shape;
+unsigned int maturity_age;
 double spread_proportion;
 double spread;
 int check_zero = -1;
@@ -53,22 +54,14 @@ struct _output_row {
 };
 typedef struct _output_row output_row;
 
-output_row* new_output_row(int cols, RASTER_MAP_TYPE data_type)
-{
-    output_row* a;
-    a = G_malloc(sizeof(output_row));
-    a->next = a->prev = NULL;
-    a->outrast = G_allocate_raster_buf(data_type);
-    G_set_null_value(a->outrast,ncols,data_type);
-    return a;
-
-}
-
 void print_row(output_row* p, int ncols)
 {
     int i;
     for (i=0; i < ncols; i++) {
-	printf("%d ", ((CELL*)p->outrast)[i]);
+	if (G_is_c_null_value(((CELL*)p->outrast)+i))
+	    printf("- ");
+	else
+	    printf("%u ", ((CELL*)p->outrast)[i]);
     }
     printf ("\n");
 }
@@ -80,6 +73,20 @@ void print_rows(output_row* p, int ncols)
 	p = p->next;
 	print_row(p,ncols);
     }
+
+}
+
+output_row* new_output_row(int cols, RASTER_MAP_TYPE data_type)
+{
+    output_row* a;
+    a = G_malloc(sizeof(output_row));
+    a->next = a->prev = NULL;
+    a->outrast = G_allocate_raster_buf(data_type);
+    G_set_null_value(a->outrast,ncols,data_type);
+#ifdef DEBUG
+    print_row(a,cols);
+#endif
+    return a;
 
 }
 
@@ -126,6 +133,7 @@ int get_spread_area(int radius) {
 	}
 	c++;
     }
+    count--; // Don't include source
 #ifdef DEBUG
     printf("r=%d,count=%d\n", radius, count);
 #endif
@@ -158,9 +166,9 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
 {
     CELL c;
     int i, j;
-    unsigned int individuals;
-    unsigned int mean_individuals;
-    unsigned int extra_individuals;
+    unsigned int individuals = 0;
+    unsigned int mean_individuals = 0;
+    unsigned int extra_individuals = 0;
     int position;
 
     num_spread_cells = get_spread_area(spread_value);
@@ -170,7 +178,9 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
     if (is_boolean) {
         mean_individuals = 1;
         c = 1;
-        individuals	= 0;
+    } else if (maturity_age) {
+        if (c >= maturity_age)
+	    mean_individuals = 1;
     } else {
         // How to spread c individuals?
         // Try and do it evenly, but some will no doubt get
@@ -199,12 +209,13 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
 	// f_row is now r rows above the current row being processed.
 #ifdef DEBUG
 	printf("spread_value = %.2f, r = %d\n",spread_value,r);
-	printf("i=%d, max = %d", -r, (int) (spread_value/nsres));
+	printf("i=%d, max = %d, ", -r, (int) (spread_value/nsres));
 #endif
 	// move from r rows back, through current row, to future rows within spread_value
 	for (i=-r; i <= (int) (spread_value/nsres); i++) {
 	    for (j=-(int)(spread_value/ewres); j <= (spread_value/ewres); j++) {
 		double ns_d, ew_d;
+		if (i == 0 && j == 0) continue;
 		ns_d = (i*nsres);
 		ew_d = (j*ewres);
 		ns_d *= ns_d;
@@ -220,13 +231,17 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
 #ifdef DEBUG
 			printf("in bounds\n");
 #endif
-                        if (is_boolean)
+                        if (is_boolean) {
                             ((CELL*) f_row->outrast)[position] = (CELL) 1;
-                        else
-                            if (G_is_c_null_value(f_row->outrast + position))
+			} else if (maturity_age) {
+                            if (G_is_c_null_value(((CELL*)f_row->outrast) + position))
+				((CELL*) f_row->outrast)[position] = (CELL) 1;
+			} else {
+                            if (G_is_c_null_value(((CELL*)f_row->outrast) + position))
                                 ((CELL*) f_row->outrast)[position] = mean_individuals;
                             else
                                 ((CELL*) f_row->outrast)[position] += mean_individuals;
+			}
 		    }
 
 		}
@@ -247,23 +262,29 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
 
 	}
         position = col;
-        if (is_boolean)
+        if (is_boolean) {
             ((CELL*) out->outrast)[position] = (CELL) 1;
-        else
-            if (G_is_c_null_value(out->outrast + position))
+	} else if (maturity_age) {
+	    ((CELL*) out->outrast)[col] = c;
+	} else {
+            if (G_is_c_null_value(((CELL*)out->outrast) + position))
                 ((CELL*) out->outrast)[position] = c + extra_individuals;
             else
                 ((CELL*) out->outrast)[position] += c + extra_individuals;
+	}
     } else {
         position = col;
 
-        if (is_boolean)
+        if (is_boolean) {
             ((CELL*) out->outrast)[position] = (CELL) 1;
-        else
-            if (G_is_c_null_value(out->outrast + position))
+	} else if (maturity_age) {
+	    ((CELL*) out->outrast)[col] = c;
+	} else {
+            if (G_is_c_null_value(((CELL*)out->outrast) + position))
                 ((CELL*) out->outrast)[position] = c + individuals;
             else
                 ((CELL*) out->outrast)[position] += c + individuals;
+	}
     }
 
 #ifdef DEBUG
@@ -277,7 +298,7 @@ void f_calc(FCELL* x, output_row* out, double spread_value, int col)
     int i, j;
     unsigned int individuals;
     unsigned int mean_individuals;
-    unsigned int extra_individuals;
+    unsigned int extra_individuals = 0;
     int position;
 
     num_spread_cells = get_spread_area(spread_value);
@@ -394,7 +415,7 @@ void d_calc(DCELL* x, output_row* out, double spread_value, int col)
     int i, j;
     unsigned int individuals;
     unsigned int mean_individuals;
-    unsigned int extra_individuals;
+    unsigned int extra_individuals = 0;
     int position;
 
     num_spread_cells = get_spread_area(spread_value);
@@ -522,11 +543,12 @@ int main(int argc, char *argv[]) {
     int (*is_present)(void*, int) = NULL;
 
     int row,col;
-    int infd, outfd, smfd;
-    int i;
+    int infd, outfd, smfd = 0;
+    //int i;
 
     struct GModule *module;
-    struct Option *input, *output, *n_spread, *n_spread_map, *n_proportion;
+    struct Option *input, *output;
+    struct Option *n_maturity_age, *n_spread, *n_spread_map, *n_proportion;
     struct Flag *f_bool, *f_overwrite, *f_check_zero;
 
     G_gisinit(argv[0]);
@@ -572,6 +594,14 @@ int main(int argc, char *argv[]) {
     n_proportion->answer     = "1.0";
     n_proportion->description= "Proportion of individuals to spread from destination cell";
 
+    n_maturity_age = G_define_option() ;
+    n_maturity_age->key        = "agem";
+    n_maturity_age->type       = TYPE_INTEGER;
+    n_maturity_age->required   = NO;
+    n_maturity_age->answer     = "0";
+    n_maturity_age->description= "Age of maturity. Implies map values contain population age. \n"
+	"Only cells > this value spread. New populations have age 1.";
+
     /* Define the different flags */
 
     f_bool = G_define_flag() ;
@@ -600,6 +630,7 @@ int main(int argc, char *argv[]) {
 	spread = -1.0;
     spread_map = n_spread_map->answer;
     spread_proportion = atof(n_proportion->answer);
+    maturity_age = atoi(n_maturity_age->answer);
     is_boolean = (f_bool->answer);
     if (f_check_zero->answer) check_zero=1;
     else check_zero = 0;
@@ -669,7 +700,7 @@ int main(int argc, char *argv[]) {
     nsres = active_cellhd.ns_res;
     ewres = active_cellhd.ew_res;
 #ifdef DEBUG
-    printf("%d rows, %d cols, nsres %.2f, ewres %.2f", nrows, ncols, nsres, ewres);
+    printf("%d rows, %d cols, nsres %.2f, ewres %.2f\n", nrows, ncols, nsres, ewres);
 #endif
 	
     // Allocate initial output row buffer, using input map data type
