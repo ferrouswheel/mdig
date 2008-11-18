@@ -3,11 +3,13 @@ import logging
 import pdb
 
 import GRASSInterface
-import XMLModel
+import DispersalModel
+from DispersalInstance import DispersalInstance
+from Replicate import Replicate
 
 #TODO: move into classes
 def createFilename(rep):
-	if isinstance(rep,XMLModel.Replicate):
+	if isinstance(rep,Replicate):
 		i = rep.instance
 		# Format of saved filename:
 		# species_region_vars*_rep_lifestage.t
@@ -22,7 +24,7 @@ def createFilename(rep):
 					fn += repr(var_value)
 		fn += "_rep_" + repr(i.replicates.index(rep))
 		return fn
-	elif isinstance(rep,XMLModel.ExperimentInstance):
+	elif isinstance(rep,DispersalInstance):
 		i = rep
 		# Format of saved filename:
 		# species_region_vars*_rep_lifestage.t

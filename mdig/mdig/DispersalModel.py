@@ -1,14 +1,13 @@
 #!/usr/bin/env python2.4
-""" XMLModel module for MDiG - Modular Dispersal in GIS
+""" DispersalModel class for MDiG - Modular Dispersal in GIS
 
-Usage: python XMLModel.py [model=model.xml] [schema=model.xsd] to run
+Test usage: python DispersalModel.py [model=model.xml] [schema=model.xsd] to run
 unit test on model.xml and validating with the schema model.xsd
 
 By default example.xml will be loaded and validated with mdig.xsd
 
-@todo rename file and class to Experiment, or Simulation
-
 Copyright 2006, Joel Pitt
+Copyright 2008, Joel Pitt, Fruition Technology
 """
 
 import lxml.etree
@@ -28,8 +27,9 @@ from UserDict import UserDict
 import OutputFormats
 import GRASSInterface
 import MDiGConfig
+
 from Region import Region
-from ExperimentInstance import ExperimentInstance
+from DispersalInstance import DispersalInstance
 from Event import Event
 from Lifestage import Lifestage
 from Analysis import Analysis
@@ -38,9 +38,10 @@ from GrassMap import GrassMap
 
 _debug=0
 
-
-# An Experiment keeps track of general model data
-class Experiment(object):
+class DispersalModel(object):
+    """ DispersalModel keeps track of general model data and allows high level
+        control of running simulations and analysis.
+    """
 
     def __init__(self, model_file):
         mdig_config = MDiGConfig.getConfig()
@@ -348,10 +349,10 @@ class Experiment(object):
                         e_times = [ int(t) for t in envelopes[ls_id].keys() ]
                         times = self._checkAndParseTimes(times,e_times)
                         
-                        tmp_fn = Experiment._getCommandOutputFilename(i)
+                        tmp_fn = DispersalModel._getCommandOutputFilename(i)
                         # replace %f with analysis_filename (or generated name)
                         # if it exists in cmd_string
-                        tmp_cmd_string = Experiment._insertOutputIntoCmd(tmp_fn,cmd_string)
+                        tmp_cmd_string = DispersalModel._insertOutputIntoCmd(tmp_fn,cmd_string)
                         
                         # check that there are enough maps to satisfy the command line
                         # at least once.
@@ -387,8 +388,8 @@ class Experiment(object):
                         r_times = [ int(t) for t in saved_maps.keys() ]
                         times = self._checkAndParseTimes(times,r_times)
                         
-                        tmp_fn = Experiment._getCommandOutputFilename(i,r)
-                        tmp_cmd_string = Experiment._insertOutputIntoCmd(tmp_fn,cmd_string)
+                        tmp_fn = DispersalModel._getCommandOutputFilename(i,r)
+                        tmp_cmd_string = DispersalModel._insertOutputIntoCmd(tmp_fn,cmd_string)
 
                         # check that there are enough maps to satisfy the command line
                         # at least once.
@@ -430,20 +431,20 @@ class Experiment(object):
             permutations = self.getInstancePermutations()
             
             # Turn each returned variable combination into an actual
-            # ExperimentInstance object instance
+            # DispersalInstance object instance
             for r_id, p in permutations.items():
                 num_perms = len(p["var"])
                 # If no variables in experiment:
                 if num_perms == 0:
                     node = self.getCompletedNode(r_id,None,None)
                     self.instances.append( \
-                           ExperimentInstance(node,self,r_id,None,None))
+                           DispersalInstance(node,self,r_id,None,None))
                 # If variables are in experiment:
                 else:
                     for i in range(0, num_perms):
                         node = self.getCompletedNode(r_id,p["var_keys"],p["var"][i])
                         self.instances.append( \
-                           ExperimentInstance(node,self,r_id,p["var_keys"],p["var"][i]))
+                           DispersalInstance(node,self,r_id,p["var_keys"],p["var"][i]))
             
             for instance in self.instances:
                 #instance.setReplicates(self.getCompletedReplicates(instance))
@@ -1254,7 +1255,7 @@ def main(argv):
     logger=setupLogger()
     logger.debug("Testing model interface")
     
-    doc = Experiment(modelFile, schemaFile)
+    doc = DispersalModel(modelFile, schemaFile)
     print repr(doc.getInstances())
     
     #print doc.getCompleted()

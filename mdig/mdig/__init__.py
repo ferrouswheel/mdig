@@ -1,1 +1,1 @@
-__all__ = ["DispersalSimulation","GRASSInterface","mdiggui"]
+__all__ = ["DispersalModel","GRASSInterface","mdiggui"]

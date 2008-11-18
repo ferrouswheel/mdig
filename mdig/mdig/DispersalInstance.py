@@ -18,8 +18,10 @@ from Replicate import Replicate
 import GRASSInterface
 import MDiGConfig
 
-# An Experiment Instance is a realisation of a combination of variables
-class ExperimentInstance:
+class DispersalInstance:
+    """ A DispersalInstance is a realisation of a combination of variables
+        for a particular region, time period, and initial conditions.
+    """
     
     def __init__(self, node, exp, r_id, _var_keys, p_inst):
         self.log = logging.getLogger("mdig.instance")

@@ -17,11 +17,11 @@ import GRASSInterface
 import MDiGConfig
 import OutputFormats
 from GrassMap import MapMissingException
-import XMLModel
+import DispersalModel
 
 class Replicate:
     """
-    Replicate is a class for each replication simulated for an ExperimentInstance
+    Replicate is a class for each replication simulated for an DispersalInstance
 
     @todo: load/store and use previous maps. getPreviousMap doesn't work as
     intended.
@@ -105,7 +105,7 @@ class Replicate:
                         else:
                             self.saved_maps[ls_key][time_step] = m.text
             elif len(ls_maps_node) > 1:
-                raise XMLModel.InvalidXMLException, "More than one maps node"
+                raise DispersalModel.InvalidXMLException, "More than one maps node"
 
         if missing_maps:
             raise MapMissingException(missing_maps)

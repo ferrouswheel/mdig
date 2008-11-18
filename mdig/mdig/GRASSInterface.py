@@ -10,7 +10,7 @@ import signal
 import pdb
 import subprocess
 
-import XMLModel
+import DispersalModel
 import MDiGConfig
 
 grass_i = None

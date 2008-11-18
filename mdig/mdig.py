@@ -29,8 +29,7 @@ import signal
 
 from datetime import datetime, timedelta
 
-from mdig import XMLModel
-from mdig import Model
+from mdig import DispersalModel
 
 from mdig import MDiGConfig
 from mdig import Displayer
@@ -417,7 +416,7 @@ def main(argv):
         
         #Load model definition
         if mdig_config.model_file is not None:
-            exp = XMLModel.Experiment(mdig_config.model_file)
+            exp = DispersalModel.DispersalModel(mdig_config.model_file)
             
         else:
             logger.error ("No model file specified")
