@@ -1,6 +1,7 @@
 MODULE_TOPDIR = ../..
 
 SUBDIRS = \
+	r.mdig.agepop \
 	r.mdig.neighbour \
 	r.mdig.kernel \
 	r.mdig.growth \

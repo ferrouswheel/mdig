@@ -434,10 +434,18 @@ class GRASSInterface:
 
         return True
 
-    def probabilityEnvelop(self, maps_to_combine, filename):
+    def occupancyEnvelope(self, maps_to_combine, filename):
+        """ Generates an occupancy envelope
+
+        @param maps_to_combine is a list of maps to merge to generate the
+        occupancy envelope.
+        @param filename is the output map.
+
+        @todo create equivalent for average populations/age
+        """
         
         if len(maps_to_combine) > 10000:
-            self.log.warning("Probability envelope not deisgned for more than 10000 maps")
+            self.log.warning("Probability envelope not designed for more than 10000 maps")
         elif len(maps_to_combine) == 0: 
             self.log.error("No maps provided for combining into probability envelope")
             return None
@@ -453,7 +461,7 @@ class GRASSInterface:
             index = index+max_maps
             num_maps = num_maps - max_maps
             temp_file = generateMapName();
-            self.runCommand("r.series input=%s output=%s method=sum" % (map_str,temp_file))
+            self.runCommand("r.series input=%s output=%s method=count" % (map_str,temp_file))
             c_maps.append(temp_file)
         
         # combine maps if more than 100 are being used.
@@ -467,6 +475,8 @@ class GRASSInterface:
             c_maps = [] 
         
         # divide maps by total count and replace 0 with null()
+        # must use float in division so mapcalc knows that output map is
+        # FCELL/DCELL
         self.mapcalc(filename, "if(%s==0.0,null(),%s/%f)"  % (prob_env,prob_env,float(len(maps_to_combine))))
         
         # remove temporary maps
@@ -474,7 +484,7 @@ class GRASSInterface:
             self.removeMap(c)
         self.removeMap(prob_env)
         
-        # set color table for probabilityEnvelop
+        # set color table for occupancy envelope
         self.runCommand("r.colors map=%s color=gyr --quiet" % (filename))
         
         return filename

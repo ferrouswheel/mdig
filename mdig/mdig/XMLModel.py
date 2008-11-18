@@ -6,6 +6,8 @@ unit test on model.xml and validating with the schema model.xsd
 
 By default example.xml will be loaded and validated with mdig.xsd
 
+@todo rename file and class to Experiment, or Simulation
+
 Copyright 2006, Joel Pitt
 """
 
@@ -38,7 +40,7 @@ _debug=0
 
 
 # An Experiment keeps track of general model data
-class Experiment:
+class Experiment(object):
 
     def __init__(self, model_file):
         mdig_config = MDiGConfig.getConfig()
@@ -212,18 +214,104 @@ class Experiment:
                 return False
         return True
     
+
+    def _checkAndParseTimes(self, times, o_times):
+        """ Check a list of the times against the actual stored timesteps.
+            
+        @param times a list of times to run command on, -ve values are interpreted
+        as indices from the end of the array e.g. -1 == last map.
+        @param o_times the original list of stored/saved map times.
+        @return times with -ve indices replaced and all times checked that they
+        exist
+        """
+        o_times.sort()
+        if times is None:
+            # if no time is user-specified, use all existing times,
+            # and sort because the return from keys() isn't guaranteed to be in order
+            times = o_times
+        else:
+            period = self.getPeriod()
+            #check times
+            for t in times:
+                if t < 0:
+                    times[times.index(t)] = o_times[t]
+                if t < period[0] or t > period[1]:
+                    self.log.warning("Time outside simulation range: %d" % t)
+                if t not in o_times:
+                    self.log.warning("Time not in saved maps: %d" % t)
+            times.sort()
+        return times
+
+    def _getCommandOutputFilename(instance, rep=None):
+        mdig_config = MDiGConfig.getConfig()
+        tmp_fn = mdig_config.analysis_filename
+        #   append variable/ls/region info
+        if rep:
+            tmp_fn = OutputFormats.createFilename(instance) + "_" + \
+                     repr(instance.replicates.index(rep)) + "_" + tmp_fn
+        else:
+            tmp_fn = OutputFormats.createFilename(instance) + "_" + tmp_fn
+        
+        # check if file exists
+        if os.path.isfile(tmp_fn):
+            if mdig_config.overwrite_flag:
+                self.log.warning("Analysis output file exists")
+                os.remove(tmp_fn)
+            else:
+                self.log.error("Analysis output file exists")
+                raise OutputFileExistsException()
+        return tmp_fn
+    _getCommandOutputFilename = staticmethod(_getCommandOutputFilename)
+
+    def _insertOutputIntoCmd(tmp_fn,cmd_string):
+        # replace %f with analysis_filename (or generated name)
+        # if it exists in cmd_string
+        tmp_cmd_string = cmd_string
+        if re.search("%f",tmp_cmd_string) is not None:
+            # do reg ex replace
+            tmp_cmd_string = re.sub("%f", tmp_fn, tmp_cmd_string)
+        else:
+            # otherwise add output redirection >> to cmd_string
+            tmp_cmd_string += (" >> %s" % tmp_fn)
+        return tmp_cmd_string
+    _insertOutputIntoCmd = staticmethod(_insertOutputIntoCmd)
+
+    def _runCommandOnce(self, t,times,tmp_fn,tmp_cmd_string,maps):
+        # replace %t with current time if it exists in cmd_string
+        tmp_cmd_string2 = re.sub("%t", repr(t), tmp_cmd_string)
+        
+        # Replace %(number) references with the map names
+        # ...Allow escaping of % with double... e.g. %%1 doesn't match
+        map_matches = re.findall('(?<!%)%\d',tmp_cmd_string2)
+        for map_d in map_matches:
+            map_index = int(map_d[1:])
+            tmp_cmd_string2 = re.sub("%" + repr(map_index), maps[repr(times[times.index(t)-map_index])], tmp_cmd_string2)
+        
+        mdig_config = MDiGConfig.getConfig()
+        if mdig_config.analysis_print_time:
+            file = open(tmp_fn,'a')
+            file.write('%d ' % t)
+            file.close()
+        
+        # run command on prob env map
+        self.log.debug("Running analysis command: " + tmp_cmd_string2 )
+        cmd_stdout = os.popen(tmp_cmd_string2,"r")
+        stdout = cmd_stdout.read()
+        ret = cmd_stdout.close()
+        return ret
+
     def runCommandOnMaps(self, cmd_string, ls = None, times=None, prob=False):
-        """ runCommandOnMaps
+        """ runCommandOnMaps runs a command across all replicate maps in times,
+        or all envelopes.
         
-        cmd_string is the command to run, with %0 for current map,
+        @param cmd_string is the command to run, with %0 for current map,
         %1 for previous saved map, etc.
-        
-        ls_id is a list of lifestages to run command on
-        
-        times is a list of times to run command on
-        
-        prob specifies whether to run on the replicate maps or the probabilityEnvelopes
-        
+        @param ls_id is a list of lifestages to run command on
+        @param times is a list of times to run command on, -ve values are interpreted
+        as indices from the end of the array e.g. -1 == last map.
+        @param prob specifies whether to run on the replicate maps or the probabilityEnvelopes
+
+        @todo split into separate commands within replicate and instance
         """
         
         if ls is None:
@@ -236,6 +324,7 @@ class Experiment:
         
         # Find earliest map in cmd_string (represented by %\d)
         earliest_map = 0
+        # Allow escaping of % with double... e.g. %%1 doesn't match
         map_matches = re.findall('(?<!%)%\d',cmd_string)
         for map_d in map_matches:
             map_index = int(map_d[1:])
@@ -246,9 +335,9 @@ class Experiment:
         mdig_config = MDiGConfig.getConfig()
         if mdig_config.analysis_filename is None:
             #create random name
-            mdig_config.analysis_filename = repr(os.getpid()) +"_"+ repr(int(random.random()*1000000)) + ".dat"
-        
-        period = self.getPeriod()
+            mdig_config.analysis_filename = \
+                    repr(os.getpid()) + "_" + repr(int(random.random()*1000000)) \
+                    + ".dat"
         
         if prob:
             # if prob = True then only run on the probabilityEnvelopes
@@ -257,83 +346,32 @@ class Experiment:
                     envelopes = i.getProbabilityEnvelopes()
                     for ls_id in ls:
                         e_times = [ int(t) for t in envelopes[ls_id].keys() ]
-                        e_times.sort()
-                        if times is None:
-                            # if no time is user-specified, use all existing times,
-                            # and sort because the return from keys() isn't guaranteed to be in order
-                            times = e_times
-                        else:
-                            #check times
-                            for t in times:
-                                if t < 0:
-                                    t = e_times[t]
-                                if t < period[0] or t > period[1]:
-                                    self.log.warning("Time outside simulation range: %d" % t)
-                                if t not in e_times:
-                                    self.log.warning("Time not in saved maps: %d" % t)
-                            times.sort()
+                        times = self._checkAndParseTimes(times,e_times)
                         
-                        tmp_fn = mdig_config.analysis_filename
-                        #   append variable/ls/region info
-                        tmp_fn = OutputFormats.createFilename(i) + "_" + tmp_fn
-                        
-                        # check if file exists
-                        if os.path.isfile(tmp_fn):
-                            
-                            if mdig_config.overwrite_flag:
-                                self.log.warning("Analysis output file exists")
-                                os.remove(tmp_fn)
-                            else:
-                                self.log.error("Analysis output file exists")
-                                sys.exit(9)
-                        
+                        tmp_fn = Experiment._getCommandOutputFilename(i)
                         # replace %f with analysis_filename (or generated name)
                         # if it exists in cmd_string
-                        tmp_cmd_string = cmd_string
-                        if re.search("%f",tmp_cmd_string) is not None:
-                            # do reg ex replace
-                            tmp_cmd_string = re.sub("%f", tmp_fn, tmp_cmd_string)
-                        else:
-                            # otherwise add output redirection >> to cmd_string
-                            tmp_cmd_string += (" >> %s" % tmp_fn)
+                        tmp_cmd_string = Experiment._insertOutputIntoCmd(tmp_fn,cmd_string)
                         
                         # check that there are enough maps to satisfy the command line
                         # at least once.
                         if (len(times) - 1) < earliest_map:
-                            self.log.warning("Not enough past maps to fulfill command line with earliest map %d maps before present" % earliest_map)
-                        else:
-                            # Skip ahead to the first time that has enough past maps to
-                            # satisfy the command line.
-                            for t in times[earliest_map:]:
-                                # replace %t with current time if it exists in cmd_string
-                                tmp_cmd_string2 = re.sub("%t", repr(t), tmp_cmd_string)
-                                
-                                # Replace %(number) references with the map names
-                                map_matches = re.findall('(?<!%)%\d',tmp_cmd_string2)
-                                for map_d in map_matches:
-                                    map_index = int(map_d[1:])
-                                    
-                                    tmp_cmd_string2 = re.sub("%" + repr(map_index), envelopes[ls_id][repr(times[times.index(t)-map_index])], tmp_cmd_string2)
-                                
-                                if mdig_config.analysis_print_time:
-                                    file = open(tmp_fn,'a')
-                                    file.write('%d ' % t)
-                                    file.close()
-                                
-                                # run command on prob env map
-                                self.log.debug("Running analysis command: " + tmp_cmd_string2 )
-                                cmd_stdout = os.popen(tmp_cmd_string2,"r")
-                                stdout = cmd_stdout.read()
-                                ret = cmd_stdout.close()
-                                if ret is not None:
-                                    self.log.error("Analysis command did not return 0")
-                                
-                            if mdig_config.analysis_add_to_xml:
-                                # add the analysis result to xml filename
-                                # under instance...
-                                i.addAnalysisResult(ls_id, (cmd_string, tmp_fn))
-                                
-                                pass
+                            self.log.warning("Not enough past maps to fulfill "
+                                    "command line with earliest map %d maps "
+                                    "before present" % earliest_map)
+                            raise NotEnoughHistoryException()
+
+                        # Skip ahead to the first time that has enough past maps to
+                        # satisfy the command line.
+                        for t in times[earliest_map:]:
+                            ret = self._runCommandOnce(t,times,tmp_fn,tmp_cmd_string,envelopes[ls_id])
+                            if ret is not None:
+                                self.log.error("Analysis command did not return 0")
+
+                        if mdig_config.analysis_add_to_xml:
+                            # add the analysis result to xml filename
+                            # under instance...
+                            i.addAnalysisResult(ls_id, (cmd_string, tmp_fn))
                 else:
                     self.log.warning("Skipping incomplete instance [%s]" % i)
 
@@ -343,34 +381,34 @@ class Experiment:
                 if not i.isComplete():
                     self.log.warning("Instance [%s] is incomplete" % i)
                 
-                #for r in i.replicates:
-                    #envelopes = i.getProbabilityEnvelopes()
-                    #e_times = [ int(t) for t in envelopes.keys() ]
-                    #if times is none:
-                    #times = e_times
-                
-                #for t in times:
-                    #if t < 0:
-                        # t = period[1] + t
-                    #if t < period[0] or t > period[1]:
-                        #self.log.warning("Time outside simulation range: %d" % t)
-                    #elif t not in e_times:
-                        #self.log.warning("Time not in saved maps: %d" % t)
-                    #else:
-                        # replace %t with current time if it exists in cmd_string
-                            
-                        # replace %f with analysis_filename (or generated name)
-                        # if it exists in cmd_string
+                for r in i.replicates:
+                    for ls_id in ls:
+                        saved_maps = r.getSavedMaps(ls_id) #][time_step] 
+                        r_times = [ int(t) for t in saved_maps.keys() ]
+                        times = self._checkAndParseTimes(times,r_times)
                         
-                        # run command on prob env map
-                
-            
-        
-        
-        # run command only on maps that have past maps that satisfy cmd_string.
-        
-        
-        # replace %\d with the appropriate map names using re.sub and a calleable.
+                        tmp_fn = Experiment._getCommandOutputFilename(i,r)
+                        tmp_cmd_string = Experiment._insertOutputIntoCmd(tmp_fn,cmd_string)
+
+                        # check that there are enough maps to satisfy the command line
+                        # at least once.
+                        if (len(times) - 1) < earliest_map:
+                            self.log.warning("Not enough past maps to fulfill "
+                                    "command line with earliest map %d maps "
+                                    "before present" % earliest_map)
+                            raise NotEnoughHistoryException()
+
+                        # Skip ahead to the first time that has enough past maps to
+                        # satisfy the command line.
+                        for t in times[earliest_map:]:
+                            ret = self._runCommandOnce(t,times,tmp_fn,tmp_cmd_string,saved_maps)
+                            if ret is not None:
+                                self.log.error("Analysis command did not return 0")
+
+                        if mdig_config.analysis_add_to_xml:
+                            # add the analysis result to xml filename
+                            # under instance...
+                            r.addAnalysisResult(ls_id, (cmd_string, tmp_fn))
     
     def nullBitmask(self, generate=True):
         instances = self.getInstances()
@@ -1141,6 +1179,10 @@ class CheckModelException(Exception): pass
 class ValidationError(Exception): pass
 
 class InvalidXMLException(Exception): pass
+
+class OutputFileExistsException (Exception): pass
+
+class NotEnoughHistoryException (Exception): pass
 
 def openAnything(source):
         """URI, filename, or string --> stream

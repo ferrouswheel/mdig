@@ -327,7 +327,7 @@ class ExperimentInstance:
                         else:
                             filename += repr(var_value)
                 filename += "_ls_" + l + "_" + repr(t) + "_prob"
-                prob_env = GRASSInterface.getG().probabilityEnvelop(maps_to_combine,filename)
+                prob_env = GRASSInterface.getG().occupancyEnvelope(maps_to_combine,filename)
                 if prob_env is not None:
                     self._addEnvelope(prob_env,l,t)
                     

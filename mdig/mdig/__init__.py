@@ -1,1 +1,1 @@
-__all__ = ["XMLModel","GRASSInterface","mdiggui"]
+__all__ = ["DispersalSimulation","GRASSInterface","mdiggui"]

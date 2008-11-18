@@ -31,6 +31,7 @@ class Analysis:
     @todo: Create AnalysisResult class.
     @todo: Split and subclass Analysis into ReplicateAnalysis, and
     EnvelopeAnalysis, UnifyReplicateAnalysis.
+    @todo: Alter xml to allow for commands and in-built analysis.
     """
     
     def __init__(self, node):
@@ -95,19 +96,8 @@ class Analysis:
             except (IOError, OSError):
                 pass
 
-    def run(self,in_name,rep):
-        """ Run the analysis on a replicate.
-
-        @param in_name: The name of the current map.
-        @param rep: The replicate to run on.
-
-        @todo: remove in_name as the output and use getPreviousMap once it's
-        implemented in replicate.
-        """
-        p=self.getParams()
-        
+    def _fillInMapParameters(self,p):
         ls_id = self.getLifestageID()
-        
         # fill in map parameters
         for p_name,val_tuple in p.items():
             value = val_tuple[0]
@@ -130,6 +120,24 @@ class Analysis:
                     return
             elif value == "initialMap":
                 p[p_name]=rep.getInitialMap(ls_id)
+        return p
+
+    def run(self,in_name,rep):
+        """ Run the analysis on a replicate.
+
+        @param in_name: The name of the current map.
+        @param rep: The replicate to run on.
+
+        @todo: remove in_name as the output and use getPreviousMap once it's
+        implemented in replicate.
+        """
+
+        #rawCommand = self.getCommand()
+        cmd = ""
+        #if rawCommand in Analysis.inbuiltCommands:
+        #    cmd = Analysis.inbuiltCommands[rawCommand].createCommandString(in_name,rep)
+        #else
+        p=fillInMapParameters(self.getParams())
         # put all the parameters and command into a command string
         cmd=self.createCommandString(p)
         
@@ -169,6 +177,7 @@ class Analysis:
         GRASSInterface.getG().runCommand(cmd + fn)
             
         # if a file was generated then add this to the replicate
+        ls_id = self.getLifestageID()
         if self.isRedirectedStdOut():
             rep.addAnalysisResult(ls_id,(base_cmd,fn))
 

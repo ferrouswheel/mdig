@@ -118,11 +118,16 @@ TEMP_RECLASS=mdig.survival
 # make temp reclass map as mask
 if [ $GIS_OPT_CATS ]
 then
-  MASKCATS_CMD="awk -F\",\" '{for(i=1;i<=NF;i++) {split($i,parts,\"-\"); if \
-  (\"2\" in parts) { print parts[1],\"thru\",parts[2],\"= 1\" } else { \
-  print $i,\"= 1\"}}} END { printf \"*\\nend\" }'"
-  MASKCATS_OPT="echo $GIS_OPT_CATS | $MASKCATS_CMD"
-  $MASKCATS_OPT | r.reclass input=$GIS_OPT_INPUT output=$TEMP_RECLASS
+# MASKCATS_CMD='awk -F\",\" \'{for(i=1;i<=NF;i++) {split(\$i,parts,\"-\"); if \
+# (\"2\" in parts) { print parts[1],\"thru\",parts[2],\"= 1\" } else { \
+#  print \$i,\"= 1\"}}} END { printf \"*\\nend\" }\''
+  echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
+	  if ("2" in parts) { print parts[1],"thru",parts[2],"= 1" } else { \
+	  print $i,"= 1"}}} END { printf "* = NULL\nend\n" }'
+  echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
+	  if ("2" in parts) { print parts[1],"thru",parts[2],"= 1" } else { \
+	  print $i,"= 1"}}} END { printf "* = NULL\nend\n" }' | \
+	  r.reclass input=$GIS_OPT_INPUT output=$TEMP_RECLASS
 fi
 
 #TEMP_FILE_NAME=r.mdig.survival.temp
@@ -130,8 +135,8 @@ echo GRASS_RND_SEED=$GIS_OPT_SEED
 export GRASS_RND_SEED=$GIS_OPT_SEED
 if [ $GIS_OPT_CATS ]
 then
-    echo r.mapcalc "$GIS_OPT_OUTPUT=if(TEMP_RECLASS=1,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()),$GIS_OPT_INPUT)"
-    r.mapcalc "$GIS_OPT_OUTPUT=if(TEMP_RECLASS=1,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()),$GIS_OPT_INPUT)"
+    echo r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
+    r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
 else
     echo r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
     r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
