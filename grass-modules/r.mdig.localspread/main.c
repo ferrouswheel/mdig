@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <math.h>
 
 #include "grass/gis.h"
@@ -51,12 +52,15 @@ int maturity_age;
 double spread_proportion;
 double spread;
 int check_zero = -1;
+//! stochastic spread indicates whether population spread should be weighted by
+//! how close a cell in an age based model is to spreading.
+enum { NONE = 0, LINEAR } stochastic_spread;
 float ewres = 1;
 float nsres = 1;
 
-// Defines the smallest fractional individual
-// count to spread - to prevent entire map filling with zeros.
-// TODO: Make small_limit an commandline option
+//! Defines the smallest fractional individual
+//! count to spread - to prevent entire map filling with zeros.
+//! @todo Make small_limit an commandline option
 double small_limit = 0.001;
 
 struct _output_row {
@@ -65,6 +69,13 @@ struct _output_row {
     struct _output_row* prev;
 };
 typedef struct _output_row output_row;
+
+long seed;
+#if defined(HAVE_DRAND48)
+#define UNIFORM_RANDOM drand48()
+#else
+#define UNIFORM_RANDOM ((double)rand()/RAND_MAX)
+#endif
 
 void print_row(output_row* p, int ncols)
 {
@@ -198,14 +209,37 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
 	    // if spread_value isn't enough to spread in one year
 	    // allow it to spread to neighbouring cells if it's been in a source
 	    // cell long enough...
-	    if ( (int) (spread_value / max_res) == 0 ) {
-		if ( (c - maturity_age) * spread_value > max_res )
-		    spread_value = (int) max_res + 1;
-		    // num_spread_cells = get_spread_area(spread_value);
-		    printf("res %.2f, c %d, num_cells = %d, spread value = %.2f\n",
-		        max_res, c, num_spread_cells, spread_value);
+	    if ( ((int) (spread_value / max_res)) == 0 ) {
+		spread_value = (c - maturity_age) * spread_value;
+		if (spread_value < 0) spread_value = 0;
+		switch (stochastic_spread) {
+		case NONE:
+		    if ( spread_value > max_res )
+			spread_value = (int) max_res + 1;
+			// num_spread_cells = get_spread_area(spread_value);
+#ifdef DEBUG
+			printf("res %.2f, c %d, num_cells = %d, spread value = %.2f\n",
+			    max_res, c, num_spread_cells, spread_value);
+#endif
+		    break;
+		case LINEAR:
+		    if ( spread_value - max_res > 0 ) {
+			spread_value = (int) max_res + 1;
+		    } else {
+			float p = (float) (spread_value / max_res);
+			float p2 = UNIFORM_RANDOM;
+			if (p2 <= p) {
+			    spread_value = (int) max_res + 1;
+			}
+#ifdef DEBUG
+			printf("p %.2f, res %.2f, c %d, num_cells = %d, spread value = %.2f\n",
+			    p, max_res, c, num_spread_cells, spread_value);
+#endif
+		    }
+		    break;
+		}
 	    } else {
-		mean_individuals = 0;
+		mean_individuals = 1;
 	    }
 	}
     } else {
@@ -343,14 +377,30 @@ void f_calc(FCELL* x, output_row* out, double spread_value, int col)
 	    // if spread_value isn't enough to spread in one year
 	    // allow it to spread to neighbouring cells if it's been in a source
 	    // cell long enough...
-	    if ( (int) (spread_value / max_res) == 0 ) {
-		if ( (c - maturity_age) * spread_value > max_res )
-		    spread_value = (int) max_res + 1;
-		    // num_spread_cells = get_spread_area(spread_value);
-		    printf("res %.2f, c %d, num_cells = %d, spread value = %.2f\n",
-		        max_res, c, num_spread_cells, spread_value);
+	    if ( ((int) (spread_value / max_res)) == 0 ) {
+		spread_value = (c - maturity_age) * spread_value;
+		if (spread_value < 0) spread_value = 0;
+		switch (stochastic_spread) {
+		case NONE:
+		    if ( spread_value > max_res )
+			spread_value = (int) max_res + 1;
+			// num_spread_cells = get_spread_area(spread_value);
+			//printf("res %.2f, c %d, num_cells = %d, spread value = %.2f\n",
+			//    max_res, c, num_spread_cells, spread_value);
+		    break;
+		case LINEAR:
+		    if ( spread_value - max_res > 0 ) {
+			spread_value = (int) max_res + 1;
+		    } else {
+			float p = (float) (spread_value / max_res);
+			if (UNIFORM_RANDOM <= p) {
+			    spread_value = (int) max_res + 1;
+			}
+		    }
+		    break;
+		}
 	    } else {
-		mean_individuals = 0;
+		mean_individuals = 1;
 	    }
 	}
     } else {
@@ -464,7 +514,7 @@ void f_calc(FCELL* x, output_row* out, double spread_value, int col)
 #endif
 }
 
-void d_calc(DCELL* x, output_row* out, double spread_value, int col)
+d_calc(DCELL* x, output_row* out, double spread_value, int col)
 {
     DCELL c;
     int i, j;
@@ -488,14 +538,30 @@ void d_calc(DCELL* x, output_row* out, double spread_value, int col)
 	    // if spread_value isn't enough to spread in one year
 	    // allow it to spread to neighbouring cells if it's been in a source
 	    // cell long enough...
-	    if ( (int) (spread_value / max_res) == 0 ) {
-		if ( (c - maturity_age) * spread_value > max_res )
-		    spread_value = (int) max_res + 1;
-		    // num_spread_cells = get_spread_area(spread_value);
-		    printf("res %.2f, c %d, num_cells = %d, spread value = %.2f\n",
-		        max_res, c, num_spread_cells, spread_value);
+	    if ( ((int) (spread_value / max_res)) == 0 ) {
+		spread_value = (c - maturity_age) * spread_value;
+		if (spread_value < 0) spread_value = 0;
+		switch (stochastic_spread) {
+		case NONE:
+		    if ( spread_value > max_res )
+			spread_value = (int) max_res + 1;
+			// num_spread_cells = get_spread_area(spread_value);
+			//printf("res %.2f, c %d, num_cells = %d, spread value = %.2f\n",
+			//    max_res, c, num_spread_cells, spread_value);
+		    break;
+		case LINEAR:
+		    if ( spread_value - max_res > 0 ) {
+			spread_value = (int) max_res + 1;
+		    } else {
+			float p = (float) (spread_value / max_res);
+			if (UNIFORM_RANDOM <= p) {
+			    spread_value = (int) max_res + 1;
+			}
+		    }
+		    break;
+		}
 	    } else {
-		mean_individuals = 0;
+		mean_individuals = 1;
 	    }
 	}
     } else {
@@ -619,6 +685,7 @@ int main(int argc, char *argv[]) {
     output_row* i_row;
 
     char *spread_mapset;
+    char buffer[64];
 
     char rname[256], rmapset[256];
     char buff[1024];
@@ -632,7 +699,8 @@ int main(int argc, char *argv[]) {
     struct GModule *module;
     struct Option *input, *output;
     struct Option *n_maturity_age, *n_spread, *n_spread_map, *n_proportion;
-    struct Flag *f_bool, *f_overwrite, *f_check_zero;
+    struct Option *n_seed;
+    struct Flag *f_bool, *f_overwrite, *f_check_zero, *f_stochastic;
 
     G_gisinit(argv[0]);
 
@@ -686,6 +754,14 @@ int main(int argc, char *argv[]) {
 	"Only cells > this value spread. New populations have age 1. -1 indicates that cells"
 	" do not contain population age.";
 
+    n_seed = G_define_option();
+    n_seed->key        = "seed";
+    n_seed->type       = TYPE_INTEGER;
+    n_seed->required   = NO;
+    snprintf(buffer, 64, "%d", (int) time(NULL));
+    n_seed->answer     = buffer;
+    n_seed->description= "Optional seed value for random number generator";
+
     /* Define the different flags */
 
     f_bool = G_define_flag() ;
@@ -703,6 +779,11 @@ int main(int argc, char *argv[]) {
     f_check_zero->description = "Explicitly check and ignore cell values that are zero.";
     f_check_zero->answer = FALSE;
 
+    f_stochastic = G_define_flag();
+    f_stochastic->key    = 's' ;
+    f_stochastic->description = "Stochastically spread.";
+    f_stochastic->answer = FALSE;
+
     if (G_parser(argc, argv))
         exit (-1);
 
@@ -716,8 +797,18 @@ int main(int argc, char *argv[]) {
     spread_proportion = atof(n_proportion->answer);
     maturity_age = atoi(n_maturity_age->answer);
     is_boolean = (f_bool->answer);
+    if (f_stochastic->answer) stochastic_spread = LINEAR;
     if (f_check_zero->answer) check_zero=1;
     else check_zero = 0;
+
+    if (n_seed->answer) {
+        seed = atol(n_seed->answer);
+#if defined(HAVE_DRAND48)
+        srand48(seed);
+#else
+        srand((unsigned int) seed);
+#endif
+    }
 
     // check output name is legal
     if (G_legal_filename (result) < 0)
@@ -797,8 +888,9 @@ int main(int argc, char *argv[]) {
     if ( out_mapset != NULL ) {
         if (f_overwrite->answer == TRUE) {
             char buffer[512];
+	    int r;
             sprintf(buffer, "g.remove rast=%s > /dev/null", result);
-            system(buffer);
+            r = system(buffer);
 
         } else {
             G_fatal_error ("Output map <%s> exists (use -o flag to force"
