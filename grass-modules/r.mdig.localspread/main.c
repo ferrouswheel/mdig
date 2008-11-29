@@ -184,7 +184,7 @@ double get_spread_from_map(void* rast, int col)
 
     return value;
 }
-//#define DEBUG
+#define DEBUG
 void c_calc(CELL* x, output_row* out, double spread_value, int col)
 {
     CELL c;
@@ -192,6 +192,10 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
     unsigned int individuals = 0;
     unsigned int mean_individuals = 0;
     unsigned int extra_individuals = 0;
+    //! chance of spread to any given cell in spread_value distance. Only
+    //! changed if sub res spread and stochastic spread is enabled.
+    double spread_chance = 1.0;
+    double diagonal_spread_chance = 1.0;
     int position;
 
     num_spread_cells = get_spread_area(spread_value);
@@ -204,36 +208,45 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
     } else if (maturity_age >= 0) {
         if (c >= maturity_age) {
 	    double max_res;
+	    double diagonal_dist; 
+	    diagonal_dist = sqrt(ewres*ewres + nsres*nsres);
 	    max_res = (ewres > nsres)? ewres : nsres;
-	    mean_individuals = 1;
+	    mean_individuals = 0;
 	    // if spread_value isn't enough to spread in one year
 	    // allow it to spread to neighbouring cells if it's been in a source
 	    // cell long enough...
 	    if ( ((int) (spread_value / max_res)) == 0 ) {
 		spread_value = (c - maturity_age) * spread_value;
-		if (spread_value < 0) spread_value = 0;
 		switch (stochastic_spread) {
 		case NONE:
-		    if ( spread_value > max_res )
-			spread_value = (int) max_res + 1;
+		    if ( spread_value > max_res ) {
+			//spread_value = (int) max_res + 1;
 			// num_spread_cells = get_spread_area(spread_value);
+			mean_individuals = 1;
+			// limit the spread to no further than one cell 
+			if (spread_value < diagonal_dist)
+			    diagonal_spread_chance = 0.0;
+			spread_value = (int) max_res + 1;
 #ifdef DEBUG
 			printf("res %.2f, c %d, num_cells = %d, spread value = %.2f\n",
 			    max_res, c, num_spread_cells, spread_value);
 #endif
+		    }
 		    break;
 		case LINEAR:
-		    if ( spread_value - max_res > 0 ) {
+		    mean_individuals = 1;
+		    if ( spread_value - max_res < 0 ) {
+			spread_chance = (float) (spread_value / max_res);
+			diagonal_spread_chance = (float) (spread_value
+				/ diagonal_dist);
+			// even though we not not spread to all cells,
+			// we have to set the spread_value so that all those
+			// cells are processed and at least get a chance to be
+			// spread.
 			spread_value = (int) max_res + 1;
-		    } else {
-			float p = (float) (spread_value / max_res);
-			float p2 = UNIFORM_RANDOM;
-			if (p2 <= p) {
-			    spread_value = (int) max_res + 1;
-			}
 #ifdef DEBUG
-			printf("p %.2f, res %.2f, c %d, num_cells = %d, spread value = %.2f\n",
-			    p, max_res, c, num_spread_cells, spread_value);
+			printf("p %.2f, dp %.2f, res %.2f, c %d, num_cells = %d, spread value = %.2f\n",
+			    spread_chance, diagonal_spread_chance, max_res, c, num_spread_cells, spread_value);
 #endif
 		    }
 		    break;
@@ -275,14 +288,35 @@ void c_calc(CELL* x, output_row* out, double spread_value, int col)
 	// move from r rows back, through current row, to future rows within spread_value
 	for (i=-r; i <= (int) (spread_value/nsres); i++) {
 	    for (j=-(int)(spread_value/ewres); j <= (spread_value/ewres); j++) {
-		double ns_d, ew_d;
+		double ns_d, ew_d, temp_spread_value;
 		if (i == 0 && j == 0) continue;
 		ns_d = (i*nsres);
 		ew_d = (j*ewres);
 		ns_d *= ns_d;
 		ew_d *= ew_d;
+		temp_spread_value = spread_value;
+
+		// For stochastic spread:
+		if ((i == 0 || j == 0) && spread_chance < 1.0) {
+		    double p2 = UNIFORM_RANDOM;
+		    if (p2 <= spread_chance) {
+			if (i == 0)
+			    temp_spread_value = (int) ewres + 1;
+			else // (j == 0)
+			    temp_spread_value = (int) nsres + 1;
+		    } else {
+			temp_spread_value = 0;
+		    }
+		} else if (diagonal_spread_chance < 1.0) {
+		    double p2 = UNIFORM_RANDOM;
+		    if (p2 <= diagonal_spread_chance) {
+			temp_spread_value = (int) sqrt(ns_d + ew_d) + 1;
+		    } else {
+			temp_spread_value = 0;
+		    }
+		}
 		// if cell within spread_value
-		if (sqrt(ns_d + ew_d) <= spread_value) {
+		if (sqrt(ns_d + ew_d) <= temp_spread_value) {
 #ifdef DEBUG
 		    printf("d=%.f < spread value\n",sqrt(ns_d + ew_d));
 #endif
@@ -379,7 +413,6 @@ void f_calc(FCELL* x, output_row* out, double spread_value, int col)
 	    // cell long enough...
 	    if ( ((int) (spread_value / max_res)) == 0 ) {
 		spread_value = (c - maturity_age) * spread_value;
-		if (spread_value < 0) spread_value = 0;
 		switch (stochastic_spread) {
 		case NONE:
 		    if ( spread_value > max_res )
@@ -514,7 +547,7 @@ void f_calc(FCELL* x, output_row* out, double spread_value, int col)
 #endif
 }
 
-d_calc(DCELL* x, output_row* out, double spread_value, int col)
+void d_calc(DCELL* x, output_row* out, double spread_value, int col)
 {
     DCELL c;
     int i, j;
@@ -540,7 +573,6 @@ d_calc(DCELL* x, output_row* out, double spread_value, int col)
 	    // cell long enough...
 	    if ( ((int) (spread_value / max_res)) == 0 ) {
 		spread_value = (c - maturity_age) * spread_value;
-		if (spread_value < 0) spread_value = 0;
 		switch (stochastic_spread) {
 		case NONE:
 		    if ( spread_value > max_res )
