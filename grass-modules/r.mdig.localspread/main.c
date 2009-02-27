@@ -178,7 +178,7 @@ double get_spread_from_map(void* rast, int col)
 	    break;
 	case DCELL_TYPE:
 	    if (!G_is_null_value(rast + (col*sizeof(DCELL)), DCELL_TYPE))
-		value = (double) ((FCELL*) rast)[col];
+		value = (double) ((DCELL*) rast)[col];
 	    break;
     }
 

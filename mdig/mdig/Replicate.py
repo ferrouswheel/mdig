@@ -225,8 +225,8 @@ class Replicate:
         for lifestage_key in ls_keys:
             # Create temporary map names
             # - input is in [0], output in [1]
-            self.temp_map_names[lifestage_key] = [GRASSInterface.generateMapName(lifestage_key),
-            GRASSInterface.generateMapName(lifestage_key)]
+            self.temp_map_names[lifestage_key] = [GRASSInterface.getG().generateMapName(lifestage_key),
+            GRASSInterface.getG().generateMapName(lifestage_key)]
             
             # Set up phenology maps
             ls = exp.getLifestage(lifestage_key)
@@ -251,7 +251,7 @@ class Replicate:
             #pdb.set_trace()
             
             for ls_id in self.instance.experiment.getLifestageIDs():
-                self.pushPreviousMap(ls_id,GRASSInterface.generateMapName(lifestage_key))
+                self.pushPreviousMap(ls_id,GRASSInterface.getG().generateMapName(lifestage_key))
                 if t == period[0]:
                     self.grass_i.copyMap(initial_maps[ls_id].getMapFilename(),self.getPreviousMap(ls_id),True)
                 else:
@@ -271,7 +271,7 @@ class Replicate:
                         self.grass_i.copyMap(initial_maps[ls_key].getMapFilename(),self.temp_map_names[ls_key][0],True)
                         
                 
-                    lifestage.run(current_interval,self,self.temp_map_names[ls.name])
+                    lifestage.run(current_interval,self,self.temp_map_names[ls_key])
                 
                     #self.temp_map_names[ls_key].reverse()
             

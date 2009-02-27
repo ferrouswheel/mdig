@@ -51,7 +51,7 @@ class Lifestage:
 		self.populationBased = False # Population based or presence/absence?
 
 		# Load details from XML if lifestage is associated with an XML node
-		if self.xml_node:
+		if self.xml_node is not None:
 			self._loadLifestage() 
 	
 	def _loadLifestage(self):
@@ -189,7 +189,7 @@ class Lifestage:
 		# Get GRASS interface instance
 		g = GRASSInterface.getG()
 		# Generate a random map name
-		mapname = GRASSInterface.generateMapName("mask")
+		mapname = g.generateMapName("mask")
 				
 		if r_id in self.bins.keys():
 			bins = self.bins[r_id]

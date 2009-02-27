@@ -93,8 +93,8 @@ def analysis_usage():
     -a <file> analysis commands specified in file
     -s <step> step at which to run analyses on ("all" or "final")
     -l <lifestage> lifestage to analyse ("all" or name of lifestage)
-    -c run a combined analysis. Combine all replications into one probability map and then analyse. 
-    -p force creation of mean population/probability envelope across replicates, don't run analysis
+    -c run a combined analysis. Combine all replications into one occupancy map and then analyse. 
+    -p force creation of occupancy envelope across replicates, don't run analysis
     -f <file> specify output filename (will be prepended with replicate number and variable info)
     -t prefix file entries with time
     -x do not record analysis in xml file

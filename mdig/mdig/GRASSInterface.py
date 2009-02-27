@@ -251,18 +251,18 @@ class GRASSInterface:
         map_type=None
         bmap.xml_map_type
         if bmap.xml_map_type == "sites":
-            name=generateMapName()
+            name=self.generateMapName()
             self.createCoordMap(name,bmap.value)
             map_type="vector"
         elif bmap.xml_map_type == "name":
             name = bmap.value
             map_type = self.checkMap(name)
         elif bmap.xml_map_type == "value":
-            name=generateMapName()
+            name=self.generateMapName()
             self.mapcalc(name,bmap.value)
             map_type="raster"
         elif bmap.xml_map_type == "mapcalc":
-            name=generateMapName()
+            name=self.generateMapName()
             self.mapcalc(name,bmap.value)
             map_type="raster"
         bmap.ready = True
@@ -402,6 +402,7 @@ class GRASSInterface:
         
             
     def mapcalc(self,map_name,expression):
+        map_name='\\"' + map_name + '\\"' 
         self.runCommand('r.mapcalc "%s=%s"' % (map_name, expression));
     
     def makeMask(self,mask_name):
@@ -415,6 +416,7 @@ class GRASSInterface:
         map_types=[ "cell", "fcell", "dcell", "vector" ]
         
         for t in map_types:
+            #print "checking for existing map " + file_name + " of type " + t
             p=os.popen("g.findfile element=%s file=%s" % (t,file_name), 'r')
             output = p.read()
             res=re.search("name='.+'",output)
@@ -453,13 +455,14 @@ class GRASSInterface:
         return True
 
     def occupancyEnvelope(self, maps_to_combine, filename):
-        """ Generates an occupancy envelope
+        """ Generates an occupancy envelope from boolean,
+            population, or age of population maps.
 
-        @param maps_to_combine is a list of maps to merge to generate the
-        occupancy envelope.
-        @param filename is the output map.
+            @param maps_to_combine is a list of maps to merge to generate the
+            occupancy envelope.
+            @param filename is the output map.
 
-        @todo create equivalent for average populations/age
+            @todo create equivalent for average populations/age
         """
         
         if len(maps_to_combine) > 10000:
@@ -475,17 +478,31 @@ class GRASSInterface:
         c_maps = []
         prob_env = None
         while num_maps > 0:
-            map_str = ','.join(maps_to_combine[index:index+max_maps])
+            # We have to replace population number or population age with
+            # a one, since we are interested in the percentage of occupancy.
+            reclass_to_occupancy_maps = []
+            for i in range(index,index+max_maps):
+                reclass_map = self.generateMapName();
+                # check the map name isn't already being used
+                while reclass_map in reclass_to_occupancy_maps:
+                    reclass_map = self.generateMapName();
+                self.runCommand("echo \"* = 1\nend\" | r.reclass "
+                        "input=%s output=%s" % (maps_to_combine[i],reclass_map))
+                reclass_to_occupancy_maps.append(reclass_map)
+            map_str = ','.join(reclass_to_occupancy_maps)
             index = index+max_maps
             num_maps = num_maps - max_maps
-            temp_file = generateMapName();
+            temp_file = self.generateMapName();
             self.runCommand("r.series input=%s output=%s method=count" % (map_str,temp_file))
+            # Now remove temporary reclass maps
+            for r_map in reclass_to_occupancy_maps:
+                self.removeMap(r_map)
             c_maps.append(temp_file)
         
         # combine maps if more than 100 are being used.
         if len(c_maps) > 1:
             map_str = ','.join(c_maps)
-            prob_env = generateMapName();
+            prob_env = self.generateMapName();
             self.runCommand("r.series input=%s output=%s method=sum" % (map_str,prob_env))
         else:
             prob_env = c_maps[0]
@@ -553,11 +570,14 @@ class GRASSInterface:
         self.runCommand('g.region region='+self.old_region,ignoreOnFail=[256])
         self.closeDisplay()
 
+    def generateMapName(self, base=""):
+        random_name = None
+        while random_name is None or self.checkMap(random_name) is not None:
+            random_name = repr(os.getpid()) + "_" + base + "_" + repr(int(random.random()*1000000))
+        return random_name
         
 #   def exists(self,mapname):
         
 class MapNotFoundException (Exception): pass        
     
-def generateMapName(base=""):
-    #TODO check that map doesn't exist
-    return repr(os.getpid()) + "_" + base + "_" + repr(int(random.random()*1000000))
+

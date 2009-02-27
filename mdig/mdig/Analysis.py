@@ -97,7 +97,7 @@ class Analysis:
             except (IOError, OSError):
                 pass
 
-    def _fillInMapParameters(self,p):
+    def _fillInMapParameters(self,rep,p):
         ls_id = self.getLifestageID()
         # fill in map parameters
         for p_name,val_tuple in p.items():
@@ -138,7 +138,7 @@ class Analysis:
         #if rawCommand in Analysis.inbuiltCommands:
         #    cmd = Analysis.inbuiltCommands[rawCommand].createCommandString(in_name,rep)
         #else
-        p=fillInMapParameters(self.getParams())
+        p=self._fillInMapParameters(rep,self.getParams())
         # put all the parameters and command into a command string
         cmd=self.createCommandString(p)
         
