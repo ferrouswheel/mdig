@@ -27,6 +27,8 @@ import re
 import signal
 import pdb
 import subprocess
+import StringIO
+import tempfile
 
 import DispersalModel
 import MDiGConfig
@@ -432,8 +434,9 @@ class GRASSInterface:
         """
         Check if mapset already exists
         """
-        p=os.popen("g.mapsets -l", 'r')
-        output = p.read()
+        output = subprocess.Popen("g.mapsets -l", stdout=PIPE).communicate()[0]
+        #p=os.popen("g.mapsets -l", 'r')
+        #output = p.read()
         mapsets = output.split()
         if mapset_name in mapsets:
             return True
@@ -575,6 +578,106 @@ class GRASSInterface:
         while random_name is None or self.checkMap(random_name) is not None:
             random_name = repr(os.getpid()) + "_" + base + "_" + repr(int(random.random()*1000000))
         return random_name
+
+    def getRange(self):
+        """ provides region data to be passed to LifestageTransition
+        (rowProcessing.process function from Steve Wangens popMod)
+        @todo rename to getRegion
+        """
+        # sends command to GRASS session and returns result via stdout (piped)
+        output = subprocess.Popen("g.region -p", stdout=PIPE).communicate()[0]
+        # pipes input from r.info and formats it as a StringIO object
+        # (additional functionality vs. string, like 'readlines')
+        pre_rangeData = StringIO.StringIO(output)
+        # creates a list (rangeData) where each entry is a different line of
+        # the g.region output
+        rangeData = pre_rangeData.readlines()
+        return (rangeData)
+
+    def getIndexRaster(self,indexRaster):
+        '''Imports the raster layers representing the index layer.'''
+        cmd = "r.info -m %s --v" % (indexRaster)
+        r = subprocess.Popen(cmd, stdout=PIPE)
+        r.stdout, r.stderr = r.communicate()
+        if r.stdout == '':
+            self.log.error("That raster does not exist in the current mapset.")
+            pdb.set_trace()
+            #indexRaster = raw_input()
+            #cmd = "r.info -m %s --v" %(indexRaster)
+            #r = grass.pipe_command(cmd) 
+            #r.stdout, r.stderr = r.communicate()
+        self.log.info("Index raster set to " + str(indexRaster))
+        return indexRaster
+
+    def getRasterList(popRasterList):
+        '''Manually enter the raster layers representing the population stages
+           and return a list of the corresponding names.'''
+    # This method seems to be obsolete because it doesn't do anything?
+    ##    popRasterList = []
+    ##    rastNo = 1
+    ##    while 1:
+    ##        print "Enter the name of the raster for population stage %i. 
+    # Enter 'done' if complete, or 'list' to list available rasters in the 
+    # current mapset." %(rastNo)
+    ##        raster = raw_input()
+    ##        if raster == "done":
+    ##            break
+    ##        if raster =="list":
+    ##            r = grass.pipe_command("g.list type=rast")
+    ##            print r.communicate()[0]
+    #    for i in popRasterList:
+    #        cmd = "r.info -m %s --v" %(i)
+    #        r = grass.pipe_command(cmd) 
+    #        r.stdout, r.stderr = r.communicate()
+    ##            if r.stdout != '':
+    ##                if raster in popRasterList:
+    ##                    print "That raster has already been specified for a 
+    #different stage.  Please specify a different raster for this stage."
+    ##                else:
+    ##                    popRasterList.append(raster)
+    ##                    rastNo = rastNo+1
+    ##            else:
+    ##                print "That raster does not exist in the current mapset
+    #- please try again"
+    #    print "Population rasters set to "+ str(popRasterList)
+        return popRasterList
+
+    def rasterToAscii(rasterName, IO=1):
+        """ Creates a temporary file storing the raster data in ascii format
+        (accessable for LifestageTransition processing), and if IO=1 also
+        creates a temp file to write the new data to after being processed.
+        Returns the names of the temporary files.
+
+        @todo rename to exportRasterToASCII   
+        """
+        imp_cmd = "r.out.ascii -hi input=%s output=-" % (rasterName)
+        data = subprocess.Popen(imp_cmd,stdout.PIPE)
+        tempDataFileName = (tempfile.mkstemp(prefix = 'popMod_inRast_', \
+                    suffix='.txt', text=True))
+        tempDataFile = open(tempDataFileName[1], 'w')
+        tempDataFile.write(data.communicate()[0])
+        tempDataFile.close()
+        if IO==1:
+            tempOutDataFileName = (tempfile.mkstemp(prefix='popMod_outRast_', \
+                        suffix='.txt', text=True))
+            return tempDataFileName, tempOutDataFileName
+        else:
+            return tempDataFileName
+
+    def indexToAscii(indexRaster):
+        """ @todo merge with the above code and generalise """
+        # export index to temporary ascii map
+        imp_cmd = "r.out.ascii -hi input=%s output=-" % (indexRaster)
+        data = subprocess.Popen(imp_cmd,stdout.PIPE)
+        tempDataFileName = (tempfile.mkstemp(prefix='popMod_inIndex_', \
+                    suffix='.txt', text=True))
+        tempDataFile = open(tempDataFileName[1], 'w')
+        tempDataFile.write(data.communicate()[0])
+        tempDataFile.close()
+        # create temporary output filename for ascii index map
+        tempOutDataFileName = (tempfile.mkstemp(prefix='popMod_outIndex_', \
+                    suffix='.txt', text=True))
+        return tempDataFileName, tempOutDataFileName
         
 #   def exists(self,mapname):
         
