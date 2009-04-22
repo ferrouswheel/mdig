@@ -6,6 +6,5 @@ For modules, create before and after maps and make sure they have no difference,
 
 For the framework, implement a GRASSInterface stub that behaves similarly, but
 doesn't actually run commands or require GRASS. Implement as Python. Will need
-to store a repository of maps that exist. Then use pyunit
-http://pyunit.sourceforge.net/pyunit.html
+to store a repository of maps that exist. Then use unittest module.
 
