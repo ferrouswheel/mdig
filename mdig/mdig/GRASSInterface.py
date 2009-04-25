@@ -27,6 +27,7 @@ import re
 import signal
 import pdb
 import subprocess
+from subprocess import Popen
 import StringIO
 import tempfile
 
@@ -47,15 +48,16 @@ grass_i = None
 #import os
 popen = os.popen
 
+##### removeNullOutput shouldn't be needed now we use subprocess module
 # null_output is where the output of commands go when they are not wanted.
-if sys.platform == "win32":                # on a Windows port
-    null_output = "mdig-null"
-    def removeNullOutput():
-        os.remove(null_output)
-else:
-    null_output = "/dev/null"
-    def removeNullOutput():
-        pass
+#if sys.platform == "win32":                # on a Windows port
+#    null_output = "mdig-null"
+#    def removeNullOutput():
+#        os.remove(null_output)
+#else:
+#    null_output = "/dev/null"
+#    def removeNullOutput():
+#        pass
 
 def getG(create=True):
     global grass_i
@@ -223,7 +225,7 @@ class GRASSInterface:
         self.filename = None
 
     def spawnDisplay(self, fileToWatch):
-        pid = subprocess.Popen(["python",
+        pid = Popen(["python",
             os.path.join(os.path.dirname(sys.argv[0]), "mdig", "ImageShow.py"), fileToWatch]).pid
         return pid
 
@@ -285,27 +287,21 @@ class GRASSInterface:
         
         cmd = 'v.in.ascii output=v' + name + ' cat=3'
         if self.log.getEffectiveLevel() >= logging.DEBUG:
-            cmd += ' > ' + null_output
+            p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE)
+        else:
+            p = Popen(cmd, shell=True, stdin=PIPE)
             
-        sites_pipe = os.popen(cmd, 'w')
+        sites_string=""
         for s in value:
-            sites_pipe.write('%f|%f|%d\n' % s)
-        sites_pipe.close()
+            sites_string += ('%f|%f|%d\n' % s)
+        p.communicate(sites_string)
+        if p.returncode:
+            # @todo throw exception
+            pass
 
-        removeNullOutput()
-        
         self.runCommand('v.to.rast input=v%s output=%s use=cat --o' % (name, name))
-        
         self.removeMap('v' + name)
         
-        #res = self.getCurrentResolution()
-        #x1=x + 0.5 + (res / 2.0)
-        #x2=x + 0.5 - (res / 2.0)
-        #y1=y + 0.5 + (res / 2.0)
-        #y2=y + 0.5 - (res / 2.0)
-        
-        #self.runCommand('r.mapcalc \"%s=if(x()<%f && x()>%f && y()<%f && y()>%f, 1, null())\" 2> /dev/null' % (name, x1, x2, y1, y2), logging.DEBUG);
-    
     def copyMap(self,src, dest,overwrite=False):
         if overwrite:
             self.removeMap(dest)
@@ -313,22 +309,22 @@ class GRASSInterface:
     
     def getCurrentResolution(self):
         if self.checkEnvironment():
-            p=os.popen("g.region -p", 'r')
-            output = p.read()
+            output=Popen("g.region -p", shell=True, stdout=PIPE).communicate()[0]
             res=re.search("nsres:\s+(\d+)\newres:\s+(\d+)",output)
             if res is None:
+                # @todo replace with exception
                 self.log.error("Failed to get resolution, perhaps this is a latlong location? Output was:\n%s" % output)
                 sys.exit(1)
             
+            # @todo return tuple of (nsres, ewres)
             return (float(res.groups()[0]) + float(res.groups()[1])) / 2
         else:
             self.log.warning("Using default resolution (1)")
             return 1
 
     def rasterValueFreq(self,mapname):
-        p=os.popen("r.stats -c input=%s" % mapname, 'r')
-        output = p.read()
-        p.close()
+        p=Popen("r.stats -c input=%s" % mapname, shell=True, stdout=PIPE)
+        output=p.communicate()[0]
         res=re.findall("(\d+) (\d+)\n",output)
         if len(res) == 0:
             self.log.error("Failed to get raster stats. Output was:\n%s" % output)
@@ -524,39 +520,29 @@ class GRASSInterface:
         return filename
         
     
-    def runCommand(self, commandstring, log_level=logging.DEBUG,
-            stalls=False, ignoreOnFail=[] ):
+    def runCommand(self, commandstring, log_level=logging.DEBUG, ignoreOnFail=[]):
         self.log.log(log_level, "exec: " + commandstring)
+        ret = None
         
         lvl = self.log.getEffectiveLevel()
         if lvl >= logging.INFO:
-            commandstring += " 2> " + null_output
-        ret = 0
-        
-        # Some commands don't play nice with os.popen, so we revert to os.system
-        # os.system makes the command intercept interrupts, so we prefer not
-        # to use it during the simulation. 
-        if stalls:
-            ret = os.system(commandstring)
-            if ret == 0:
-                ret = None # For consistancy with return of popen
+            p = Popen(commandstring, shell=True, stdout=PIPE, stderr=PIPE)
         else:
-            cmd_stdout = os.popen(commandstring,"r")
-            self.stdout = cmd_stdout.read()
-            ret = cmd_stdout.close()
-            self.log.log(logging.DEBUG, self.stdout)
+            p = Popen(commandstring, shell=True, stdout=PIPE)
+        
+        self.stdout = p.communicate()[0]
+        self.log.log(logging.DEBUG, self.stdout)
+        ret = p.returncode
 
-        # If the command returns an error code then print it, cleanup, and then exit
-        if (ret is not None) and not (ret in ignoreOnFail):
+        # If the command returns an error code then print it,
+        # cleanup, and then exit
+        # @todo throw exception on error instead
+        if (ret is not None) and ret != 0 and not (ret in ignoreOnFail):
             self.log.log(logging.ERROR, 'Exit status for "%s" was %d' % (commandstring,ret))
             pdb.set_trace()
             exit_function = signal.getsignal(signal.SIGINT)
             exit_function(None, None)
         
-        if lvl >= logging.INFO:
-            removeNullOutput()
-        
-            
         return ret
 
     def cleanUp(self):
