@@ -310,7 +310,11 @@ class DispersalInstance:
         
         # Set the region in case it hasn't been yet
         current_region = self.experiment.getRegion(self.r_id)
-        GRASSInterface.getG().setRegion(current_region)
+        try:
+            GRASSInterface.getG().setRegion(current_region)
+        except SetRegionException e:
+            pdb.set_trace()
+            return
         
         missing_envelopes = self.areEnvelopesUpToDate(ls, start, end,
                 force=force)

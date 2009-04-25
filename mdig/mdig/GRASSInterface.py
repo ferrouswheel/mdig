@@ -340,18 +340,13 @@ class GRASSInterface:
         name = region.getName()
         if name is not None:
             self.log.debug("Setting region to %s", name)
-            if self.runCommand('g.region region=%s' % name,
-                    ignoreOnFail=[256]) == 1:
-                self.log.error("Region doesn't exist")
-                sys.exit(1)
-            
+            ret = self.runCommand('g.region region=%s' % name)
         else:
             extents = region.getExtents()
             command_string = 'g.region '
             extent_string = ''
             
             for key in extents.keys():
-                
                 if key == "north":
                     extent_string += 'n=' + str(extents[key] + ' ')
                 elif key == "south":
@@ -360,14 +355,15 @@ class GRASSInterface:
                     extent_string += 'e=' + str(extents[key] + ' ')
                 elif key == "west":
                     extent_string += 'w=' + str(extents[key] + ' ')
-                    
             res = region.getResolution()
             
             self.log.debug("Setting region using extents %s and res %f", extent_string, res)
-            if self.runCommand(command_string + extent_string + 'res='
-                    + repr(res),ignoreOnFail=[256]) == 1:
-                self.log.error("Region couldn't be set")
-                sys.exit(1)
+            ret = self.runCommand(command_string + extent_string + 'res=' + repr(res))
+        if ret is None:
+            self.log.error("Error setting region")
+            raise SetRegionException()
+        else:
+            return True
                     
     def getMapInfo(self,map_name):
         # Have to check all possible types of maps
@@ -537,10 +533,6 @@ class GRASSInterface:
             commandstring += " 2> " + null_output
         ret = 0
         
-        # Spawn allows ctrl-c to be easily caught, but can't suppress output...
-        #args = ["bash", "-c", '"'+ commandstring + '"']
-        #os.spawnvp(os.P_WAIT, args[0], args)
-        
         # Some commands don't play nice with os.popen, so we revert to os.system
         # os.system makes the command intercept interrupts, so we prefer not
         # to use it during the simulation. 
@@ -682,5 +674,6 @@ class GRASSInterface:
 #   def exists(self,mapname):
         
 class MapNotFoundException (Exception): pass        
+class SetRegionException (Exception): pass        
     
 

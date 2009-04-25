@@ -35,6 +35,7 @@ import GRASSInterface
 import MDiGConfig
 import OutputFormats
 from GrassMap import MapMissingException
+from GrassMap import SetRegionException
 import DispersalModel
 
 class Replicate:
@@ -214,7 +215,11 @@ class Replicate:
         
         # Set the GRASS region 
         current_region = exp.getRegion(self.instance.r_id)
-        self.grass_i.setRegion(current_region)
+        try:
+            self.grass_i.setRegion(current_region):
+        except SetRegionException e:
+            pdb.set_trace()
+            return
         
         # Get the initial distribution maps for the region
         self.initial_maps = exp.getInitialMaps(self.instance.r_id)
