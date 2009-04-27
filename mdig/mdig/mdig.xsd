@@ -47,6 +47,13 @@
                 <xsd:element name="lifestages">
                     <xsd:complexType>
                         <xsd:sequence>
+                            <xsd:element name="transition" minOccurs="0">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="popMod" type="regionType" minOccurs="1" maxOccurs="unbounded"/>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
                             <xsd:element name="lifestage" type="lifestageType" minOccurs="1" maxOccurs="unbounded"/>
                         </xsd:sequence>
                     </xsd:complexType>

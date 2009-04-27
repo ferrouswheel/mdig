@@ -20,7 +20,7 @@
 	
 	<regions>
 		<!-- Simulation may be run at different resolutions or in different regions -->
-		<region id="a" name="mdig_test"> <!-- id is for referral from replicates below,
+		<region id="a"> <!-- id is for referral from replicates below,
 					    name loads region from file -->
 			<!-- Resolution to run simulation in -->
 			<resolution>1</resolution>

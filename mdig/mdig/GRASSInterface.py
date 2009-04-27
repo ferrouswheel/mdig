@@ -287,9 +287,10 @@ class GRASSInterface:
         
         cmd = 'v.in.ascii output=v' + name + ' cat=3'
         if self.log.getEffectiveLevel() >= logging.DEBUG:
-            p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE)
+            p = Popen(cmd, shell=True, stdin=subprocess.PIPE, \
+                    stdout=subprocess.PIPE)
         else:
-            p = Popen(cmd, shell=True, stdin=PIPE)
+            p = Popen(cmd, shell=True, stdin=subprocess.PIPE)
             
         sites_string=""
         for s in value:
@@ -309,7 +310,7 @@ class GRASSInterface:
     
     def getCurrentResolution(self):
         if self.checkEnvironment():
-            output=Popen("g.region -p", shell=True, stdout=PIPE).communicate()[0]
+            output=Popen("g.region -p", shell=True, stdout=subprocess.PIPE).communicate()[0]
             res=re.search("nsres:\s+(\d+)\newres:\s+(\d+)",output)
             if res is None:
                 # @todo replace with exception
@@ -323,7 +324,7 @@ class GRASSInterface:
             return 1
 
     def rasterValueFreq(self,mapname):
-        p=Popen("r.stats -c input=%s" % mapname, shell=True, stdout=PIPE)
+        p=Popen("r.stats -c input=%s" % mapname, shell=True, stdout=subprocess.PIPE)
         output=p.communicate()[0]
         res=re.findall("(\d+) (\d+)\n",output)
         if len(res) == 0:
@@ -426,7 +427,7 @@ class GRASSInterface:
         """
         Check if mapset already exists
         """
-        output = subprocess.Popen("g.mapsets -l", stdout=PIPE).communicate()[0]
+        output = subprocess.Popen("g.mapsets -l", stdout=subprocess.PIPE).communicate()[0]
         #p=os.popen("g.mapsets -l", 'r')
         #output = p.read()
         mapsets = output.split()
@@ -526,9 +527,10 @@ class GRASSInterface:
         
         lvl = self.log.getEffectiveLevel()
         if lvl >= logging.INFO:
-            p = Popen(commandstring, shell=True, stdout=PIPE, stderr=PIPE)
+            p = Popen(commandstring, shell=True, stdout=subprocess.PIPE, \
+                    stderr=subprocess.PIPE)
         else:
-            p = Popen(commandstring, shell=True, stdout=PIPE)
+            p = Popen(commandstring, shell=True, stdout=subprocess.PIPE)
         
         self.stdout = p.communicate()[0]
         self.log.log(logging.DEBUG, self.stdout)
@@ -563,7 +565,7 @@ class GRASSInterface:
         @todo rename to getRegion
         """
         # sends command to GRASS session and returns result via stdout (piped)
-        output = subprocess.Popen("g.region -p", stdout=PIPE).communicate()[0]
+        output = subprocess.Popen("g.region -p", stdout=subprocess.PIPE).communicate()[0]
         # pipes input from r.info and formats it as a StringIO object
         # (additional functionality vs. string, like 'readlines')
         pre_rangeData = StringIO.StringIO(output)
@@ -575,7 +577,7 @@ class GRASSInterface:
     def getIndexRaster(self,indexRaster):
         '''Imports the raster layers representing the index layer.'''
         cmd = "r.info -m %s --v" % (indexRaster)
-        r = subprocess.Popen(cmd, stdout=PIPE)
+        r = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         r.stdout, r.stderr = r.communicate()
         if r.stdout == '':
             self.log.error("That raster does not exist in the current mapset.")

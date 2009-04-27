@@ -312,7 +312,7 @@ class DispersalInstance:
         current_region = self.experiment.getRegion(self.r_id)
         try:
             GRASSInterface.getG().setRegion(current_region)
-        except SetRegionException e:
+        except SetRegionException, e:
             pdb.set_trace()
             return
         
