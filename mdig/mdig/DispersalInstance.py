@@ -305,17 +305,18 @@ class DispersalInstance:
         # set analysis node text to filename
         a.text = filename
         
-    
-    def updateProbabilityEnvelope(self, ls, start, end, force=False):
-        
-        # Set the region in case it hasn't been yet
+    def setRegionForInstance(self):
         current_region = self.experiment.getRegion(self.r_id)
         try:
             GRASSInterface.getG().setRegion(current_region)
         except SetRegionException, e:
             pdb.set_trace()
             return
-        
+    
+    def updateProbabilityEnvelope(self, ls, start, end, force=False):
+        # Set the region in case it hasn't been yet
+        self.setRegionForInstance()
+                
         missing_envelopes = self.areEnvelopesUpToDate(ls, start, end,
                 force=force)
         if not missing_envelopes or not self.isComplete(): return

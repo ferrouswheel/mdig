@@ -362,6 +362,7 @@ class DispersalModel(object):
             # if prob = True then only run on the probabilityEnvelopes
             for i in self.getInstances():
                 if i.isComplete():
+                    i.setRegionForInstance()
                     envelopes = i.getProbabilityEnvelopes()
                     for ls_id in ls:
                         e_times = [ int(t) for t in envelopes[ls_id].keys() ]
@@ -401,6 +402,7 @@ class DispersalModel(object):
                     self.log.warning("Instance [%s] is incomplete" % i)
                 
                 for r in i.replicates:
+                    i.setRegionForInstance()
                     for ls_id in ls:
                         saved_maps = r.getSavedMaps(ls_id) #][time_step] 
                         r_times = [ int(t) for t in saved_maps.keys() ]

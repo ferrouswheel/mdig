@@ -213,13 +213,7 @@ class Replicate:
                      % (self.instance.replicates.index(self) + 1, exp.getNumberOfReplicates(),\
                         repr(self.instance.var_keys),repr(self.instance.variables)))
         
-        # Set the GRASS region 
-        current_region = exp.getRegion(self.instance.r_id)
-        try:
-            self.grass_i.setRegion(current_region)
-        except SetRegionException, e:
-            pdb.set_trace()
-            return
+        self.instance.setRegionForInstance()
         
         # Get the initial distribution maps for the region
         self.initial_maps = exp.getInitialMaps(self.instance.r_id)

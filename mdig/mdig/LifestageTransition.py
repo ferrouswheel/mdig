@@ -101,7 +101,6 @@ class ParamGenerator(list):
                 self.append(read_array(index))
                 for i in range(len(vals)):
                     temp = read_array(vals[i])
-                    # ASK: The two cases below are the same?
                     if i == 0:
                         for j in range(len(self[0])):
                             self.append(temp[int(self[0][j,1])-1:int(self[0][j,2]),1])
