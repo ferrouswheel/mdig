@@ -41,7 +41,7 @@ class Analysis:
         # associated node in xml model tree
         self.xml_node = node
 
-    def getCommand(self):
+    def get_command(self):
         """ Get the name of the command this analysis runs
 
         @return: Command name
@@ -53,7 +53,7 @@ class Analysis:
             self.log.error('Analysis has no "name" attribute')
         return None
 
-    def getParams(self):
+    def get_params(self):
         """ Get parameters for analysis command.
 
         @return: dictionary with parameter name keys and parameter values.
@@ -80,7 +80,7 @@ class Analysis:
                 params[node.attrib["name"]]=(v.tag,a)
         return params
 
-    def preRun(self,rep):
+    def pre_run(self,rep):
         """ Set up environment so analysis can run without trouble
 
         Removes the analysis output file if it already exists, but only if it is
@@ -90,15 +90,15 @@ class Analysis:
         @todo: Check overwrite flag before overwrite. Throw AnalysisFileExists,
         inherit from FileExists exception.
         """
-        if self.isRedirectedStdOut() and self.isAppend():
-            fn = self._makeFilename(rep)
+        if self.is_redirected_stdout() and self.is_append():
+            fn = self._make_filename(rep)
             try:
                 os.remove(fn)
             except (IOError, OSError):
                 pass
 
-    def _fillInMapParameters(self,rep,p):
-        ls_id = self.getLifestageID()
+    def _fill_in_map_parameters(self,rep,p):
+        ls_id = self.get_lifestage_id()
         # fill in map parameters
         for p_name,val_tuple in p.items():
             value = val_tuple[0]
@@ -110,11 +110,11 @@ class Analysis:
             if value == "currentMap":
                 p[p_name]=in_name
             elif value == "previousMap":
-                # TODO currently getPreviousMaps is broken
+                # TODO currently get_previous_maps is broken
                 if a is not None:
-                    p[p_name]=rep.getPreviousMap(ls_id,a)
+                    p[p_name]=rep.get_previous_map(ls_id,a)
                 else:
-                    p[p_name]=rep.getPreviousMap(ls_id)
+                    p[p_name]=rep.get_previous_map(ls_id)
                 # None is returned when a previous map of offset a
                 # doesn't exist
                 if p[p_name] == None:
@@ -129,28 +129,28 @@ class Analysis:
         @param in_name: The name of the current map.
         @param rep: The replicate to run on.
 
-        @todo: remove in_name as the output and use getPreviousMap once it's
+        @todo: remove in_name as the output and use get_previous_map once it's
         implemented in replicate.
         """
 
-        #rawCommand = self.getCommand()
+        #rawCommand = self.get_command()
         cmd = ""
         #if rawCommand in Analysis.inbuiltCommands:
-        #    cmd = Analysis.inbuiltCommands[rawCommand].createCommandString(in_name,rep)
+        #    cmd = Analysis.inbuiltCommands[rawCommand].create_cmd_string(in_name,rep)
         #else
-        p=self._fillInMapParameters(rep,self.getParams())
+        p=self._fill_in_map_parameters(rep,self.get_params())
         # put all the parameters and command into a command string
-        cmd=self.createCommandString(p)
+        cmd=self.create_cmd_string(p)
         
         fn = ""
         # base_cmd has the input map parameter removed for recording
         # in xml.
         base_cmd = ""
-        if self.isRedirectedStdOut():
-            fn = self._makeFilename(rep)
+        if self.is_redirected_stdout():
+            fn = self._make_filename(rep)
             # if generating a file for each time step then check file
             # doesn't exist
-            if not self.isAppend() and os.exists(fn):
+            if not self.is_append() and os.exists(fn):
                 if not MDiGConfig().overwrite_flag:
                     raise AnalysisOutputFileExists()
                 else:
@@ -163,13 +163,13 @@ class Analysis:
 
         # if the analysis requires the timestep to be written/appended
         # to the output file then do so
-        if self.isInterval():
+        if self.is_interval():
             fh = open(fn, 'a')
             fh.write('%d ' % rep.current_t)
             fh.close()
         
         # add the output filename to the command
-        if self.isAppend():
+        if self.is_append():
             cmd += " >> "
         else:
             cmd += " > "
@@ -178,19 +178,19 @@ class Analysis:
         GRASSInterface.getG().runCommand(cmd + fn)
             
         # if a file was generated then add this to the replicate
-        ls_id = self.getLifestageID()
-        if self.isRedirectedStdOut():
+        ls_id = self.get_lifestage_id()
+        if self.is_redirected_stdout():
             class mock_ac:
                 def __init__(self,base_cmd,fn):
                     self.cmd_string = base_cmd
                     self.output_fn = fn
             rep.add_analysis_result(ls_id,mock_ac(base_cmd,fn))
 
-    def getLifestageID(self):
+    def get_lifestage_id(self):
         name = self.xml_node.xpath("parent::analyses/parent::lifestage/@name")
         return name[0]
 
-    def _makeFilename(self,rep):
+    def _make_filename(self,rep):
         mdig_config = MDiGConfig.getConfig()
         
         nodes = self.xml_node.xpath("output/file")
@@ -212,7 +212,7 @@ class Analysis:
         if "ext" in node.attrib.keys():
             ext = node.attrib["ext"]
         # check whether we are appending to the same file
-        is_append = self.isAppend()
+        is_append = self.is_append()
         
         
         if mdig_config.base_dir is None:
@@ -228,7 +228,7 @@ class Analysis:
         
         return generated
 
-    def isAppend(self):
+    def is_append(self):
         nodes = self.xml_node.xpath("output/file")
         if len(nodes) == 1:
             node = nodes[0]
@@ -237,7 +237,7 @@ class Analysis:
                     return False
         return True
             
-    def isInterval(self):
+    def is_interval(self):
         nodes = self.xml_node.xpath("output/file/@date")
         if len(nodes) == 1:
             node = nodes[0]
@@ -245,18 +245,18 @@ class Analysis:
                 return False
             else:
                 return True
-        return self.isAppend()
+        return self.is_append()
     
 
-    def isRedirectedStdOut(self):
+    def is_redirected_stdout(self):
         nodes = self.xml_node.xpath("output/file")
         if len(nodes) == 1:
             return True
         else:
             return False
     
-    def createCommandString(self,params):
-        cmd=self.getCommand() + ' '
+    def create_cmd_string(self,params):
+        cmd=self.get_command() + ' '
         for p_name,value  in params.items():
             if value == "FLAG":
                 cmd += "-" + p_name + " "

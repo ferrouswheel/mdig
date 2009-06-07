@@ -242,7 +242,7 @@ class DispersalModel(object):
                 return False
         return True
     
-    def nullBitmask(self, generate=True):
+    def null_bitmask(self, generate=True):
         instances = self.getInstances()
         for i in instances:
             if generate:
@@ -251,7 +251,7 @@ class DispersalModel(object):
                 log_str = "Deleting"
             log_str=log_str+" bitmasks for instance %d of %d." % (instances.index(i)+1,len(instances))
             self.log.info(log_str)
-            i.nullBitmask(generate)
+            i.null_bitmask(generate)
     
     def prepareRun(self):
         pass
@@ -301,7 +301,7 @@ class DispersalModel(object):
         for r_id, region in self.getRegions().items():
             region.getBackgroundMap()
         #check initial map for each lifestage exists
-            for ls_key in self.getLifestageIDs():
+            for ls_key in self.get_lifestage_ids():
                 ls = self.getLifestage(ls_key)
                 
         #check phenology maps exist
@@ -571,14 +571,14 @@ class DispersalModel(object):
         
     def getInitialMaps(self, r_id):
         maps={}
-        ls_ids = self.getLifestageIDs()
+        ls_ids = self.get_lifestage_ids()
         for id in ls_ids:
             lmap = self.getLifestage(id).initial_maps[r_id]
             if lmap is not None: maps[id] = lmap
             
         return maps
     
-    def getLifestageIDs(self):
+    def get_lifestage_ids(self):
         nodes = self.xml_model.xpath('/model/lifestages/lifestage')
         ls = {}
         for node in nodes:
@@ -606,7 +606,7 @@ class DispersalModel(object):
         instances = self.getInstances()
         
         if ls is None:
-            ls = self.getLifestageIDs().keys()
+            ls = self.get_lifestage_ids().keys()
         
         for i in instances:
             self.log.debug( "Updating prob. envelope for instance %s" % repr(i) )
@@ -721,7 +721,7 @@ class DispersalModel(object):
 
     def getMaximumPhenologyInterval(self,region_id):
         maxInterval=-1
-        for id in self.getLifestageIDs():
+        for id in self.get_lifestage_ids():
             intervals=self.getLifestage(id).getPhenologyIntervals(region_id)
             if len(intervals) > 0:
                 maxInterval=max(maxInterval,max(intervals))
@@ -742,7 +742,7 @@ class DispersalModel(object):
         earliest_interval = self.getMaximumPhenologyInterval(region_id)
         earliest_ls = []
         
-        for ls_id in self.getLifestageIDs():
+        for ls_id in self.get_lifestage_ids():
             ls=self.getLifestage(ls_id)
             intervals = ls.getPhenologyIntervals(region_id)
             intervals = [i for i in intervals if i > from_interval]
@@ -866,7 +866,7 @@ class DispersalModel(object):
             #       b_info=G.getMapInfo(bmap.filename)
             #       components[b_info["type"]]=b_map.filename
 
-            for ls_id in self.getLifestageIDs():
+            for ls_id in self.get_lifestage_ids():
                 # Add initial distribution maps
                 i_map = self.getLifestage(ls_id).initial_maps[r]
                 addMapToMove(i_map)
@@ -881,9 +881,9 @@ class DispersalModel(object):
             self.log.debug("Processing instance %s files for copying" % repr(i.variables))
             # Replicate maps
             for rep in i.replicates:
-                for ls_id in self.getLifestageIDs():
-                    for r_id in rep.getSavedMaps(ls_id):
-                        r_map = rep.getSavedMaps(ls_id)[r_id]
+                for ls_id in self.get_lifestage_ids():
+                    for r_id in rep.get_saved_maps(ls_id):
+                        r_map = rep.get_saved_maps(ls_id)[r_id]
                         # r_map is just the map name not a GrassMap
                         
                         if noMapsetComponent(r_map):
@@ -893,7 +893,7 @@ class DispersalModel(object):
             # Envelopes
             prob_env = i.getProbabilityEnvelopes()
             if prob_env:
-                for ls_id in self.getLifestageIDs():
+                for ls_id in self.get_lifestage_ids():
                     for t in prob_env[ls_id]:
                         e_map=prob_env[ls_id][t]
                         if noMapsetComponent(e_map):
@@ -965,7 +965,7 @@ class DispersalModel(object):
     def deleteMaps(self):
         pass
 
-    def cleanUp(self):
+    def clean_up(self):
         # stop any active instances
         for ai in self.activeInstances:
             ai.stop()
@@ -973,13 +973,13 @@ class DispersalModel(object):
         # cleanup instances if they have been initialised
         if self.instances:
             for i in self.instances:
-                i.cleanUp()
+                i.clean_up()
         
         # cleanup lifestage maps if they have been initialised
         if len(self.lifestages.keys()) > 0:
-            ls_ids = self.getLifestageIDs()
+            ls_ids = self.get_lifestage_ids()
             for id in ls_ids:
-                self.getLifestage(id).cleanUpMaps()
+                self.getLifestage(id).clean_up_maps()
             
     def saveModel(self, filename=None):
         

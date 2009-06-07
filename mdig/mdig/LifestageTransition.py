@@ -145,7 +145,7 @@ class LifestageTransition:
 
         # tm_size, used in defining/parsing 'expressions' list
         # same as number of lifestages
-        self.tm_size = len(model_instance.exp.getLifestageIDs())
+        self.tm_size = len(model_instance.exp.get_lifestage_ids())
 
         self.parameters = self.xml_to_param()
         self.expressions = self.xml_to_expression_list(tm_size)

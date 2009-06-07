@@ -37,7 +37,7 @@ class Event:
 		self.log = logging.getLogger("mdig.event")
 		self.xml_node = node
 
-	def getCommand(self):
+	def get_command(self):
 		""" Get the module/command name """
 
 		if "name" in self.xml_node.attrib.keys():
@@ -52,7 +52,7 @@ class Event:
 		else:
 			return False
 
-	def getParams(self, is_pop, start_node):
+	def get_params(self, is_pop, start_node):
 		"""
 		Get the parameters as a dictionary. This function is recursively called
 		when <if(Not)PopulationBased> nodes are encountered.
@@ -66,10 +66,10 @@ class Event:
 		for node in nodes:
 			# Go through each <param> node
 			if node.tag == "ifPopulationBased" and is_pop:
-				params2 = self.getParams(is_pop,node)
+				params2 = self.get_params(is_pop,node)
 				params.update(params2)
 			elif node.tag == "ifNotPopulationBased" and not is_pop:
-				params2 = self.getParams(is_pop,node)
+				params2 = self.get_params(is_pop,node)
 				params.update(params2)
 			else:
 				if node.tag == "flag":
@@ -95,7 +95,7 @@ class Event:
 		Run the event using in_name as the input map and out_name as the output
 		map. 
 		"""
-		p=self.getParams(is_pop,None)
+		p=self.get_params(is_pop,None)
 		
 		# Default parameter names for input and output maps if none explicitly defined:
 		if ("INPUT",None) not in p.values():
@@ -121,17 +121,17 @@ class Event:
 			elif value[0] == "FLAG":
 				p[p_name]="FLAG"
 		
-		cmd=self.createCommandString(p)
+		cmd=self.create_cmd_string(p)
 		
 		GRASSInterface.getG().removeMap(out_name)
 		GRASSInterface.getG().runCommand(cmd)
 		#self.log.debug(cmd)
 
-	def createCommandString(self,params):
+	def create_cmd_string(self,params):
 		"""
 		Create an actual command line string to run in GRASS
 		"""
-		cmd=self.getCommand() + ' '
+		cmd=self.get_command() + ' '
 		for p_name,value  in params.items():
 			if value == "FLAG":
 				cmd = cmd + "-" + p_name + " "

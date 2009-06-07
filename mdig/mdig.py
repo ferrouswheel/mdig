@@ -129,10 +129,10 @@ def exit_cleanup():
     logger.debug("Cleaning up")
     
     for exp in simulations:
-        exp.cleanUp()
+        exp.clean_up()
         exp.saveModel()
     if GRASSInterface.getG(False) is not None:
-        GRASSInterface.getG().cleanUp()
+        GRASSInterface.getG().clean_up()
 
     MDiGConfig.getConfig().write()
         

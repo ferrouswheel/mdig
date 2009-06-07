@@ -261,7 +261,7 @@ class Lifestage:
 		for i in self.analysis_list:
 			yield i
 
-	def cleanUpMaps(self):
+	def clean_up_maps(self):
 		for grassmap in self.initial_maps.values():
 			del grassmap
             #GRASSInterface.getG().destructMap(grassmap)

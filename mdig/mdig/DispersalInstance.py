@@ -120,7 +120,7 @@ class DispersalInstance:
         as indices from the end of the array e.g. -1 == last map.
         """
         if ls is None:
-            ls = self.experiment.getLifestageIDs().keys()
+            ls = self.experiment.get_lifestage_ids().keys()
         elif not isinstance(ls, list):
             ls = [ls]
 
@@ -132,7 +132,7 @@ class DispersalInstance:
         ac = AnalysisCommand(cmd_string)
         for r in self.replicates:
             for ls_id in ls:
-                saved_maps = r.getSavedMaps(ls_id)
+                saved_maps = r.get_saved_maps(ls_id)
                 r_times = [ int(t) for t in saved_maps.keys() ]
                 ac.init_output_file(self, r)
                 ac.set_times(self.experiment.getPeriod(),times,r_times)
@@ -155,7 +155,7 @@ class DispersalInstance:
         as indices from the end of the array e.g. -1 == last map.
         """
         if ls is None:
-            ls = self.experiment.getLifestageIDs().keys()
+            ls = self.experiment.get_lifestage_ids().keys()
         elif not isinstance(ls, list):
             ls = [ls]
         
@@ -177,15 +177,15 @@ class DispersalInstance:
                 # under instance...
                 self.add_analysis_result(ls_id, ac) #TODO(cmd_string, tmp_fn))
         
-    def nullBitmask(self, generate=True):
+    def null_bitmask(self, generate=True):
         for r in self.replicates:
-            r.nullBitmask(generate)
+            r.null_bitmask(generate)
     
     def stop(self):
         
         for ar in self.activeReps:
             self.removeActiveRep(ar)
-            ar.cleanUp()
+            ar.clean_up()
             self.removeRep(ar)
     
     def addListener(self,listener):
@@ -200,9 +200,9 @@ class DispersalInstance:
         else:
             return None
         
-    def cleanUp(self):
+    def clean_up(self):
         for r in self.replicates:
-            r.cleanUp()
+            r.clean_up()
     
     def prepareRun(self):
         pass
@@ -296,7 +296,7 @@ class DispersalInstance:
 
     def areEnvelopesNewerThanReplicates(self):
         for i in self.replicates:
-            if i.getTimeStamp() > self.getEnvelopesTimeStamp():
+            if i.get_time_stamp() > self.getEnvelopesTimeStamp():
                 return False
         return True
 
@@ -394,7 +394,7 @@ class DispersalInstance:
         for l in ls:
             maps = []
             for r in self.replicates:
-                saved_maps = r.getSavedMaps(l)
+                saved_maps = r.get_saved_maps(l)
                 if saved_maps:
                     maps.append(saved_maps)
                 else:

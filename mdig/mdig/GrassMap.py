@@ -128,7 +128,7 @@ class GrassMap:
             self.ready = True
         return self.filename
     
-    def cleanUp(self):
+    def clean_up(self):
         """
         Just removes map if it is temporary
         """

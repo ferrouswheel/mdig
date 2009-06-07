@@ -147,7 +147,7 @@ class GRASSInterface:
         self.runCommand('echo \"Year %d\" | d.text color=black line=10' % year,logging.DEBUG );
         os.environ['GRASS_PNG_READ']="TRUE"
         
-    def nullBitmask(self, filename, generate=True):
+    def null_bitmask(self, filename, generate=True):
         if generate:
             # Should use the -n flag to only generate bitmasks if necessary,
             # however the -n flag is currently broken
@@ -550,7 +550,7 @@ class GRASSInterface:
         
         return ret
 
-    def cleanUp(self):
+    def clean_up(self):
         self.log.log(logging.INFO,'Restoring region')
         
         self.runCommand('g.region region='+self.old_region,ignoreOnFail=[256])
