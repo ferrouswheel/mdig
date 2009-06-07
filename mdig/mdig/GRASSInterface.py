@@ -337,7 +337,7 @@ class GRASSInterface:
         return res
         
     def setRegion(self,region):
-        name = region.getName()
+        name = region.get_name()
         if name is not None:
             self.log.debug("Setting region to %s", name)
             ret = self.runCommand('g.region region=%s' % name)
@@ -565,7 +565,7 @@ class GRASSInterface:
     def getRange(self):
         """ provides region data to be passed to LifestageTransition
         (rowProcessing.process function from Steve Wangens popMod)
-        @todo rename to getRegion
+        @todo rename to get_region
         """
         # sends command to GRASS session and returns result via stdout (piped)
         output = subprocess.Popen("g.region -p", stdout=subprocess.PIPE).communicate()[0]

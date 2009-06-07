@@ -170,7 +170,6 @@ class MDiGConfig(ConfigObj):
 		makepath(filename)
 
 def makepath(path):
-
     """ creates missing directories for the given path and
         returns a normalized absolute version of the path.
 
@@ -183,7 +182,6 @@ def makepath(path):
 
     from holger@trillke.net 2002/03/18
     """
-
     from os import makedirs
     from os.path import normpath,dirname,exists,abspath
 

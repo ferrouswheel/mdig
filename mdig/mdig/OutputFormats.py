@@ -32,7 +32,7 @@ def createFilename(rep):
 		i = rep.instance
 		# Format of saved filename:
 		# species_region_vars*_rep_lifestage.t
-		fn = i.experiment.getName() + "_region_" + i.r_id
+		fn = i.experiment.get_name() + "_region_" + i.r_id
 		if i.var_keys is not None:
 			for v in i.var_keys:
 				fn += "_" + v + "_"
@@ -47,7 +47,7 @@ def createFilename(rep):
 		i = rep
 		# Format of saved filename:
 		# species_region_vars*_rep_lifestage.t
-		fn = i.experiment.getName() + "_region_" + i.r_id
+		fn = i.experiment.get_name() + "_region_" + i.r_id
 		if i.var_keys is not None:
 			for v in i.var_keys:
 				fn += "_" + v + "_"
@@ -88,7 +88,7 @@ class PngOutput:
 		
 		fn = None
 		
-		if rep.instance.experiment.intervalModulus(self.interval,t) == 0:
+		if rep.instance.experiment.interval_modulus(self.interval,t) == 0:
 			
 			fn = createFilename(rep)
 			fn+="_"+repr(t)+".png"
@@ -97,7 +97,7 @@ class PngOutput:
 			g.setOutput(fn,display=None)
 			g.clearMonitor()
 			
-			current_region = rep.instance.experiment.getRegion(rep.instance.r_id)
+			current_region = rep.instance.experiment.get_region(rep.instance.r_id)
 			
 			if current_region.getBackgroundMap():
 				g.paintMap(current_region.getBackgroundMap().getMapFilename())
@@ -139,7 +139,7 @@ class RasterOutput:
 		g = GRASSInterface.getG()
 		fn = None
 
-		if rep.instance.experiment.intervalModulus(self.interval,t) == 0:
+		if rep.instance.experiment.interval_modulus(self.interval,t) == 0:
 			for l in rep.temp_map_names.keys():
 				if self.lifestage == l:
 					fn = createFilename(rep)

@@ -75,11 +75,11 @@ class DispersalModel(object):
         self.activeInstances = []
         
         schema_file = sys.path[0]+"/mdig/mdig.xsd"
-        self.loadXML(model_file)
-        self.validateXML(schema_file)
+        self.load_xml(model_file)
+        self.validate_xml(schema_file)
         
         self.listeners = []
-        outputListeners = self.getOutputListeners()
+        outputListeners = self.get_output_listeners()
         for l in outputListeners:
             self.add_listener(l)
     
@@ -95,20 +95,20 @@ class DispersalModel(object):
         if self.action is not None:
             try:
                 if self.action.check_model:
-                    self.checkModel()
+                    self.check_model()
             except CheckModelException, e:
                 print e
                 
         # Set up base directory for output
-        mdig_config.base_dir = self.getBaseDir()
+        mdig_config.base_dir = self.get_base_dir()
         if self.action is not None:
             if self.action.output_dir is not None:
-                if self.getBaseDir() is not None:
+                if self.get_base_dir() is not None:
                     # TODO: eventually choose command line option over the
                     # default
                     logger.warning ("Model already specifies base directory,"+\
                             " ignoring command line option.")
-                    mdig_config.base_dir = self.getBaseDir()
+                    mdig_config.base_dir = self.get_base_dir()
                 else:
                     mdig_config.base_dir = self.action.output_dir
             if mdig_config.base_dir is None:
@@ -129,7 +129,7 @@ class DispersalModel(object):
         - the actual XML document, as a string
         """
         self.log.debug("Opening %s", model_file)
-        sock = openAnything(model_file)
+        sock = open_anything(model_file)
         
         try:
             self.log.debug("Parsing %s", model_file)
@@ -145,11 +145,11 @@ class DispersalModel(object):
         self.model_file=model_file
         return xmltree
 
-    def loadXML(self, model_file):
+    def load_xml(self, model_file):
         """load mdig model file"""
         self.xml_model = self._load(model_file) 
         
-    def validateXML(self, schema_file):
+    def validate_xml(self, schema_file):
         self.log.debug("Loading schema %s", schema_file)
         try:
             self.schema_doc = lxml.etree.parse(schema_file)
@@ -174,8 +174,8 @@ class DispersalModel(object):
         self.schema_file=schema_file
         self.log.debug("%s is valid", self.model_file)
             
-    def _getInstancesByRegion(self):
-        instances = self.getInstances()
+    def _get_instances_by_region(self):
+        instances = self.get_instances()
         r_inst = {}
         
         for i in instances:
@@ -202,7 +202,7 @@ class DispersalModel(object):
         return min_instance
     
     def resetInstances(self):
-        instances = self.getInstances()
+        instances = self.get_instances()
         for i in instances:
             i.reset()
     
@@ -217,7 +217,7 @@ class DispersalModel(object):
         self.start_time = datetime.now()
         self.log.info("Starting simulations at " + self.start_time.isoformat())
         
-        r_instances = self._getInstancesByRegion()
+        r_instances = self._get_instances_by_region()
         
         # incomplete's keys are regions
         for r_id,instances in r_instances.items():
@@ -237,13 +237,13 @@ class DispersalModel(object):
         self.end_time = datetime.now()
         
     def is_complete(self):
-        for i in self.getInstances():
+        for i in self.get_instances():
             if not i.is_complete():
                 return False
         return True
     
     def null_bitmask(self, generate=True):
-        instances = self.getInstances()
+        instances = self.get_instances()
         for i in instances:
             if generate:
                 log_str = "Generating"
@@ -256,10 +256,10 @@ class DispersalModel(object):
     def pre_run(self):
         pass
     
-    def getInstances(self):
+    def get_instances(self):
         if self.instances is None:
             self.instances = []
-            permutations = self.getInstancePermutations()
+            permutations = self.get_instance_permutations()
             
             # Turn each returned variable combination into an actual
             # DispersalInstance object instance
@@ -267,13 +267,13 @@ class DispersalModel(object):
                 num_perms = len(p["var"])
                 # If no variables in experiment:
                 if num_perms == 0:
-                    node = self.getCompletedNode(r_id,None,None)
+                    node = self.get_completed_node(r_id,None,None)
                     self.instances.append( \
                            DispersalInstance(node,self,r_id,None,None))
                 # If variables are in experiment:
                 else:
                     for i in range(0, num_perms):
-                        node = self.getCompletedNode(r_id,p["var_keys"],p["var"][i])
+                        node = self.get_completed_node(r_id,p["var_keys"],p["var"][i])
                         self.instances.append( \
                            DispersalInstance(node,self,r_id,p["var_keys"],p["var"][i]))
             
@@ -284,13 +284,12 @@ class DispersalModel(object):
         return self.instances
                 
     
-    def getIncompleteInstances(self):
-        return [i for i in self.getInstances() if not i.is_complete()]
+    def get_incomplete_instances(self):
+        return [i for i in self.get_instances() if not i.is_complete()]
     
                 
-    def checkModel(self):
-        
-        self.log.info(self.getDescription())
+    def check_model(self):
+        self.log.info(self.get_description())
         self.log.debug("Checking model maps exist")
         
         # - can check maps just by attempting to get the map
@@ -298,11 +297,11 @@ class DispersalModel(object):
         # checks the map exists
         
         #check background map
-        for r_id, region in self.getRegions().items():
+        for r_id, region in self.get_regions().items():
             region.getBackgroundMap()
         #check initial map for each lifestage exists
             for ls_key in self.get_lifestage_ids():
-                ls = self.getLifestage(ls_key)
+                ls = self.get_lifestage(ls_key)
                 
         #check phenology maps exist
         
@@ -311,25 +310,25 @@ class DispersalModel(object):
         
         #self.grass_i.checkMap(self.model.getBackgroundMap())
     
-    def getUser(self):
+    def get_user(self):
         nodes = self.xml_model.xpath('user/email')
         if len(nodes) == 1:
             return nodes[0].text.strip()
         
-    def setUser(self,email):
+    def set_user(self,email):
         nodes = self.xml_model.xpath('user/email')
         if len(nodes) == 1:
             nodes[0].text = email
         
-    def getName(self):
+    def get_name(self):
         nodes = self.xml_model.xpath('/model/name')
         return nodes[0].text.strip()
         
-    def setName(self,name):
+    def set_name(self,name):
         nodes = self.xml_model.xpath('/model/name')
         nodes[0].text = name
         
-    def getInitialRandomSeed(self):
+    def get_initial_random_seed(self):
         nodes = self.xml_model.xpath('/model/random/initialSeed')
         if len(nodes) == 1:
             return int(nodes[0].text)
@@ -342,8 +341,8 @@ class DispersalModel(object):
     #   nodes = self.xml_model.xpath('model/random/lastState')
     #   nodes[0].text = repr(state)
 
-    def initRandomWithOffset(self,seed,offset):
-        i_seed = self.getInitialRandomSeed()
+    def init_random(self,seed,offset):
+        i_seed = self.get_initial_random_seed()
         my_random = random.Random()
         
         my_random.seed(i_seed)
@@ -359,17 +358,17 @@ class DispersalModel(object):
             
         return my_random
         
-    def getNextRandomValue(self):
+    def next_random_value(self):
         if self.random is None:
-            offset = self.getRandomOffset()
-            seed = self.getInitialRandomSeed()
-            self.random = self. initRandomWithOffset(seed,offset)
+            offset = self.get_random_offset()
+            seed = self.get_initial_random_seed()
+            self.random = self.init_random(seed,offset)
             
         value=self.random.randint(-2.14748e+09,2.14748e+09)
-        self.incRandomOffset()
+        self.inc_random_offset()
         return value
     
-    def incRandomOffset(self):
+    def inc_random_offset(self):
         nodes = self.xml_model.xpath('/model/random/offset')
         if len(nodes) < 1:
             random_node = self.xml_model.xpath('/model/random')
@@ -383,7 +382,7 @@ class DispersalModel(object):
         value += 1
         ls_node.text = repr(value)
     
-    def getRandomOffset(self):
+    def get_random_offset(self):
         nodes = self.xml_model.xpath('/model/random/offset')
         if len(nodes) == 1:
             return int(nodes[0].text)
@@ -391,24 +390,24 @@ class DispersalModel(object):
             return None
         #[int(child.attrib["a"]),int(child.attrib["b"]),int(child.attrib["c"])]
         
-    def getVersion(self):
+    def get_version(self):
         nodes = self.xml_model.xpath('model')
         if len(nodes) > 0 and "version" in nodes[0].attrib.keys():
             return nodes[0].attrib["version"]
         else:
             return None
     
-    def setVersion(self,version):
+    def set_version(self,version):
         nodes = self.xml_model.xpath('model')
         nodes[0].attrib["version"] = version
 
-    def getRegions(self):
+    def get_regions(self):
         regions={}
-        for id in self.getRegionIDs():
-            regions[id]=self.getRegion(id)
+        for id in self.get_region_ids():
+            regions[id]=self.get_region(id)
         return regions
     
-    def getOutputListeners(self):
+    def get_output_listeners(self):
         nodes = self.xml_model.xpath('/model/output')
         listeners = []
         
@@ -424,7 +423,7 @@ class DispersalModel(object):
         return listeners
 
 
-    def getNumberOfReplicates(self, node=None):
+    def get_num_replicates(self, node=None):
         ''' If node == none then return the total number of replicates
         to run for each instance, otherwise return the number of completed
         replicates referred to by the node.
@@ -438,11 +437,11 @@ class DispersalModel(object):
             nodes=node.xpath("replicates/replicate")
             return len(nodes)
         
-    def setNumberOfReplicates(self,max_r):
+    def set_num_replicates(self,max_r):
         value = self.xml_model.xpath("/model/random/replicates")
         value[0].text = repr(max_r)
         
-    def getCompletedPermutations(self):
+    def get_completed_permutations(self):
         completed=[]
         nodes=self.xml_model.xpath("//instances/completed")
         
@@ -467,13 +466,13 @@ class DispersalModel(object):
         
         return completed
     
-    def getInstancePermutations(self):
-        ''' getInstances - return a list of instances
+    def get_instance_permutations(self):
+        ''' get_instances - return a list of instances
         '''
         instances={}
         permutations={}
-        region_ids=self.getRegionIDs()
-        param_variables=self.getVariableValues()
+        region_ids=self.get_region_ids()
+        param_variables=self.get_variable_values()
         param_keys=param_variables.keys()
         total_instances=0
         
@@ -481,9 +480,9 @@ class DispersalModel(object):
             permutations[r_id] = {}
             p_r = permutations[r_id]
             
-            p_r["var"] = self.permuteVariables(param_variables, param_keys)
+            p_r["var"] = self.permute_variables(param_variables, param_keys)
             p_r["var_keys"] = param_keys
-            p_r["reps"]=[self.getNumberOfReplicates() for i in p_r["var"]]
+            p_r["reps"]=[self.get_num_replicates() for i in p_r["var"]]
             
             # If p_r["var"] length is 0 then there should still be
             # at least one instance that has no variables.
@@ -491,7 +490,7 @@ class DispersalModel(object):
             
         self.log.debug("Total number of instances: %d", total_instances)
         
-        completed = self.getCompletedPermutations()
+        completed = self.get_completed_permutations()
         
         for c in completed:
             r_id = c["region"]
@@ -510,7 +509,7 @@ class DispersalModel(object):
             
             #pdb.set_trace()
             if v_index != -1:
-                if len(c["reps"]) >= self.getNumberOfReplicates():
+                if len(c["reps"]) >= self.get_num_replicates():
                     if len(p["reps"]) == 0:
                         # If there there are no variables
                         p["reps"].append(0)
@@ -521,14 +520,14 @@ class DispersalModel(object):
                 else:
                     if len(p["reps"]) == 0:
                         # If there there are no variables
-                        p["reps"].append(self.getNumberOfReplicates() - len(c["reps"]))
+                        p["reps"].append(self.get_num_replicates() - len(c["reps"]))
                     else:
                         p["reps"][v_index] = p["reps"][v_index] - len(c["reps"])
             
         self.log.debug(permutations)
         return permutations
         
-    def permuteVariables(self, variables, keys):
+    def permute_variables(self, variables, keys):
         results=[]
         if len(keys) > 0:
             current_key = keys[0]
@@ -536,7 +535,7 @@ class DispersalModel(object):
             for i in variables[current_key]:
                 results2=[]
             
-                results2.extend(self.permuteVariables(variables,keys[1:]))
+                results2.extend(self.permute_variables(variables,keys[1:]))
                 
                 if len(results2)==0: results2=[[i]]
                 else:
@@ -545,7 +544,7 @@ class DispersalModel(object):
                 results.extend(results2)
         return results
     
-    def getVariableValues(self):
+    def get_variable_values(self):
         var_values={}
         param_variables=self.xml_model.xpath("//lifestage/event/param/variable")
         for variable in param_variables:
@@ -561,19 +560,19 @@ class DispersalModel(object):
                     var_values[i] = range(j,k+1,step)
         return var_values
                     
-    def getDescription(self):
+    def get_description(self):
         desc=self.xml_model.xpath("/model/description")
         return desc[0].text.strip()
         
-    def setDescription(self,desc):
+    def set_description(self,desc):
         node=self.xml_model.xpath("/model/description")
         node[0].text = desc
         
-    def getInitialMaps(self, r_id):
+    def get_initial_maps(self, r_id):
         maps={}
         ls_ids = self.get_lifestage_ids()
         for id in ls_ids:
-            lmap = self.getLifestage(id).initial_maps[r_id]
+            lmap = self.get_lifestage(id).initial_maps[r_id]
             if lmap is not None: maps[id] = lmap
             
         return maps
@@ -585,7 +584,7 @@ class DispersalModel(object):
             ls[node.attrib["name"]] = node
         return ls
         
-    def getLifestage(self, ls_id):
+    def get_lifestage(self, ls_id):
         if ls_id in self.lifestages.keys():
             return self.lifestages[ls_id]
         else:
@@ -596,21 +595,21 @@ class DispersalModel(object):
             else:
                 self.log.error("Could not get unique lifestage from id '%s'" % ls_id)
         
-    def getPeriod(self):
+    def get_period(self):
         start_time = int(self.xml_model.xpath('/model/period/startTime/text()')[0])
         end_time = int(self.xml_model.xpath('/model/period/endTime/text()')[0])
         
         return (start_time, end_time)
     
     def update_occupancy_envelope(self, ls=None, time=None, force=False):
-        instances = self.getInstances()
+        instances = self.get_instances()
         
         if ls is None:
             ls = self.get_lifestage_ids().keys()
         
         for i in instances:
             self.log.debug( "Updating prob. envelope for instance %s" % repr(i) )
-            period = self.getPeriod()
+            period = self.get_period()
             if time is None:
                 i.update_occupancy_envelope(ls, period[0], period[1],
                         force=force)
@@ -623,7 +622,7 @@ class DispersalModel(object):
                 i.update_occupancy_envelope(ls, time, time, force=force)
                 
     def run_command_on_maps(self,cmd,ls,times=None,prob=True):
-        for i in self.getInstances():
+        for i in self.get_instances():
             if not i.is_complete():
                 self.log.warning("Skipping incomplete instance " + repr(i))
                 continue
@@ -632,7 +631,7 @@ class DispersalModel(object):
             else:
                 i.run_command_on_replicates(cmd,ls,times)
         
-    def addReplicate(self,completed_node):
+    def add_replicate(self,completed_node):
         #search for completed/replicates node otherwise create
         replicates_node=completed_node.find('replicates')
         if replicates_node is None:
@@ -645,7 +644,7 @@ class DispersalModel(object):
         
         return replicate_node
         
-    def getCompletedNode(self,r_id,var_keys,var):
+    def get_completed_node(self,r_id,var_keys,var):
         
         xpath_str = '/model/instances/completed[region[@id="%s"]]' % r_id
         
@@ -657,7 +656,7 @@ class DispersalModel(object):
         
         if len(completed_node) == 0:
             model_node=self.xml_model.getroot()
-            completed_node=self._addCompleted(r_id,var_keys,var)
+            completed_node=self._add_completed(r_id,var_keys,var)
         elif len(completed_node) == 1:
             completed_node = completed_node[0]
         else:
@@ -667,7 +666,7 @@ class DispersalModel(object):
         
         return completed_node
         
-    def _addCompleted(self,r_id,var_keys,var):
+    def _add_completed(self,r_id,var_keys,var):
         mdig_config = MDiGConfig.getConfig()
         
         model_node=self.xml_model.getroot()
@@ -693,7 +692,7 @@ class DispersalModel(object):
     
         return completed_node   
     
-    def getBaseDir(self):
+    def get_base_dir(self):
         completed_node = self.xml_model.xpath("/model/instances")
         
         if len(completed_node) > 0:
@@ -701,14 +700,14 @@ class DispersalModel(object):
                 return completed_node[0].attrib["baseDir"]
         return None
     
-    def getRegionIDs(self):
+    def get_region_ids(self):
         nodes = self.xml_model.xpath("//regions/region/@id")
         #r_ids = {}
         #for node in nodes:
         #   r_ids[node.attrib["name"]] = node
         return nodes
         
-    def getRegion(self, r_id):
+    def get_region(self, r_id):
         if r_id in self.regions.keys():
             return self.regions[r_id]
         else:
@@ -719,31 +718,31 @@ class DispersalModel(object):
             else:
                 self.log.error("Could not get unique region from id '%s'" % r_id)
 
-    def getMaximumPhenologyInterval(self,region_id):
+    def get_max_phenology_interval(self,region_id):
         maxInterval=-1
         for id in self.get_lifestage_ids():
-            intervals=self.getLifestage(id).getPhenologyIntervals(region_id)
+            intervals=self.get_lifestage(id).getPhenologyIntervals(region_id)
             if len(intervals) > 0:
                 maxInterval=max(maxInterval,max(intervals))
         return maxInterval
     
-    def phenologyIterator(self,region_id):
+    def phenology_iterator(self,region_id):
         current_interval = -1
-        max_interval = self.getMaximumPhenologyInterval(region_id)
+        max_interval = self.get_max_phenology_interval(region_id)
         while current_interval < max_interval:
-            (ls, interval)=self.getEarliestLifestage(region_id, current_interval)
+            (ls, interval)=self.get_earliest_lifestage(region_id, current_interval)
             current_interval=interval
             
             for l in ls:
                 #TODO: Make the lifestage ordering predictable (when interval is the same)
                 yield (interval, ls)
 
-    def getEarliestLifestage(self, region_id, from_interval):
-        earliest_interval = self.getMaximumPhenologyInterval(region_id)
+    def get_earliest_lifestage(self, region_id, from_interval):
+        earliest_interval = self.get_max_phenology_interval(region_id)
         earliest_ls = []
         
         for ls_id in self.get_lifestage_ids():
-            ls=self.getLifestage(ls_id)
+            ls=self.get_lifestage(ls_id)
             intervals = ls.getPhenologyIntervals(region_id)
             intervals = [i for i in intervals if i > from_interval]
             if min(intervals) < earliest_interval:
@@ -753,15 +752,15 @@ class DispersalModel(object):
                 earliest_ls = [ls]
         return (earliest_ls,earliest_interval)
             
-    def removeActiveInstance(self, instance):
+    def remove_active_instance(self, instance):
         if instance in self.activeInstances:
             self.activeInstances.remove(instance)
         
-    def addActiveInstance(self, instance):
+    def add_active_instance(self, instance):
         if instance not in self.activeInstances:
             self.activeInstances.append(instance)
     
-    def intervalModulus(self, interval, t):
+    def interval_modulus(self, interval, t):
         """
         Check that modulus of value - start of simulation period is 0
         Used for checking whether a map should be output etc.
@@ -772,36 +771,36 @@ class DispersalModel(object):
         elif interval == -1:
             # Always return 1 if there is not valid raster output interval
             return 1
-        period = self.getPeriod()
+        period = self.get_period()
         multiple = (t - period[0]) / interval
         remainder = (t - period[0]) - (multiple * interval)
         return remainder
 
-    def intervalModulusByLifestage(self, ls_id, year):
+    def interval_modulus_by_lifestage(self, ls_id, year):
         """
         Check that modulus of value - start of simulation period is 0
         Used for checking whether a map should be output etc.
         Get interval from lifestage
         """
-        interval = self.getMapOutputInterval(ls_id)
-        return self.intervalModulus(interval, year)
+        interval = self.get_map_output_interval(ls_id)
+        return self.interval_modulus(interval, year)
 
-    def mapYearGenerator(self, ls_id, period=[]):
+    def map_year_generator(self, ls_id, period=[]):
         """
         Generate years that maps are supposed to be generated for a given lifestage
         """
-        interval = self.getMapOutputInterval(ls_id)
+        interval = self.get_map_output_interval(ls_id)
         if interval <= 0:
             return
         if not period:
-            period = self.getPeriod()
-        period = self.getPeriod()
+            period = self.get_period()
+        period = self.get_period()
         t = period[0]
         while t <= period[1]:
             yield t
             t = t + interval
         
-    def getMapOutputInterval(self,ls_id):
+    def get_map_output_interval(self,ls_id):
         nodes = self.xml_model.xpath('/model/output/raster')
             
         for n in nodes:
@@ -815,7 +814,7 @@ class DispersalModel(object):
         self.log.warning("No raster output for lifestage " + ls_id)
         return -1
 
-    def moveMapset(self, new_mapset):
+    def move_mapset(self, new_mapset):
         """
         Moves all Grass related files to another mapset. Files that have mapset given
         using map@mapset notation are not moved, but others are.
@@ -835,49 +834,48 @@ class DispersalModel(object):
         components["vector"]=[]
         
         # Function to check mapset isn't in map name
-        def noMapsetComponent(x):
+        def no_mapset_component(x):
             if x.find("@") == -1:
                 return True
             else:
                 return False
 
         # Function to add map only if necessary, and put into correct array
-        def addMapToMove(x):
+        def add_map_to_move(x):
             if not x.temporary:
-                if noMapsetComponent(x.filename):
+                if no_mapset_component(x.filename):
                     x_info=G.getMapInfo(x.filename)
                     components[x_info["type"]].append((x_info["name"],x_info["mapset"]))
 
         self.log.debug("Processing region files for copying")
         # Add region files and background maps if they exist
-        for r in self.getRegions():
+        for r in self.get_regions():
             # Regions
-            r_name = self.getRegions()[r].getName()
-            if r_name and noMapsetComponent(r_name):
+            r_name = self.get_regions()[r].get_name()
+            if r_name and no_mapset_component(r_name):
                 r_info = G.getMapInfo(r_name)
                 components["region"].append((r_info["name"],r_info["mapset"]))
 
             # Background maps
-            b_map = self.getRegions()[r].getBackgroundMap()
-            addMapToMove(b_map)         
+            b_map = self.get_regions()[r].getBackgroundMap()
+            add_map_to_move(b_map)         
 
             #if not bmap.temporary:
-            #   if noMapsetComponent(b_map.filename):
+            #   if no_mapset_component(b_map.filename):
             #       b_info=G.getMapInfo(bmap.filename)
             #       components[b_info["type"]]=b_map.filename
 
             for ls_id in self.get_lifestage_ids():
                 # Add initial distribution maps
-                i_map = self.getLifestage(ls_id).initial_maps[r]
-                addMapToMove(i_map)
+                i_map = self.get_lifestage(ls_id).initial_maps[r]
+                add_map_to_move(i_map)
                 # Add phenology maps
-                if r in self.getLifestage(ls_id).p_map_names:
-                    p_map = self.getLifestage(ls_id).p_map_names[r]
-                    addMapToMove(p_map)
+                if r in self.get_lifestage(ls_id).p_map_names:
+                    p_map = self.get_lifestage(ls_id).p_map_names[r]
+                    add_map_to_move(p_map)
 
         # TODO: Moving Param maps?
-        
-        for i in self.getInstances():
+        for i in self.get_instances():
             self.log.debug("Processing instance %s files for copying" % repr(i.variables))
             # Replicate maps
             for rep in i.replicates:
@@ -886,7 +884,7 @@ class DispersalModel(object):
                         r_map = rep.get_saved_maps(ls_id)[r_id]
                         # r_map is just the map name not a GrassMap
                         
-                        if noMapsetComponent(r_map):
+                        if no_mapset_component(r_map):
                             r_info=G.getMapInfo(r_map)
                             components[r_info["type"]].append((r_info["name"],r_info["mapset"]))
                             
@@ -896,12 +894,9 @@ class DispersalModel(object):
                 for ls_id in self.get_lifestage_ids():
                     for t in prob_env[ls_id]:
                         e_map=prob_env[ls_id][t]
-                        if noMapsetComponent(e_map):
+                        if no_mapset_component(e_map):
                             e_info=G.getMapInfo(e_map)
                             components[e_info["type"]].append((e_info["name"],e_info["mapset"]))
-        
-        
-
         ## Copy all maps ##
         self.log.debug("%d region to copy" % len(components["region"]))
         self.log.debug("%d raster maps to copy" % len(components["raster"]))
@@ -962,7 +957,8 @@ class DispersalModel(object):
         # Change into new mapset again
         G.changeMapset(new_mapset)
 
-    def deleteMaps(self):
+    def delete_maps(self):
+        # TODO: implement me
         pass
 
     def clean_up(self):
@@ -979,9 +975,9 @@ class DispersalModel(object):
         if len(self.lifestages.keys()) > 0:
             ls_ids = self.get_lifestage_ids()
             for id in ls_ids:
-                self.getLifestage(id).clean_up_maps()
+                self.get_lifestage(id).clean_up_maps()
             
-    def saveModel(self, filename=None):
+    def save_model(self, filename=None):
         
         if filename is None:
             filename = self.model_filename
@@ -1020,7 +1016,7 @@ class ValidationError(Exception): pass
 
 class InvalidXMLException(Exception): pass
 
-def openAnything(source):
+def open_anything(source):
         """URI, filename, or string --> stream
     
         This function lets you define parsers that take any input source
@@ -1031,13 +1027,13 @@ def openAnything(source):
         
         Examples:
         >>> from xml.dom import minidom
-        >>> sock = openAnything("http://localhost/kant.xml")
+        >>> sock = open_anything("http://localhost/kant.xml")
         >>> doc = minidom.parse(sock)
         >>> sock.close()
-        >>> sock = openAnything("c:\\inetpub\\wwwroot\\kant.xml")
+        >>> sock = open_anything("c:\\inetpub\\wwwroot\\kant.xml")
         >>> doc = minidom.parse(sock)
         >>> sock.close()
-        >>> sock = openAnything("<ref id='conjunction'><text>and</text><text>or</text></ref>")
+        >>> sock = open_anything("<ref id='conjunction'><text>and</text><text>or</text></ref>")
         >>> doc = minidom.parse(sock)
         >>> sock.close()
         """
@@ -1091,14 +1087,14 @@ def main(argv):
     logger.debug("Testing model interface")
     
     doc = DispersalModel(modelFile, schemaFile)
-    print repr(doc.getInstances())
+    print repr(doc.get_instances())
     
     #print doc.getCompleted()
     #print doc.getIncomplete()
     
     print doc.xml_model.xpath('/model/instances/completed[region[@id="%s"]][variable[@id="test"]="3"]' % "a")
     
-    print "Number of replicates = " + repr(doc.getNumberOfReplicates())
+    print "Number of replicates = " + repr(doc.get_num_replicates())
 
 def setupLogger():
     logger = logging.getLogger("mdig")

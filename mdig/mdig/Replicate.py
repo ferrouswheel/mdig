@@ -61,9 +61,9 @@ class Replicate:
         self.map_intervals = None
 
         if node is None:
-            self.node = self.instance.experiment.addReplicate(self.instance.node)
+            self.node = self.instance.experiment.add_replicate(self.instance.node)
             self.complete = False
-            self.setSeed(self.instance.experiment.getNextRandomValue())
+            self.setSeed(self.instance.experiment.next_random_value())
         else:
             # if node is provided then create replicate node from xml
             self.node = node
@@ -88,10 +88,10 @@ class Replicate:
         # every year that is expected to have map output
         if complete:
             exp = self.instance.experiment
-            period = exp.getPeriod()
+            period = exp.get_period()
             for ls_key in ls_keys:
                 maps = self.get_saved_maps(ls_key)
-                for t in exp.mapYearGenerator(ls_key):
+                for t in exp.map_year_generator(ls_key):
                     if maps is None:
                         complete = False
                         break
@@ -194,9 +194,9 @@ class Replicate:
         # Map are removed/overwritten automatically
         self.node.getparent().remove(self.node)
         del self.node
-        self.node = self.instance.experiment.addReplicate(self.instance.node)
+        self.node = self.instance.experiment.add_replicate(self.instance.node)
         self.complete = False
-        self.setSeed(self.instance.experiment.getNextRandomValue())
+        self.setSeed(self.instance.experiment.next_random_value())
 
     def run(self,remove_null=False):
         
@@ -209,13 +209,13 @@ class Replicate:
         
         
         self.log.log(logging.INFO, "Replicate %d/%d of exp. instance [var_keys: %s, vars: %s ]"\
-                     % (self.instance.replicates.index(self) + 1, exp.getNumberOfReplicates(),\
+                     % (self.instance.replicates.index(self) + 1, exp.get_num_replicates(),\
                         repr(self.instance.var_keys),repr(self.instance.variables)))
         
         self.instance.set_region()
         
         # Get the initial distribution maps for the region
-        self.initial_maps = exp.getInitialMaps(self.instance.r_id)
+        self.initial_maps = exp.get_initial_maps(self.instance.r_id)
         initial_maps = self.initial_maps
 
         ls_keys = exp.get_lifestage_ids()
@@ -227,7 +227,7 @@ class Replicate:
             GRASSInterface.getG().generateMapName(lifestage_key)]
             
             # Set up phenology maps
-            ls = exp.getLifestage(lifestage_key)
+            ls = exp.get_lifestage(lifestage_key)
             
             for a in ls.analyses():
                 a.preRun(self)
@@ -239,7 +239,7 @@ class Replicate:
                 str_maps += ' ' + m.getMapFilename()
             self.log.debug("Initial maps: " + str_maps)
         
-        period = exp.getPeriod()
+        period = exp.get_period()
         self.log.debug("Simulation period is " + str(period))
         
         for t in range(period[0],period[1]+1):
@@ -257,9 +257,9 @@ class Replicate:
                 if remove_null:
                     self.grass_i.null_bitmask(self.get_previous_map(ls_id),generate=False)
             
-            phenologyIterator = exp.phenologyIterator(self.instance.r_id)
+            phenology_iterator = exp.phenology_iterator(self.instance.r_id)
             
-            for current_interval, p_lifestages in phenologyIterator:
+            for current_interval, p_lifestages in phenology_iterator:
                 for lifestage in p_lifestages:
                     ls_key = lifestage.name
                     self.log.log(logging.INFO, 'Interval %d - Lifestage "%s" started',current_interval,ls_key)
@@ -275,7 +275,7 @@ class Replicate:
             # Run Analyses for each lifestage
             for ls_id in self.instance.experiment.get_lifestage_ids():
                 self.log.log(logging.INFO, 'Interval %d completed.',current_interval)
-                l = self.instance.experiment.getLifestage(ls_id)
+                l = self.instance.experiment.get_lifestage(ls_id)
                 analyses = l.analyses()
                 self.log.log(logging.INFO, 'Interval %d - Running analyses',current_interval)
                 #pdb.set_trace()
@@ -286,7 +286,7 @@ class Replicate:
             self.fire_time_completed(t)
 
         self.instance.remove_active_rep(self)
-        self.instance.experiment.saveModel()
+        self.instance.experiment.save_model()
         self.active = False
         self.current_t = -1
         self.complete = True

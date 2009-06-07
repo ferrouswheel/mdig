@@ -32,13 +32,13 @@ class Region:
 		self.log = logging.getLogger("mdig.region")
 		self.xml_node = node
 	
-	def getName(self):
+	def get_name(self):
 		if "name" in self.xml_node.attrib.keys():
 			return self.xml_node.attrib["name"]
 		else:
 			return None
 		
-	def setName(self, new_name):
+	def set_name(self, new_name):
 		self.xml_node.attrib["name"] = new_name
 	
 	def getResolution(self):

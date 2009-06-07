@@ -62,10 +62,10 @@ class DispersalInstance:
             (self.var_keys,self.variables, \
             len([x for x in self.replicates if x.complete]), \
             len([x for x in self.replicates if not x.complete]), \
-            self.experiment.getNumberOfReplicates()-len(self.replicates)) )
+            self.experiment.get_num_replicates()-len(self.replicates)) )
 
     def _load_replicates(self):
-        c = self.experiment.getCompletedPermutations()
+        c = self.experiment.get_completed_permutations()
         # c is a list of dicts with each dict being a completed replicate
         
         reps=[]
@@ -94,7 +94,7 @@ class DispersalInstance:
             self._run_replicate(rep)
     
         # Create and process replicates that are missing
-        while len(self.replicates) < self.experiment.getNumberOfReplicates():
+        while len(self.replicates) < self.experiment.get_num_replicates():
             rep = Replicate(None,self)
             self.replicates.append(rep)
             self._run_replicate(rep)
@@ -135,7 +135,7 @@ class DispersalInstance:
                 saved_maps = r.get_saved_maps(ls_id)
                 r_times = [ int(t) for t in saved_maps.keys() ]
                 ac.init_output_file(self, r)
-                ac.set_times(self.experiment.getPeriod(),times,r_times)
+                ac.set_times(self.experiment.get_period(),times,r_times)
                 ac.run_command(saved_maps)
                 
                 if MDiGConfig.getConfig().analysis_add_to_xml:
@@ -169,7 +169,7 @@ class DispersalInstance:
         for ls_id in ls:
             e_times = [ int(t) for t in envelopes[ls_id].keys() ]
             ac.init_output_file(self)
-            ac.set_times(self.experiment.getPeriod(),times,e_times)
+            ac.set_times(self.experiment.get_period(),times,e_times)
             ac.run_command(envelopes[ls_id])
 
             if mdig_config.analysis_add_to_xml:
@@ -208,7 +208,7 @@ class DispersalInstance:
         pass
     
     def is_complete(self):
-        a = len([x for x in self.replicates if x.complete]) >= self.experiment.getNumberOfReplicates() \
+        a = len([x for x in self.replicates if x.complete]) >= self.experiment.get_num_replicates() \
             and len(self.activeReps) == 0
         return a
     
@@ -222,12 +222,12 @@ class DispersalInstance:
     def remove_active_rep(self, rep):
         self.activeReps.remove(rep)
         if len(self.activeReps) == 0:
-            self.experiment.removeActiveInstance(self)
+            self.experiment.remove_active_instance(self)
     
     def add_active_rep(self, rep):
         if rep not in self.activeReps:
             self.activeReps.append(rep)
-            self.experiment.addActiveInstance(self)
+            self.experiment.add_active_instance(self)
     
     def reset(self):
         while len(self.replicates) > 0:
@@ -271,18 +271,18 @@ class DispersalInstance:
         if force or previous_envelopes is None:
             for l in ls:
                 missing_years[l] = [y for y in
-                    self.experiment.mapYearGenerator(l, [start,end])]
+                    self.experiment.map_year_generator(l, [start,end])]
             return missing_years
 
         for l in ls:
-            interval = self.experiment.getMapOutputInterval(l)
+            interval = self.experiment.get_map_output_interval(l)
             if interval < 0:
                 self.log.info("No raster output defined to create occupancy envelope"
                         " for lifestage " + l)
                 return None
 
             missing_years[l] = []
-            for t in self.experiment.mapYearGenerator(l, [start,end]):
+            for t in self.experiment.map_year_generator(l, [start,end]):
                 # is map in the model xml?
                 if str(t) not in previous_envelopes[l]: 
                     # no, then add year
@@ -374,7 +374,7 @@ class DispersalInstance:
         a.text = filename
         
     def set_region(self):
-        current_region = self.experiment.getRegion(self.r_id)
+        current_region = self.experiment.get_region(self.r_id)
         try:
             GRASSInterface.getG().setRegion(current_region)
         except SetRegionException, e:
@@ -410,7 +410,7 @@ class DispersalInstance:
                     else:
                         self.log.warning("Missing map for time=" + str(t))
                     
-                filename = self.experiment.getName() + "_region_" + self.r_id
+                filename = self.experiment.get_name() + "_region_" + self.r_id
                 if self.var_keys is not None:
                     for v in self.var_keys:
                         filename += "_" + v + "_"
