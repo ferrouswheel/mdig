@@ -19,3 +19,25 @@
 __all__ = ["Analysis","DispersalInstance","DispersalModel","Displayer","Event",
         "GRASSInterface","GrassMap","ImageShow","Lifestage","MDiGConfig",
         "OutputFormats","Region.py","Replicate.py"]
+
+import configobj
+
+version = "0.2"
+version_name = "hoe"
+version_string = "mdig " + version + " - " + version_name 
+
+mdig_exit_codes = {
+    "ok" : 0,
+    "cmdline_error" : 2,
+    "not_implement" : 10,
+    "model_not_found" : 3
+}
+
+class NotEnoughHistoryException (Exception): pass
+
+class OutputFileExistsException (Exception):
+    def __init__(self, filename):
+        self.filename = filename
+
+
+

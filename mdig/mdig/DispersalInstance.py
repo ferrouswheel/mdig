@@ -33,6 +33,7 @@ import pdb
 import lxml
 
 from Replicate import Replicate
+from AnalysisCommand import AnalysisCommand
 import GRASSInterface
 import MDiGConfig
 
@@ -107,6 +108,74 @@ class DispersalInstance:
         #except Exception, e:
         #   self.log.error(repr(e))
         #   pdb.set_trace()
+
+    def run_command_on_replicates(self, cmd_string, ls=None, times=None):
+        """ run_command_on_replicates runs a command across all
+        replicate maps in times
+
+        @param cmd_string is the command to run, with %0 for current map,
+        %1 for previous saved map, etc.
+        @param ls_id is a list of lifestages to run command on
+        @param times is a list of times to run command on, -ve values are interpreted
+        as indices from the end of the array e.g. -1 == last map.
+        """
+        if ls is None:
+            ls = self.experiment.getLifestageIDs().keys()
+        elif not isinstance(ls, list):
+            ls = [ls]
+
+        self.setRegionForInstance()
+        if not self.isComplete():
+            self.log.warning("Instance [%s] is incomplete, but will " +
+                    "continue anyway" % i)
+            
+        ac = AnalysisCommand(cmd_string)
+        for r in self.replicates:
+            for ls_id in ls:
+                saved_maps = r.getSavedMaps(ls_id)
+                r_times = [ int(t) for t in saved_maps.keys() ]
+                ac.init_output_file(self, r)
+                ac.set_times(self.experiment.getPeriod(),times,r_times)
+                ac.run_command(saved_maps)
+                
+                if MDiGConfig.getConfig().analysis_add_to_xml:
+                    # add the analysis result to xml filename
+                    # under instance...
+                    r.add_analysis_result(ls_id, ac)
+
+    def run_command_on_occupancy_envelopes(self, cmd_string, ls=None,
+            times=None):
+        """ run_command_on_occupancy_envelopes runs a command across all
+        occupancy envelopes replicate maps in times, or all envelopes.
+        
+        @param cmd_string is the command to run, with %0 for current map,
+        %1 for previous saved map, etc.
+        @param ls_id is a list of lifestages to run command on
+        @param times is a list of times to run command on, -ve values are interpreted
+        as indices from the end of the array e.g. -1 == last map.
+        """
+        if ls is None:
+            ls = self.experiment.getLifestageIDs().keys()
+        elif not isinstance(ls, list):
+            ls = [ls]
+        
+        if not self.isComplete():
+            self.log.error("Incomplete instance [%s]" % i)
+            raise ImcompleteInstanceException()
+
+        ac = AnalysisCommand(cmd_string)
+        self.setRegionForInstance()
+        envelopes = self.getProbabilityEnvelopes()
+        for ls_id in ls:
+            e_times = [ int(t) for t in envelopes[ls_id].keys() ]
+            ac.init_output_file(self)
+            ac.set_times(self.experiment.getPeriod(),times,e_times)
+            ac.run_command(envelopes[ls_id])
+
+            if mdig_config.analysis_add_to_xml:
+                # add the analysis result to xml filename
+                # under instance...
+                self.add_analysis_result(ls_id, ac) #TODO(cmd_string, tmp_fn))
         
     def nullBitmask(self, generate=True):
         for r in self.replicates:
@@ -237,10 +306,11 @@ class DispersalInstance:
             return float(es[0].attrib['ts'])
         return 0
 
-    def addAnalysisResult(self,ls_id,result):
+    def add_analysis_result(self,ls_id,analysis_cmd):
         """
         Result is a tuple with (command executed, filename of output)
         """
+        result = (analysis_cmd.cmd_string,analysis_cmd.output_fn)
         
         mdig_config = MDiGConfig.getConfig()
         
@@ -383,3 +453,6 @@ class DispersalInstance:
     
     def updateXML(self):
         pass
+
+class ImcompleteInstanceException(Exception): pass
+

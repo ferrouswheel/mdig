@@ -31,6 +31,9 @@ from subprocess import Popen
 import StringIO
 import tempfile
 
+class MapNotFoundException (Exception): pass        
+class SetRegionException (Exception): pass        
+    
 import DispersalModel
 import MDiGConfig
 
@@ -660,8 +663,4 @@ class GRASSInterface:
         return tempDataFileName, tempOutDataFileName
         
 #   def exists(self,mapname):
-        
-class MapNotFoundException (Exception): pass        
-class SetRegionException (Exception): pass        
-    
 

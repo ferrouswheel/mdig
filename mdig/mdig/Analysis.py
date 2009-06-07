@@ -180,7 +180,11 @@ class Analysis:
         # if a file was generated then add this to the replicate
         ls_id = self.getLifestageID()
         if self.isRedirectedStdOut():
-            rep.addAnalysisResult(ls_id,(base_cmd,fn))
+            class mock_ac:
+                def __init__(self,base_cmd,fn):
+                    self.cmd_string = base_cmd
+                    self.output_fn = fn
+            rep.add_analysis_result(ls_id,mock_ac(base_cmd,fn))
 
     def getLifestageID(self):
         name = self.xml_node.xpath("parent::analyses/parent::lifestage/@name")

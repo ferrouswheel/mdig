@@ -11,7 +11,7 @@
 		<replicates> 2 </replicates>
 		<!-- The last state of the rnadom number generator in case the simulation didn't
 			 finish last time -->
-		<offset>15</offset>
+		<offset>23</offset>
    	</random>
 	
 	<regions>
@@ -81,7 +81,7 @@
 			</phenology>
 			
 			<!-- list dispersal events and there parameters -->
-			<event name="r.dispersal.neighbour">
+			<event name="r.mdig.neighbour">
 				<param name="shape">
 					<value>186</value> 
 				</param>
@@ -93,7 +93,7 @@
 				</ifNotPopulationBased>
 			</event>
 			
-			<event name="r.dispersal.kernel">
+			<event name="r.mdig.kernel">
 				<param name="kernel">
 					<value>general</value> 
 				</param>
@@ -117,7 +117,7 @@
 				</ifNotPopulationBased>
 			</event>
 			
-			<!--<event name="r.dispersal.survival">
+			<!--<event name="r.mdig.survival">
 				<param name="survival">
 					<value>aa_survival@lhumile</value>
 				</param>
@@ -179,4 +179,8 @@
 	</completed>
 </instances>-->
 
-</model>
+<instances baseDir="/home/joel/tmp"><completed><region id="a"/><variable id="d_a">3000</variable><replicates><replicate ts="1244336819.1742179">
+<seed>-1164955410</seed><lifestage id="all"><analyses><analysis name="">test_region_a_d_a_3000_rep_0.dat</analysis><analysis name="echo %0">test_region_a_d_a_3000_0_22040_23620.dat</analysis></analyses><maps><map time="1990">test_region_a_d_a_3000_rep_0_ls_all_1990</map><map time="1991">test_region_a_d_a_3000_rep_0_ls_all_1991</map><map time="1992">test_region_a_d_a_3000_rep_0_ls_all_1992</map><map time="1993">test_region_a_d_a_3000_rep_0_ls_all_1993</map></maps></lifestage></replicate><replicate ts="1244336837.3359001">
+<seed>1724114874</seed><lifestage id="all"><analyses><analysis name="">test_region_a_d_a_3000_rep_1.dat</analysis><analysis name="echo %0">test_region_a_d_a_3000_1_22040_23620.dat</analysis></analyses><maps><map time="1990">test_region_a_d_a_3000_rep_1_ls_all_1990</map><map time="1991">test_region_a_d_a_3000_rep_1_ls_all_1991</map><map time="1992">test_region_a_d_a_3000_rep_1_ls_all_1992</map><map time="1993">test_region_a_d_a_3000_rep_1_ls_all_1993</map></maps></lifestage></replicate></replicates></completed><completed><region id="a"/><variable id="d_a">2000</variable><replicates><replicate ts="1244336855.6781981">
+<seed>-2038191045</seed><lifestage id="all"><analyses><analysis name="">test_region_a_d_a_2000_rep_0.dat</analysis><analysis name="echo %0">test_region_a_d_a_2000_0_22040_634994.dat</analysis></analyses><maps><map time="1990">test_region_a_d_a_2000_rep_0_ls_all_1990</map><map time="1991">test_region_a_d_a_2000_rep_0_ls_all_1991</map><map time="1992">test_region_a_d_a_2000_rep_0_ls_all_1992</map><map time="1993">test_region_a_d_a_2000_rep_0_ls_all_1993</map></maps></lifestage></replicate><replicate ts="1244336873.9195161">
+<seed>1886128089</seed><lifestage id="all"><analyses><analysis name="">test_region_a_d_a_2000_rep_1.dat</analysis><analysis name="echo %0">test_region_a_d_a_2000_1_22040_634994.dat</analysis></analyses><maps><map time="1990">test_region_a_d_a_2000_rep_1_ls_all_1990</map><map time="1991">test_region_a_d_a_2000_rep_1_ls_all_1991</map><map time="1992">test_region_a_d_a_2000_rep_1_ls_all_1992</map><map time="1993">test_region_a_d_a_2000_rep_1_ls_all_1993</map></maps></lifestage></replicate></replicates></completed></instances></model>

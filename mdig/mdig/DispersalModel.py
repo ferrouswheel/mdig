@@ -61,7 +61,8 @@ class DispersalModel(object):
         control of running simulations and analysis.
     """
 
-    def __init__(self, model_file):
+    def __init__(self, model_file, the_action = None):
+        self.action = the_action
         mdig_config = MDiGConfig.getConfig()
         
         self.log = logging.getLogger("mdig.exp")
@@ -77,12 +78,6 @@ class DispersalModel(object):
         self.loadXML(model_file)
         self.validateXML(schema_file)
         
-        try:
-            if mdig_config.check_model:
-                self.checkModel()
-        except CheckModelException, e:
-            print e
-            
         self.listeners = []
         outputListeners = self.getOutputListeners()
         for l in outputListeners:
@@ -97,16 +92,30 @@ class DispersalModel(object):
         
         self.start = {}
         
+        if self.action is not None:
+            try:
+                if self.action.check_model:
+                    self.checkModel()
+            except CheckModelException, e:
+                print e
+                
         # Set up base directory for output
+        mdig_config.base_dir = self.getBaseDir()
+        if self.action is not None:
+            if self.action.output_dir is not None:
+                if self.getBaseDir() is not None:
+                    # TODO: eventually choose command line option over the
+                    # default
+                    logger.warning ("Model already specifies base directory,"+\
+                            " ignoring command line option.")
+                    mdig_config.base_dir = self.getBaseDir()
+                else:
+                    mdig_config.base_dir = self.action.output_dir
+            if mdig_config.base_dir is None:
+                mdig_config.base_dir = os.path.dirname(self.action.model_name)
         if mdig_config.base_dir is None:
-            if self.getBaseDir() is None:
-                mdig_config.base_dir = os.path.dirname(mdig_config.model_file)
-            else:
-                mdig_config.base_dir = self.getBaseDir()
-        else:
-            if self.getBaseDir() is not None:
-                logger.warning ("Model already specifies base directory, ignoring command line option")
-                mdig_config.base_dir = self.getBaseDir()
+            logger.error ("Couldn't find the base dir for output!")
+            sys.exit(4)
         
         # Initialise paths
         mdig_config.makepaths()
@@ -232,204 +241,6 @@ class DispersalModel(object):
             if not i.isComplete():
                 return False
         return True
-    
-
-    def _checkAndParseTimes(self, times, o_times):
-        """ Check a list of the times against the actual stored timesteps.
-            
-        @param times a list of times to run command on, -ve values are interpreted
-        as indices from the end of the array e.g. -1 == last map.
-        @param o_times the original list of stored/saved map times.
-        @return times with -ve indices replaced and all times checked that they
-        exist
-        """
-        o_times.sort()
-        if times is None:
-            # if no time is user-specified, use all existing times,
-            # and sort because the return from keys() isn't guaranteed to be in order
-            times = o_times
-        else:
-            period = self.getPeriod()
-            #check times
-            for t in times:
-                if t < 0:
-                    times[times.index(t)] = o_times[t]
-                if t < period[0] or t > period[1]:
-                    self.log.warning("Time outside simulation range: %d" % t)
-                if t not in o_times:
-                    self.log.warning("Time not in saved maps: %d" % t)
-            times.sort()
-        return times
-
-    def _getCommandOutputFilename(instance, rep=None):
-        mdig_config = MDiGConfig.getConfig()
-        tmp_fn = mdig_config.analysis_filename
-        #   append variable/ls/region info
-        if rep:
-            tmp_fn = OutputFormats.createFilename(instance) + "_" + \
-                     repr(instance.replicates.index(rep)) + "_" + tmp_fn
-        else:
-            tmp_fn = OutputFormats.createFilename(instance) + "_" + tmp_fn
-        
-        # check if file exists
-        if os.path.isfile(tmp_fn):
-            if mdig_config.overwrite_flag:
-                self.log.warning("Analysis output file exists")
-                os.remove(tmp_fn)
-            else:
-                self.log.error("Analysis output file exists")
-                raise OutputFileExistsException()
-        return tmp_fn
-    _getCommandOutputFilename = staticmethod(_getCommandOutputFilename)
-
-    def _insertOutputIntoCmd(tmp_fn,cmd_string):
-        # replace %f with analysis_filename (or generated name)
-        # if it exists in cmd_string
-        tmp_cmd_string = cmd_string
-        if re.search("%f",tmp_cmd_string) is not None:
-            # do reg ex replace
-            tmp_cmd_string = re.sub("%f", tmp_fn, tmp_cmd_string)
-        else:
-            # otherwise add output redirection >> to cmd_string
-            tmp_cmd_string += (" >> %s" % tmp_fn)
-        return tmp_cmd_string
-    _insertOutputIntoCmd = staticmethod(_insertOutputIntoCmd)
-
-    def _runCommandOnce(self, t,times,tmp_fn,tmp_cmd_string,maps):
-        # replace %t with current time if it exists in cmd_string
-        tmp_cmd_string2 = re.sub("%t", repr(t), tmp_cmd_string)
-        
-        # Replace %(number) references with the map names
-        # ...Allow escaping of % with double... e.g. %%1 doesn't match
-        map_matches = re.findall('(?<!%)%\d',tmp_cmd_string2)
-        for map_d in map_matches:
-            map_index = int(map_d[1:])
-            tmp_cmd_string2 = re.sub("%" + repr(map_index), maps[repr(times[times.index(t)-map_index])], tmp_cmd_string2)
-        
-        mdig_config = MDiGConfig.getConfig()
-        if mdig_config.analysis_print_time:
-            file = open(tmp_fn,'a')
-            file.write('%d ' % t)
-            file.close()
-        
-        # run command on prob env map
-        self.log.debug("Running analysis command: " + tmp_cmd_string2 )
-        cmd_stdout = os.popen(tmp_cmd_string2,"r")
-        stdout = cmd_stdout.read()
-        ret = cmd_stdout.close()
-        return ret
-
-    def runCommandOnMaps(self, cmd_string, ls = None, times=None, prob=False):
-        """ runCommandOnMaps runs a command across all replicate maps in times,
-        or all envelopes.
-        
-        @param cmd_string is the command to run, with %0 for current map,
-        %1 for previous saved map, etc.
-        @param ls_id is a list of lifestages to run command on
-        @param times is a list of times to run command on, -ve values are interpreted
-        as indices from the end of the array e.g. -1 == last map.
-        @param prob specifies whether to run on the replicate maps or the probabilityEnvelopes
-
-        @todo split into separate commands within replicate and instance
-        """
-        
-        if ls is None:
-            ls = self.getLifestageIDs().keys()
-        elif not isinstance(ls, list):
-            ls = [ls]
-        
-        if not self.isComplete():
-            self.log.warning("Simulation is not complete")
-        
-        # Find earliest map in cmd_string (represented by %\d)
-        earliest_map = 0
-        # Allow escaping of % with double... e.g. %%1 doesn't match
-        map_matches = re.findall('(?<!%)%\d',cmd_string)
-        for map_d in map_matches:
-            map_index = int(map_d[1:])
-            if map_index > earliest_map:
-                earliest_map = map_index
-        print ("Earliest map in cmd_string is %d before present" % earliest_map)
-        
-        mdig_config = MDiGConfig.getConfig()
-        if mdig_config.analysis_filename is None:
-            #create random name
-            mdig_config.analysis_filename = \
-                    repr(os.getpid()) + "_" + repr(int(random.random()*1000000)) \
-                    + ".dat"
-        
-        if prob:
-            # if prob = True then only run on the probabilityEnvelopes
-            for i in self.getInstances():
-                if i.isComplete():
-                    i.setRegionForInstance()
-                    envelopes = i.getProbabilityEnvelopes()
-                    for ls_id in ls:
-                        e_times = [ int(t) for t in envelopes[ls_id].keys() ]
-                        times = self._checkAndParseTimes(times,e_times)
-                        
-                        tmp_fn = DispersalModel._getCommandOutputFilename(i)
-                        # replace %f with analysis_filename (or generated name)
-                        # if it exists in cmd_string
-                        tmp_cmd_string = DispersalModel._insertOutputIntoCmd(tmp_fn,cmd_string)
-                        
-                        # check that there are enough maps to satisfy the command line
-                        # at least once.
-                        if (len(times) - 1) < earliest_map:
-                            self.log.warning("Not enough past maps to fulfill "
-                                    "command line with earliest map %d maps "
-                                    "before present" % earliest_map)
-                            raise NotEnoughHistoryException()
-
-                        # Skip ahead to the first time that has enough past maps to
-                        # satisfy the command line.
-                        for t in times[earliest_map:]:
-                            ret = self._runCommandOnce(t,times,tmp_fn,tmp_cmd_string,envelopes[ls_id])
-                            if ret is not None:
-                                self.log.error("Analysis command did not return 0")
-
-                        if mdig_config.analysis_add_to_xml:
-                            # add the analysis result to xml filename
-                            # under instance...
-                            i.addAnalysisResult(ls_id, (cmd_string, tmp_fn))
-                else:
-                    self.log.warning("Skipping incomplete instance [%s]" % i)
-
-        else:
-            # otherwise run on each replicate map
-            for i in self.getInstances():
-                if not i.isComplete():
-                    self.log.warning("Instance [%s] is incomplete" % i)
-                
-                for r in i.replicates:
-                    i.setRegionForInstance()
-                    for ls_id in ls:
-                        saved_maps = r.getSavedMaps(ls_id) #][time_step] 
-                        r_times = [ int(t) for t in saved_maps.keys() ]
-                        times = self._checkAndParseTimes(times,r_times)
-                        
-                        tmp_fn = DispersalModel._getCommandOutputFilename(i,r)
-                        tmp_cmd_string = DispersalModel._insertOutputIntoCmd(tmp_fn,cmd_string)
-
-                        # check that there are enough maps to satisfy the command line
-                        # at least once.
-                        if (len(times) - 1) < earliest_map:
-                            self.log.warning("Not enough past maps to fulfill "
-                                    "command line with earliest map %d maps "
-                                    "before present" % earliest_map)
-                            raise NotEnoughHistoryException()
-
-                        # Skip ahead to the first time that has enough past maps to
-                        # satisfy the command line.
-                        for t in times[earliest_map:]:
-                            ret = self._runCommandOnce(t,times,tmp_fn,tmp_cmd_string,saved_maps)
-                            if ret is not None:
-                                self.log.error("Analysis command did not return 0")
-
-                        if mdig_config.analysis_add_to_xml:
-                            # add the analysis result to xml filename
-                            # under instance...
-                            r.addAnalysisResult(ls_id, (cmd_string, tmp_fn))
     
     def nullBitmask(self, generate=True):
         instances = self.getInstances()
@@ -811,7 +622,15 @@ class DispersalModel(object):
                     sys.exit(2)
                 i.updateProbabilityEnvelope(ls, time, time, force=force)
                 
-        
+    def run_command_on_maps(self,cmd,ls,times=None,prob=True):
+        for i in self.getInstances():
+            if not i.isComplete():
+                self.log.warning("Skipping incomplete instance " + repr(i))
+                continue
+            if prob:
+                i.run_command_on_occupancy_envelopes(cmd,ls,times)
+            else:
+                i.run_command_on_replicates(cmd,ls,times)
         
     def addReplicate(self,completed_node):
         #search for completed/replicates node otherwise create
@@ -1200,10 +1019,6 @@ class CheckModelException(Exception): pass
 class ValidationError(Exception): pass
 
 class InvalidXMLException(Exception): pass
-
-class OutputFileExistsException (Exception): pass
-
-class NotEnoughHistoryException (Exception): pass
 
 def openAnything(source):
         """URI, filename, or string --> stream

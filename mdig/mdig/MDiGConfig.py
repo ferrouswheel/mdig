@@ -19,8 +19,8 @@
 #
 """ MDiGConfig class
 
-MDiGConfig contains config information for the command line options used and loads information
-from ~/.mdig.rc
+MDiGConfig contains config information for the command line options used and
+loads information from ~/.mdig.rc
 
 Copyright 2006, Joel Pitt
 
@@ -32,7 +32,9 @@ import pdb
 import logging
 
 # ConfigObj from http://www.voidspace.org.uk/python/configobj.html
-sys.path.append(os.path.join(sys.path[0], 'support'))
+#sys.path.append(os.path.join(sys.path[0], 'support'))
+# was in support dir, but now expected to be installed as part of
+# python... (package python-configobj in Ubuntu)
 from configobj import ConfigObj
 
 if sys.platform == "win32":                # on a Windows port
@@ -47,7 +49,8 @@ if sys.platform == "win32":                # on a Windows port
 	except ImportError:
 		raise ImportError, "The win32com module could not be found"
 else:                                      # else on POSIX box
-	home_dir = os.path.expanduser("~")
+    home_dir = os.path.expanduser("~")
+    logging.getLogger("mdig.config").debug("Home dir is " + home_dir)
 
 mdig_config = None
 
@@ -96,21 +99,30 @@ class MDiGConfig(ConfigObj):
 	overwrite_flag = False
 	DEBUG = 0
 	
-	base_dir = None # root directory for all output
-	
+    ## These are the default directories
+    # root directory for where simulations are stored
+	base_dir = None
+
+    # subdir for analysis results
+	analysis_dir = "analysis"
+    # subdir for exported maps
+	maps_dir = "maps"
+    # subdir for other output (PNG, movies, none stored analysis)
+	output_dir = "output"
+
+    ## These are specific options for how MDiG should run,
+    ## and should be specified on the command line. Their
+    ## defaults are stored here though, and can be changed
+    ## through the config file.
 	analysis_step = None
 	analysis_lifestage = None
 	analysis_command = None
-	analysis_dir = "analysis" # dir for analysis results
 	prob_envelope_only = False
 	combined_analysis = False
 	analysis_filename = None
 	analysis_print_time = False
 	analysis_add_to_xml = True
 	analysis_cmd_file = None
-	
-	maps_dir = "maps" # archived maps dir
-	output_dir = "output"
 	
 	time = None
 	
@@ -132,7 +144,9 @@ class MDiGConfig(ConfigObj):
 			self.config_path="./"
 		else:
 			self.config_path=home_dir
-		ConfigObj.__init__(self,"/".join([self.config_path,self.config_file]))
+        # Initialise parent, and create the config file if it doesn't exist
+		ConfigObj.__init__(self,"/".join([self.config_path,self.config_file]), \
+                create_empty=True)
 
 		# setup msys directory if necessary
 		if sys.platform == 'win32' and self.has_key("MSYS_BIN"):

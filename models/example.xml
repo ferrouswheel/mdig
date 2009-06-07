@@ -1,5 +1,9 @@
 <?xml version="1.0"?>
 <model>
+<!-- WARNING : This example is obsolete and/or for designing 
+    I recommend looking at test.xml instead if you want a current working
+    example.
+-->
 	<user><email>pittj2@lincoln.ac.nz</email></user>
 	
 	<name> speciesname </name>

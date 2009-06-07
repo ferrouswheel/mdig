@@ -48,8 +48,6 @@ class GrassMap:
         self.refresh=False # Should the map be refreshed any time someone attempts to obtain the filename?
         self.temporary = True # Should this map be deleted on quit?
     
-        mdig_config = MDiGConfig.getConfig()
-        
         if self.xml_node is not None:
             # Read xml settings if this map is based on an xml node
             self._readXML()

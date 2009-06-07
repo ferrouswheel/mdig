@@ -199,7 +199,7 @@ class Replicate:
         self.complete = False
         self.setSeed(self.instance.experiment.getNextRandomValue())
 
-    def run(self):
+    def run(self,remove_null=False):
         
         self.reset()
 
@@ -234,8 +234,7 @@ class Replicate:
                 a.preRun(self)
         
         # If in debug mode print out the names of the initial maps
-        mdig_config = MDiGConfig.getConfig()
-        if mdig_config is not None and mdig_config.DEBUG:
+        if self.log.getEffectiveLevel() <= logging.DEBUG:
             str_maps=''
             for m in initial_maps.values():
                 str_maps += ' ' + m.getMapFilename()
@@ -256,7 +255,7 @@ class Replicate:
                 else:
                     self.grass_i.copyMap(self.temp_map_names[ls_id][0],self.getPreviousMap(ls_id),True)
                 
-                if mdig_config.remove_null:
+                if remove_null:
                     self.grass_i.nullBitmask(self.getPreviousMap(ls_id),generate=False)
             
             phenologyIterator = exp.phenologyIterator(self.instance.r_id)
@@ -294,10 +293,11 @@ class Replicate:
         self.complete = True
         self.cleanUp()
     
-    def addAnalysisResult(self,ls_id,result):
+    def add_analysis_result(self,ls_id,analysis_cmd):
         """
         Result is a tuple with (command executed, filename of output)
         """
+        result = (analysis_cmd.cmd_string,analysis_cmd.output_fn)
 
         mdig_config = MDiGConfig.getConfig()
         
