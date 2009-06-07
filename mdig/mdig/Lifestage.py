@@ -266,7 +266,7 @@ class Lifestage:
 			del grassmap
             #GRASSInterface.getG().destructMap(grassmap)
 			
-	def updateXML(self):
+	def update_xml(self):
 		self.xml_node.attrib["name"] = self.name
 		self.xml_node.attrib["populationBased"] = str(self.populationBased)
 

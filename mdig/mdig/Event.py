@@ -105,7 +105,7 @@ class Event:
 		
 		for p_name,value in p.items():
 			if value[0] == "VAR":
-				instance_value = rep.instance.getVar(value[1])
+				instance_value = rep.instance.get_var(value[1])
 				if instance_value is not None:
 					p[p_name]=instance_value
 				else:

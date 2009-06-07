@@ -203,7 +203,7 @@ class Replicate:
         self.reset()
 
         self.active = True
-        self.instance.addActiveRep(self)
+        self.instance.add_active_rep(self)
         
         exp = self.instance.experiment
         
@@ -212,7 +212,7 @@ class Replicate:
                      % (self.instance.replicates.index(self) + 1, exp.getNumberOfReplicates(),\
                         repr(self.instance.var_keys),repr(self.instance.variables)))
         
-        self.instance.setRegionForInstance()
+        self.instance.set_region()
         
         # Get the initial distribution maps for the region
         self.initial_maps = exp.getInitialMaps(self.instance.r_id)
@@ -285,7 +285,7 @@ class Replicate:
             
             self.fire_time_completed(t)
 
-        self.instance.removeActiveRep(self)
+        self.instance.remove_active_rep(self)
         self.instance.experiment.saveModel()
         self.active = False
         self.current_t = -1

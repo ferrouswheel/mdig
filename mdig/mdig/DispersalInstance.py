@@ -55,7 +55,7 @@ class DispersalInstance:
         self.listeners = []
         self.replicates = []
         
-        self.replicates = self._loadReplicates()
+        self.replicates = self._load_replicates()
         self.activeReps = []
         
         self.log.debug("New instance - varkeys: %s vars: %s reps (complete/incomplete/missing): %d/%d/%d" % \
@@ -64,7 +64,7 @@ class DispersalInstance:
             len([x for x in self.replicates if not x.complete]), \
             self.experiment.getNumberOfReplicates()-len(self.replicates)) )
 
-    def _loadReplicates(self):
+    def _load_replicates(self):
         c = self.experiment.getCompletedPermutations()
         # c is a list of dicts with each dict being a completed replicate
         
@@ -124,8 +124,8 @@ class DispersalInstance:
         elif not isinstance(ls, list):
             ls = [ls]
 
-        self.setRegionForInstance()
-        if not self.isComplete():
+        self.set_region()
+        if not self.is_complete():
             self.log.warning("Instance [%s] is incomplete, but will " +
                     "continue anyway" % i)
             
@@ -159,13 +159,13 @@ class DispersalInstance:
         elif not isinstance(ls, list):
             ls = [ls]
         
-        if not self.isComplete():
+        if not self.is_complete():
             self.log.error("Incomplete instance [%s]" % i)
             raise ImcompleteInstanceException()
 
         ac = AnalysisCommand(cmd_string)
-        self.setRegionForInstance()
-        envelopes = self.getProbabilityEnvelopes()
+        self.set_region()
+        envelopes = self.get_occupancy_envelopes()
         for ls_id in ls:
             e_times = [ int(t) for t in envelopes[ls_id].keys() ]
             ac.init_output_file(self)
@@ -184,17 +184,17 @@ class DispersalInstance:
     def stop(self):
         
         for ar in self.activeReps:
-            self.removeActiveRep(ar)
+            self.remove_active_rep(ar)
             ar.clean_up()
-            self.removeRep(ar)
+            self.remove_rep(ar)
     
-    def addListener(self,listener):
+    def add_listener(self,listener):
         self.listeners.append(listener)
         
-    def removeListerner(self,listener):
+    def remove_listener(self,listener):
         self.listeners.remove(listener)
     
-    def getVar(self,id):
+    def get_var(self,id):
         if id in self.var_keys:
             return self.variables[self.var_keys.index(id)]
         else:
@@ -204,39 +204,38 @@ class DispersalInstance:
         for r in self.replicates:
             r.clean_up()
     
-    def prepareRun(self):
+    def pre_run(self):
         pass
     
-    def isComplete(self):
+    def is_complete(self):
         a = len([x for x in self.replicates if x.complete]) >= self.experiment.getNumberOfReplicates() \
             and len(self.activeReps) == 0
         return a
     
-    def setReplicates(self, reps):
+    def set_replicates(self, reps):
         self.replicates = reps
     
-    def removeRep(self, rep):
-        
+    def remove_rep(self, rep):
         self.node.find('replicates').remove(rep.node)
         self.replicates.remove(rep)
     
-    def removeActiveRep(self, rep):
+    def remove_active_rep(self, rep):
         self.activeReps.remove(rep)
         if len(self.activeReps) == 0:
             self.experiment.removeActiveInstance(self)
     
-    def addActiveRep(self, rep):
+    def add_active_rep(self, rep):
         if rep not in self.activeReps:
             self.activeReps.append(rep)
             self.experiment.addActiveInstance(self)
     
     def reset(self):
         while len(self.replicates) > 0:
-            self.removeRep(self.replicates[-1])
+            self.remove_rep(self.replicates[-1])
     
-    def getProbabilityEnvelopes(self):
+    def get_occupancy_envelopes(self):
         prob_env = {}
-        if not self.isComplete():
+        if not self.is_complete():
             self.log.error("Trying to obtain probability envelope for incomplete instance")
             return None
         
@@ -259,11 +258,11 @@ class DispersalInstance:
 
         return prob_env
                     
-    def areEnvelopesUpToDate(self, ls, start, end, force=False):
-        previous_envelopes = self.getProbabilityEnvelopes()
+    def are_envelopes_fresh(self, ls, start, end, force=False):
+        previous_envelopes = self.get_occupancy_envelopes()
         missing_years = {}
 
-        envelopes_current = self.areEnvelopesNewerThanReplicates()
+        envelopes_current = self.are_envelopes_newer_than_reps()
         if not envelopes_current and not force:
             self.log.warning("Envelopes are older than some replicates use -p to"
                     " regenerate.")
@@ -294,13 +293,13 @@ class DispersalInstance:
                         missing_years[l].append(t)
         return missing_years
 
-    def areEnvelopesNewerThanReplicates(self):
+    def are_envelopes_newer_than_reps(self):
         for i in self.replicates:
-            if i.get_time_stamp() > self.getEnvelopesTimeStamp():
+            if i.get_time_stamp() > self.get_envelopes_timestamp():
                 return False
         return True
 
-    def getEnvelopesTimeStamp(self):
+    def get_envelopes_timestamp(self):
         es = self.node.xpath('envelopes')
         if es:
             return float(es[0].attrib['ts'])
@@ -327,7 +326,6 @@ class DispersalInstance:
                     self.log.error( "Can't add analysis because filename %s already exists and "\
                      "overwrite_flag is not set." % filename)
                     return
-            
             shutil.move(result[1], mdig_config.analysis_dir)
         
         filename = os.path.basename(filename)
@@ -375,7 +373,7 @@ class DispersalInstance:
         # set analysis node text to filename
         a.text = filename
         
-    def setRegionForInstance(self):
+    def set_region(self):
         current_region = self.experiment.getRegion(self.r_id)
         try:
             GRASSInterface.getG().setRegion(current_region)
@@ -383,13 +381,13 @@ class DispersalInstance:
             pdb.set_trace()
             return
     
-    def updateProbabilityEnvelope(self, ls, start, end, force=False):
+    def update_occupancy_envelope(self, ls, start, end, force=False):
         # Set the region in case it hasn't been yet
-        self.setRegionForInstance()
+        self.set_region()
                 
-        missing_envelopes = self.areEnvelopesUpToDate(ls, start, end,
+        missing_envelopes = self.are_envelopes_fresh(ls, start, end,
                 force=force)
-        if not missing_envelopes or not self.isComplete(): return
+        if not missing_envelopes or not self.is_complete(): return
         
         for l in ls:
             maps = []
@@ -424,9 +422,9 @@ class DispersalInstance:
                 filename += "_ls_" + l + "_" + repr(t) + "_prob"
                 prob_env = GRASSInterface.getG().occupancyEnvelope(maps_to_combine,filename)
                 if prob_env is not None:
-                    self._addEnvelope(prob_env,l,t)
+                    self._add_envelope(prob_env,l,t)
                     
-    def _addEnvelope(self, env_name, lifestage_id, t):
+    def _add_envelope(self, env_name, lifestage_id, t):
         # Add envelope to completed/envelopes/lifestage[id=l]/envelope[t=t]
         
         es = self.node.find('envelopes')
@@ -451,7 +449,7 @@ class DispersalInstance:
             
         env.text = env_name
     
-    def updateXML(self):
+    def update_xml(self):
         pass
 
 class ImcompleteInstanceException(Exception): pass

@@ -81,7 +81,7 @@ class DispersalModel(object):
         self.listeners = []
         outputListeners = self.getOutputListeners()
         for l in outputListeners:
-            self.addListener(l)
+            self.add_listener(l)
     
         self.grass_i=GRASSInterface.getG()
         self.random = None
@@ -195,7 +195,7 @@ class DispersalModel(object):
         
         for i in instances:
             completed = len([x for x in i.replicates if x.complete])
-            if not i.isComplete() and (completed > max_reps or min_instance == None):
+            if not i.is_complete() and (completed > max_reps or min_instance == None):
                 min_instance = i
                 max_reps = completed
             
@@ -206,10 +206,10 @@ class DispersalModel(object):
         for i in instances:
             i.reset()
     
-    def addListener(self,l):
+    def add_listener(self,l):
         self.listeners.append(l)
         
-    def removeListener(self,l):
+    def remove_listener(self,l):
         self.listeners.remove(l)
     
     def run(self):
@@ -236,9 +236,9 @@ class DispersalModel(object):
         self.active = False
         self.end_time = datetime.now()
         
-    def isComplete(self):
+    def is_complete(self):
         for i in self.getInstances():
-            if not i.isComplete():
+            if not i.is_complete():
                 return False
         return True
     
@@ -253,7 +253,7 @@ class DispersalModel(object):
             self.log.info(log_str)
             i.null_bitmask(generate)
     
-    def prepareRun(self):
+    def pre_run(self):
         pass
     
     def getInstances(self):
@@ -278,14 +278,14 @@ class DispersalModel(object):
                            DispersalInstance(node,self,r_id,p["var_keys"],p["var"][i]))
             
             for instance in self.instances:
-                #instance.setReplicates(self.getCompletedReplicates(instance))
+                #instance.set_replicates(self.getCompletedReplicates(instance))
                 instance.listeners.extend(self.listeners)
             
         return self.instances
                 
     
     def getIncompleteInstances(self):
-        return [i for i in self.getInstances() if not i.isComplete()]
+        return [i for i in self.getInstances() if not i.is_complete()]
     
                 
     def checkModel(self):
@@ -602,7 +602,7 @@ class DispersalModel(object):
         
         return (start_time, end_time)
     
-    def updateProbabilityEnvelope(self, ls=None, time=None, force=False):
+    def update_occupancy_envelope(self, ls=None, time=None, force=False):
         instances = self.getInstances()
         
         if ls is None:
@@ -612,7 +612,7 @@ class DispersalModel(object):
             self.log.debug( "Updating prob. envelope for instance %s" % repr(i) )
             period = self.getPeriod()
             if time is None:
-                i.updateProbabilityEnvelope(ls, period[0], period[1],
+                i.update_occupancy_envelope(ls, period[0], period[1],
                         force=force)
             else:
                 if time < 0:
@@ -620,11 +620,11 @@ class DispersalModel(object):
                 if time < period[0] or time > period[1]:
                     self.logger.error( "while creating probability envelope: time %d is outside of range [%d, %d]" % ( time, period[0], period[1] ) )
                     sys.exit(2)
-                i.updateProbabilityEnvelope(ls, time, time, force=force)
+                i.update_occupancy_envelope(ls, time, time, force=force)
                 
     def run_command_on_maps(self,cmd,ls,times=None,prob=True):
         for i in self.getInstances():
-            if not i.isComplete():
+            if not i.is_complete():
                 self.log.warning("Skipping incomplete instance " + repr(i))
                 continue
             if prob:
@@ -891,7 +891,7 @@ class DispersalModel(object):
                             components[r_info["type"]].append((r_info["name"],r_info["mapset"]))
                             
             # Envelopes
-            prob_env = i.getProbabilityEnvelopes()
+            prob_env = i.get_occupancy_envelopes()
             if prob_env:
                 for ls_id in self.get_lifestage_ids():
                     for t in prob_env[ls_id]:

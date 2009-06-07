@@ -87,5 +87,5 @@ class Region:
 		#TODO Region:setBackgroundMap
 		pass
 	
-	def updateXML(self):
+	def update_xml(self):
 		pass
