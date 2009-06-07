@@ -130,7 +130,7 @@ def exit_cleanup():
     
     for exp in simulations:
         exp.clean_up()
-        exp.saveModel()
+        exp.save_model()
     if GRASSInterface.getG(False) is not None:
         GRASSInterface.getG().clean_up()
 

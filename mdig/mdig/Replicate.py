@@ -63,7 +63,7 @@ class Replicate:
         if node is None:
             self.node = self.instance.experiment.add_replicate(self.instance.node)
             self.complete = False
-            self.setSeed(self.instance.experiment.next_random_value())
+            self.set_seed(self.instance.experiment.next_random_value())
         else:
             # if node is provided then create replicate node from xml
             self.node = node
@@ -196,7 +196,7 @@ class Replicate:
         del self.node
         self.node = self.instance.experiment.add_replicate(self.instance.node)
         self.complete = False
-        self.setSeed(self.instance.experiment.next_random_value())
+        self.set_seed(self.instance.experiment.next_random_value())
 
     def run(self,remove_null=False):
         
@@ -230,7 +230,7 @@ class Replicate:
             ls = exp.get_lifestage(lifestage_key)
             
             for a in ls.analyses():
-                a.preRun(self)
+                a.pre_run(self)
         
         # If in debug mode print out the names of the initial maps
         if self.log.getEffectiveLevel() <= logging.DEBUG:
