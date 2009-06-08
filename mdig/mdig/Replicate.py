@@ -302,7 +302,7 @@ class Replicate:
         
         current_dir = os.path.dirname(os.path.abspath(result[1]))
         filename = os.path.basename(result[1])
-        destination_path = os.path.join(mdig_config.base_dir, mdig_config.analysis_dir)
+        destination_path = os.path.join(self.instance.experiment.base_dir, mdig_config.analysis_dir)
         
         # move filename to analysis directory
         if current_dir != destination_path:

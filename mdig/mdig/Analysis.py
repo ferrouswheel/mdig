@@ -215,10 +215,12 @@ class Analysis:
         is_append = self.is_append()
         
         
-        if mdig_config.base_dir is None:
+        if self.instance.experiment.base_dir is None:
             generated = mdig_config.analysis_dir
         else:
-            generated = os.path.join(mdig_config.base_dir, mdig_config.analysis_dir)
+            generated = os.path.join(
+                    self.instance.experiment.base_dir,
+                    mdig_config.analysis_dir)
         generated = os.path.join(generated, prefix)
         generated += OutputFormats.createFilename(rep)
         if not is_append:

@@ -1,0 +1,19 @@
+MDiG - Modular Dispersal in GIS
+
+== Requirements ==
+
+General:
+
+* GRASS 6.4 or later.
+
+For Python based MDiG controller, the following python packages (with Ubuntu
+package name in brackets):
+
+* configobj (python-configobj)
+* lxml (python-lxml)
+
+For grass modules:
+
+* GNU Scientific Library (libgsl, libgsl0-dev)
+
+

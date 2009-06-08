@@ -47,6 +47,7 @@ from datetime import datetime, timedelta
 import mdig
 from mdig import Actions
 from mdig import MDiGConfig
+from mdig import ModelRepository
 
 from mdig import GRASSInterface
 from mdig import DispersalModel
@@ -85,8 +86,10 @@ def process_options(argv):
     return the_action
 
 simulations = []
+repository = ModelRepository.ModelRepository()
 def main(argv):
     global simulations
+    global repository
     logger = setupLogger()
     
     mdig_config = MDiGConfig.getConfig()
@@ -97,10 +100,16 @@ def main(argv):
     # Check for grass environment and set up interface
     grass_interface = GRASSInterface.getG()
     
+    #Load model repository 
+    if the_action.repository is not None:
+        repository = ModelRepository.ModelRepository(the_action.repository)
+    models = repository.get_models()
+        
     #Load model definition
     if the_action.model_name is not None:
-        # TODO get the model from ModelRepository
-        model_xml_file = the_action.model_name
+        if the_action.model_name not in models:
+            logger.error ( "Model doesn't exist in repository" )
+        model_xml_file = models[the_action.model_name]
         exp = DispersalModel.DispersalModel(model_xml_file, the_action)
         simulations.append(exp)
     else:

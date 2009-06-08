@@ -20,7 +20,7 @@
 """ MDiGConfig class
 
 MDiGConfig contains config information for the command line options used and
-loads information from ~/.mdig.rc
+loads information from ~/.mdig/mdig.conf
 
 Copyright 2006, Joel Pitt
 
@@ -38,137 +38,125 @@ import logging
 from configobj import ConfigObj
 
 if sys.platform == "win32":                # on a Windows port
-	try:
-		from win32com.shell import shellcon, shell
-		home_dir = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0);
-		# create mdig path if necessary
-		home_dir = os.path.join(home_dir,"mdig");
-		if not os.path.isdir(home_dir):
-			os.mkdir(home_dir);
-		
-	except ImportError:
-		raise ImportError, "The win32com module could not be found"
+    try:
+        from win32com.shell import shellcon, shell
+        home_dir = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0);
+        # create mdig path if necessary
+        home_dir = os.path.join(home_dir,"mdig");
+        if not os.path.isdir(home_dir):
+            os.mkdir(home_dir)
+        
+    except ImportError:
+        raise ImportError, "The win32com module could not be found"
 else:                                      # else on POSIX box
-    home_dir = os.path.expanduser("~")
-    logging.getLogger("mdig.config").debug("Home dir is " + home_dir)
+    home_dir = os.path.join(os.path.expanduser("~"), ".mdig")
+    if not os.path.isdir(home_dir):
+        os.mkdir(home_dir)
+        
+logging.getLogger("mdig.config").debug("MDIG config/working dir is " + home_dir)
 
 mdig_config = None
 
 def getConfig():
-	global mdig_config
-	if mdig_config is None:
-		mdig_config = MDiGConfig()
-		logging.getLogger("mdig.config").debug("Created new MDiGConfig instance")
-	return mdig_config
+    global mdig_config
+    if mdig_config is None:
+        mdig_config = MDiGConfig()
+        logging.getLogger("mdig.config").debug("Created new MDiGConfig instance")
+    return mdig_config
 
 # Get Home dir regardless of OS and use sensible value within Windows
-def getHomeDir() :
-    if sys.platform != 'win32' :
-        return os.path.expanduser( '~' )
+#def getHomeDir() :
+    #if sys.platform != 'win32' :
+        #return os.path.expanduser( '~' )
 
-    def valid(path) :
-        if path and os.path.isdir(path) :
-            return True
-        return False
-    def env(name) :
-        return os.environ.get( name, '' )
+    #def valid(path) :
+        #if path and os.path.isdir(path) :
+            #return True
+        #return False
+    #def env(name) :
+        #return os.environ.get( name, '' )
 
-    homeDir = env( 'USERPROFILE' )
-    if not valid(homeDir) :
-        homeDir = env( 'HOME' )
-        if not valid(homeDir) :
-            homeDir = '%s%s' % (env('HOMEDRIVE'),env('HOMEPATH'))
-            if not valid(homeDir) :
-                homeDir = env( 'SYSTEMDRIVE' )
-                if homeDir and (not homeDir.endswith('\\')) :
-                    homeDir += '\\'
-                if not valid(homeDir) :
-                    homeDir = 'C:\\'
-    return homeDir
+    #homeDir = env( 'USERPROFILE' )
+    #if not valid(homeDir) :
+        #homeDir = env( 'HOME' )
+        #if not valid(homeDir) :
+            #homeDir = '%s%s' % (env('HOMEDRIVE'),env('HOMEPATH'))
+            #if not valid(homeDir) :
+                #homeDir = env( 'SYSTEMDRIVE' )
+                #if homeDir and (not homeDir.endswith('\\')) :
+                    #homeDir += '\\'
+                #if not valid(homeDir) :
+                    #homeDir = 'C:\\'
+    #return homeDir
  
 class MDiGConfig(ConfigObj):
-	
-	# using configobj interface:
-	# use has_key("test") to see if config key exists
-	# write to write to a file.
+    
+    # using configobj interface:
+    # use has_key("test") to see if config key exists
+    # write to write to a file.
 
-	config_file = ".mdigrc"
-	config_path = None
-	
-	show_monitor = False
-	overwrite_flag = False
-	DEBUG = 0
-	
+    config_file = "mdig.conf"
+    config_path = None
+    
+    show_monitor = False
+    overwrite_flag = False
+    DEBUG = 0
+    
     ## These are the default directories
-    # root directory for where simulations are stored
-	base_dir = None
-
     # subdir for analysis results
-	analysis_dir = "analysis"
+    analysis_dir = "analysis"
     # subdir for exported maps
-	maps_dir = "maps"
+    maps_dir = "maps"
     # subdir for other output (PNG, movies, none stored analysis)
-	output_dir = "output"
+    output_dir = "output"
 
     ## These are specific options for how MDiG should run,
     ## and should be specified on the command line. Their
     ## defaults are stored here though, and can be changed
     ## through the config file.
-	analysis_step = None
-	analysis_lifestage = None
-	analysis_command = None
-	prob_envelope_only = False
-	combined_analysis = False
-	analysis_filename = None
-	analysis_print_time = False
-	analysis_add_to_xml = True
-	analysis_cmd_file = None
-	
-	time = None
-	
-	model_file = None
-	action_keyword = None
-
-	# Admin tools
-	remove_null = False
-	generate_null = False
-	check_maps = False
-	move_mapset = None
-	##
-
-	rerun_instances = False
-	check_model = True
+    analysis_step = None
+    analysis_lifestage = None
+    analysis_command = None
+    prob_envelope_only = False
+    combined_analysis = False
+    analysis_filename = None
+    analysis_print_time = False
+    analysis_add_to_xml = True
+    analysis_cmd_file = None
     
-	def __init__(self):
-		if os.path.isfile(self.config_file):
-			self.config_path="./"
-		else:
-			self.config_path=home_dir
+    time = None
+    
+    model_file = None
+    action_keyword = None
+
+    # Admin tools
+    remove_null = False
+    generate_null = False
+    check_maps = False
+    move_mapset = None
+    ##
+
+    rerun_instances = False
+    check_model = True
+    
+    def __init__(self):
+        if os.path.isfile(self.config_file):
+            self.config_path="./"
+        else:
+            self.config_path=home_dir
         # Initialise parent, and create the config file if it doesn't exist
-		ConfigObj.__init__(self,"/".join([self.config_path,self.config_file]), \
+        ConfigObj.__init__(self,"/".join([self.config_path,self.config_file]), \
                 create_empty=True)
-
-		# setup msys directory if necessary
-		if sys.platform == 'win32' and self.has_key("MSYS_BIN"):
-		    os.environ["PATH"] += ";" + self["MSYS_BIN"]
-
-	
-	def setBaseDir(self,_base):
-		base_dir=_base
-		self.makepaths()
-		
-	def makepaths(self):
-		if self.base_dir is None:
-			base_d = './'
-		else:
-			base_d = self.base_dir
-		filename = os.path.join(base_d, self.analysis_dir)
-		makepath(filename)
-		filename = os.path.join(base_d, self.maps_dir)
-		makepath(filename)
-		filename = os.path.join(base_d, self.output_dir)
-		makepath(filename)
-
+        # setup msys directory if necessary
+        if sys.platform == 'win32' and self.has_key("MSYS_BIN"):
+            os.environ["PATH"] += ";" + self["MSYS_BIN"]
+        if self.has_key("repository") is False:
+            logging.getLogger("mdig").warning("No repository location defined. "
+                    + "Using " + os.path.join(home_dir,"mdig_repos") + " but "
+                    + "you'll probably want to change this.")
+            self["repository"] = {
+                "location" : os.path.join(home_dir,"mdig_repos") }
+    
 def makepath(path):
     """ creates missing directories for the given path and
         returns a normalized absolute version of the path.

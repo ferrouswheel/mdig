@@ -89,6 +89,7 @@ class GRASSInterface:
         self.displays = {}
         self.filename = None
         self.outputIsTemporary = False
+        self.old_mapset = None
         
         if not self.checkEnvironment():
             self.log.debug("Attempting setup of GRASS from config file")
@@ -97,6 +98,7 @@ class GRASSInterface:
         if self.checkEnvironment():
             self.log.log(logging.INFO, "Saving GRASS region")
             self.runCommand('g.region --o save='+self.old_region)
+            self.old_mapset = self.getMapset()
     
     def checkEnvironment(self):
         okay=True
@@ -204,8 +206,8 @@ class GRASSInterface:
         # copy from tempfilanem to filename
         if self.filename and self.filename.find(".png") != -1 and not self.outputIsTemporary:
             c = MDiGConfig.getConfig()
-            if c.base_dir:
-                dest_dir = os.path.join(c.base_dir, c.output_dir)
+            if MDiGConfig.home_dir:
+                dest_dir = os.path.join(MDiGConfig.home_dir, c.output_dir)
             else:
                 dest_dir = c.output_dir
             shutil.copy(self.tempOutputFile, os.path.join(dest_dir,self.filename))
@@ -426,13 +428,21 @@ class GRASSInterface:
                 return t
         return None
 
+    def getMapset(self):
+        """
+        Get current mapset
+        """
+        output = subprocess.Popen("g.mapsets -p", shell=True,
+                stdout=subprocess.PIPE).communicate()[0]
+        mapsets = output.split()
+        return mapsets[0]
+
     def checkMapset(self, mapset_name):
         """
         Check if mapset already exists
         """
-        output = subprocess.Popen("g.mapsets -l", stdout=subprocess.PIPE).communicate()[0]
-        #p=os.popen("g.mapsets -l", 'r')
-        #output = p.read()
+        output = subprocess.Popen("g.mapsets -l", shell=True,
+                stdout=subprocess.PIPE).communicate()[0]
         mapsets = output.split()
         if mapset_name in mapsets:
             return True
@@ -442,15 +452,9 @@ class GRASSInterface:
         """
         Change to specified mapset. If create is True than create it if necessary       
         """
-
-        #p=os.popen("g.mapsets -p", 'r')
-        #output = p.read()
-        #mapset_search_path = output.split()
+        if self.getMapset() != mapset_name: 
+            self.runCommand("g.mapset -c mapset=%s" % mapset_name)
         
-        self.runCommand("g.mapset -c mapset=%s" % mapset_name)
-        
-        #self.runCommand("g.mapsets mapset=%s" % ",".join(mapset_search_path))
-
         return True
 
     def occupancyEnvelope(self, maps_to_combine, filename):
@@ -553,6 +557,7 @@ class GRASSInterface:
     def clean_up(self):
         self.log.log(logging.INFO,'Restoring region')
         
+        self.changeMapset(self.old_mapset)
         self.runCommand('g.region region='+self.old_region,ignoreOnFail=[256])
         self.closeDisplay()
 

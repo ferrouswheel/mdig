@@ -63,7 +63,6 @@ class DispersalModel(object):
 
     def __init__(self, model_file, the_action = None):
         self.action = the_action
-        mdig_config = MDiGConfig.getConfig()
         
         self.log = logging.getLogger("mdig.exp")
         
@@ -99,26 +98,38 @@ class DispersalModel(object):
             except CheckModelException, e:
                 print e
                 
-        # Set up base directory for output
-        mdig_config.base_dir = self.get_base_dir()
+        self.base_dir = None
         if self.action is not None:
-            if self.action.output_dir is not None:
-                if self.get_base_dir() is not None:
-                    # TODO: eventually choose command line option over the
-                    # default
-                    logger.warning ("Model already specifies base directory,"+\
-                            " ignoring command line option.")
-                    mdig_config.base_dir = self.get_base_dir()
-                else:
-                    mdig_config.base_dir = self.action.output_dir
-            if mdig_config.base_dir is None:
-                mdig_config.base_dir = os.path.dirname(self.action.model_name)
-        if mdig_config.base_dir is None:
-            logger.error ("Couldn't find the base dir for output!")
-            sys.exit(4)
-        
+            self.set_base_dir(self.action.output_dir)
+        else:
+            self.set_base_dir()
+
+        self.init_mapset()
+
+    def set_base_dir(self, dir=None):
+        # Set up base directory for output
+        #mdig_config.base_dir = self.get_base_dir()
+        self.base_dir = os.path.dirname(self.model_file)
+        if self.base_dir is not None:
+            self.log.warning ("Model already specifies base directory,"+\
+                    " ignoring command line option.")
+        elif dir is not None:
+            self.base_dir = dir
         # Initialise paths
-        mdig_config.makepaths()
+        self.init_paths()
+
+    def init_paths(self):
+        c = MDiGConfig.getConfig()
+        if self.base_dir is None:
+            base_d = './'
+        else:
+            base_d = self.base_dir
+        filename = os.path.join(base_d, c.analysis_dir)
+        MDiGConfig.makepath(filename)
+        filename = os.path.join(base_d, c.maps_dir)
+        MDiGConfig.makepath(filename)
+        filename = os.path.join(base_d, c.output_dir)
+        MDiGConfig.makepath(filename)
 
     def _load(self, model_file):
         """load XML input source, return parsed XML document
@@ -692,13 +703,13 @@ class DispersalModel(object):
     
         return completed_node   
     
-    def get_base_dir(self):
-        completed_node = self.xml_model.xpath("/model/instances")
+    #def get_base_dir(self):
+        #completed_node = self.xml_model.xpath("/model/instances")
         
-        if len(completed_node) > 0:
-            if "baseDir" in completed_node[0].attrib.keys():
-                return completed_node[0].attrib["baseDir"]
-        return None
+        #if len(completed_node) > 0:
+            #if "baseDir" in completed_node[0].attrib.keys():
+                #return completed_node[0].attrib["baseDir"]
+        #return None
     
     def get_region_ids(self):
         nodes = self.xml_model.xpath("//regions/region/@id")
@@ -813,6 +824,14 @@ class DispersalModel(object):
                 return int(i_node[0].text)
         self.log.warning("No raster output for lifestage " + ls_id)
         return -1
+
+    def init_mapset(self):
+        G = GRASSInterface.getG()
+        if G.checkMapset(self.get_name()):
+            G.changeMapset(self.get_name())
+        else:
+            G.changeMapset(self.get_name(),True)
+        
 
     def move_mapset(self, new_mapset):
         """
