@@ -206,10 +206,11 @@ class GRASSInterface:
         # copy from tempfilanem to filename
         if self.filename and self.filename.find(".png") != -1 and not self.outputIsTemporary:
             c = MDiGConfig.getConfig()
+            # TODO: make a temp directory in the home dir for these sorts of things
             if MDiGConfig.home_dir:
-                dest_dir = os.path.join(MDiGConfig.home_dir, c.output_dir)
+                dest_dir = os.path.join(MDiGConfig.home_dir)
             else:
-                dest_dir = c.output_dir
+                dest_dir = "." #c.output_dir
             shutil.copy(self.tempOutputFile, os.path.join(dest_dir,self.filename))
 
         for d_name in self.displays:

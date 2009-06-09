@@ -19,20 +19,9 @@
 #
 '''MDiG - Modular Dispersal in GIS
 
-Usage: mdig.py <action> [options] experiment.xml
+command line interface/launcher for MDiG, should be in GRASS environment before
+running!
 
-Actions:
-run      - finish uncompleted simulations (or with a flag, redo all simulations)
-analysis - analyse simulations
-admin    - maintenance tools
-node*    - set up mdig instance as a parallel computing node
-web*     - run graphical user interface
-( * Not yet implemented )
-
-Options:
--h (--help) \t Display action specific help
-
-experiment.xml is the file containing the simulation details.
 '''
 
 import sys
@@ -56,7 +45,21 @@ from mdig import Displayer
 import getopt
 
 def usage():
-    print __doc__
+    usage_line = "Usage: mdig.py <action> [options] experiment.xml"
+    
+    actions_list = ""
+    for a in Actions.mdig_actions:
+        a_str = a + "\t- " + Actions.mdig_actions[a].description + "\n"
+        actions_list += a_str
+
+    print usage_line
+    print "\n=== Actions ==="
+    print actions_list
+    print """Options:
+-h (--help) \t Display action specific help
+
+experiment.xml is the file containing the simulation details.
+"""
 
 def process_options(argv):
     global logger
@@ -79,7 +82,8 @@ def process_options(argv):
         # TODO: extract the logic within process_options and
         # put it here...
     else:
-        if action_keyword != "--help":
+        if action_keyword != "--help" and \
+            action_keyword != "-h":
             print "Unknown action %s" % mdig_config.action_keyword
         usage()
         sys.exit(mdig.mdig_exit_codes["ok"])
@@ -105,19 +109,21 @@ def main(argv):
         repository = ModelRepository.ModelRepository(the_action.repository)
     models = repository.get_models()
         
-    #Load model definition
-    if the_action.model_name is not None:
-        if the_action.model_name not in models:
-            logger.error ( "Model doesn't exist in repository" )
-        model_xml_file = models[the_action.model_name]
-        exp = DispersalModel.DispersalModel(model_xml_file, the_action)
-        simulations.append(exp)
+    if the_action.preload == True:
+        #Load model definition
+        if the_action.model_name is not None:
+            if the_action.model_name not in models:
+                logger.error ( "Model doesn't exist in repository" )
+            model_xml_file = models[the_action.model_name]
+            exp = DispersalModel.DispersalModel(model_xml_file, the_action)
+            simulations.append(exp)
+        else:
+            logger.error ("No model file specified")
+            sys.exit(mdig.mdig_exit_codes["model_not_found"])
+        if the_action is not None:
+            the_action.do_me(exp)
     else:
-        logger.error ("No model file specified")
-        sys.exit(mdig.mdig_exit_codes["model_not_found"])
-        
-    if the_action is not None:
-        the_action.do_me(exp)
+        the_action.do_me(None)
     
     exit_cleanup()
     logger.debug("Exiting")

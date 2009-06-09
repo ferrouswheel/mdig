@@ -214,12 +214,11 @@ class Analysis:
         # check whether we are appending to the same file
         is_append = self.is_append()
         
-        
-        if self.instance.experiment.base_dir is None:
+        if rep.instance.experiment.base_dir is None:
             generated = mdig_config.analysis_dir
         else:
             generated = os.path.join(
-                    self.instance.experiment.base_dir,
+                    rep.instance.experiment.base_dir,
                     mdig_config.analysis_dir)
         generated = os.path.join(generated, prefix)
         generated += OutputFormats.createFilename(rep)

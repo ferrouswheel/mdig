@@ -6,6 +6,8 @@ from optparse import OptionParser
 
 import mdig
 from mdig import MDiGConfig
+from mdig import GRASSInterface
+from mdig.DispersalModel import DispersalModel
 
 from datetime import datetime, timedelta
 
@@ -26,6 +28,9 @@ class Action:
         self.overwrite_flag = False
         # remove null bitmasks (saves disk space but takes time)
         self.remove_null = False
+        # Whether do_me expects a DispersalModel from self.model_name to be
+        # loaded first
+        self.preload = True
         self.log = logging.getLogger("mdig.action")
 
     def add_options(self):
@@ -56,6 +61,9 @@ class Action:
         elif options.output_level == "quiet":
             self.output_level = "quiet"
             logging.getLogger("mdig").setLevel(logging.ERROR)
+        c = MDiGConfig.getConfig()
+        c.overwrite_flag = self.overwrite_flag
+        c.remove_null = self.remove_null
 
     def get_description(self):
         pass
@@ -67,18 +75,13 @@ class Action:
             self.model_name = args[0]
             
         self.act_on_options(self.options)
-        self.set_config()
         self.log.info("Model name is " + self.model_name)
 
     def do_me(self, mdig_model):
         pass
 
-    def set_config(self):
-        c = MDiGConfig.getConfig()
-        c.overwrite_flag = self.overwrite_flag
-        c.remove_null = self.remove_null
-
 class RunAction(Action):
+    description = "Run a model"
 
     def __init__(self):
         Action.__init__(self)
@@ -87,12 +90,9 @@ class RunAction(Action):
         self.show_monitor = False
 
         self.parser = OptionParser(version=mdig.version_string,
-                description = self.get_description(),
+                description = RunAction.description,
                 usage = "%prog run [options] model_name" )
         self.add_options()
-
-    def get_description(self):
-        return "Run a model"
 
     def add_options(self):
         Action.add_options(self)
@@ -156,17 +156,15 @@ class RunAction(Action):
         mdig_model.run()
 
 class AnalysisAction(Action):
+    description = "Perform analysis on a model and create occupancy envelopes"
 
     def __init__(self):
         Action.__init__(self)
         # Default is to run analysis on all timesteps with maps available.
         self.parser = OptionParser(version=mdig.version_string,
-                description = self.get_description(),
+                description = AnalysisAction.description,
                 usage = "%prog analysis [options] model_name")
         self.add_options()
-
-    def get_description(self):
-        return "Perform analysis on a model and create occupancy envelopes"
 
     def add_options(self):
         Action.add_options(self)
@@ -182,8 +180,7 @@ class AnalysisAction(Action):
                 action="store",
                 dest="analysis_step",
                 type="choice",
-                choices=("all","final")
-                )
+                choices=("all","final"))
         self.parser.add_option("-l","--lifestage",
                 help="Lifestage to analyse (lifestage name or default='all')",
                 action="store",
@@ -218,8 +215,8 @@ class AnalysisAction(Action):
                 action="store_false",
                 dest="analysis_add_to_xml")
 
-    def set_config(self):
-        Action.set_config(self)
+    def act_on_options(self,options):
+        Action.act_on_options(self,options)
         MDiGConfig.getConfig().analysis_add_to_xml = \
             self.options.analysis_add_to_xml
         MDiGConfig.getConfig().analysis_filename_base = \
@@ -294,42 +291,40 @@ class AnalysisAction(Action):
                             prob=self.options.combined_analysis)
 
 class AddAction(Action):
+    description = "Add a model to the repository based on an xml definition."
 
     def __init__(self):
         Action.__init__(self)
         self.parser = OptionParser(version=mdig.version_string,
-                description = self.get_description(),
+                description = AddAction.description,
                 usage = "%prog add [model definition].xml")
         self.add_options()
+        self.preload = False
 
     def add_options(self):
-        pass
-
-    def get_description(self):
-        return "Add a model to the repository based on an xml definition."
+        Action.add_options(self)
 
     def do_me(self,mdig_model):
         import shutil
         log = logging.getLogger("mdig.action")
-        if not os.path.isfile(mdig_model):
-            log.error("Model file %s is not a file."%mdig_model)
+        if not os.path.isfile(self.model_name):
+            log.error("Model file %s is not a file."%self.model_name)
             sys.exit(5)
 
         # create dir in repo
         # dirname is from model name
         repo_dir = MDiGConfig.getConfig()["repository"]["location"]
-        dm = DispersalModel(mdig_model,setup=False)
+        dm = DispersalModel(self.model_name,setup=False)
         dest_dir = os.path.join(repo_dir,dm.get_name())
         if os.path.exists(dest_dir):
-            log.error("A model with the same name as %s already exists. Use " +
-                    "'remove' first." % mdig_model)
+            log.error("A model with the same name as %s already exists. Use " % self.model_name +
+                    "'remove' first.")
             sys.exit(5)
-        MDiGConfig.getConfig().makepath(dest_dir)
-        log.info("Created repo dir for model" %
-                dm.get_name)
+        MDiGConfig.makepath(dest_dir)
+        log.info("Created repo dir for model " + dm.get_name())
 
         # copy xml file to dir
-        shutil.copyfile(mdig_model,os.path.join(dest_dir,"model.xml"))
+        shutil.copyfile(self.model_name,os.path.join(dest_dir,"model.xml"))
 
         # set up model directory
         dm.set_base_dir() 
@@ -339,73 +334,41 @@ class AddAction(Action):
         
     
 class AdminAction(Action):
+    description = "Perform miscellaneous administative tasks"
 
     def __init__(self):
         Action.__init__(self)
         self.parser = OptionParser(version=mdig.version_string,
-                description = self.get_description(),
+                description = AdminAction.description,
                 usage = "%prog admin [options] model_name")
         self.add_options()
 
-    def get_description():
-        pass
-
-    def get_usage():
-        usage_str = mdig.version_string
-
-        usage_str += '''
-"admin" action : Perform maintenance and administration tasks
-
-Options:
--r \t remove null bitmasks
--g \t generate null bitmasks
--c \t check all maps are present
--m \t <mapset> move all maps to a new Grass mapset
---o\t overwrite maps
---v\t verbose
---q\t quiet mode'''
-        return usage_str
-
-    def parse_options(self, argv):
-        try:
-            opts, args = getopt.getopt(argv[1:], "horgm:Dv",
-                    ["help","remove","generate","move-mapset=","o","v","q"])
-        except getopt.GetoptError:
-            print self.get_usage()
-            sys.exit(mdig.mdig_exit_codes["cmdline_error"])
-        
-        if len(args) >= 1:
-            self.model_name = args[0]
-        
-        for o,a in opts:
-            if o in ("-h", "--help"):
-                print self.get_usage()
-                sys.exit(mdig.mdig_exit_codes["ok"])
-            elif o in ("-r","--remove"):
-                self.remove_null = True
-            elif o in ("-g","--generate"):
-                self.generate_null = True
-            elif o in ("-c","--check-maps"):
-                self.check_maps = True
-            elif o in ("-m","--move-mapset"):
-                self.move_mapset = a
-            elif o in ("-o", "--o"):
-                self.overwrite_flag = True
-            elif o in ("-D", "--debug"):
-                self.output_level="debug"
-                logging.getLogger("mdig").setLevel(logging.DEBUG)
-                logging.getLogger("mdig").debug("Debug messages enabled.")
-            elif o in ("-v", "--verbose", "--v"):
-                if not self.output_level == "debug":
-                    self.output_level="verbose"
-                    logging.getLogger("mdig").setLevel(logging.INFO)
-                    logging.getLogger("mdig").debug("Verbose messages enabled.")
-            elif o in ("--q"):
-                self.output_level="quiet"
-                logging.setLevel(logging.ERROR)
+    def add_options(self):
+        Admin.add_options(self)
+        self.parser.add_option("-o","--overwrite",
+                help="Overwrite existing files",
+                action="store_true",
+                dest="overwrite_flag")
+        self.parser.add_option("-r","--remove-null",
+                help="Remove null bitmasks from raster maps",
+                action="store_true",
+                dest="remove_null")
+        self.parser.add_option("-g","--generate",
+                help="Generate null bitmasks for raster maps",
+                action="store_true",
+                dest="generate_null")
+        self.parser.add_option("-c","--check-maps",
+                help="Check all maps for the model are present",
+                action="store_true",
+                dest="check_maps")
+        self.parser.add_option("-m","--move-mapset",
+                help="Check all maps for the model are present",
+                action="store",
+                type="string",
+                dest="move_mapset")
 
     def do_me(self,mdig_model):
-        if self.move_mapset:
+        if self.options.move_mapset:
             mdig_model.move_mapset(move_mapset)
         if self.remove_null:
             mdig_model.null_bitmask( False )
@@ -415,6 +378,7 @@ Options:
             mdig_model.checkInstances()
 
 class WebAction(Action):
+    description = "Run a webserver that allows interaction with MDiG"
 
     def __init__(self):
         Action.__init__(self)
@@ -434,6 +398,7 @@ class WebAction(Action):
         sys.exit(mdig.mdig_exit_codes["not_implemented"])
     
 class ClientAction(Action):
+    description = "Runs MDiG as a node in a distributed instance of MDiG"
 
     def __init__(self):
         Action.__init__(self)

@@ -109,13 +109,17 @@ class DispersalModel(object):
 
     def set_base_dir(self, dir=None):
         # Set up base directory for output
-        #mdig_config.base_dir = self.get_base_dir()
-        self.base_dir = os.path.dirname(self.model_file)
-        if self.base_dir is not None:
-            self.log.warning ("Model already specifies base directory,"+\
-                    " ignoring command line option.")
-        elif dir is not None:
+        existing_base_dir = self.get_base_dir()
+        if dir is not None:
             self.base_dir = dir
+        else:
+            self.base_dir = os.path.dirname(self.model_file)
+        if existing_base_dir is not None and \
+            self.base_dir != existing_base_dir:
+            self.log.warn("Current base dir is different to that already " +
+                    "set... some analysis results may be unavailable. " + 
+                    "This could break things.")
+            raw_input("Press enter to continue, or CTRL-C to abort.")
         # Initialise paths
         self.init_paths()
 
@@ -686,8 +690,8 @@ class DispersalModel(object):
         completed_node=model_node.find('instances')
         if completed_node is None:
             completed_node = lxml.etree.SubElement(model_node,"instances")
-            if mdig_config.base_dir is not None:
-                completed_node.attrib["baseDir"] = mdig_config.base_dir
+        if self.base_dir is not None:
+            completed_node.attrib["baseDir"] = self.base_dir
         
         completed_node = lxml.etree.SubElement(completed_node,"completed")
         
@@ -704,13 +708,13 @@ class DispersalModel(object):
     
         return completed_node   
     
-    #def get_base_dir(self):
-        #completed_node = self.xml_model.xpath("/model/instances")
+    def get_base_dir(self):
+        completed_node = self.xml_model.xpath("/model/instances")
         
-        #if len(completed_node) > 0:
-            #if "baseDir" in completed_node[0].attrib.keys():
-                #return completed_node[0].attrib["baseDir"]
-        #return None
+        if len(completed_node) > 0:
+            if "baseDir" in completed_node[0].attrib.keys():
+                return completed_node[0].attrib["baseDir"]
+        return None
     
     def get_region_ids(self):
         nodes = self.xml_model.xpath("//regions/region/@id")
