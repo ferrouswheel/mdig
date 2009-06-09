@@ -61,7 +61,7 @@ class DispersalModel(object):
         control of running simulations and analysis.
     """
 
-    def __init__(self, model_file, the_action = None):
+    def __init__(self, model_file, the_action = None, setup=True):
         self.action = the_action
         
         self.log = logging.getLogger("mdig.exp")
@@ -101,10 +101,11 @@ class DispersalModel(object):
         self.base_dir = None
         if self.action is not None:
             self.set_base_dir(self.action.output_dir)
-        else:
-            self.set_base_dir()
+        elif setup:
+            self.set_base_dir() 
 
-        self.init_mapset()
+        if setup:
+            self.init_mapset()
 
     def set_base_dir(self, dir=None):
         # Set up base directory for output

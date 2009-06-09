@@ -315,18 +315,20 @@ class DispersalInstance:
         
         current_dir = os.path.dirname(os.path.abspath(result[1]))
         filename = os.path.basename(result[1])
+        analysis_dir_abs_path = os.path.abspath(os.path.join(
+                    self.experiement.base_dir,mdig_config.analysis_dir))
         
         # move filename to analysis directory
-        if current_dir is not os.path.abspath(mdig_config.analysis_dir):
+        if current_dir is not analysis_dir_abs_path:
             # if file exists and overwrite_flag is specified then overwrite
-            if os.path.isfile( os.path.join(mdig_config.analysis_dir,filename) ):
+            if os.path.isfile( os.path.join(analysis_dir_abs_path,filename) ):
                 if mdig_config.overwrite_flag:
-                    os.remove( os.path.join(mdig_config.analysis_dir,filename) )
+                    os.remove( os.path.join(analysis_dir_abs_path,filename) )
                 else:
                     self.log.error( "Can't add analysis because filename %s already exists and "\
                      "overwrite_flag is not set." % filename)
                     return
-            shutil.move(result[1], mdig_config.analysis_dir)
+            shutil.move(result[1], analysis_dir_abs_path)
         
         filename = os.path.basename(filename)
         

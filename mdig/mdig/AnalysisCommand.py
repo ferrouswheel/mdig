@@ -56,13 +56,13 @@ class AnalysisCommand:
     def get_output_filename_base(self):
         if self.output_fn_base is None:
             mdig_config = MDiGConfig.getConfig()
-            if mdig_config.analysis_filename is None:
+            if mdig_config.analysis_filename_base is None:
                 #create random name
                 self.output_fn_base = \
                         repr(os.getpid()) + "_" + repr(int(random.random()*1000000)) \
                         + ".dat"
             else:
-                self.output_fn_base = mdig_config.analysis_filename
+                self.output_fn_base = mdig_config.analysis_filename_base
         return self.output_fn_base
 
     def init_output_file(self, instance, rep=None):
@@ -90,7 +90,7 @@ class AnalysisCommand:
         return tmp_fn
 
     def insert_output_into_cmd(self):
-        # replace %f with analysis_filename (or generated name)
+        # replace %f with analysis_filename_base (or generated name)
         # if it exists in cmd_string
         if self.output_fn is None:
             raise OutputFileNotSetException()
@@ -107,8 +107,7 @@ class AnalysisCommand:
     def run_command(self,maps):
         if self.times is None:
             raise Exception("Times to run command on not set")
-        # replace %f with analysis_filename (or generated name)
-        # if it exists in cmd_string
+        # replace %f 
         tmp_cmd_string = self.insert_output_into_cmd()
         # Skip ahead to the first time that has enough past maps to
         # satisfy the command line.
@@ -166,9 +165,9 @@ class AnalysisCommand:
             for t in times:
                 if t < 0:
                     times[times.index(t)] = o_times[t]
-                if t < period[0] or t > period[1]:
+                elif t < period[0] or t > period[1]:
                     raise Exception("Time outside simulation range: %d" % t)
-                if t not in o_times:
+                elif t not in o_times:
                     raise Exception("Time not in saved maps: %d" % t)
             times.sort()
         # check that there are enough maps to satisfy the command line

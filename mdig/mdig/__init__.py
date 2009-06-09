@@ -24,7 +24,7 @@ import configobj
 
 version = "0.2"
 version_name = "hoe"
-version_string = "mdig " + version + " - " + version_name 
+version_string = "MDiG " + version + " - " + version_name 
 
 mdig_exit_codes = {
     "ok" : 0,

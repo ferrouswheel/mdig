@@ -114,15 +114,9 @@ class MDiGConfig(ConfigObj):
     ## and should be specified on the command line. Their
     ## defaults are stored here though, and can be changed
     ## through the config file.
-    analysis_step = None
-    analysis_lifestage = None
-    analysis_command = None
-    prob_envelope_only = False
-    combined_analysis = False
-    analysis_filename = None
+    analysis_filename_base = None
     analysis_print_time = False
     analysis_add_to_xml = True
-    analysis_cmd_file = None
     
     time = None
     
@@ -151,11 +145,15 @@ class MDiGConfig(ConfigObj):
         if sys.platform == 'win32' and self.has_key("MSYS_BIN"):
             os.environ["PATH"] += ";" + self["MSYS_BIN"]
         if self.has_key("repository") is False:
+            repo_dir = os.path.join(home_dir,"mdig_repos")
             logging.getLogger("mdig").warning("No repository location defined. "
-                    + "Using " + os.path.join(home_dir,"mdig_repos") + " but "
+                    + "Using " + repo_dir + " but "
                     + "you'll probably want to change this.")
             self["repository"] = {
-                "location" : os.path.join(home_dir,"mdig_repos") }
+                "location" : repo_dir }
+            if not os.path.exists(repo_dir):
+                os.path.mkdir(repo_dir)
+
     
 def makepath(path):
     """ creates missing directories for the given path and
