@@ -541,7 +541,8 @@ class GRASSInterface:
             p = Popen(commandstring, shell=True, stdout=subprocess.PIPE)
         
         self.stdout = p.communicate()[0]
-        self.log.log(logging.DEBUG, self.stdout)
+        if len(self.stdout) > 0:
+            self.log.debug("stdout: " + self.stdout)
         ret = p.returncode
 
         # If the command returns an error code then print it,

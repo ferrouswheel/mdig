@@ -115,6 +115,7 @@ def main(argv):
         if the_action.model_name is not None:
             if the_action.model_name not in models:
                 logger.error ( "Model doesn't exist in repository" )
+                sys.exit(mdig.mdig_exit_codes["model_not_found"])
             model_xml_file = models[the_action.model_name]
             exp = DispersalModel.DispersalModel(model_xml_file, the_action)
             simulations.append(exp)
