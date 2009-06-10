@@ -90,14 +90,12 @@ def process_options(argv):
     return the_action
 
 simulations = []
-repository = None
 def main(argv):
     global simulations
-    global repository
     
     mdig_config = MDiGConfig.getConfig()
     logger = setupLogger(mdig_config["ansi"])
-    repository = ModelRepository.ModelRepository()
+    mdig.repository = ModelRepository.ModelRepository()
     the_action = process_options(argv)
     
     signal.signal(signal.SIGINT, exit_catcher)
@@ -107,8 +105,8 @@ def main(argv):
     
     #Load model repository 
     if the_action.repository is not None:
-        repository = ModelRepository.ModelRepository(the_action.repository)
-    models = repository.get_models()
+        mdig.repository = ModelRepository.ModelRepository(the_action.repository)
+    models = mdig.repository.get_models()
         
     if the_action.preload == True:
         #Load model definition

@@ -32,6 +32,7 @@ mdig_exit_codes = {
     "not_implement" : 10,
     "model_not_found" : 3
 }
+repository = None
 
 class NotEnoughHistoryException (Exception): pass
 

@@ -332,6 +332,42 @@ class AddAction(Action):
         dm.init_mapset()
         GRASSInterface.getG().clean_up()
         
+class ListAction(Action):
+    description = "List the models currently in MDiG repository."
+
+    def __init__(self):
+        Action.__init__(self)
+        self.parser = OptionParser(version=mdig.version_string,
+                description = ListAction.description,
+                usage = "%prog list")
+        self.add_options()
+        self.preload = False
+
+    def add_options(self):
+        pass
+
+    def parse_options(self,options):
+        pass
+
+    def do_me(self,mdig_model):
+        from textwrap import TextWrapper
+        import re
+        indent_amount = 30
+        models = mdig.repository.get_models()
+        print "Models in the MDiG repository"
+        print "-----------------------------"
+        ms=models.keys()[:]
+        ms.sort()
+        for m in ms:
+            dm = DispersalModel(models[m],setup=False)
+            tw = TextWrapper(expand_tabs = False, replace_whitespace = True )
+            tw.initial_indent = " "*4
+            tw.subsequent_indent = " "*4
+            desc = dm.get_description()
+            desc = re.sub("[\\s\\t]+"," ",desc)
+            desc = tw.fill(desc)
+            print "" + m + ":\n" + desc
+        sys.exit(0)
     
 class AdminAction(Action):
     description = "Perform miscellaneous administative tasks"
@@ -421,6 +457,7 @@ mdig_actions = {
     "run": RunAction,
     "analysis": AnalysisAction,
     "add": AddAction,
+    "list": ListAction,
     "admin": AdminAction,
     "web": WebAction,
     "node": ClientAction
