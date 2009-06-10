@@ -94,9 +94,9 @@ repository = None
 def main(argv):
     global simulations
     global repository
-    logger = setupLogger()
     
     mdig_config = MDiGConfig.getConfig()
+    logger = setupLogger(mdig_config["ansi"])
     repository = ModelRepository.ModelRepository()
     the_action = process_options(argv)
     
@@ -154,14 +154,29 @@ def exit_cleanup():
         
     logger.info("Finished at %s" % repr(datetime.now().ctime()))
 
-def setupLogger():
+def setupLogger(color = "false"):
     logger = logging.getLogger("mdig")
     logger.setLevel(logging.INFO)
     #create console handler and set level to debug
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
     #create formatter
-    formatter = logging.Formatter("%(msecs)d - %(name)s - %(levelname)s - %(message)s")
+    #class myFormatter(logging.Formatter):
+        #def formatTime(self, record, datefmt=None):
+    if color == "true":
+        CSI = "\033["
+        TIME = CSI + "0m" + CSI + "32m"
+        RESET = CSI + "0m"
+        NAME = CSI + "1m" + CSI + "32m"
+        LEVEL = CSI + "0m" + CSI + "33m"
+
+        formatter = logging.Formatter(
+            TIME + "%(asctime)s" + RESET + NAME + " [%(name)s] " + RESET +
+            LEVEL + "%(levelname)s" + RESET + ": %(message)s", \
+            datefmt='%Y%m%d %H:%M:%S')
+    else:
+        formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+            datefmt='%Y%m%d %H:%M:%S')
     #add formatter to ch
     ch.setFormatter(formatter)
     #add ch to logger

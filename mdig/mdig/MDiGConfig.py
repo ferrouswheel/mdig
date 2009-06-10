@@ -154,6 +154,8 @@ class MDiGConfig(ConfigObj):
             if not os.path.exists(repo_dir):
                 os.makedirs(repo_dir)
             self.write()
+        if self.has_key("ansi") is False:
+            self["ansi"] = "false"
 
     
 def makepath(path):
