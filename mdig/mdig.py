@@ -97,7 +97,7 @@ def main(argv):
     logger = setupLogger()
     
     mdig_config = MDiGConfig.getConfig()
-    repository = ModelRepository.ModelRepository(the_action.repository)
+    repository = ModelRepository.ModelRepository()
     the_action = process_options(argv)
     
     signal.signal(signal.SIGINT, exit_catcher)
