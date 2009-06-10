@@ -153,6 +153,7 @@ class MDiGConfig(ConfigObj):
                 "location" : repo_dir }
             if not os.path.exists(repo_dir):
                 os.makedirs(repo_dir)
+            self.write()
 
     
 def makepath(path):

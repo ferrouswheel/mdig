@@ -90,13 +90,14 @@ def process_options(argv):
     return the_action
 
 simulations = []
-repository = ModelRepository.ModelRepository()
+repository = None
 def main(argv):
     global simulations
     global repository
     logger = setupLogger()
     
     mdig_config = MDiGConfig.getConfig()
+    repository = ModelRepository.ModelRepository(the_action.repository)
     the_action = process_options(argv)
     
     signal.signal(signal.SIGINT, exit_catcher)
