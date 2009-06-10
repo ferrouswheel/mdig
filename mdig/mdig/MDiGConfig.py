@@ -152,7 +152,7 @@ class MDiGConfig(ConfigObj):
             self["repository"] = {
                 "location" : repo_dir }
             if not os.path.exists(repo_dir):
-                os.path.mkdir(repo_dir)
+                os.makedirs(repo_dir)
 
     
 def makepath(path):
