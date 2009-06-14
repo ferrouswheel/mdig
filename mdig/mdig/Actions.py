@@ -180,7 +180,8 @@ class AnalysisAction(Action):
                 action="store",
                 dest="analysis_step",
                 type="choice",
-                choices=("all","final"))
+                choices=("all","final"),
+                default="all")
         self.parser.add_option("-l","--lifestage",
                 help="Lifestage to analyse (lifestage name or default='all')",
                 action="store",
