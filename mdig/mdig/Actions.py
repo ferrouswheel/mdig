@@ -69,12 +69,10 @@ class Action:
 
     def parse_options(self,argv):
         (self.options, args) = self.parser.parse_args(argv[1:])
-    
         if len(args) >= 1:
             self.model_name = args[0]
-            
+            self.log.info("Model name is " + self.model_name)
         self.act_on_options(self.options)
-        self.log.info("Model name is " + self.model_name)
 
     def do_me(self, mdig_model):
         pass

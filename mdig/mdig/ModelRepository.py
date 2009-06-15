@@ -31,6 +31,8 @@ class ModelRepository:
     def get_models(self):
         models = {}
         for d in os.listdir(self.location):
+            if not os.path.isdir(os.path.join(self.location, d)):
+                continue
             model_file = os.path.join(self.location, "model.xml")
             if not os.path.isfile(model_file):
                 xml_files = glob.glob(os.path.join(self.location, d, "*.xml"))
