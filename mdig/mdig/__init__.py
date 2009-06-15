@@ -30,7 +30,10 @@ mdig_exit_codes = {
     "ok" : 0,
     "cmdline_error" : 2,
     "not_implement" : 10,
-    "model_not_found" : 3
+    "model_not_found" : 3,
+    "instance_incomplete": 11,
+    "invalid_replicate_index": 12,
+    "missing_envelopes": 13
 }
 repository = None
 

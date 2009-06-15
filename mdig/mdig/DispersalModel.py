@@ -365,7 +365,9 @@ class DispersalModel(object):
         
         if i_seed is None:
             # ignore offset if seed isn't specified
-            self.log.warning('No initial seed specified - using OS generated seed. You will not be able to rerun this exact simulation in future')
+            self.log.warning("No initial seed specified - using OS generated" +
+                    " seed. You will not be able to rerun this exact " +
+                    "simulation in future")
         else:
             my_random.seed(i_seed)
             while offset > 0:
@@ -434,10 +436,7 @@ class DispersalModel(object):
             elif n.tag == "png":
                 l = OutputFormats.PngOutput(n)
                 listeners.append(l)
-
-                
         return listeners
-
 
     def get_num_replicates(self, node=None):
         ''' If node == none then return the total number of replicates
@@ -448,7 +447,6 @@ class DispersalModel(object):
         if node is None:
             value = self.xml_model.xpath("/model/random/replicates")
             return int(value[0].text)
-            
         else:
             nodes=node.xpath("replicates/replicate")
             return len(nodes)
@@ -550,7 +548,6 @@ class DispersalModel(object):
             
             for i in variables[current_key]:
                 results2=[]
-            
                 results2.extend(self.permute_variables(variables,keys[1:]))
                 
                 if len(results2)==0: results2=[[i]]
@@ -604,16 +601,20 @@ class DispersalModel(object):
         if ls_id in self.lifestages.keys():
             return self.lifestages[ls_id]
         else:
-            nodes = self.xml_model.xpath('/model/lifestages/lifestage[@name="%s"]' % ls_id)
+            nodes = self.xml_model.xpath(
+                    '/model/lifestages/lifestage[@name="%s"]' % ls_id)
             if len(nodes) == 1:
                 self.lifestages[ls_id]=Lifestage(nodes[0])
                 return self.lifestages[ls_id]
             else:
-                self.log.error("Could not get unique lifestage from id '%s'" % ls_id)
+                self.log.error(
+                        "Could not get unique lifestage from id '%s'" % ls_id)
         
     def get_period(self):
-        start_time = int(self.xml_model.xpath('/model/period/startTime/text()')[0])
-        end_time = int(self.xml_model.xpath('/model/period/endTime/text()')[0])
+        start_time = int(self.xml_model.xpath(
+                    '/model/period/startTime/text()')[0])
+        end_time = int(self.xml_model.xpath(
+                    '/model/period/endTime/text()')[0])
         
         return (start_time, end_time)
     
@@ -633,7 +634,9 @@ class DispersalModel(object):
                 if time < 0:
                     time = time + period[1]
                 if time < period[0] or time > period[1]:
-                    self.logger.error( "while creating probability envelope: time %d is outside of range [%d, %d]" % ( time, period[0], period[1] ) )
+                    self.logger.error( "while creating probability envelope: " +
+                            "time %d is outside of range [%d, %d]" %
+                            ( time, period[0], period[1] ) )
                     sys.exit(2)
                 i.update_occupancy_envelope(ls, time, time, force=force)
                 

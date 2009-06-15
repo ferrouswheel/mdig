@@ -25,9 +25,11 @@ class Action:
         # output_level is one of: quiet, normal, verbose, debug
         self.output_level = "normal"
         # whether to overwrite files that already exist
-        self.overwrite_flag = False
+        # Moved to config
+        #self.overwrite_flag = False
         # remove null bitmasks (saves disk space but takes time)
-        self.remove_null = False
+        # Moved to config
+        #self.remove_null = False
         # Whether do_me expects a DispersalModel from self.model_name to be
         # loaded first
         self.preload = True
@@ -61,9 +63,6 @@ class Action:
         elif options.output_level == "quiet":
             self.output_level = "quiet"
             logging.getLogger("mdig").setLevel(logging.ERROR)
-        c = MDiGConfig.getConfig()
-        c.overwrite_flag = self.overwrite_flag
-        c.remove_null = self.remove_null
 
     def get_description(self):
         pass
@@ -129,14 +128,17 @@ class RunAction(Action):
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
+        c = MDiGConfig.getConfig()
         if options.output_dir is not None:
             if not os.path.isdir(options.output_dir):
                 self.log.info("Directory %s doesn't exist, attemping to" +
                         " create\n",options.output_dir)
-                MDiGConfig.getConfig().output_dir = \
+                c.output_dir = \
                     MDiGConfig.makepath(options.output_dir)
             else:
-                MDiGConfig.getConfig().output_dir = options.output_dir
+                c.output_dir = options.output_dir
+        c.overwrite_flag = self.options.overwrite_flag
+        c.remove_null = self.options.remove_null
 
     def get_model(self):
         return model_name
@@ -218,12 +220,11 @@ class AnalysisAction(Action):
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
-        MDiGConfig.getConfig().analysis_add_to_xml = \
-            self.options.analysis_add_to_xml
-        MDiGConfig.getConfig().analysis_filename_base = \
-            self.options.analysis_filename_base
-        MDiGConfig.getConfig().analysis_print_time = \
-            self.options.analysis_print_time
+        c = MDiGConfig.getConfig()
+        c.analysis_add_to_xml = self.options.analysis_add_to_xml
+        c.analysis_filename_base = self.options.analysis_filename_base
+        c.analysis_print_time = self.options.analysis_print_time
+        c.overwrite_flag = self.options.overwrite_flag
 
     def do_me(self,mdig_model):
         ls = self.options.analysis_lifestage
@@ -265,7 +266,7 @@ class AnalysisAction(Action):
             else:
                 self.log.error("Unknown analysis step : %s" %
                         self.options.analysis_step)
-                sys.exit(3)
+                sys.exit(mdig.mdig_exit_codes["cmdline_error"])
             
         if not self.options.prob_envelope_only:
             print "Running analysis command"
@@ -304,6 +305,14 @@ class AddAction(Action):
 
     def add_options(self):
         Action.add_options(self)
+        self.parser.add_option("-o","--overwrite",
+                help="Overwrite existing files",
+                action="store_true",
+                dest="overwrite_flag")
+
+    def act_on_options(self,options):
+        Action.act_on_options(self,options)
+        c.overwrite_flag = self.options.overwrite_flag
 
     def do_me(self,mdig_model):
         import shutil
@@ -318,9 +327,14 @@ class AddAction(Action):
         dm = DispersalModel(self.model_name,setup=False)
         dest_dir = os.path.join(repo_dir,dm.get_name())
         if os.path.exists(dest_dir):
-            log.error("A model with the same name as %s already exists. Use " % self.model_name +
-                    "'remove' first.")
-            sys.exit(5)
+            if self.options.overwrite_flag:
+                log.error("A model with the same name as %s already exists. Use " % self.model_name +
+                        "'remove' first.")
+                sys.exit(5)
+            else:
+                log.warning("A model with the same name as %s already exists." +
+                        " Overwriting...")
+                shutil.rmtree(dest_dir)
         MDiGConfig.makepath(dest_dir)
         log.info("Created repo dir for model " + dm.get_name())
 
@@ -369,6 +383,131 @@ class ListAction(Action):
             desc = tw.fill(desc)
             print "" + m + ":\n" + desc
         sys.exit(0)
+
+class ExportAction(Action):
+    description = "Export images and movies of simulation."
+
+    def __init__(self):
+        Action.__init__(self)
+        self.parser = OptionParser(version=mdig.version_string,
+                description = ExportAction.description,
+                usage = "%prog export [options] model_name")
+        self.add_options()
+        
+    def add_options(self):
+        Action.add_options(self)
+        self.parser.add_option("-o","--overwrite",
+                help="Overwrite existing files",
+                action="store_true",
+                dest="overwrite_flag")
+        #self.parser.add_option("-m","--mpeg",
+        #        help="Output mpeg compressed movie",
+        #        action="store_true",
+        #        dest="output_mpeg")
+        self.parser.add_option("-g","--gif",
+                help="Output animated gif",
+                action="store_true",
+                dest="output_gif")
+        self.parser.add_option("-i","--image",
+                help="Output a series of images, one for each population distribution map",
+                action="store_true",
+                dest="output_image")
+        self.parser.add_option("-r","--rep",
+                help="Output maps for rep instead of for occupancy envelope",
+                action="append",
+                type="int",
+                dest="reps")
+        self.parser.add_option("-l","--lifestage",
+                help="Lifestage to analyse (lifestage name or default='all')",
+                action="store",
+                dest="output_lifestage",
+                type="string")
+
+    def act_on_options(self,options):
+        Action.act_on_options(self,options)
+        MDiGConfig.getConfig().overwrite_flag = self.options.overwrite_flag
+        if self.options.output_lifestage is None:
+            self.options.output_lifestage = "all"
+    
+    def do_me(self,mdig_model):
+        for i in mdig_model.get_instances():
+            self.do_instance(i,mdig_model.get_name())
+
+    def do_instance(self,i,model_name):
+        # TODO: only overwrite files if -o flag is set
+        import OutputFormats
+        if not self.options.output_gif and \
+            not self.options.output_image:
+            self.log.warning("No type for output was specified...")
+            sys.exit(0)
+        ls = self.options.output_lifestage
+        all_maps = []
+        if not i.is_complete():
+            self.log.error("Instance " + repr(i) + " not complete")
+            sys.exit(mdig.mdig_exit_codes["instance_incomplete"])
+        base_fn = os.path.join(i.experiment.base_dir,"output")
+        if len(self.options.reps) > 0:
+            # Run on replicates
+            rs = i.replicates
+            for r_index in self.options.reps:
+                if r_index < 0 or r_index > len(rs):
+                    self.log.error("Invalid replicate index." +
+                            " Have you 'run' the model first?")
+                    sys.exit(mdig.mdig_exit_codes["invalid_replicate_index"])
+                r = rs[r_index]
+                rep_fn = os.path.join(base_fn, OutputFormats.createFilename(r))
+                map_list = []
+                for t in r.get_saved_maps(ls):
+                    m = r.get_saved_maps(ls)[t]
+                    map_list.append(self.create_frame(m,rep_fn + "_" + repr(t),model_name,
+                                t, ls))
+                self.create_gif(map_list,rep_fn)
+                all_maps.extend(map_list)
+        else:
+            # Run on occupancy envelopes
+            base_fn = os.path.join(base_fn,
+                    OutputFormats.createFilename(i))
+            env = i.get_occupancy_envelopes()
+            if env is None:
+                self.log.error("No occupancy envelopes available.")
+                sys.exit(mdig.mdig_exit_codes["missing_envelopes"])
+            map_list = []
+            for t in env[ls]:
+                m = env[ls][t]
+                map_list.append(self.create_frame(m,base_fn + "_" + repr(t),model_name,
+                        t, ls))
+            self.create_gif(map_list,base_fn)
+            all_maps.extend(map_list)
+        # If the user just wanted an animated gif, then clean up the images
+        if not self.options.output_image:
+            for m in all_maps:
+                os.remove(m)
+
+    def create_gif(self,maps,fn):
+        gif_fn = None
+        if self.options.output_gif:
+            from subprocess import Popen, PIPE
+            gif_fn = fn + "_anim.gif"
+            output = Popen("convert -delay 100 " + " ".join(maps)
+                + " " + gif_fn, shell=True, stdout=PIPE).communicate()[0]
+            if len(output) > 0:
+                self.log.info("Convert output:" + output)
+        return gif_fn
+
+    def create_frame(self, map_name, output_name, model_name, year, ls):
+        g = GRASSInterface.getG()
+        g.runCommand("d.mon png1", ignoreOnFail=[1])
+        g.runCommand("d.erase")
+        #####g.runCommand("d.vect nzcoast_low type=area fcolor=black")
+        g.runCommand("r.colors map=" + map_name + " color=byr")
+        g.runCommand("d.rast " + map_name + " -o")
+        g.runCommand("d.barscale tcolor=0:0:0 bcolor=none at=2,18 -l -t")
+        g.runCommand("d.legend " + map_name + " at=5,50,85,90")
+        g.runCommand("d.text at=2,90 size=3 text=" + model_name)
+        #d.text text="Land-cover model" at=2,87 size=3
+        g.runCommand("d.text text=" + year + " at=2,93")
+        g.runCommand("d.out.png output=" + output_name + " res=2")
+        return output_name + ".png"
     
 class AdminAction(Action):
     description = "Perform miscellaneous administative tasks"
@@ -381,7 +520,7 @@ class AdminAction(Action):
         self.add_options()
 
     def add_options(self):
-        Admin.add_options(self)
+        Action.add_options(self)
         self.parser.add_option("-o","--overwrite",
                 help="Overwrite existing files",
                 action="store_true",
@@ -460,6 +599,7 @@ mdig_actions = {
     "add": AddAction,
     "list": ListAction,
     "admin": AdminAction,
+    "export": ExportAction,
     "web": WebAction,
     "node": ClientAction
     }
