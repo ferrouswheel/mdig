@@ -11,6 +11,7 @@ package name in brackets):
 
 * configobj (python-configobj)
 * lxml (python-lxml)
+* ImageMagick's convert utility (imagemagick)
 
 For grass modules:
 

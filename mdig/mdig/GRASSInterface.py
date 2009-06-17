@@ -668,6 +668,23 @@ class GRASSInterface:
         tempOutDataFileName = (tempfile.mkstemp(prefix='popMod_outIndex_', \
                     suffix='.txt', text=True))
         return tempDataFileName, tempOutDataFileName
+
+    def count_sites(self, vmap):
+        """ Counts the number of points within a vector map """
+        # use v.info -t and parse result
+        p1 = Popen(["v.info", "-t", vmap], stdout=PIPE)
+        p2 = Popen(["grep", "nodes"], stdin=p1.stdout, stdout=PIPE)
+        p3 = Popen(["awk", "-F=","{print $2}"], stdin=p2.stdout, stdout=PIPE)
+        output = p3.communicate()[0]
+        return int(output)
+
+    def count_cells(self, rmap):
+        """ Count the number cells occupied in a raster map """
+        p1 = Popen(r"r.univar" + " -g " + rmap, shell=True, stdout=PIPE)
+        p2 = Popen(r"sed -n '1p;1q'", shell=True, stdin=p1.stdout, stdout=PIPE)
+        p3 = Popen(r"awk -F = '{print $2}'", shell=True, stdin=p2.stdout, stdout=PIPE)
+        output = p3.communicate()[0]
+        return int(output)
         
 #   def exists(self,mapname):
 

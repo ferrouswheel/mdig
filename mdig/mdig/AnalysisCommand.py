@@ -175,7 +175,7 @@ class AnalysisCommand:
         if (len(times) - 1) < self.get_earliest_time():
             self.log.error("Not enough past maps to fulfill "
                     "command line with earliest map %d maps "
-                    "before present" % earliest_map)
+                    "before present" % self.get_earliest_map())
             raise mdig.NotEnoughHistoryException()
         self.times = times
         return times

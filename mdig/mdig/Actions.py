@@ -507,6 +507,132 @@ class ExportAction(Action):
         g.runCommand("d.out.png output=" + output_name + " res=2")
         return output_name + ".png"
     
+class ROCAction(Action):
+    description = "Create Receiver Operating Chracteristic curves for " + \
+        "occupancy envelopes."
+
+    def __init__(self):
+        Action.__init__(self)
+        self.parser = OptionParser(version=mdig.version_string,
+                description = ROCAction.description,
+                usage = "%prog roc [options] model_name")
+        self.add_options()
+        
+    def add_options(self):
+        Action.add_options(self)
+        self.parser.add_option("-o","--overwrite",
+                help="Overwrite existing files",
+                action="store_true",
+                dest="overwrite_flag")
+        #self.parser.add_option("-m","--mpeg",
+        #        help="Output mpeg compressed movie",
+        #        action="store_true",
+        #        dest="output_mpeg")
+        self.parser.add_option("-a","--auc",
+                help="Calculate AUC",
+                action="store_true",
+                dest="calc_auc")
+        self.parser.add_option("--graph-auc",
+                help="Graph the change in AUC over time",
+                action="store_true",
+                dest="graph_auc")
+        self.parser.add_option("-a","--start",
+                help="Start time to calculate ROC/AUC for",
+                action="store",
+                type="int",
+                dest="start_time")
+        self.parser.add_option("-b","--end",
+                help="End time to calculate ROC/AUC for",
+                action="store",
+                type="int",
+                dest="end_time")
+        self.parser.add_option("-s","--sites",
+                help="The vector that will contain the sites to compare " +
+                    "performance with (required).",
+                action="store",
+                dest="sites_vector",
+                type="string")
+        self.parser.add_option("-l","--lifestage",
+                help="Lifestage to analyse (lifestage name or default='all')",
+                action="store",
+                dest="lifestage",
+                type="string")
+
+    def act_on_options(self,options):
+        Action.act_on_options(self,options)
+        MDiGConfig.getConfig().overwrite_flag = self.options.overwrite_flag
+        if self.options.lifestage is None:
+            self.options.lifestage = "all"
+        if self.options.sites_vector is None:
+            self.log.error("No sites vector provided!")
+            sys.exit(mdig.mdig_exit_codes["cmdline_error"])
+    
+    def do_me(self,mdig_model):
+        self.ROC = ROCAnalysis.ROCAnalysis(self.options.sites_vector)
+        for i in mdig_model.get_instances():
+            self.do_instance(i,mdig_model.get_name())
+
+    def do_instance(self,i,model_name):
+        # TODO: only overwrite files if -o flag is set
+        import OutputFormats
+        if not self.options.output_gif and \
+            not self.options.output_image:
+            self.log.warning("No type for output was specified...")
+            sys.exit(0)
+        ls = self.options.output_lifestage
+        all_maps = []
+        if not i.is_complete():
+            self.log.error("Instance " + repr(i) + " not complete")
+            sys.exit(mdig.mdig_exit_codes["instance_incomplete"])
+        base_fn = os.path.join(i.experiment.base_dir,"output")
+        if len(self.options.reps) > 0:
+            # Run on replicates
+            rs = i.replicates
+            for r_index in self.options.reps:
+                if r_index < 0 or r_index > len(rs):
+                    self.log.error("Invalid replicate index." +
+                            " Have you 'run' the model first?")
+                    sys.exit(mdig.mdig_exit_codes["invalid_replicate_index"])
+                r = rs[r_index]
+                rep_fn = os.path.join(base_fn, OutputFormats.createFilename(r))
+                map_list = []
+                for t in r.get_saved_maps(ls):
+                    m = r.get_saved_maps(ls)[t]
+                    map_list.append(self.create_frame(m,rep_fn + "_" + repr(t),model_name,
+                                t, ls))
+                self.create_gif(map_list,rep_fn)
+                all_maps.extend(map_list)
+        else:
+            # Run on occupancy envelopes
+            base_fn = os.path.join(base_fn,
+                    OutputFormats.createFilename(i))
+            env = i.get_occupancy_envelopes()
+            if env is None:
+                self.log.error("No occupancy envelopes available.")
+                sys.exit(mdig.mdig_exit_codes["missing_envelopes"])
+            map_list = []
+            for t in env[ls]:
+                m = env[ls][t]
+                map_list.append(self.create_frame(m,base_fn + "_" + repr(t),model_name,
+                        t, ls))
+            self.create_gif(map_list,base_fn)
+            all_maps.extend(map_list)
+        # If the user just wanted an animated gif, then clean up the images
+        if not self.options.output_image:
+            for m in all_maps:
+                os.remove(m)
+
+    def create_gif(self,maps,fn):
+        gif_fn = None
+        if self.options.output_gif:
+            from subprocess import Popen, PIPE
+            gif_fn = fn + "_anim.gif"
+            output = Popen("convert -delay 100 " + " ".join(maps)
+                + " " + gif_fn, shell=True, stdout=PIPE).communicate()[0]
+            if len(output) > 0:
+                self.log.info("Convert output:" + output)
+        return gif_fn
+
 class AdminAction(Action):
     description = "Perform miscellaneous administative tasks"
 

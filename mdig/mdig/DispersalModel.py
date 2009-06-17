@@ -839,6 +839,14 @@ class DispersalModel(object):
             G.changeMapset(self.get_name())
         else:
             G.changeMapset(self.get_name(),True)
+
+    def get_mapset(self):
+        """ Get the mapset where this model's maps are contained.
+
+            Currently is the same as the model name. Not sure whether to change
+            this?
+        """
+        return self.get_name()
         
 
     def move_mapset(self, new_mapset):
