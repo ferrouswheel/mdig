@@ -112,12 +112,15 @@ def main(argv):
     models = mdig.repository.get_models()
         
     if the_action.preload == True:
-        #Load model definition
-        if the_action.model_name is not None:
-            if the_action.model_name not in models:
-                logger.error ( "Model doesn't exist in repository" )
+        # Load model definition
+        if the_action.model_names is not None:
+            # check that there is only one model for preload
+            assert(len(the_action.model_names) == 1)
+            m_name = the_action.model_names[0]
+            if m_name not in models:
+                logger.error("Model " + m_name + " doesn't exist in repository")
                 sys.exit(mdig.mdig_exit_codes["model_not_found"])
-            model_xml_file = models[the_action.model_name]
+            model_xml_file = models[m_name]
             exp = DispersalModel.DispersalModel(model_xml_file, the_action)
             simulations.append(exp)
         else:

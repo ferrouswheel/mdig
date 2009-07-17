@@ -71,16 +71,16 @@ class Action:
 
     def parse_options(self,argv):
         (self.options, args) = self.parser.parse_args(argv[1:])
-        if self.model_limit is not None and self.model_limit < len(argv):
-            self.log.error("Too many model names: " + repr(argv))
+        if self.model_limit is not None and self.model_limit < len(args):
+            self.log.error("Too many model names: " + repr(args))
             self.log.error("Expected maximum of " + repr(self.model_limit))
             sys.exit(mdig.mdig_exit_codes["cmdline_error"])
         if len(args) >= 1:
-            self.model_name = args
+            self.model_names = args
             if len(args) == 1:
-                self.log.debug("Model name is " + self.model_name)
+                self.log.debug("Model name is " + self.model_names[0])
             else:
-                self.log.debug("Model names are " + repr(self.model_name))
+                self.log.debug("Model names are " + repr(self.model_names))
         self.act_on_options(self.options)
 
     def do_me(self, mdig_model):
@@ -148,7 +148,7 @@ class RunAction(Action):
         c.remove_null = self.options.remove_null
 
     def get_model(self):
-        return model_name
+        return self.model_names[0]
 
     def do_me(self, mdig_model):
         if self.time is not None:
@@ -324,18 +324,18 @@ class AddAction(Action):
     def do_me(self,mdig_model):
         import shutil
         log = logging.getLogger("mdig.action")
-        if not os.path.isfile(self.model_name):
-            log.error("Model file %s is not a file."%self.model_name)
+        if not os.path.isfile(self.model_names[0]):
+            log.error("Model file %s is not a file."%self.model_names[0])
             sys.exit(5)
 
         # create dir in repo
         # dirname is from model name
         repo_dir = MDiGConfig.getConfig()["repository"]["location"]
-        dm = DispersalModel(self.model_name,setup=False)
+        dm = DispersalModel(self.model_names[0],setup=False)
         dest_dir = os.path.join(repo_dir,dm.get_name())
         if os.path.exists(dest_dir):
             if self.options.overwrite_flag:
-                log.error("A model with the same name as %s already exists. Use " % self.model_name +
+                log.error("A model with the same name as %s already exists. Use " % self.model_names[0] +
                         "'remove' first.")
                 sys.exit(5)
             else:
@@ -346,7 +346,7 @@ class AddAction(Action):
         log.info("Created repo dir for model " + dm.get_name())
 
         # copy xml file to dir
-        shutil.copyfile(self.model_name,os.path.join(dest_dir,"model.xml"))
+        shutil.copyfile(self.model_names[0],os.path.join(dest_dir,"model.xml"))
 
         # set up model directory
         dm.set_base_dir() 
@@ -408,6 +408,9 @@ class InfoAction(Action):
                 help="check if model is complete and all maps exist",
                 action="store_true",
                 dest="complete_flag")
+
+    def act_on_options(self,options):
+        Action.act_on_options(self,options)
 
     def do_me(self,mdig_model):
         print repr(mdig_model)
@@ -544,14 +547,14 @@ class ExportAction(Action):
         return output_name + ".png"
     
 class ROCAction(Action):
-    description = "Create Receiver Operating Chracteristic curves for " + \
-        "occupancy envelopes."
+    description = "Create Receiver Operating Characteristic curves for " + \
+        "occupancy envelopes and calculate AUC."
 
     def __init__(self):
         Action.__init__(self)
         self.parser = OptionParser(version=mdig.version_string,
                 description = ROCAction.description,
-                usage = "%prog roc [options] model_name")
+                usage = "%prog roc [options] model_name1 model_name2 ...")
         # Can theoretically run on any number of models
         self.model_limit = None
         self.add_options()
@@ -562,10 +565,10 @@ class ROCAction(Action):
                 help="Overwrite existing files",
                 action="store_true",
                 dest="overwrite_flag")
-        #self.parser.add_option("-m","--mpeg",
-        #        help="Output mpeg compressed movie",
-        #        action="store_true",
-        #        dest="output_mpeg")
+        self.parser.add_option("-b","--bootstraps",
+                help="Number of resamplings to use for creating statistics",
+                action="store_true",
+                dest="bootstraps")
         self.parser.add_option("-a","--auc",
                 help="Calculate AUC",
                 action="store_true",
@@ -590,6 +593,12 @@ class ROCAction(Action):
                 action="store",
                 dest="sites_vector",
                 type="string")
+        self.parser.add_option("-m","--mask",
+                help="The raster map used as the limit for where random " +
+                "absences can go and used for the total area to compare to.",
+                action="store",
+                dest="area_mask",
+                type="string")
         self.parser.add_option("-l","--lifestage",
                 help="Lifestage to analyse (lifestage name or default='all')",
                 action="store",
@@ -602,13 +611,15 @@ class ROCAction(Action):
         if self.options.lifestage is None:
             self.options.lifestage = "all"
         if self.options.sites_vector is None:
-            self.log.error("No sites vector provided!")
+            self.log.error("No sites vector provided.")
+            sys.exit(mdig.mdig_exit_codes["cmdline_error"])
+        if self.options.area_mask is None:
+            self.log.error("No area mask specified.")
             sys.exit(mdig.mdig_exit_codes["cmdline_error"])
     
     def do_me(self,mdig_model):
-        self.ROC = ROCAnalysis.ROCAnalysis(self.options.sites_vector)
-        for i in mdig_model.get_instances():
-            self.do_instance(i,mdig_model.get_name())
+        self.ROC = ROCAnalysis.ROCAnalysis(self.model_names,self.options)
+        self.ROC.run()
 
 
 class AdminAction(Action):
@@ -704,6 +715,7 @@ mdig_actions = {
     "export": ExportAction,
     "web": WebAction,
     "node": ClientAction,
-    "info": InfoAction
+    "info": InfoAction,
+    "roc": ROCAction
     }
 
