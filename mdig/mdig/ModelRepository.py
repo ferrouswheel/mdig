@@ -10,6 +10,7 @@ class ModelRepository:
 
     def __init__(self, dir=None):
         self.location = None
+        # If given a specific directory, then check it exists
         if dir is not None:
             if os.path.isdir(dir):
                 self.location = dir
@@ -18,10 +19,11 @@ class ModelRepository:
             else:
                 raise Exception("Repository directory doesn't exist. d=" +
                         dir)
+        # Otherwise find the repository location through the config file
         if self.location is None:
             c = MDiGConfig.getConfig()
             self.location = c["repository"]["location"]
-            logging.getLogger("mdig.repos").info(
+            logging.getLogger("mdig.repos").debug(
                     "Using repository location " + self.location)
             if not os.path.isdir(self.location):
                 pdb.set_trace()

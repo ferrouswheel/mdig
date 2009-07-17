@@ -47,14 +47,20 @@ import getopt
 def usage():
     usage_line = "Usage: mdig.py <action> [options] experiment.xml"
     
-    actions_list = ""
+    max_length = 0
     for a in Actions.mdig_actions:
-        a_str = a + "\t- " + Actions.mdig_actions[a].description + "\n"
-        actions_list += a_str
+        max_length = max(len(a),max_length)
+        
+    actions_list = []
+    for a in Actions.mdig_actions:
+        a_str = a + (" "*(max_length - len(a))) + " - " + \
+            Actions.mdig_actions[a].description
+        actions_list.append(a_str)
+    actions_list.sort()
 
     print usage_line
     print "\n=== Actions ==="
-    print actions_list
+    print "\n".join(actions_list)
     print """Options:
 -h (--help) \t Display action specific help
 
@@ -72,15 +78,12 @@ def process_options(argv):
     if len(argv) >= 1:
         action_keyword = argv[0]
     
-    #TODO: add a HelpAction
     the_action = None
     if Actions.mdig_actions.has_key( action_keyword ):
         # Initialise with the class corresponding to the action
         the_action = Actions.mdig_actions[action_keyword]()
     if the_action is not None:
         the_action.parse_options(argv)
-        # TODO: extract the logic within process_options and
-        # put it here...
     else:
         if action_keyword != "--help" and \
             action_keyword != "-h":
@@ -103,7 +106,7 @@ def main(argv):
     # Check for grass environment and set up interface
     grass_interface = GRASSInterface.getG()
     
-    #Load model repository 
+    # Load model repository 
     if the_action.repository is not None:
         mdig.repository = ModelRepository.ModelRepository(the_action.repository)
     models = mdig.repository.get_models()

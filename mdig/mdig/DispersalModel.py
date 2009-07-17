@@ -24,8 +24,8 @@ unit test on model.xml and validating with the schema model.xsd
 
 By default example.xml will be loaded and validated with mdig.xsd
 
-Copyright 2006, Joel Pitt
-Copyright 2008, Joel Pitt, Fruition Technology
+Copyright 2006-2007, Joel Pitt, Lincoln University
+Copyright 2008-2009, Dr. Joel Pitt, Fruition Technology
 """
 
 import lxml.etree
@@ -64,7 +64,7 @@ class DispersalModel(object):
     def __init__(self, model_file, the_action = None, setup=True):
         self.action = the_action
         
-        self.log = logging.getLogger("mdig.exp")
+        self.log = logging.getLogger("mdig.model")
         
         self.model_filename = model_file
         self.backup_filename = None
@@ -114,7 +114,7 @@ class DispersalModel(object):
             self.base_dir = dir
         else:
             self.base_dir = os.path.dirname(self.model_file)
-        if existing_base_dir is not None and \
+        if existing_base_dir not in [None, ""] and \
             self.base_dir != existing_base_dir:
             self.log.warn("Current base dir is different to that already " +
                     "set... some analysis results may be unavailable. " + 
@@ -305,7 +305,6 @@ class DispersalModel(object):
     
                 
     def check_model(self):
-        self.log.info(self.get_description())
         self.log.debug("Checking model maps exist")
         
         # - can check maps just by attempting to get the map
@@ -1039,11 +1038,14 @@ class DispersalModel(object):
             
     def __repr__(self):
         # Prefixes attributes that are not None     
-        return '; '.join([ ":".join([j,i]) for j,i in [
-            ("Name",self.name),
-            ("Version",self.version),
-            ("User",self.user),
-            ("Description",self.description)] if i ] )
+        mstr = []
+        mstr.append( "Name: " + self.get_name() )
+        mstr.append( "Version: " + str(self.get_version()) )
+        mstr.append( "User: " + self.get_user() )
+        mstr.append( "Description: " + self.get_description() )
+        mstr.append( "#Lifestages: " + repr(len(self.get_lifestage_ids())) )
+        mstr.append( "Time period: " + repr(self.get_period()) )
+        return '\n'.join(mstr)
 
 class CheckModelException(Exception): pass
 

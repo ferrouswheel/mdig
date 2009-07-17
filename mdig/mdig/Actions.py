@@ -71,7 +71,7 @@ class Action:
         (self.options, args) = self.parser.parse_args(argv[1:])
         if len(args) >= 1:
             self.model_name = args[0]
-            self.log.info("Model name is " + self.model_name)
+            self.log.debug("Model name is " + self.model_name)
         self.act_on_options(self.options)
 
     def do_me(self, mdig_model):
@@ -197,8 +197,8 @@ class AnalysisAction(Action):
                 action="store_true",
                 dest="prob_envelope_only")
         self.parser.add_option("-f","--out-file",
-                help="Specify output filename (will be prepended with rep number" +
-                "and variable info for the model instance)",
+                help="Specify output filename (will be prepended with rep " +
+                    "number and variable info for the model instance)",
                 action="store",
                 dest="analysis_filename_base",
                 type="string")
@@ -380,6 +380,33 @@ class ListAction(Action):
             desc = re.sub("[\\s\\t]+"," ",desc)
             desc = tw.fill(desc)
             print "" + m + ":\n" + desc
+        sys.exit(0)
+
+class InfoAction(Action):
+    description = "Display information about a model in the MDiG repository."
+
+    def __init__(self):
+        Action.__init__(self)
+        self.parser = OptionParser(version=mdig.version_string,
+                description = InfoAction.description,
+                usage = "%prog info")
+        self.check_model = False
+        self.add_options()
+
+    def add_options(self):
+        Action.add_options(self)
+        self.parser.add_option("-c","--complete",
+                help="check if model is complete and all maps exist",
+                action="store_true",
+                dest="complete_flag")
+
+    def do_me(self,mdig_model):
+        print repr(mdig_model)
+        if self.options.complete_flag:
+            mstr=[]
+            mstr.append( "Complete: " )
+            if self.is_complete(): mstr[-1] += "Yes"
+            else: mstr[-1] += "No"
         sys.exit(0)
 
 class ExportAction(Action):
@@ -725,6 +752,7 @@ mdig_actions = {
     "admin": AdminAction,
     "export": ExportAction,
     "web": WebAction,
-    "node": ClientAction
+    "node": ClientAction,
+    "info": InfoAction
     }
 
