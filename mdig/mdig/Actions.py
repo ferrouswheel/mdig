@@ -24,6 +24,8 @@ class Action:
         self.output_dir = None
         # output_level is one of: quiet, normal, verbose, debug
         self.output_level = "normal"
+        # maximum number of models that command expects
+        self.model_limit = 1
         # whether to overwrite files that already exist
         # Moved to config
         #self.overwrite_flag = False
@@ -69,9 +71,16 @@ class Action:
 
     def parse_options(self,argv):
         (self.options, args) = self.parser.parse_args(argv[1:])
+        if self.model_limit is not None and self.model_limit < len(argv):
+            self.log.error("Too many model names: " + repr(argv))
+            self.log.error("Expected maximum of " + repr(self.model_limit))
+            sys.exit(mdig.mdig_exit_codes["cmdline_error"])
         if len(args) >= 1:
-            self.model_name = args[0]
-            self.log.debug("Model name is " + self.model_name)
+            self.model_name = args
+            if len(args) == 1:
+                self.log.debug("Model name is " + self.model_name)
+            else:
+                self.log.debug("Model names are " + repr(self.model_name))
         self.act_on_options(self.options)
 
     def do_me(self, mdig_model):
@@ -543,6 +552,8 @@ class ROCAction(Action):
         self.parser = OptionParser(version=mdig.version_string,
                 description = ROCAction.description,
                 usage = "%prog roc [options] model_name")
+        # Can theoretically run on any number of models
+        self.model_limit = None
         self.add_options()
         
     def add_options(self):
@@ -599,66 +610,6 @@ class ROCAction(Action):
         for i in mdig_model.get_instances():
             self.do_instance(i,mdig_model.get_name())
 
-    def do_instance(self,i,model_name):
-        # TODO: only overwrite files if -o flag is set
-        import OutputFormats
-        if not self.options.output_gif and \
-            not self.options.output_image:
-            self.log.warning("No type for output was specified...")
-            sys.exit(0)
-        ls = self.options.output_lifestage
-        all_maps = []
-        if not i.is_complete():
-            self.log.error("Instance " + repr(i) + " not complete")
-            sys.exit(mdig.mdig_exit_codes["instance_incomplete"])
-        base_fn = os.path.join(i.experiment.base_dir,"output")
-        if len(self.options.reps) > 0:
-            # Run on replicates
-            rs = i.replicates
-            for r_index in self.options.reps:
-                if r_index < 0 or r_index > len(rs):
-                    self.log.error("Invalid replicate index." +
-                            " Have you 'run' the model first?")
-                    sys.exit(mdig.mdig_exit_codes["invalid_replicate_index"])
-                r = rs[r_index]
-                rep_fn = os.path.join(base_fn, OutputFormats.createFilename(r))
-                map_list = []
-                for t in r.get_saved_maps(ls):
-                    m = r.get_saved_maps(ls)[t]
-                    map_list.append(self.create_frame(m,rep_fn + "_" + repr(t),model_name,
-                                t, ls))
-                self.create_gif(map_list,rep_fn)
-                all_maps.extend(map_list)
-        else:
-            # Run on occupancy envelopes
-            base_fn = os.path.join(base_fn,
-                    OutputFormats.createFilename(i))
-            env = i.get_occupancy_envelopes()
-            if env is None:
-                self.log.error("No occupancy envelopes available.")
-                sys.exit(mdig.mdig_exit_codes["missing_envelopes"])
-            map_list = []
-            for t in env[ls]:
-                m = env[ls][t]
-                map_list.append(self.create_frame(m,base_fn + "_" + repr(t),model_name,
-                        t, ls))
-            self.create_gif(map_list,base_fn)
-            all_maps.extend(map_list)
-        # If the user just wanted an animated gif, then clean up the images
-        if not self.options.output_image:
-            for m in all_maps:
-                os.remove(m)
-
-    def create_gif(self,maps,fn):
-        gif_fn = None
-        if self.options.output_gif:
-            from subprocess import Popen, PIPE
-            gif_fn = fn + "_anim.gif"
-            output = Popen("convert -delay 100 " + " ".join(maps)
-                + " " + gif_fn, shell=True, stdout=PIPE).communicate()[0]
-            if len(output) > 0:
-                self.log.info("Convert output:" + output)
-        return gif_fn
 
 class AdminAction(Action):
     description = "Perform miscellaneous administative tasks"
