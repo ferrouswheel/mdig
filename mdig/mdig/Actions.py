@@ -577,12 +577,12 @@ class ROCAction(Action):
                 help="Graph the change in AUC over time",
                 action="store_true",
                 dest="graph_auc")
-        self.parser.add_option("-a","--start",
+        self.parser.add_option("-x","--start",
                 help="Start time to calculate ROC/AUC for",
                 action="store",
                 type="int",
                 dest="start_time")
-        self.parser.add_option("-b","--end",
+        self.parser.add_option("-y","--end",
                 help="End time to calculate ROC/AUC for",
                 action="store",
                 type="int",

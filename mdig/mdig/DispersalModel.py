@@ -824,7 +824,7 @@ class DispersalModel(object):
         for n in nodes:
             ls_node = [ls for ls in n.getchildren() if ls.tag == "lifestage"]
             if len(ls_node) > 1:
-                self.warning("More than 1 raster output, will only return "
+                self.log.warning("More than 1 raster output, will only return "
                         "interval the first.")
             if ls_node[0].text.strip() == ls_id:
                 i_node = [i for i in n.getchildren() if i.tag == "interval"]
@@ -837,6 +837,8 @@ class DispersalModel(object):
         if G.checkMapset(self.get_name()):
             G.changeMapset(self.get_name())
         else:
+            self.log.info("Mapset " +self.get_name() + \
+                    " doesn't exist, creating it.")
             G.changeMapset(self.get_name(),True)
 
     def get_mapset(self):
@@ -846,7 +848,6 @@ class DispersalModel(object):
             this?
         """
         return self.get_name()
-        
 
     def move_mapset(self, new_mapset):
         """
@@ -867,17 +868,10 @@ class DispersalModel(object):
         components["raster"]=[]
         components["vector"]=[]
         
-        # Function to check mapset isn't in map name
-        def no_mapset_component(x):
-            if x.find("@") == -1:
-                return True
-            else:
-                return False
-
         # Function to add map only if necessary, and put into correct array
         def add_map_to_move(x):
             if not x.temporary:
-                if no_mapset_component(x.filename):
+                if G.no_mapset_component(x.filename):
                     x_info=G.getMapInfo(x.filename)
                     components[x_info["type"]].append((x_info["name"],x_info["mapset"]))
 
@@ -886,7 +880,7 @@ class DispersalModel(object):
         for r in self.get_regions():
             # Regions
             r_name = self.get_regions()[r].get_name()
-            if r_name and no_mapset_component(r_name):
+            if r_name and G.no_mapset_component(r_name):
                 r_info = G.getMapInfo(r_name)
                 components["region"].append((r_info["name"],r_info["mapset"]))
 
@@ -895,7 +889,7 @@ class DispersalModel(object):
             add_map_to_move(b_map)         
 
             #if not bmap.temporary:
-            #   if no_mapset_component(b_map.filename):
+            #   if G.no_mapset_component(b_map.filename):
             #       b_info=G.getMapInfo(bmap.filename)
             #       components[b_info["type"]]=b_map.filename
 
@@ -918,7 +912,7 @@ class DispersalModel(object):
                         r_map = rep.get_saved_maps(ls_id)[r_id]
                         # r_map is just the map name not a GrassMap
                         
-                        if no_mapset_component(r_map):
+                        if G.no_mapset_component(r_map):
                             r_info=G.getMapInfo(r_map)
                             components[r_info["type"]].append((r_info["name"],r_info["mapset"]))
                             
@@ -928,7 +922,7 @@ class DispersalModel(object):
                 for ls_id in self.get_lifestage_ids():
                     for t in prob_env[ls_id]:
                         e_map=prob_env[ls_id][t]
-                        if no_mapset_component(e_map):
+                        if G.no_mapset_component(e_map):
                             e_info=G.getMapInfo(e_map)
                             components[e_info["type"]].append((e_info["name"],e_info["mapset"]))
         ## Copy all maps ##

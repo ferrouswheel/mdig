@@ -388,6 +388,13 @@ class GRASSInterface:
         self.log.error("Can't find map/region called %s" % map_name)
         raise MapNotFoundException()
     
+    def no_mapset_component(self,x):
+        # Function to check mapset isn't in map name
+        if x.find("@") == -1:
+            return True
+        else:
+            return False
+
     def removeMap(self,map_name):
         map_type = self.checkMap(map_name)
         #if map_type is None:
