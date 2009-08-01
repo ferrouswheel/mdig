@@ -69,13 +69,15 @@ class DispersalInstance:
         # c is a list of dicts with each dict being a completed replicate
         
         reps=[]
+        r_index=0
         # If region is among the regions with completed replicates
         for c_i in c:
             if self.r_id == c_i["region"]:
                 if self.var_keys is None:
                     for r in c_i["reps"]:
-                        my_rep = Replicate(r,self)
+                        my_rep = Replicate(r,self,r_index)
                         reps.append(my_rep)
+                        r_index += 1
                 else:
                     variable_list=[]
                     for k in self.var_keys:
@@ -83,9 +85,9 @@ class DispersalInstance:
 
                     if self.variables == variable_list:
                         for r in c_i["reps"]:
-                            my_rep = Replicate(r,self)
+                            my_rep = Replicate(r,self,r_index)
                             reps.append(my_rep)
-        
+                            r_index += 1
         return reps
 
     def run(self):
@@ -379,7 +381,7 @@ class DispersalInstance:
         current_region = self.experiment.get_region(self.r_id)
         try:
             GRASSInterface.getG().setRegion(current_region)
-        except SetRegionException, e:
+        except GRASSInterface.SetRegionException, e:
             pdb.set_trace()
             return
     
@@ -387,6 +389,7 @@ class DispersalInstance:
         # Set the region in case it hasn't been yet
         self.set_region()
                 
+        self.log.debug("Checking whether envelopes are fresh...")
         missing_envelopes = self.are_envelopes_fresh(ls, start, end,
                 force=force)
         if not missing_envelopes or not self.is_complete(): return

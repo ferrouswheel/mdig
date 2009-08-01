@@ -7,6 +7,7 @@ from optparse import OptionParser
 import mdig
 from mdig import MDiGConfig
 from mdig import GRASSInterface
+from mdig import ROCAnalysis
 from mdig.DispersalModel import DispersalModel
 
 from datetime import datetime, timedelta
@@ -319,7 +320,7 @@ class AddAction(Action):
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
-        c.overwrite_flag = self.options.overwrite_flag
+        MDiGConfig.getConfig().overwrite_flag = self.options.overwrite_flag
 
     def do_me(self,mdig_model):
         import shutil
@@ -557,6 +558,7 @@ class ROCAction(Action):
                 usage = "%prog roc [options] model_name1 model_name2 ...")
         # Can theoretically run on any number of models
         self.model_limit = None
+        self.preload = False
         self.add_options()
         
     def add_options(self):
@@ -567,16 +569,24 @@ class ROCAction(Action):
                 dest="overwrite_flag")
         self.parser.add_option("-b","--bootstraps",
                 help="Number of resamplings to use for creating statistics",
-                action="store_true",
+                action="store",
                 dest="bootstraps")
+        self.parser.add_option("-V","--vuc",
+                help="Calculate Volume Under the Curve",
+                action="store_true",
+                dest="calc_vuc")
         self.parser.add_option("-a","--auc",
-                help="Calculate AUC",
+                help="Calculate Area Under the Curve",
                 action="store_true",
                 dest="calc_auc")
         self.parser.add_option("--graph-auc",
                 help="Graph the change in AUC over time",
                 action="store_true",
                 dest="graph_auc")
+        self.parser.add_option("--graph-roc",
+                help="Graph yearly ROC curves (creates one for each year and replicate)",
+                action="store_true",
+                dest="graph_roc")
         self.parser.add_option("-x","--start",
                 help="Start time to calculate ROC/AUC for",
                 action="store",
@@ -604,6 +614,16 @@ class ROCAction(Action):
                 action="store",
                 dest="lifestage",
                 type="string")
+        self.parser.add_option("-d","--dir",
+                help="Base directory to save output in (don't use repository)",
+                action="store",
+                dest="output_dir",
+                type="string")
+        self.parser.add_option("-t","--tags",
+                help="List of comma separated tags for labelling each model within graph legends",
+                action="store",
+                dest="model_tags",
+                type="string")
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
@@ -616,6 +636,20 @@ class ROCAction(Action):
         if self.options.area_mask is None:
             self.log.error("No area mask specified.")
             sys.exit(mdig.mdig_exit_codes["cmdline_error"])
+        if self.options.output_dir is not None:
+            if not os.path.isdir(options.output_dir):
+                self.log.info("Directory %s doesn't exist, attemping to" +
+                        " create\n",options.output_dir)
+                MDiGConfig.makepath(options.output_dir)
+        else:
+            self.options.output_dir = "."
+        if self.options.model_tags is not None:
+            tags = self.options.model_tags.split(",")
+            if len(tags) != len(self.model_names):
+                self.log.error("Number of tags given not the same as number "+\
+                        " of models.")
+                sys.exit(mdig.mdig_exit_codes["cmdline_error"])
+            self.options.model_tags = tags
     
     def do_me(self,mdig_model):
         self.ROC = ROCAnalysis.ROCAnalysis(self.model_names,self.options)

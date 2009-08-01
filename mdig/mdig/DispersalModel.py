@@ -763,11 +763,14 @@ class DispersalModel(object):
             ls=self.get_lifestage(ls_id)
             intervals = ls.getPhenologyIntervals(region_id)
             intervals = [i for i in intervals if i > from_interval]
+            if len(intervals) == 0:
+                # No more intervals in this lifestage
+                continue
             if min(intervals) < earliest_interval:
-                earliest_ls.append(ls)
+                earliest_ls = [ls]
                 earliest_interval=min(intervals)
             elif min(intervals) == earliest_interval:
-                earliest_ls = [ls]
+                earliest_ls.append(ls)
         return (earliest_ls,earliest_interval)
             
     def remove_active_instance(self, instance):

@@ -291,7 +291,8 @@ class GRASSInterface:
         
         self.log.log(logging.INFO, "Creating map %s using coordinates %s", name,repr(value))
         
-        cmd = 'v.in.ascii output=v' + name + ' cat=3'
+        vector_prefix = "v____"
+        cmd = 'v.in.ascii output=' + vector_prefix + name + ' cat=3'
         if self.log.getEffectiveLevel() >= logging.DEBUG:
             p = Popen(cmd, shell=True, stdin=subprocess.PIPE, \
                     stdout=subprocess.PIPE)
@@ -306,8 +307,9 @@ class GRASSInterface:
             # @todo throw exception
             pass
 
-        self.runCommand('v.to.rast input=v%s output=%s use=cat --o' % (name, name))
-        self.removeMap('v' + name)
+        self.runCommand('v.to.rast input=%s%s output=%s use=cat --o' % \
+                (vector_prefix, name, name))
+        self.removeMap('v____' + name)
         
     def copyMap(self,src, dest,overwrite=False):
         if overwrite:
@@ -348,20 +350,30 @@ class GRASSInterface:
             extents = region.getExtents()
             command_string = 'g.region '
             extent_string = ''
+            res_str = ''
             
-            for key in extents.keys():
-                if key == "north":
-                    extent_string += 'n=' + str(extents[key] + ' ')
-                elif key == "south":
-                    extent_string += 's=' + str(extents[key] + ' ')
-                elif key == "east":
-                    extent_string += 'e=' + str(extents[key] + ' ')
-                elif key == "west":
-                    extent_string += 'w=' + str(extents[key] + ' ')
+            if extents is not None:
+                for key in extents.keys():
+                    if key == "north":
+                        extent_string += 'n=' + str(extents[key] + ' ')
+                    elif key == "south":
+                        extent_string += 's=' + str(extents[key] + ' ')
+                    elif key == "east":
+                        extent_string += 'e=' + str(extents[key] + ' ')
+                    elif key == "west":
+                        extent_string += 'w=' + str(extents[key] + ' ')
+            else:
+                self.log.warning("Region didn't define extents")
+
             res = region.getResolution()
+            if res is not None:
+                res_str = 'res=' + repr(res)
+            else:
+                self.log.warning("Region didn't define resolution")
             
-            self.log.debug("Setting region using extents %s and res %f", extent_string, res)
-            ret = self.runCommand(command_string + extent_string + 'res=' + repr(res))
+            self.log.debug("Setting region using extents %s and res %f",
+                    repr(extent_string), repr(res))
+            ret = self.runCommand(command_string + extent_string + res_str)
         if ret is None:
             self.log.error("Error setting region")
             raise SetRegionException()
@@ -679,17 +691,20 @@ class GRASSInterface:
     def count_sites(self, vmap):
         """ Counts the number of points within a vector map """
         # use v.info -t and parse result
-        p1 = Popen(["v.info", "-t", vmap], stdout=PIPE)
-        p2 = Popen(["grep", "nodes"], stdin=p1.stdout, stdout=PIPE)
-        p3 = Popen(["awk", "-F=","{print $2}"], stdin=p2.stdout, stdout=PIPE)
+        p1 = Popen(["v.info", "-t", vmap], stdout=subprocess.PIPE)
+        p2 = Popen(["grep", "nodes"], stdin=p1.stdout, stdout=subprocess.PIPE)
+        p3 = Popen(["awk", "-F=","{print $2}"], stdin=p2.stdout, \
+                stdout=subprocess.PIPE)
         output = p3.communicate()[0]
         return int(output)
 
     def count_cells(self, rmap):
         """ Count the number cells occupied in a raster map """
-        p1 = Popen(r"r.univar" + " -g " + rmap, shell=True, stdout=PIPE)
-        p2 = Popen(r"sed -n '1p;1q'", shell=True, stdin=p1.stdout, stdout=PIPE)
-        p3 = Popen(r"awk -F = '{print $2}'", shell=True, stdin=p2.stdout, stdout=PIPE)
+        p1 = Popen(r"r.univar" + " -g " + rmap, shell=True, stdout=subprocess.PIPE)
+        p2 = Popen(r"sed -n '1p;1q'", shell=True, stdin=p1.stdout,
+                stdout=subprocess.PIPE)
+        p3 = Popen(r"awk -F = '{print $2}'", shell=True, stdin=p2.stdout, \
+                stdout=subprocess.PIPE)
         output = p3.communicate()[0]
         return int(output)
         

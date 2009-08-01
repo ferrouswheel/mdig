@@ -51,7 +51,7 @@
                             <xsd:element name="transition" minOccurs="0">
                                 <xsd:complexType>
                                     <xsd:sequence>
-                                        <xsd:element name="popMod" type="regionType" minOccurs="1" maxOccurs="unbounded"/>
+                                        <xsd:element name="popMod" type="popModType" minOccurs="1"/>
                                     </xsd:sequence>
                                 </xsd:complexType>
                             </xsd:element>
@@ -130,6 +130,14 @@
         <xsd:attribute name="name" type="xsd:string" use="optional"/>
     </xsd:complexType>
     
+    <xsd:complexType name="popModType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="file" type="xsd:string" use="required"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
     <xsd:complexType name="periodType">
         <xsd:sequence>
             <xsd:element name="startTime" type="xsd:decimal"/>
@@ -143,7 +151,7 @@
     
     <xsd:complexType name="outputType">
         <xsd:sequence>
-            <xsd:element name="raster" minOccurs="0">
+            <xsd:element name="raster" minOccurs="0" maxOccurs="unbounded">
                 <xsd:complexType>
                     <xsd:sequence>
                         <xsd:element name="interval" type="xsd:decimal"/>
@@ -158,7 +166,7 @@
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
-            <xsd:element name="png" minOccurs="0">
+            <xsd:element name="png" minOccurs="0" maxOccurs="unbounded">
                 <xsd:complexType>
                     <xsd:sequence>
                         <xsd:element name="interval" type="xsd:decimal"/>
@@ -233,7 +241,7 @@
     
     <xsd:complexType name="lifestageType">
         <xsd:sequence>
-            <xsd:element name="initialDistribution" type="initialDistributionType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="initialDistribution" type="initialDistributionType" minOccurs="1" maxOccurs="unbounded"/>
             <xsd:element name="phenology" type="phenologyType" minOccurs="1" maxOccurs="unbounded"/>
             <xsd:element name="event" type="eventType" maxOccurs="unbounded"/>
             <xsd:element name="analyses" minOccurs="0" maxOccurs="1">

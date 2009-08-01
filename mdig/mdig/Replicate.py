@@ -46,7 +46,7 @@ class Replicate:
     intended.
     """
 
-    def __init__(self,node,instance):
+    def __init__(self,node,instance,r_index=0):
         self.instance = instance
         self.log = logging.getLogger("mdig.replicate")
         
@@ -59,6 +59,8 @@ class Replicate:
         self.previous_maps = None
         self.saved_maps = None
         self.map_intervals = None
+        # used to keep track of index in replicates while loading:
+        self.r_index = r_index
 
         if node is None:
             self.node = self.instance.experiment.add_replicate(self.instance.node)
@@ -67,7 +69,15 @@ class Replicate:
         else:
             # if node is provided then create replicate node from xml
             self.node = node
-            self.complete = self.check_complete()
+            c = MDiGConfig.getConfig()
+            if "replicate" not in c or \
+                "check_complete" not in c["replicate"] or \
+                c["replicate"]["check_complete"] != "no":
+                self.complete = self.check_complete()
+            else:
+                # If the mdig.conf file has turned off check
+                # then we just assume the replicate is complete
+                self.complete = True
 
         self.random = random.Random()
         self.random.seed(self.get_seed())
@@ -75,6 +85,9 @@ class Replicate:
     def check_complete(self):
         complete = True
         missing_maps = {}
+        total_reps = self.instance.experiment.get_num_replicates()
+        self.log.debug("Checking replicate %d/%d is complete" % \
+            (self.r_index,total_reps)) 
         ls_keys = self.instance.experiment.get_lifestage_ids()
         for ls_key in ls_keys:
             try:
@@ -262,26 +275,26 @@ class Replicate:
             for current_interval, p_lifestages in phenology_iterator:
                 for lifestage in p_lifestages:
                     ls_key = lifestage.name
-                    self.log.log(logging.INFO, 'Interval %d - Lifestage "%s" started',current_interval,ls_key)
+                    self.log.log(logging.INFO, 'Interval %d - Lifestage "%s"' \
+                            ' started',current_interval,ls_key)
                     if t == period[0]:
-                        # copy initial map to a working map, overwrite if necessary
-                        self.grass_i.copyMap(initial_maps[ls_key].getMapFilename(),self.temp_map_names[ls_key][0],True)
-                        
-                
+                        # copy initial map to a working map, overwrite if
+                        # necessary
+                        self.grass_i.copyMap( \
+                                initial_maps[ls_key].getMapFilename(), \
+                                self.temp_map_names[ls_key][0],True)
                     lifestage.run(current_interval,self,self.temp_map_names[ls_key])
-                
                     #self.temp_map_names[ls_key].reverse()
+                self.log.log(logging.INFO, 'Interval %d completed.',current_interval)
             
             # Run Analyses for each lifestage
             for ls_id in self.instance.experiment.get_lifestage_ids():
-                self.log.log(logging.INFO, 'Interval %d completed.',current_interval)
                 l = self.instance.experiment.get_lifestage(ls_id)
                 analyses = l.analyses()
-                self.log.log(logging.INFO, 'Interval %d - Running analyses',current_interval)
-                #pdb.set_trace()
+                self.log.log(logging.INFO, 'Lifestage %s - Running analyses',ls_id)
                 for a in analyses:
                     a.run(self.temp_map_names[ls_key][0], self)
-                self.log.log(logging.INFO, 'Interval %d - Analyses complete',current_interval)
+                self.log.log(logging.INFO, 'Lifestage %s - Analyses complete',ls_id)
             
             self.fire_time_completed(t)
 
