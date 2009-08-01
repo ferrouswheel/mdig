@@ -15,7 +15,7 @@
 		<replicates> 1 </replicates>
 		<!-- The last state of the random number generator in case the simulation didn't
 			 finish last time -->
-		<lastState>0</lastState>
+		<offset>0</offset>
    	</random>
 	
 	<regions>
@@ -88,26 +88,25 @@
 				<value> 2 </value>
 			</phenology>
 			
-			<event name="r.mdig.neighbour">
-				<param name="shape">
-					<value>186</value> 
-				</param>
-				<param name="radius">
-					<value>1</value>
+			<event name="r.mdig.survival">
+				<param name="survival">
+					<value>90</value> 
 				</param>
 			</event>
 		</lifestage>
 		<lifestage name="adult">
+			<initialDistribution region="a">
+				<sites>
+					<s x="0" y="0"/>
+				</sites>
+			</initialDistribution>
 			<phenology region="a">
 				<value> 3 </value>
 			</phenology>
 			
-			<event name="r.mdig.survival">
-				<param name="shape">
-					<value>186</value> 
-				</param>
-				<param name="radius">
-					<value>1</value>
+			<event name="r.mdig.kernel">
+				<param name="frequency">
+					<value>1</value> 
 				</param>
 			</event>
 		</lifestage>
