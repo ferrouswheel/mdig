@@ -19,6 +19,44 @@ class IncompleteModelException(Exception):
     pass
 
 class ROCAnalysis:
+    """ Carries out ROC analysis.
+
+    Works out ROC curves for occupancy envelopes, calculates AUC for each
+    year. Does bootstrapping and statistical analysis
+
+    The results of the ROC analysis are stored in the self.reps list.
+
+    The AUCs are not explicitly stored in this object, but when the results are
+    shelved, then AUCs are saved in the key 'AUCs' and the reps object is in
+    'ROCs'.
+
+    The format of the reps list is:
+
+    [ rep1, rep2, ... repN ]
+
+    Each rep is a dictionary with the format:
+
+    [ t0: S_0, t1: S_1, ... T: S_T ]
+
+    where the keys and indices are the time step and T is the last time step.
+    Each S has the format:
+
+    [ m1, m2, ... mM ]
+
+    where each entry are the ROC results for the given model, with M being the
+    total models being assessed. Each M has the format:
+    
+    [ threshold_0,    sensitivity, 1-specificity, proportion of area 
+      threshold_0.01, ..                                             
+      ..
+      threshold_1, ..                                               ]
+
+    Where the threshold are a range from -0.01 to 1.0, and for each threshold
+    the occupancy map is assessed for sensitivity, 1-specificity, and the
+    proportion of the total area the envelope covers (at that threshold).
+
+    """
+
 
     # Number of bootstraps to carry out
     n_bootstraps = 1
@@ -322,20 +360,25 @@ class ROCAnalysis:
         s.sort(key=lambda x:(x[1],x[self.roc_xaxis]))
         return s
 
-    def process_roc_points(self,s):
+    def process_roc_points(self, s, add_pessimistic_points=True):
         """ intersperse points of s with points that will make ROC 
             be a pessimistic graph.
+        @param The ROC time replicate to process
+        @param Whether to interpolate points with pessimistic values
+        @return sorted points
         """
         s = self.sort_roc_points(s)
-        s_pessimistic = []
-        last_point = (0,0) # x,y order
-        # note, s is in year, y, x order
-        for row in s:
-            if row[self.roc_xaxis] > last_point[0]:
-                s_pessimistic.append( (row[0], last_point[1], row[2], row[3] ) )
-            s_pessimistic.append( row )
-            last_point = (row[self.roc_xaxis], row[1])
-        return s_pessimistic
+        if add_pessimistic_points:
+            s_pessimistic = []
+            last_point = (0,0) # x,y order
+            # note, s is in year, y, x order
+            for row in s:
+                if row[self.roc_xaxis] > last_point[0]:
+                    s_pessimistic.append( (row[0], last_point[1], row[2], row[3] ) )
+                s_pessimistic.append( row )
+                last_point = (row[self.roc_xaxis], row[1])
+            s = s_pessimistic
+        return s
 
     def plot_and_save_rocs(self, S, basename="roc_", specificity_range=(0,1)):
         for t in S:
@@ -360,8 +403,10 @@ class ROCAnalysis:
             S is array/list of triples (sensitivity, 1-specificity, area),
             one for each model
         """
+        legend_prefix = " (AUC "
         if specificity_range[0] > 0 or \
             specificity_range[1] < 1.0:  
+            legend_prefix = " (pAUC "
             # Highlight the range of specifity of interest
             bar(0,1.0,1-specificity_range[1],fc="0.9",ec="0.8")
             bar(1-specificity_range[0],1.0,1-((1-specificity_range[1])+\
@@ -373,7 +418,7 @@ class ROCAnalysis:
             s = S[i]
             if i < len(S_labels):
                 s_label = S_labels[i]
-            s_label += " (AUC " + str(round(self.calc_auc(s,specificity_range), 4)) + ")"
+            s_label += legend_prefix + str(round(self.calc_auc(s,specificity_range), 4)) + ")"
             if scatter:
                 scatter([x[self.roc_xaxis] for x in s],[x[1] for x in s],label=s_label)
             else:
