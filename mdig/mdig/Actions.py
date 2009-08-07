@@ -93,7 +93,6 @@ class RunAction(Action):
     def __init__(self):
         Action.__init__(self)
         self.time = None
-        self.rerun_instances = False
         self.show_monitor = False
 
         self.parser = OptionParser(version=mdig.version_string,
@@ -161,7 +160,8 @@ class RunAction(Action):
         
         if self.show_monitor:
             mdig_model.add_listener(Displayer.Displayer())
-        if self.rerun_instances:
+        if self.options.rerun_instances:
+            self.log.debug("Resetting model so all replicates will be rerun")
             mdig_model.resetInstances()
         mdig_model.run()
 
@@ -338,7 +338,7 @@ class AddAction(Action):
             if self.options.overwrite_flag:
                 log.error("A model with the same name as %s already exists. Use " % self.model_names[0] +
                         "'remove' first.")
-                sys.exit(5)
+                sys.exit(mdig.mdig_exit_codes["exists"])
             else:
                 log.warning("A model with the same name as %s already exists." +
                         " Overwriting...")
@@ -346,8 +346,22 @@ class AddAction(Action):
         MDiGConfig.makepath(dest_dir)
         log.info("Created repo dir for model " + dm.get_name())
 
-        # copy xml file to dir
-        shutil.copyfile(self.model_names[0],os.path.join(dest_dir,"model.xml"))
+        # copy lifestage transition model file if it exists
+        if dm.get_popmod_file() is not None:
+            src_file = dm.get_popmod_file()
+            # check if this exists, directly and then relative to model file
+            if not os.path.exists(src_file):
+                src_file = os.path.join(os.path.dirname(self.model_names[0]), src_file)
+                if not os.path.exists(src_file):
+                    log.error("Can't find internally specified popmod lifestage transition file!")
+                    sys.exit(mdig.mdig_exit_codes["missing_popmod"])
+            
+            shutil.copyfile(src_file,os.path.join(dest_dir,"lifestage_transition.xml"))
+            dm.set_popmod_file("lifestage_transition.xml")
+
+        # write dispersal model to new dir 
+        #shutil.copyfile(self.model_names[0],os.path.join(dest_dir,"model.xml"))
+        dm.save_model(os.path.join(dest_dir,"model.xml"))
 
         # set up model directory
         dm.set_base_dir() 

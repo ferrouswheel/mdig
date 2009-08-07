@@ -311,12 +311,21 @@ class DispersalModel(object):
         # - functions create GrassMap's automatically and
         # checks the map exists
         
+        empty_region = False
         #check background map
         for r_id, region in self.get_regions().items():
             region.getBackgroundMap()
         #check initial map for each lifestage exists
+            total_initial_maps = 0
             for ls_key in self.get_lifestage_ids():
                 ls = self.get_lifestage(ls_key)
+                total_initial_maps += len(ls.initial_maps)
+            if total_initial_maps == 0:
+                self.error("Region %s has no initial maps defined" % r_id)
+                empty_region = True
+            
+        if empty_region:
+            exit(mdig.mdig_exit_codes["no_initial_maps"])
                 
         #check phenology maps exist
         
@@ -343,10 +352,25 @@ class DispersalModel(object):
         nodes = self.xml_model.xpath('/model/name')
         nodes[0].text = name
         
+    def get_popmod_file(self):
+        nodes = self.xml_model.xpath('/model/lifestages/transition/popMod')
+        if len(nodes) == 1:
+            return nodes[0].attrib['file']
+        else:
+            return None
+
+    def set_popmod_file(self,filename):
+        nodes = self.xml_model.xpath('/model/lifestages/transition/popMod')
+        if len(nodes) == 1:
+            nodes[0].attrib['file'] = filename
+            return filename
+        else:
+            return None
+        
     def get_initial_random_seed(self):
         nodes = self.xml_model.xpath('/model/random/initialSeed')
         if len(nodes) == 1:
-            return int(nodes[0].text)
+            return int(nodes[0].text.strip())
         else:
             return None
                 
@@ -584,9 +608,13 @@ class DispersalModel(object):
         maps={}
         ls_ids = self.get_lifestage_ids()
         for id in ls_ids:
-            lmap = self.get_lifestage(id).initial_maps[r_id]
-            if lmap is not None: maps[id] = lmap
-            
+            imaps = self.get_lifestage(id).initial_maps
+            if r_id in imaps:
+                maps[id] = imaps[r_id]
+            else:
+                # lifestage doesn't have an initial map for this region
+                maps[id] = GrassMap( \
+                        filename=GRASSInterface.getG().get_blank_map())
         return maps
     
     def get_lifestage_ids(self):
@@ -1009,25 +1037,24 @@ class DispersalModel(object):
                 self.get_lifestage(id).clean_up_maps()
             
     def save_model(self, filename=None):
-        
         if filename is None:
             filename = self.model_filename
         
-        if os.path.isfile(filename):
-            if self.backup_filename is None:
-                fn = filename
-                count = 0
-                # If model filename exists then try and back it up first:
-                while os.path.isfile(fn):
-                    fn = filename + ".bak"
-                    if count > 0:
-                        fn += repr(count)
-                    count += 1
-                self.backup_filename = fn
-            shutil.copyfile(filename, self.backup_filename)
-        
         try:
-            os.remove(filename)
+            if os.path.isfile(filename):
+                if self.backup_filename is None:
+                    fn = filename
+                    count = 0
+                    # If model filename exists then try and back it up first:
+                    while os.path.isfile(fn):
+                        fn = filename + ".bak"
+                        if count > 0:
+                            fn += repr(count)
+                        count += 1
+                    self.backup_filename = fn
+                shutil.copyfile(filename, self.backup_filename)
+                os.remove(filename)
+        
             self.xml_model.write(filename)
         except OSError, e:
             self.log.error("Could save updated version of model file")

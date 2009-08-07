@@ -90,6 +90,7 @@ class GRASSInterface:
         self.filename = None
         self.outputIsTemporary = False
         self.old_mapset = None
+        self.blank_map = None
         
         if not self.checkEnvironment():
             self.log.debug("Attempting setup of GRASS from config file")
@@ -580,7 +581,16 @@ class GRASSInterface:
         
         self.changeMapset(self.old_mapset)
         self.runCommand('g.region region='+self.old_region,ignoreOnFail=[256])
+        if self.blank_map is not None:
+            self.destructMap(self.blank_map)
         self.closeDisplay()
+
+    def get_blank_map(self):
+        blank_map_name = "_____mdig_blank_map"
+        if self.blank_map is None:
+            self.blank_map = blank_map_name
+            self.runCommand('r.mapcalc "' + blank_map_name + '=null()"')
+        return self.blank_map
 
     def generateMapName(self, base=""):
         random_name = None

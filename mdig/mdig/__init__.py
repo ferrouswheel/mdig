@@ -33,7 +33,10 @@ mdig_exit_codes = {
     "model_not_found" : 3,
     "instance_incomplete": 11,
     "invalid_replicate_index": 12,
-    "missing_envelopes": 13
+    "missing_envelopes": 13,
+    "exists": 14,
+    "missing_popmod": 15,
+    "no_initial_maps": 16
 }
 repository = None
 

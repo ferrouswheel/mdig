@@ -220,7 +220,6 @@ class Replicate:
         
         exp = self.instance.experiment
         
-        
         self.log.log(logging.INFO, "Replicate %d/%d of exp. instance [var_keys: %s, vars: %s ]"\
                      % (self.instance.replicates.index(self) + 1, exp.get_num_replicates(),\
                         repr(self.instance.var_keys),repr(self.instance.variables)))
