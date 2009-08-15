@@ -5,6 +5,18 @@ other time-step) radial spread rate, which can be constant or set from a map.<br
 
 <H2>NOTES</H2>
 
+When the spread rate is less than the map resolution, and when stochastic spread
+is enable, we use a linear response for describing the chance of spread to a
+neighbouring cell.  This response is not the mathematically correct solution
+however, as there is a greater area towards the border of a cell in which a
+population could exist, thus there is a greater chance the population's explicit
+location is close to the border when assuming a uniform probability across the
+entire cell.  Conversely, there is less chance that it will need to travel all
+the way from the centre of a cell to reach the next.  The response would be
+closer to a logarithmic curve.  However, we feel that a rigorous mathematical
+treatment of this aspect of dispersal models is not necessary as it is unlikely
+to improve the model given the uncertainty that often exists.
+
 <H2>ATTENTION</H2>
 
 <H2>WARNING</H2>
