@@ -141,14 +141,14 @@ then
 fi
 
 #TEMP_FILE_NAME=r.mdig.survival.temp
-echo GRASS_RND_SEED=$GIS_OPT_SEED
-#export GRASS_RND_SEED=$GIS_OPT_SEED
+#echo GRASS_RND_SEED=$GIS_OPT_SEED
+export GRASS_RND_SEED=$GIS_OPT_SEED
 if [ $GIS_OPT_CATS ]
 then
 #echo r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
     r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
 else
-    echo r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
+#    echo r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
     r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
 fi
 unset GRASS_RND_SEED

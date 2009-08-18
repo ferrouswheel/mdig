@@ -3,6 +3,7 @@
     <initialState>
         <raster>stage1</raster>
         <raster>stage2</raster>
+        <raster>stage3</raster>
     </initialState>
     <habitatMap>index</habitatMap>
     <ParameterValue>
@@ -30,7 +31,7 @@
     <ParameterValue>
         <parameterName>B3</parameterName>
         <source>random</source>
-        <index>1</index>
+        <index>0</index>
         <distribution>normal</distribution>
         <values>
             <d>100</d>
@@ -41,7 +42,7 @@
     <ParameterValue>
     <parameterName>B3</parameterName>
         <source>random</source>
-        <index>2</index>
+        <index>1</index>
         <distribution>normal</distribution>
         <values>
             <d>120</d>
@@ -52,7 +53,7 @@
     <ParameterValue>
         <parameterName>B3</parameterName>
         <source>random</source>
-        <index>3</index>
+        <index>2</index>
         <distribution>normal</distribution>
         <values>
             <d>140</d>
@@ -63,7 +64,7 @@
     <ParameterValue>
         <parameterName>B3</parameterName>
         <source>random</source>
-        <index>4</index>
+        <index>0</index>
         <distribution>normal</distribution>
         <values>
             <d>160</d>
@@ -74,7 +75,7 @@
     <ParameterValue>
         <parameterName>B3</parameterName>
         <source>random</source>
-        <index>5</index>
+        <index>None</index>
         <distribution>normal</distribution>
         <values>
             <d>200</d>
@@ -85,7 +86,7 @@
     <ParameterValue>
         <parameterName>B4</parameterName>
         <source>static</source>
-        <index>6</index>
+        <index>None</index>
         <distribution>None</distribution>
         <values>
             <d>1</d>
@@ -129,6 +130,26 @@
     </expression>
     <expression>
       <position>3</position>
+      <formula>B4</formula>
+    </expression>
+    <expression>
+      <position>4</position>
+      <formula>B2</formula>
+    </expression>
+    <expression>
+      <position>5</position>
+      <formula>B2</formula>
+    </expression>
+    <expression>
+      <position>6</position>
+      <formula>B2</formula>
+    </expression>
+    <expression>
+      <position>7</position>
+      <formula>B4</formula>
+    </expression>
+    <expression>
+      <position>8</position>
       <formula>B4</formula>
     </expression>
 </populationModule>

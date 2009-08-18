@@ -1,20 +1,36 @@
 import time
+import sys
+import os
+import logging
 import re
 import xml.dom.minidom
+
+import subprocess
+from subprocess import Popen
+
 from scipy.io import read_array
+
+import numpy
 from numpy import vstack, concatenate, random, array
 
+import mdig
 import GRASSInterface
 
 class TVGenerator(list):
-    """ Generates a transition matrix?
-
-    ASK What does TV stand for?
+    """ Generates a transition value
     """
-    def __init__(self, parameters, expressions, tm_size):
+    def __init__(self, parameters, expressions, tm_size, index_values):
         self.tm_size = tm_size
         self.parameters = parameters
-        expression_list = []
+        self.expressions = expressions
+        self.expanded_expressions = []
+        self.parameters_in_expressions = []
+        self.log = logging.getLogger("mdig.tvgen")
+
+        if not self.check_parameters(index_values):
+            self.log.error("Parameters were not okay: exiting...")
+            sys.exit(mdig.mdig_exit_codes['popmod'])
+
         # TODO replace the below regex with a more generic and smaller one
         pattern = re.compile(r'''
                        #Don't specify matching beginning of string (no ^)
@@ -45,8 +61,10 @@ class TVGenerator(list):
         \s*            #matches any number of whitespaces         
         (\w*)          #matches any number (0+) of alphanumeric characters (parameter name)
                 ''', re.VERBOSE)
-        for i in expressions:               
-            expression_temp = pattern.search(i).groups()
+        for i in range(len(expressions)):
+            print expressions[i]
+            self.parameters_in_expressions.append([])
+            expression_temp = pattern.search(expressions[i]).groups()
             temp_exp_list = []
             go_between_list = []
 
@@ -59,26 +77,57 @@ class TVGenerator(list):
             for g in temp_exp_list:
                 #if expression element is a parameter, add 'gen_val' syntax
                 if parameters.has_key(g):
-                    temp_string = "self.parameters['%s'].gen_val(%s, coords)" % (g, "%(indexValue)i")
+                    self.parameters_in_expressions[i].append(g)
+                    temp_string = "self.parameters['%s'][%s].gen_val(%s, coords)" % \
+                        (g, "%(index_value)i", "%(index_value)i")
                     go_between_list.append(temp_string)
                 else:
                     go_between_list.append(g)
                     
             # combines elements of tempExpList into a single string and adds them
             # to the expressionList
-            self.append(''.join(go_between_list))
+            self.expanded_expressions.append(''.join(go_between_list))
+        self.generate_default_parameter_map(index_values)
+
+    def check_parameters(self, index_values):
+        is_okay = True
+        for p in self.parameters:
+            p_val = self.parameters[p]
+            if p_val.has_key("None"):
+                # This parameter has a default generator regardless of index
+                continue
+            for i in index_values:
+                # check that the parameter has a generator for each possible
+                # index
+                if not p_val.has_key(i):
+                    self.log.error("Parameter %s does not have a generator " \
+                    "for index %s (or a default)" % (str(p),str(i)))
+                    is_okay = False
+        return is_okay
+
+    def generate_default_parameter_map(self, index_values):
+        for i in range(len(self.expanded_expressions)):
+            for par in self.parameters_in_expressions[i]:
+                for index_value in index_values:
+                    if not self.parameters[par].has_key(int(index_value)):
+                        # There should be a default which we can map to
+                        # since check_parameters shoudl have been called
+                        self.parameters[par][int(index_value)] = \
+                            self.parameters[par]["None"]
 
     def build_matrix(self, index_value, coords):
         tv_list = []
-        for i in range(len(self)):
-            t_val = self[i] % vars()
+        for i in range(len(self.expanded_expressions)):
+            t_val = self.expanded_expressions[i] % vars()
             tv_list.append(eval(t_val))
         tm = array(tv_list)
         tm = tm.reshape(self.tm_size, self.tm_size)
-        return tm 
+        return tm
 
-class ParamGenerator(list):
+class ParamGenerator():
     """ Generator for parameters.
+
+    @todo This really doesn't need to be a list
 
     Produces either static or random values,
     from source specified in xml file.
@@ -86,41 +135,49 @@ class ParamGenerator(list):
     def __init__(self, source, index, dist, vals):
         self.data = [0]
         self.source = source
+        self.coda = None
+        print '%s   %s   %s   %s is parameter value source' %(source, index, dist, vals)
         try:
             if source == 'map':
                 # TODO create a GRASSInterface command to load map to an array
+                g = GRASSInterface.getG()
                 self.map_name = str(vals[0])
-                map_range = rasterIO_2.get_range()
+                if (g.checkMap(self.map_name) != "raster"):
+                    raise GRASSInterface.MapNotFoundException()
+                map_range = g.getRange()
                 n_rows = int(map_range[8][6:])
                 n_cols = int(map_range[9][6:])
-                cmd = "r.out.ascii -h input=%s" %(self.map_name)
-                p = grass.pipe_command(cmd)
+                cmd = "r.out.ascii -h input=" + self.map_name
+                p = Popen(cmd, shell=True, stdout=subprocess.PIPE)
                 self.mat = numpy.matrix(p.communicate()[0])
                 self.mat = self.mat.reshape((n_rows,n_cols))
-            if source == 'CODA':
-                self.append(read_array(index))
+            elif source == 'CODA':
+                self.coda = []
+                self.coda.append(read_array(index))
                 for i in range(len(vals)):
                     temp = read_array(vals[i])
                     if i == 0:
-                        for j in range(len(self[0])):
-                            self.append(temp[int(self[0][j,1])-1:int(self[0][j,2]),1])
+                        for j in range(len(self.coda[0])):
+                            self.coda.append(temp[int(self.coda[0][j,1])-1:int(self.coda[0][j,2]),1])
                     else:
-                        for j in range(len(self[0])):
-                            self[j+1] = concatenate((self[j+1], \
-                                temp[int(self[0][j,1]-1):int(self[0][j,2]), 1]))
-            if source == 'random':
+                        for j in range(len(self.coda[0])):
+                            self.coda[j+1] = concatenate((self.coda[j+1], \
+                                temp[int(self.coda[0][j,1]-1):int(self.coda[0][j,2]), 1]))
+            elif source == 'random':
                 self.str = ("(%s.%s(%f,%f))" %(source, dist, vals[0], vals[1]))
-            if source == 'zero':
-                pass
-            if source == 'static':
+#elif source == 'zero':
+#break
+            elif source == 'static':
                 self.static = vals[0]
         except IOError:
             print '%s   %s   %s   %s parameter value source coding not valid' %(source, index, dist, vals)
 
     def gen_val(self, index_value, coords):
-        """Draws a random CODA iteration from the range specified in index for the corresponding parameter level"""
+        """Draws a random CODA iteration from the range specified in index for
+           the corresponding parameter level
+        """
         if self.source == 'CODA':
-           return self[index_value][random.random_integers(0,len(self[index_value]))]
+           return self.coda[index_value][random.random_integers(0,len(self.coda[index_value]))]
         elif self.source == 'random':
            return eval(self.str)
         elif self.source == 'zero':
@@ -132,11 +189,11 @@ class ParamGenerator(list):
 
 class LifestageTransition:
 
-    def __init__(self,xml_file, model_instance):
+    def __init__(self,xml_file, model):
         # Init timing of load process
-        self.start_time = time.time()
+        start_time = time.time()
 
-        self.m_instance = model_instance 
+#self.m_instance = model_instance 
         self.log = logging.getLogger("mdig.popmod")
 
         # XML parsing
@@ -145,27 +202,32 @@ class LifestageTransition:
 
         # tm_size, used in defining/parsing 'expressions' list
         # same as number of lifestages
-        self.tm_size = len(model_instance.exp.get_lifestage_ids())
+        self.tm_size = len(model.get_lifestage_ids())
 
         self.parameters = self.xml_to_param()
-        self.expressions = self.xml_to_expression_list(tm_size)
+        self.expressions = self.xml_to_expression_list()
 
         # determine size of rasters
         self.range_data = GRASSInterface.getG().getRange()
         # process range_data
-        n_rows = int(self.range_data[8][6:])
-        n_cols = int(self.range_data[9][6:])
-        header = str(self.range_data[2] + self.range_data[3] + self.range_data[4] +
+        self.n_rows = int(self.range_data[8][6:])
+        self.n_cols = int(self.range_data[9][6:])
+        self.header = str(self.range_data[2] + self.range_data[3] + self.range_data[4] +
                 self.range_data[5] + self.range_data[8] + self.range_data[9])
 
         # End timing of load process
         load_time = time.time() - start_time
-        self.log.debug('Transition matrix set to %i x %i' % (tm_size, tm_size) )
+        self.log.debug('Transition matrix set to %i x %i' % (self.tm_size, self.tm_size) )
         self.log.debug('Transition sources loaded.  Load time %f seconds'
                 % load_time)
 
+        # Get the different indexes available
+        index_values = GRASSInterface.getG().rasterValueFreq(self.index_source)
+        index_values = [int(x[0]) for x in index_values]
+        
         # Create matrix instance
-        self.t_matrix = TVGenerator(parameters, expressions, tm_size)
+        self.t_matrix = TVGenerator(self.parameters, self.expressions,
+                self.tm_size, index_values)
 
     def apply_transition(self, current_pop_maps, destination_maps):
         #Timing of process
@@ -188,7 +250,8 @@ class LifestageTransition:
         ascii_pop_rasters = []
         ascii_out_rasters = []
         for i in pop_raster_list:
-            data_fn, data_out_fn = GRASSInterface.getG().rasterToAscii(i)
+            # output to ascii, and also replace null values with 0
+            data_fn, data_out_fn = GRASSInterface.getG().rasterToAscii(i,null_as_zero=True)
             ascii_pop_rasters.append(data_fn)
             ascii_out_rasters.append(data_out_fn)
 
@@ -196,7 +259,8 @@ class LifestageTransition:
         ascii_indexes = GRASSInterface.getG().indexToAscii(index_raster)
 
         # apply matrix multiplication
-        process_rows(ascii_indexes, ascii_pop_rasters, ascii_out_rasters) 
+        self.process_rows(ascii_indexes, ascii_pop_rasters, ascii_out_rasters,
+                destination_maps) 
 
         processingTime = time.time() - start_time
         print 'Transition matrix application completed. ' + \
@@ -233,18 +297,20 @@ class LifestageTransition:
         # add read and write file objects containing stage raster data
         for i in range(len(temp_rasters)):
             f_in = open(temp_rasters[i][1])
-            fo_list.append(f_in)
-            f_out = open(temp_out_rasters[i][1])
+            fo_in_list.append(f_in)
+            f_out = open(temp_out_rasters[i][1], 'w')
             fo_out_list.append(f_out)
     
         # Append array with raster data file objects from list        
         # .. for each row of the region
-        for row in range(self.n_rows): 
+        for row in range(self.n_rows):
             # for each file
             for i in range(array_depth):
-                in_row_array[i] = fo_in_list[i].readline().split()
+                temp_row = fo_in_list[i].readline().split()
+                in_row_array[i] = temp_row
 
             # process individual cells
+            # TODO only works if an index map is specified!
             for j in range(in_row_array.shape[1]):
                 #Calculate cell coordinates
                 #E = int(rangeData[4][6:])+(j*float(rangeData[7][6:]))
@@ -273,15 +339,14 @@ class LifestageTransition:
                 fo_out_list[i].writelines(str(out_row_array[i]).strip(' []') \
                         + '\n')
             
-        for i in range(len(fo_out_list)):
+        for i in range(1,len(fo_out_list)):
             fo_out_list[i].close() # close temp out files
             if i==0:
                 pass # closes index file without re-writing it
             else: # re-write temp ascii files to rasters in GRASS workspace
-                rast_name = output_pop_rasters[i-1]
-                temp_to_rast_cmd = "r.in.ascii input=%s output=%s" % \
-                    (temp_out_rasters[i-1][1], rast_name)
-                GRASSInterface.getG().run_command(temp_to_rast_cmd)
+                ascii_fn = temp_out_rasters[i-1][1]
+                rast_name = out_pop_rasters[i-1]
+                GRASSInterface.getG().importAsciiToRaster(ascii_fn,rast_name)
 
     def xml_to_initial_state(self):
         raster_maps = self.xml_dom.getElementsByTagName("raster")
@@ -314,15 +379,19 @@ class LifestageTransition:
 
         for i in parameters:
             parameter = str(i.getElementsByTagName('parameterName')[0].childNodes[0].data)
+            if parameter not in param_dict:
+                param_dict[parameter] = {}
+                
             source = str(i.getElementsByTagName('source')[0].childNodes[0].data)
             index = i.getElementsByTagName('index')
             if source=='CODA':
                 index = str(index[0].childNodes[0].data)
             elif source=='map':
-                index = None
+                # TODO check that index actually equals None in file
+                index = 'None'
             else:
                 if str(index[0].childNodes[0].data) == 'None':
-                    index = None
+                    index = 'None'
                 else: index = int(index[0].childNodes[0].data)
             dist = i.getElementsByTagName('distribution')
             dist = str(dist[0].childNodes[0].data)
@@ -336,21 +405,14 @@ class LifestageTransition:
                         value_list.append(str(v.childNodes[0].data))
                     else: value_list.append(float(v.childNodes[0].data))
                 except: pass
-            if i == parameters[0]:
-                if source == 'CODA':
-                    param_dict[parameter] = ParamGenerator(source, index, dist,
-                            value_list)
-                else:
-                    param_dict[parameter] = ParamGenerator(source, index, dist,
-                            value_list)
-            else:
-                param_dict[parameter]=(ParamGenerator(source, index, dist,
-                            value_list))
-        
+            param_dict[parameter][index] = ParamGenerator(source, index, dist,
+                    value_list)
+            self.log.debug("Adding parameter " + parameter + " [index " +
+                    str(index) + "]")
         return param_dict
 
     def xml_to_expression_list(self):
-        x = xml_dom.firstChild
+        x = self.xml_dom.firstChild
         expressions = x.getElementsByTagName("expression")
         expression_list = [0]*(self.tm_size * self.tm_size)
 
@@ -363,52 +425,56 @@ class LifestageTransition:
             if expression_list[position] == 0:
                 expression_list[position] = formula
             else:
+                self.log.warning("Expression for position " + position + \
+                        "already exists, overwriting...")
                 expression_list[position].update(formula)
         
         return expression_list
 
     #Old transition reading from xml file
     # ASK: to delete?
-    def xml_to_transition_list(self):
-        x = self.xml_dom.firstChild
-        transitions = x.getElementsByTagName("TransitionValue")
-        transition_list = [0]*(self.tm_size*self.tm_size):
+    #def xml_to_transition_list(self):
+        #x = self.xml_dom.firstChild
+        #transitions = x.getElementsByTagName("TransitionValue")
+        #transition_list = []
+        #for i in range(self.tm_size*self.tm_size):
+            #transition_list.append(0)
 
-        for i in transitions:
-            position = i.getElementsByTagName('position')
-            position = int(position[0].childNodes[0].data)
-            source = i.getElementsByTagName('source')
-            source = str(source[0].childNodes[0].data)
-            index = i.getElementsByTagName('index')
-            if source=='CODA':
-                index = str(index[0].childNodes[0].data)
-            else:
-                if str(index[0].childNodes[0].data) == 'None':
-                    index = None
-                else: index = int(index[0].childNodes[0].data)
-            dist = i.getElementsByTagName('distribution')
-            dist = str(dist[0].childNodes[0].data)
-            value_list = []
-            values = i.getElementsByTagName('d')
-            for i in values:
-                try:
-                    if source == 'CODA':
-                        value_list.append(str(i.childNodes[0].data))
-                    else:
-                        value_list.append(float(i.childNodes[0].data))
-                except:
-                    pass
-            if transition_list[position] == 0:
-                # ASK: This used to initialise TVgenerator_dict
-                if source == 'CODA':
-                    transition_list[position] = TVGenerator(source, index, dist,
-                            value_list)
-                else:
-                    transition_list[position] = TVGenerator(source, index, dist,
-                            value_list)
-            else:
-                transition_list[position].update(TVGenerator(source, index, dist,
-                            value_list))
+        #for i in transitions:
+            #position = i.getElementsByTagName('position')
+            #position = int(position[0].childNodes[0].data)
+            #source = i.getElementsByTagName('source')
+            #source = str(source[0].childNodes[0].data)
+            #index = i.getElementsByTagName('index')
+            #if source=='CODA':
+                #index = str(index[0].childNodes[0].data)
+            #else:
+                #if str(index[0].childNodes[0].data) == 'None':
+                    #index = None
+                #else: index = int(index[0].childNodes[0].data)
+            #dist = i.getElementsByTagName('distribution')
+            #dist = str(dist[0].childNodes[0].data)
+            #value_list = []
+            #values = i.getElementsByTagName('d')
+            #for i in values:
+                #try:
+                    #if source == 'CODA':
+                        #value_list.append(str(i.childNodes[0].data))
+                    #else:
+                        #value_list.append(float(i.childNodes[0].data))
+                #except:
+                    #pass
+            #if transition_list[position] == 0:
+                ## ASK: This used to initialise TVgenerator_dict
+                #if source == 'CODA':
+                    #transition_list[position] = TVGenerator(source, index, dist,
+                            #value_list)
+                #else:
+                    #transition_list[position] = TVGenerator(source, index, dist,
+                            #value_list)
+            #else:
+                #transition_list[position].update(TVGenerator(source, index, dist,
+                            #value_list))
         
-        return transition_list
+        #return transition_list
 

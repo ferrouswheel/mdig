@@ -53,6 +53,7 @@ from Lifestage import Lifestage
 from Analysis import Analysis
 from Replicate import Replicate
 from GrassMap import GrassMap
+from LifestageTransition import LifestageTransition
 
 _debug=0
 
@@ -72,6 +73,7 @@ class DispersalModel(object):
         self.lifestages={}
         self.instances = None
         self.activeInstances = []
+        self.lifestage_transition = None
         
         schema_file = sys.path[0]+"/mdig/mdig.xsd"
         self.load_xml(model_file)
@@ -637,6 +639,15 @@ class DispersalModel(object):
                 self.log.error(
                         "Could not get unique lifestage from id '%s'" % ls_id)
         
+    def get_lifestage_transition(self):
+        if self.lifestage_transition is None:
+            popmod_xml = self.get_popmod_file()
+            if popmod_xml is not None:
+                self.lifestage_transition = \
+                    LifestageTransition(os.path.join(self.get_base_dir(), \
+                                popmod_xml), self)
+        return self.lifestage_transition
+
     def get_period(self):
         start_time = int(self.xml_model.xpath(
                     '/model/period/startTime/text()')[0])

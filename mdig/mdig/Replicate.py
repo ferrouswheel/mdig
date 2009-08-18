@@ -211,10 +211,18 @@ class Replicate:
         self.complete = False
         self.set_seed(self.instance.experiment.next_random_value())
 
-    def run(self,remove_null=False):
-        
-        self.reset()
+    def record_maps(self, remove_null=False):
+        for ls_id in self.instance.experiment.get_lifestage_ids():
+            self.push_previous_map(ls_id,GRASSInterface.getG().generateMapName(ls_id))
+            #if first_year:
+                #self.grass_i.copyMap(self.initial_maps[ls_id].getMapFilename(),self.get_previous_map(ls_id),True)
+            #else:
+            self.grass_i.copyMap(self.temp_map_names[ls_id][0],self.get_previous_map(ls_id),True)
+            if remove_null:
+                self.grass_i.null_bitmask(self.get_previous_map(ls_id),generate=False)
 
+    def run(self,remove_null=False):
+        self.reset()
         self.active = True
         self.instance.add_active_rep(self)
         
@@ -232,15 +240,22 @@ class Replicate:
 
         ls_keys = exp.get_lifestage_ids()
         
-        for lifestage_key in ls_keys:
+        for ls_key in ls_keys:
             # Create temporary map names
             # - input is in [0], output in [1]
-            self.temp_map_names[lifestage_key] = [GRASSInterface.getG().generateMapName(lifestage_key),
-            GRASSInterface.getG().generateMapName(lifestage_key)]
+            self.temp_map_names[ls_key] = [
+                GRASSInterface.getG().generateMapName(ls_key),
+                GRASSInterface.getG().generateMapName(ls_key)
+            ]
             
-            # Set up phenology maps
-            ls = exp.get_lifestage(lifestage_key)
+            # copy initial map to temporary source map, overwrite if necessary
+            self.grass_i.copyMap( \
+                    initial_maps[ls_key].getMapFilename(), \
+                    self.temp_map_names[ls_key][0],True)
             
+            # Set up phenology maps (LS initialises them on init)
+            ls = exp.get_lifestage(ls_key)
+            # Set up lifestage analysis
             for a in ls.analyses():
                 a.pre_run(self)
         
@@ -255,39 +270,43 @@ class Replicate:
         self.log.debug("Simulation period is " + str(period))
         
         for t in range(period[0],period[1]+1):
-            self.log.log(logging.INFO, "t=%d", t)
             self.current_t = t
-            #pdb.set_trace()
-            
-            for ls_id in self.instance.experiment.get_lifestage_ids():
-                self.push_previous_map(ls_id,GRASSInterface.getG().generateMapName(lifestage_key))
-                if t == period[0]:
-                    self.grass_i.copyMap(initial_maps[ls_id].getMapFilename(),self.get_previous_map(ls_id),True)
-                else:
-                    self.grass_i.copyMap(self.temp_map_names[ls_id][0],self.get_previous_map(ls_id),True)
-                
-                if remove_null:
-                    self.grass_i.null_bitmask(self.get_previous_map(ls_id),generate=False)
+            self.log.log(logging.INFO, "t=%d", t)
+
+            # keep a record of previous maps by saving to a non-temporary name
+            self.record_maps(remove_null)
+
+            # invoke lifestage transitions
+            ls_trans = self.instance.experiment.get_lifestage_transition()
+            if ls_trans:
+                # build lists of source/dest maps
+                source_maps = []
+                dest_maps = []
+                for ls_id in ls_keys:
+                    source_maps.append(self.temp_map_names[ls_id][0])
+                    dest_maps.append(self.temp_map_names[ls_id][1])
+                # Lifestage transition should automatically swap source/dest
+                # maps
+                self.log.debug("Applying lifestage transition matrix" + str(period))
+                ls_trans.apply_transition(source_maps,dest_maps)
+                # clean up the source/dest maps so that source=dest and
+                # dest=source
+                for ls_id in ls_keys:
+                    self.temp_map_names[ls_id].reverse()
             
             phenology_iterator = exp.phenology_iterator(self.instance.r_id)
             
+            # Run through phenology intervals
             for current_interval, p_lifestages in phenology_iterator:
                 for lifestage in p_lifestages:
                     ls_key = lifestage.name
                     self.log.log(logging.INFO, 'Interval %d - Lifestage "%s"' \
                             ' started',current_interval,ls_key)
-                    if t == period[0]:
-                        # copy initial map to a working map, overwrite if
-                        # necessary
-                        self.grass_i.copyMap( \
-                                initial_maps[ls_key].getMapFilename(), \
-                                self.temp_map_names[ls_key][0],True)
                     lifestage.run(current_interval,self,self.temp_map_names[ls_key])
-                    #self.temp_map_names[ls_key].reverse()
                 self.log.log(logging.INFO, 'Interval %d completed.',current_interval)
             
             # Run Analyses for each lifestage
-            for ls_id in self.instance.experiment.get_lifestage_ids():
+            for ls_id in ls_keys:
                 l = self.instance.experiment.get_lifestage(ls_id)
                 analyses = l.analyses()
                 self.log.log(logging.INFO, 'Lifestage %s - Running analyses',ls_id)

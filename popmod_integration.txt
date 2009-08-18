@@ -1,8 +1,2 @@
-
-When adding a lifestage model to the repository, with external lifestage
-transitions (popmod) copy that file to the model's directory too.
-
-For some reason only the last lifestage is output to raster from lifestage.xml
-
 Add a part to the Replicate run method which will call Steve's
 LifestageTransition code.

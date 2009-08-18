@@ -604,7 +604,7 @@ class GRASSInterface:
         @todo rename to get_region
         """
         # sends command to GRASS session and returns result via stdout (piped)
-        output = subprocess.Popen("g.region -p", stdout=subprocess.PIPE).communicate()[0]
+        output = subprocess.Popen("g.region -p", shell=True, stdout=subprocess.PIPE).communicate()[0]
         # pipes input from r.info and formats it as a StringIO object
         # (additional functionality vs. string, like 'readlines')
         pre_rangeData = StringIO.StringIO(output)
@@ -616,7 +616,7 @@ class GRASSInterface:
     def getIndexRaster(self,indexRaster):
         '''Imports the raster layers representing the index layer.'''
         cmd = "r.info -m %s --v" % (indexRaster)
-        r = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        r = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         r.stdout, r.stderr = r.communicate()
         if r.stdout == '':
             self.log.error("That raster does not exist in the current mapset.")
@@ -628,7 +628,7 @@ class GRASSInterface:
         self.log.info("Index raster set to " + str(indexRaster))
         return indexRaster
 
-    def getRasterList(popRasterList):
+    def getRasterList(self,popRasterList):
         '''Manually enter the raster layers representing the population stages
            and return a list of the corresponding names.'''
     # This method seems to be obsolete because it doesn't do anything?
@@ -661,7 +661,7 @@ class GRASSInterface:
     #    print "Population rasters set to "+ str(popRasterList)
         return popRasterList
 
-    def rasterToAscii(rasterName, IO=1):
+    def rasterToAscii(self,rasterName, IO=1, null_as_zero=False):
         """ Creates a temporary file storing the raster data in ascii format
         (accessable for LifestageTransition processing), and if IO=1 also
         creates a temp file to write the new data to after being processed.
@@ -669,8 +669,10 @@ class GRASSInterface:
 
         @todo rename to exportRasterToASCII   
         """
-        imp_cmd = "r.out.ascii -hi input=%s output=-" % (rasterName)
-        data = subprocess.Popen(imp_cmd,stdout.PIPE)
+        null_char = '*'
+        if null_as_zero: null_char = '0'
+        imp_cmd = "r.out.ascii -hi input=%s output=- null=%s" % (rasterName,null_char)
+        data = subprocess.Popen(imp_cmd, shell=True, stdout=subprocess.PIPE)
         tempDataFileName = (tempfile.mkstemp(prefix = 'popMod_inRast_', \
                     suffix='.txt', text=True))
         tempDataFile = open(tempDataFileName[1], 'w')
@@ -683,11 +685,11 @@ class GRASSInterface:
         else:
             return tempDataFileName
 
-    def indexToAscii(indexRaster):
+    def indexToAscii(self,indexRaster):
         """ @todo merge with the above code and generalise """
         # export index to temporary ascii map
         imp_cmd = "r.out.ascii -hi input=%s output=-" % (indexRaster)
-        data = subprocess.Popen(imp_cmd,stdout.PIPE)
+        data = subprocess.Popen(imp_cmd, shell=True, stdout=subprocess.PIPE)
         tempDataFileName = (tempfile.mkstemp(prefix='popMod_inIndex_', \
                     suffix='.txt', text=True))
         tempDataFile = open(tempDataFileName[1], 'w')
@@ -697,6 +699,11 @@ class GRASSInterface:
         tempOutDataFileName = (tempfile.mkstemp(prefix='popMod_outIndex_', \
                     suffix='.txt', text=True))
         return tempDataFileName, tempOutDataFileName
+
+    def importAsciiToRaster(self, ascii_fn, raster_fn):
+        temp_to_rast_cmd = "r.in.ascii --o input=%s output=%s" % \
+            (ascii_fn, raster_fn)
+        self.runCommand(temp_to_rast_cmd)
 
     def count_sites(self, vmap):
         """ Counts the number of points within a vector map """

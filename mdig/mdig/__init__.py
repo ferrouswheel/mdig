@@ -36,7 +36,8 @@ mdig_exit_codes = {
     "missing_envelopes": 13,
     "exists": 14,
     "missing_popmod": 15,
-    "no_initial_maps": 16
+    "no_initial_maps": 16,
+    "popmod": 17
 }
 repository = None
 
