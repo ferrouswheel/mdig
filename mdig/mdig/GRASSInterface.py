@@ -122,9 +122,18 @@ class GRASSInterface:
             self.log.log(logging.INFO,"GRASS Environment okay: %s", self.grass_vars)
             
         return okay
+
+    def get_GIS_env(self):
+        # sends command to GRASS session and returns result via stdout (piped)
+        output = subprocess.Popen("g.gisenv", shell=True, stdout=subprocess.PIPE).communicate()[0]
+        pre_range_data = StringIO.StringIO(output).readlines()
+        ret = {}
+        for line in pre_range_data:
+            fields = line.split('=')
+            ret[fields[0]] = fields[1]
+        return ret
     
     def _set_vars(self):
-        
         for var in self.grass_vars:
             if self.config.has_key(var):
                 self.grass_vars[var]=self.config[var]
@@ -477,6 +486,27 @@ class GRASSInterface:
             self.runCommand("g.mapset -c mapset=%s" % mapset_name)
         
         return True
+
+    def removeMapset (self, mapset_name, force=False):
+        """
+        Remove mapset, ask for user confirmation unless force is True.
+        """
+        if mapset_name == "PERMANENT":
+            # Can't remove permanent mapset!
+            return False
+
+        if self.getMapset() == mapset_name: 
+            self.changeMapset("PERMANENT")
+        gisdb = self.get_GIS_env()["GISDBASE"]
+        mapset_dir = os.path.join(gisdb,mapset_name)
+        ans = "N"
+        if not force and os.path.isdir(mapset_dir):
+            ans = raw_input("Remove mapset at %s? [y/N] " % mapset_dir)
+
+        if ans.upper() == "Y" or force:
+            print 'self.runCommand("rm -rf %s" % mapset_dir)'
+            return True 
+        return False
 
     def occupancyEnvelope(self, maps_to_combine, filename):
         """ Generates an occupancy envelope from boolean,

@@ -323,51 +323,34 @@ class AddAction(Action):
         MDiGConfig.getConfig().overwrite_flag = self.options.overwrite_flag
 
     def do_me(self,mdig_model):
-        import shutil
-        log = logging.getLogger("mdig.action")
-        if not os.path.isfile(self.model_names[0]):
-            log.error("Model file %s is not a file."%self.model_names[0])
-            sys.exit(5)
-
-        # create dir in repo
-        # dirname is from model name
-        repo_dir = MDiGConfig.getConfig()["repository"]["location"]
-        dm = DispersalModel(self.model_names[0],setup=False)
-        dest_dir = os.path.join(repo_dir,dm.get_name())
-        if os.path.exists(dest_dir):
-            if self.options.overwrite_flag:
-                log.error("A model with the same name as %s already exists. Use " % self.model_names[0] +
-                        "'remove' first.")
-                sys.exit(mdig.mdig_exit_codes["exists"])
-            else:
-                log.warning("A model with the same name as %s already exists." +
-                        " Overwriting...")
-                shutil.rmtree(dest_dir)
-        MDiGConfig.makepath(dest_dir)
-        log.info("Created repo dir for model " + dm.get_name())
-
-        # copy lifestage transition model file if it exists
-        if dm.get_popmod_file() is not None:
-            src_file = dm.get_popmod_file()
-            # check if this exists, directly and then relative to model file
-            if not os.path.exists(src_file):
-                src_file = os.path.join(os.path.dirname(self.model_names[0]), src_file)
-                if not os.path.exists(src_file):
-                    log.error("Can't find internally specified popmod lifestage transition file!")
-                    sys.exit(mdig.mdig_exit_codes["missing_popmod"])
-            
-            shutil.copyfile(src_file,os.path.join(dest_dir,"lifestage_transition.xml"))
-            dm.set_popmod_file("lifestage_transition.xml")
-
-        # write dispersal model to new dir 
-        #shutil.copyfile(self.model_names[0],os.path.join(dest_dir,"model.xml"))
-        dm.save_model(os.path.join(dest_dir,"model.xml"))
-
-        # set up model directory
-        dm.set_base_dir() 
-        # change to and create model mapset
-        dm.init_mapset()
+        for m in self.model_names:
+            mdig.repository.add_model(m)
         GRASSInterface.getG().clean_up()
+        
+class RemoveAction(Action):
+    description = "Remove a model from the repository and delete mapset."
+
+    def __init__(self):
+        Action.__init__(self)
+        self.parser = OptionParser(version=mdig.version_string,
+                description = RemoveAction.description,
+                usage = "%prog remove <model name>")
+        self.add_options()
+        self.preload = False
+
+    def add_options(self):
+        Action.add_options(self)
+        self.parser.add_option("-f","--force",
+                help="Force removal, don't check with user",
+                action="store_true",
+                dest="force_flag")
+
+    def act_on_options(self,options):
+        Action.act_on_options(self,options)
+
+    def do_me(self,mdig_model):
+        for m in self.model_names:
+            mdig.repository.remove_model(m,force=self.options.force_flag)
         
 class ListAction(Action):
     description = "List the models currently in MDiG repository."
@@ -764,6 +747,7 @@ mdig_actions = {
     "web": WebAction,
     "node": ClientAction,
     "info": InfoAction,
-    "roc": ROCAction
+    "roc": ROCAction,
+    "remove": RemoveAction
     }
 
