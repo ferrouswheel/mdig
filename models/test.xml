@@ -1,5 +1,5 @@
 <model>
-	<user><email>pittj2@lincoln.ac.nz</email></user>
+	<user><email>joel@fruitionnz.com</email></user>
 	
 	<name> test </name>
 	<description> test spread model </description>
@@ -9,7 +9,7 @@
 		<initialSeed> 1 </initialSeed>
 		<!-- Number of times to repeat simulation for each combination of parameters -->
 		<replicates> 2 </replicates>
-		<!-- The last state of the rnadom number generator in case the simulation didn't
+		<!-- The last state of the random number generator in case the simulation didn't
 			 finish last time -->
 		<offset>23</offset>
    	</random>
