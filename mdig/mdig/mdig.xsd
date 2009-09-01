@@ -59,6 +59,7 @@
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
+                <xsd:element name="management" type="managementType" minOccurs="0" maxOccurs="1"/>
                 
                 <xsd:element name="instances" minOccurs="0">
                     <xsd:complexType>
@@ -387,6 +388,77 @@
         <xsd:attribute name="id" type="xsd:ID"/>
     </xsd:complexType>
     
+    <xsd:complexType name="managementType">
+        <xsd:sequence>
+            <xsd:element name="strategy" minOccurs="1" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="description" type="xsd:string" minOccurs="1"/>
+                        <xsd:element name="area" minOccurs="0">
+                            <xsd:complexType>
+                                <xsd:choice>
+                                    <xsd:group ref="mAreaGroup"/>
+                                </xsd:choice>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="treatments" minOccurs="1">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="t" type="mTreatmentType"
+                                    minOccurs="1" maxOccurs="unbounded"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                    <xsd:attribute name="name" type="xsd:ID" use="required"/>
+                    <xsd:attribute name="region" type="xsd:IDREF" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:group name="mAreaGroup">
+        <xsd:choice>
+            <xsd:element name="map" type="mapType"/>
+            <xsd:element name="mfilter" type="eventType"/>
+        </xsd:choice>
+    </xsd:group>
+
+    <xsd:complexType name="mTreatmentType">
+        <xsd:sequence>
+            <xsd:choice>
+                <xsd:group ref="mTreatmentGroup"/>
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:group name="mTreatmentGroup">
+        <xsd:choice>
+            <xsd:element name="event" type="treatmentEventType"/>
+            <xsd:element name="affectVariable" type="affectVarType"/>
+        </xsd:choice>
+    </xsd:group>
+
+    <xsd:complexType name="treatmentEventType">
+        <xsd:sequence>
+            <xsd:group ref="paramGroup"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="ls" type="xsd:IDREF"/>
+        <xsd:attribute name="prob" type="xsd:float"/>
+        <xsd:attribute name="sequence" type="xsd:integer"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="affectVarType">
+        <xsd:choice>
+            <xsd:element name="increase" type="xsd:float"/>
+            <xsd:element name="decrease" type="xsd:float"/>
+            <xsd:element name="ratio" type="xsd:float"/>
+        </xsd:choice>
+        <xsd:attribute name="prob" type="xsd:float"/>
+        <xsd:attribute name="sequence" type="xsd:integer"/>
+    </xsd:complexType>
+
     <xsd:complexType name="completedType">
         <xsd:sequence>
             <!--<xsd:element name="name" type="xsd:string"/>-->
@@ -405,8 +477,6 @@
                 </xsd:complexType>
             </xsd:element>
             
-            
-            
             <xsd:element name="replicates" minOccurs="0" maxOccurs="1">
                 <xsd:complexType>
                     <xsd:sequence>
@@ -414,7 +484,6 @@
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
-            
             
             <xsd:element name="envelopes" minOccurs="0" maxOccurs="1">
                 <xsd:complexType>

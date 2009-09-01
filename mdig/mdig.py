@@ -17,10 +17,12 @@
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
 #
-'''MDiG - Modular Dispersal in GIS
+''' MDiG - Modular Dispersal in GIS
 
-command line interface/launcher for MDiG, should be in GRASS environment before
-running!
+Command line interface/launcher for MDiG.
+
+The user should be in GRASS environment before running. Some commands might
+work but no guarantees.
 
 '''
 
@@ -86,7 +88,8 @@ def process_options(argv):
         the_action.parse_options(argv)
     else:
         if action_keyword != "--help" and \
-            action_keyword != "-h":
+            action_keyword != "-h" and \
+            action_keyword != "help":
             print "Unknown action %s" % mdig_config.action_keyword
         usage()
         sys.exit(mdig.mdig_exit_codes["ok"])

@@ -19,7 +19,6 @@
 #
 """
 Replicate module. Part of MDiG - Modular Dispersal in GIS
-Copyright 2006, Joel Pitt
 """
 
 import lxml.etree
