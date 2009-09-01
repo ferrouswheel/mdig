@@ -65,53 +65,53 @@
 	</lifestages>
 
     <management>
-        <strategy name="test_t_event">
+        <strategy name="test_t_event" region="a">
             <description>Test to check event based management works</description>
-            <treatment>
+            <treatments>
             <t>
               <event ls="all" name="r.mdig.survival">
                 <param name="survival"><value>0</value></param>
               </event>
             </t>
-            </treatment>
+            </treatments>
         </strategy>
-        <strategy name="test_alter_var">
+        <strategy name="test_alter_var" region="a">
             <description>Test to check variable management works</description>
-            <treatment>
+            <treatments>
             <t>
-              <alterVariable var="variable_id">
+              <affectVariable var="variable_id">
                 <decrease>1</decrease>
                 <!--<increase></increase>-->
                 <!--<ratio></ratio>-->
-              </alterVariable>
+              </affectVariable>
             </t>
-            </treatment>
+            </treatments>
         </strategy>
-        <strategy name="test_map_area">
+        <strategy name="test_map_area" region="a">
             <description>Test to check map area management works</description>
             <area>
                 <mapcalc>if(x()&gt;3,1,null())</mapcalc>
             </area>
-            <treatment>
+            <treatments>
             <t>
               <event ls="all" name="r.mdig.survival">
                 <param name="survival"><value>0</value></param>
               </event>
             </t>
-            </treatment>
+            </treatments>
         </strategy>
-        <strategy name="test_dyn_area">
+        <strategy name="test_dyn_area" region="a">
             <description>Test to check dynamic area management works</description>
             <area>
                 <mfilter name="r.mdig.outliers"></mfilter>
             </area>
-            <treatment>
+            <treatments>
             <t>
               <event ls="all" name="r.mdig.survival">
                 <param name="survival"><value>0</value></param>
               </event>
             </t>
-            </treatment>
+            </treatments>
         </strategy>
     </management>
 	

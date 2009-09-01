@@ -419,7 +419,9 @@
 
     <xsd:group name="mAreaGroup">
         <xsd:choice>
-            <xsd:element name="map" type="mapType"/>
+            <xsd:choice>
+                <xsd:group ref="mapGroupType"/>
+            </xsd:choice>
             <xsd:element name="mfilter" type="eventType"/>
         </xsd:choice>
     </xsd:group>
@@ -457,6 +459,7 @@
         </xsd:choice>
         <xsd:attribute name="prob" type="xsd:float"/>
         <xsd:attribute name="sequence" type="xsd:integer"/>
+        <xsd:attribute name="var" type="xsd:IDREF" use="required"/>
     </xsd:complexType>
 
     <xsd:complexType name="completedType">
