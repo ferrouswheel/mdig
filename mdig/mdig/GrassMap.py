@@ -110,7 +110,7 @@ class GrassMap:
         Convert map between raster/vector (not implemented)
         """
         # TODO implement conversion between raster/vector
-        raise NameError, "changeMapType: Method not implemented"
+        raise NotImplementedError, "changeMapType: Method not implemented"
             
     def getMapFilename(self):
         """

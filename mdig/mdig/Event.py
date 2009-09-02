@@ -19,7 +19,6 @@
 #
 """ 
 Event module. Part of MDiG - Modular Dispersal in GIS
-Copyright 2006, Joel Pitt
 """
 
 import logging
@@ -30,7 +29,9 @@ import GRASSInterface
 class Event:
 	"""
 	The Event class represents the use of a singular module or command
-	within the MDiG simulation.
+	within the MDiG simulation. It is used for running events in the lifestage
+    loop, calculating treatment areas, and applying treatments as part of
+    management strategies.
 	"""
 
 	def __init__(self, node):
@@ -45,7 +46,7 @@ class Event:
 		else:
 			self.log.error('Event has no "name" attribute')
 
-	def usesRandomSeed(self):
+	def uses_random_seed(self):
 		""" Check if the module has a parameter that uses a random seed """
 		if len(self.xml_node.find("seed")) > 0:
 			return True
