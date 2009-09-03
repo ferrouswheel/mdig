@@ -57,6 +57,9 @@ class DispersalInstance:
         
         self.replicates = self._load_replicates()
         self.activeReps = []
+
+        # Control strategy that this instance is associated with, if any
+        self.strategy = None
         
         self.log.debug("New instance - varkeys: %s vars: %s reps (complete/incomplete/missing): %d/%d/%d" % \
             (self.var_keys,self.variables, \

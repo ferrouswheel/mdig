@@ -504,7 +504,7 @@ class GRASSInterface:
             ans = raw_input("Remove mapset at %s? [y/N] " % mapset_dir)
 
         if ans.upper() == "Y" or force:
-            print 'self.runCommand("rm -rf %s" % mapset_dir)'
+            print 'self.runCommand("rm -rf %s" %' + mapset_dir + ')'
             return True 
         return False
 

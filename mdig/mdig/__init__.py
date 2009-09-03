@@ -37,7 +37,11 @@ mdig_exit_codes = {
     "exists": 14,
     "missing_popmod": 15,
     "no_initial_maps": 16,
-    "popmod": 17
+    "popmod": 17,
+    "management":, 39,
+    "strategy":, 40,
+    "treatment": 41,
+    "treatment_effect": 42
 }
 repository = None
 

@@ -89,11 +89,11 @@
         </strategy>
         <strategy name="test_map_area" region="a">
             <description>Test to check map area management works</description>
-            <area>
-                <mapcalc>if(x()&gt;3,1,null())</mapcalc>
-            </area>
             <treatments>
             <t>
+              <area ls="all">
+                <mapcalc>if(x()&gt;3,1,null())</mapcalc>
+              </area>
               <event ls="all" name="r.mdig.survival">
                 <param name="survival"><value>0</value></param>
               </event>
@@ -102,11 +102,11 @@
         </strategy>
         <strategy name="test_dyn_area" region="a">
             <description>Test to check dynamic area management works</description>
-            <area>
-                <mfilter name="r.mdig.outliers"></mfilter>
-            </area>
             <treatments>
             <t>
+              <area ls="all">
+                <mfilter name="r.mdig.outliers"></mfilter>
+              </area>
               <event ls="all" name="r.mdig.survival">
                 <param name="survival"><value>0</value></param>
               </event>

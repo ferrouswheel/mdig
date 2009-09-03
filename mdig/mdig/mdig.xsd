@@ -394,13 +394,6 @@
                 <xsd:complexType>
                     <xsd:sequence>
                         <xsd:element name="description" type="xsd:string" minOccurs="1"/>
-                        <xsd:element name="area" minOccurs="0">
-                            <xsd:complexType>
-                                <xsd:choice>
-                                    <xsd:group ref="mAreaGroup"/>
-                                </xsd:choice>
-                            </xsd:complexType>
-                        </xsd:element>
                         <xsd:element name="treatments" minOccurs="1">
                             <xsd:complexType>
                                 <xsd:sequence>
@@ -428,6 +421,14 @@
 
     <xsd:complexType name="mTreatmentType">
         <xsd:sequence>
+            <xsd:element name="area" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:choice>
+                        <xsd:group ref="mAreaGroup"/>
+                    </xsd:choice>
+                    <xsd:attribute name="ls" type="xsd:IDREF"/>
+                </xsd:complexType>
+            </xsd:element>
             <xsd:choice>
                 <xsd:group ref="mTreatmentGroup"/>
             </xsd:choice>

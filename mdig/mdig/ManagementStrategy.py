@@ -30,6 +30,7 @@ import os
 import time
 import pdb
 
+import mdig
 import GRASSInterface 
 import MDiGConfig
 import OutputFormats
@@ -46,7 +47,7 @@ class ManagementStrategy:
     DispersalModel creates a ManagementStrategy class.
     """
 
-    def __init__(self,node,model):
+    def __init__(self,node,instance):
         self.log = logging.getLogger("mdig.strategy")
         
         self.grass_i = GRASSInterface.getG()
@@ -54,12 +55,10 @@ class ManagementStrategy:
         self.temp_map_names={}
         self.active = False
         self.treatments = None
-
-        self.area_type = None
-        self.treatment_area = None
+        self.instance = instance
 
         if node is None:
-            self.node = self.init_strategy(model)
+            self.node = self.init_strategy(instance.experiment)
         else:
             self.node = node
 
@@ -134,11 +133,76 @@ class ManagementStrategy:
                 result.append(t)
         return result # return an empty list if there are none
 
-    def get_treatment_map(self,replicate):
+class Treatment:
+
+    def __init__(self, strategy, node):
+        self.strategy = strategy
+        self.treatment_type = None
+
+        self.area_type = None
+        self.area_map = None
+        self.area_filter = None
+
+        if node is None:
+            self.node = self.init_treatment(self.strategy)
+        else:
+            # if node is provided then create treatment from xml
+            self.node = node
+        self.index = strategy.get_treatment_index(self)
+        # temporary map name
+        self.area_temp = "___strategy_area_" + self.get_name() + "_" + str(self.index)
+        # temporary map name
+        self.var_temp = "___strategy_var_" + self.get_name() + "_" + str(self.index)
+
+    def __del__(self):
+        GRASSInterface.getG().removeMap(self.area_temp)
+        GRASSInterface.getG().removeMap(self.var_temp)
+
+    def init_treatment(self):
+        # TODO create the required elements with a default global area
+        # and a dummy action
+        raise NotImplementError
+
+    def affects_var(self, var_key):
         """
-        Get the treatment map, generating it dynamically if necessary
-        Returns none if there is none (i.e. the treatment is for the whole
-        region)
+        Return whether the treatment modifies the variable specified by var_key
+        """
+        av_node = self.node.xpath("affectsVariable")
+        if len(av_node) > 0:
+            assert len(av_node) == 1
+            self.treatment_type = "affectsVariable"
+            if av_node[0].attrib["var"] == var_key:
+                return true
+        return false
+
+    def affects_ls(self, ls_id):
+        """
+        Return whether this treatment affects a particular lifestage.
+        Note, this doesn't check whether a treatment that affects a variable, has
+        that variable within the lifestage specified by ls_id.
+
+        Event variable parameters should be checked individually using
+        affects_var()
+        """
+        if ls_id == self.get_ls():
+            return true
+        return false
+
+    def get_ls(self):
+        ls_node = self.node.xpath("event")
+        if len(ls_node) > 0:
+            assert len(ls_node) == 1
+            self.treatment_type = "event"
+            return av_node[0].attrib["ls"]
+        return None
+        
+    def get_treatment_area(self,replicate):
+        """
+        Get the map name representing the treatment area, generating it
+        dynamically if necessary Returns none if there is none (which means the
+        treatment is for the whole region)
+
+        @todo support multiple area maps and take the intersection.
         """
         if self.area_filter is None and \
                 self.area_map is None:
@@ -152,29 +216,75 @@ class ManagementStrategy:
             else:
                 self.area_map = GrassMap(area_node)
         if self.area_filter is not None:
-            #TODO work out what the in and out maps are
-            self.area_filter.run(input_map, output_map, false, rep)
+            self.area_filter.run(replicate.get_previous_map(ls_id), \
+                    self.area_temp, false, replicate)
             return output_map
         if self.area_map is None:
             self.area_map.getMapFilename()
         
-class Treatment:
+    def get_event(self):
+        """
+        If the treatment runs an event at the end of the lifestage, create and
+        return it. Otherwise return None.
+        """
+        if self.event is not None:
+            return self.event
+        e_node = self.node.xpath("event")
+        if len(e_node) > 0:
+            assert len(e_node) == 1
+            self.treatment_type = "event"
+            self.event = Event(e_node)
+        return self.event
 
-    def __init__(self, strategy, node):
-        self.strategy = strategy
-        self.treatment_type = None
-        if node is None:
-            self.node = self.init_treatment(self.strategy)
+    def get_variable_map(self, var_key):
+        """
+        Get the map that represents a variable that is impacted by
+        affectsVarable, for the specific regions withing get_treatment_area.
+        Returns None if this treatment does not affect var_key.
+        """
+        if not self.affects_var(var_key):
+            return None
+        area_mask_map = self.get_treatment_area()
+        if area_mask_map is None:
+            # This means the treatment is applied globally, no need to return a
+            # map
+            return None
+        altered_value = self.get_altered_variable_value(var_key)
+        orig_value = self.strategy.instance.get_var(var_key)
+        GRASSInterface.getG().mapcalc(self.var_temp, \
+                "if(" + area_mask_map + "==1," \
+                + str(altered_value) + "," + str(orig_value))
+        return self.var_temp
+
+    def get_altered_variable_value(self,var_key):
+        """
+        Get the value of the variable after it is altered by affectVariable
+        """
+        if not affects_var(var_key):
+            return None
+        orig_value = self.strategy.instance.get_var(var_key)
+        # handle decrease, increase, ratio
+        av_node = self.node.xpath("affectVariable")
+        # should only be one affectVariable element, and only one child indicating
+        # effect
+        effect = av_node[0][0].tag
+        new_value = orig_value
+        if effect == "decrease":
+            new_value -= float(effect.text)
+        elif effect == "increase":
+            new_value += float(effect.text)
+        elif effect == "ratio":
+            new_value *= float(effect.text)
         else:
-            # if node is provided then create treatment from xml
-            self.node = node
+            self.log.error("Unknown management effect: " + effect)
+            sys.exit(mdig.mdig_exit_codes["treatment_effect"])
+        return new_value
 
-    def affects_var(self, var_key):
 
-        pass
 
-    def get_impact
 
-    def affects_ls(self, ls_id):
-        
+
+
+
+
 
