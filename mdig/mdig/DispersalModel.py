@@ -72,6 +72,7 @@ class DispersalModel(object):
         self.regions={}
         self.lifestages={}
         self.instances = None
+        self.strategies = None
         self.activeInstances = []
         self.lifestage_transition = None
         
@@ -289,6 +290,8 @@ class DispersalModel(object):
                     self.instances.append( \
                            DispersalInstance(node,self,r_id,None,None))
                 # If variables are in experiment:
+                # TODO this needs to be updated to handle management strategy as
+                # the first "variable"
                 else:
                     for i in range(0, num_perms):
                         node = self.get_completed_node(r_id,p["var_keys"],p["var"][i])
@@ -493,6 +496,8 @@ class DispersalModel(object):
                     c[c_detail.tag] = c_detail.text.strip()
                 elif c_detail.tag == "region":
                     c[c_detail.tag] = c_detail.attrib["id"]
+                elif c_detail.tag == "strategy":
+                    c[c_detail.tag] = c_detail.attrib["name"]
                 elif c_detail.tag == "variable":
                     if "variables" not in c.keys():
                         c["variables"] = []
@@ -514,6 +519,10 @@ class DispersalModel(object):
         param_variables=self.get_variable_values()
         param_keys=param_variables.keys()
         total_instances=0
+        strategies=self.get_management_strategies()
+        if len(strategies) > 0:
+            # Add a strategy of doing nothing for comparison
+            strategies = [None, strategies]
         
         for r_id in region_ids:
             permutations[r_id] = {}
@@ -521,6 +530,16 @@ class DispersalModel(object):
             
             p_r["var"] = self.permute_variables(param_variables, param_keys)
             p_r["var_keys"] = param_keys
+            if len(strategies) > 0:
+                p_r["var_keys"].insert(0,"__management_strategy")
+                orig_permutations = p_r["var"]
+                p_r["var"] = []
+                for s in strategies:
+                    if s is None or s.get_region() == r_id:
+                        for p in orig_permutations:
+                            # add the strategy name to each variable permutation
+                            p_r["var"].append([s.get_name].extend(p))
+
             p_r["reps"]=[self.get_num_replicates() for i in p_r["var"]]
             
             # If p_r["var"] length is 0 then there should still be
@@ -533,11 +552,15 @@ class DispersalModel(object):
         
         for c in completed:
             r_id = c["region"]
+            strategy_name = c["strategy"]
             p = permutations[r_id]
             
             variable_list=[]
             for k in param_keys:
                 variable_list.extend([cvar for c_varid, cvar in c["variables"] if c_varid == k])
+
+            if len(strategies) > 0:
+                variable_list.insert(strategy_name)
             
             v_index=-1
             if variable_list in p["var"]:
@@ -546,7 +569,6 @@ class DispersalModel(object):
                 # if there are no variables:
                 v_index = 0
             
-            #pdb.set_trace()
             if v_index != -1:
                 if len(c["reps"]) >= self.get_num_replicates():
                     if len(p["reps"]) == 0:
@@ -562,6 +584,9 @@ class DispersalModel(object):
                         p["reps"].append(self.get_num_replicates() - len(c["reps"]))
                     else:
                         p["reps"][v_index] = p["reps"][v_index] - len(c["reps"])
+            else:
+                self.log.error("Completed instance doesn't match any expected instances")
+                pdb.set_trace()
             
         self.log.debug(permutations)
         return permutations
@@ -861,6 +886,11 @@ class DispersalModel(object):
             t = t + interval
         
     def get_map_output_interval(self,ls_id):
+        """
+        @todo make this obsolete, it's too much trouble to work out the logic
+         for when not all past maps are available and just makes things
+         confusing.
+        """
         nodes = self.xml_model.xpath('/model/output/raster')
             
         for n in nodes:
@@ -873,6 +903,18 @@ class DispersalModel(object):
                 return int(i_node[0].text)
         self.log.warning("No raster output for lifestage " + ls_id)
         return -1
+
+    def get_management_strategies(self):
+        if self.strategies is None:
+            self.strategies = []
+            # Load each strategy
+            s_nodes = self.xml_model.xpath('/model/management/strategy')
+            if len(s_node) == 0:
+                return self.strategies
+            for s_node in s_nodes:
+                m = ManagementStrategy(s_node)
+                self.strategies.append(m)
+        return self.strategies
 
     def init_mapset(self):
         G = GRASSInterface.getG()

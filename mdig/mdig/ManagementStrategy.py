@@ -55,12 +55,15 @@ class ManagementStrategy:
         self.temp_map_names={}
         self.active = False
         self.treatments = None
-        self.instance = instance
+        self.instance = None
 
         if node is None:
             self.node = self.init_strategy(instance.experiment)
         else:
             self.node = node
+
+    def set_instance(self, instance):
+        self.instance = instance
 
     def init_strategy(self, model):
         """ Initialise the xml structure that represents a
@@ -242,6 +245,9 @@ class Treatment:
         affectsVarable, for the specific regions withing get_treatment_area.
         Returns None if this treatment does not affect var_key.
         """
+        if self.strategy.instance is None:
+            self.log.error("Not connected to a DispersalInstance.")
+            return None
         if not self.affects_var(var_key):
             return None
         area_mask_map = self.get_treatment_area()
@@ -261,6 +267,9 @@ class Treatment:
         Get the value of the variable after it is altered by affectVariable
         """
         if not affects_var(var_key):
+            return None
+        if self.strategy.instance is None:
+            self.log.error("Not connected to a DispersalInstance.")
             return None
         orig_value = self.strategy.instance.get_var(var_key)
         # handle decrease, increase, ratio

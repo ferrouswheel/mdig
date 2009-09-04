@@ -481,6 +481,12 @@
                 </xsd:complexType>
             </xsd:element>
             
+            <xsd:element name="strategy" minOccurs="0" maxOccurs="1">
+                <xsd:complexType>
+                    <xsd:attribute name="name" type="xsd:IDREF" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+            
             <xsd:element name="replicates" minOccurs="0" maxOccurs="1">
                 <xsd:complexType>
                     <xsd:sequence>
