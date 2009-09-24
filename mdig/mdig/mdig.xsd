@@ -471,6 +471,12 @@
                     <xsd:attribute name="id" type="xsd:IDREF"/>
                 </xsd:complexType>
             </xsd:element>
+            <xsd:element name="strategy" minOccurs="0" maxOccurs="1">
+                <xsd:complexType>
+                    <xsd:attribute name="name" type="xsd:IDREF" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+            
             <xsd:element name="variable" minOccurs="0" maxOccurs="unbounded">
                 <xsd:complexType>
                     <xsd:simpleContent>
@@ -478,12 +484,6 @@
                             <xsd:attribute name="id" type="xsd:IDREF"/>
                         </xsd:extension>
                     </xsd:simpleContent>
-                </xsd:complexType>
-            </xsd:element>
-            
-            <xsd:element name="strategy" minOccurs="0" maxOccurs="1">
-                <xsd:complexType>
-                    <xsd:attribute name="name" type="xsd:IDREF" use="required"/>
                 </xsd:complexType>
             </xsd:element>
             

@@ -49,23 +49,34 @@ class DispersalInstance:
         self.r_id = r_id
         
         # These could be null if no variables defined in experiment
-        self.variables = p_inst
-        self.var_keys = _var_keys
+        self.variables = list(p_inst)
+        self.var_keys = list(_var_keys)
         
         self.listeners = []
         self.replicates = []
         
-        self.replicates = self._load_replicates()
-        self.activeReps = []
-
         # Control strategy that this instance is associated with, if any
         self.strategy = None
+        # extract management strategy from variables
+        print self.var_keys
+        print self.variables
+        if "__management_strategy" == self.var_keys[0]:
+            self.strategy = self.variables[0]
+            del self.var_keys[0]
+            del self.variables[0]
+        print "============"
+        print self.var_keys
+        print self.variables
+
+        self.replicates = self._load_replicates()
+        self.activeReps = []
         
         self.log.debug("New instance - varkeys: %s vars: %s reps (complete/incomplete/missing): %d/%d/%d" % \
             (self.var_keys,self.variables, \
             len([x for x in self.replicates if x.complete]), \
             len([x for x in self.replicates if not x.complete]), \
             self.experiment.get_num_replicates()-len(self.replicates)) )
+        self.log.debug("Management strategy for instance is %s" % self.strategy)
 
     def _load_replicates(self):
         c = self.experiment.get_completed_permutations()
@@ -76,6 +87,16 @@ class DispersalInstance:
         # If region is among the regions with completed replicates
         for c_i in c:
             if self.r_id == c_i["region"]:
+                if self.strategy is None:
+                    if "strategy" in c_i:
+                        continue
+                else:
+                    if "strategy" in c_i and self.strategy != c_i["strategy"]:
+                        # make sure the management strategy matches
+                        continue
+                    if "strategy" not in c_i:
+                        continue
+                print "rep " + repr(self.variables) + " st " + repr(self.strategy) + " matches c_i " + repr(c_i)
                 if self.var_keys is None:
                     for r in c_i["reps"]:
                         my_rep = Replicate(r,self,r_index)
@@ -85,9 +106,9 @@ class DispersalInstance:
                     variable_list=[]
                     for k in self.var_keys:
                         variable_list.extend(([cvar for c_varid, cvar in c_i["variables"] if c_varid == k]))
-
                     if self.variables == variable_list:
                         for r in c_i["reps"]:
+                            print "loading replicate with variables " + repr(self.variables)
                             my_rep = Replicate(r,self,r_index)
                             reps.append(my_rep)
                             r_index += 1
@@ -419,6 +440,8 @@ class DispersalInstance:
                         self.log.warning("Missing map for time=" + str(t))
                     
                 filename = self.experiment.get_name() + "_region_" + self.r_id
+                if self.strategy is not None:
+                    filename += "_strategy_" + self.strategy
                 if self.var_keys is not None:
                     for v in self.var_keys:
                         filename += "_" + v + "_"

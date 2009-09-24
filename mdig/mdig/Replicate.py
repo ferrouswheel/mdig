@@ -230,6 +230,7 @@ class Replicate:
         self.log.log(logging.INFO, "Replicate %d/%d of exp. instance [var_keys: %s, vars: %s ]"\
                      % (self.instance.replicates.index(self) + 1, exp.get_num_replicates(),\
                         repr(self.instance.var_keys),repr(self.instance.variables)))
+        self.log.log(logging.INFO, "Management strategy is %s" % self.instance.strategy)
         
         self.instance.set_region()
         

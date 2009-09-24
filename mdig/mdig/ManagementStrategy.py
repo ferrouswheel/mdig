@@ -55,7 +55,7 @@ class ManagementStrategy:
         self.temp_map_names={}
         self.active = False
         self.treatments = None
-        self.instance = None
+        self.instance = instance 
 
         if node is None:
             self.node = self.init_strategy(instance.experiment)
@@ -215,7 +215,7 @@ class Treatment:
             mfilter_node = self.node.xpath("mfilter")
             if len(area_node) == 1:
                 self.area_type = "filter"
-                    self.area_filter = Event(mfilter_node)
+                self.area_filter = Event(mfilter_node)
             else:
                 self.area_map = GrassMap(area_node)
         if self.area_filter is not None:

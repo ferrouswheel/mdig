@@ -54,6 +54,7 @@ from Analysis import Analysis
 from Replicate import Replicate
 from GrassMap import GrassMap
 from LifestageTransition import LifestageTransition
+from ManagementStrategy import ManagementStrategy
 
 _debug=0
 
@@ -522,7 +523,7 @@ class DispersalModel(object):
         strategies=self.get_management_strategies()
         if len(strategies) > 0:
             # Add a strategy of doing nothing for comparison
-            strategies = [None, strategies]
+            strategies = [None] + strategies
         
         for r_id in region_ids:
             permutations[r_id] = {}
@@ -535,10 +536,14 @@ class DispersalModel(object):
                 orig_permutations = p_r["var"]
                 p_r["var"] = []
                 for s in strategies:
-                    if s is None or s.get_region() == r_id:
+                    if s is None:
                         for p in orig_permutations:
                             # add the strategy name to each variable permutation
-                            p_r["var"].append([s.get_name].extend(p))
+                            p_r["var"].append([None] + p)
+                    elif s.get_region() == r_id:
+                        for p in orig_permutations:
+                            # add the strategy name to each variable permutation
+                            p_r["var"].append([s.get_name()] + p)
 
             p_r["reps"]=[self.get_num_replicates() for i in p_r["var"]]
             
@@ -552,7 +557,11 @@ class DispersalModel(object):
         
         for c in completed:
             r_id = c["region"]
-            strategy_name = c["strategy"]
+            strategy_name = None
+            if "strategy" in c:
+                strategy_name = c["strategy"]
+                if strategy_name == "None":
+                    strategy_name = None
             p = permutations[r_id]
             
             variable_list=[]
@@ -560,7 +569,7 @@ class DispersalModel(object):
                 variable_list.extend([cvar for c_varid, cvar in c["variables"] if c_varid == k])
 
             if len(strategies) > 0:
-                variable_list.insert(strategy_name)
+                variable_list.insert(0,strategy_name)
             
             v_index=-1
             if variable_list in p["var"]:
@@ -730,9 +739,16 @@ class DispersalModel(object):
         
         xpath_str = '/model/instances/completed[region[@id="%s"]]' % r_id
         
+        strat=0
         if var_keys is not None:
             for i in range(0,len(var_keys)):
-                xpath_str += '[variable[@id="%s"]="%s"]' % (var_keys[i],var[i])
+                if var_keys[i] != '__management_strategy':
+                    xpath_str += '[variable[@id="%s"]="%s"]' % (var_keys[i],var[i])
+                elif var[i] is not None:
+                    strat=1
+                    xpath_str += '[strategy[@name="%s"]]' % (var[i])
+        if strat==0:
+            xpath_str+='[not(strategy)]'
         
         completed_node=self.xml_model.xpath(xpath_str)
         
@@ -744,7 +760,6 @@ class DispersalModel(object):
         else:
             self.log.warning("Multiple instances with same region and variable values, returning first")
             completed_node = completed_node[0]
-            
         
         return completed_node
         
@@ -764,11 +779,15 @@ class DispersalModel(object):
         region_node = lxml.etree.SubElement(completed_node,"region",{"id":r_id})
         if var_keys is not None:
             for i in range(len(var_keys)):
-                var_node = lxml.etree.SubElement(completed_node,"variable",{"id":var_keys[i]})
-                if isinstance(var[i],str):
-                    var_node.text = var[i]
+                if var_keys[i] == '__management_strategy':
+                    if var[i] is not None:
+                        lxml.etree.SubElement(completed_node,"strategy",{"name":var[i]})
                 else:
-                    var_node.text = repr(var[i])
+                    var_node = lxml.etree.SubElement(completed_node,"variable",{"id":var_keys[i]})
+                    if isinstance(var[i],str):
+                        var_node.text = var[i]
+                    else:
+                        var_node.text = repr(var[i])
             
         self.log.debug('Added "completed" node: ' + repr(completed_node))
     
@@ -909,10 +928,11 @@ class DispersalModel(object):
             self.strategies = []
             # Load each strategy
             s_nodes = self.xml_model.xpath('/model/management/strategy')
-            if len(s_node) == 0:
+            if len(s_nodes) == 0:
                 return self.strategies
             for s_node in s_nodes:
-                m = ManagementStrategy(s_node)
+                # Create strategy unassigned to any instance
+                m = ManagementStrategy(s_node,None)
                 self.strategies.append(m)
         return self.strategies
 

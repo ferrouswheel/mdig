@@ -18,7 +18,7 @@
 #
 __all__ = ["Analysis","DispersalInstance","DispersalModel","Displayer","Event",
         "GRASSInterface","GrassMap","ImageShow","Lifestage","MDiGConfig",
-        "OutputFormats","Region.py","Replicate.py"]
+        "OutputFormats","Region.py","Replicate.py","ManagementStratey"]
 
 import configobj
 
@@ -38,8 +38,8 @@ mdig_exit_codes = {
     "missing_popmod": 15,
     "no_initial_maps": 16,
     "popmod": 17,
-    "management":, 39,
-    "strategy":, 40,
+    "management": 39,
+    "strategy": 40,
     "treatment": 41,
     "treatment_effect": 42
 }
