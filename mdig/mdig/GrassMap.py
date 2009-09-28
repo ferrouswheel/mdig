@@ -112,11 +112,15 @@ class GrassMap:
         # TODO implement conversion between raster/vector
         raise NotImplementedError, "changeMapType: Method not implemented"
             
-    def getMapFilename(self):
+    def getMapFilename(self, pop_map=None):
         """
         Retrieve filename for the map. If this is the first time retrieving the
         map filename, or if the map is set to refresh itself every time it is
         retrieved, then generate it.
+
+        @param ls The lifestage to base dynamic maps on. So that if the map is created
+        by mapcalc, LS_MAP will be replaced with the latest map from that
+        lifestage.
         """
         if self.filename is None or self.refresh:
             # If the map needs to be refreshed and has already been initiated
@@ -124,7 +128,8 @@ class GrassMap:
             if self.refresh and self.ready:
                 GRASSInterface.getG().destructMap(self.filename)
             
-            self.filename, self.map_type = GRASSInterface.getG().initMap(self)
+            self.filename, self.map_type = GRASSInterface.getG().initMap(self,  
+                    pop_map)
             self.ready = True
         return self.filename
     

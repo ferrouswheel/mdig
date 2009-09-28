@@ -213,18 +213,19 @@ class Lifestage:
         
         self.log.debug("No appropriate interval range found for interval %d" % interval )
         
-    def run(self, interval, rep, temp_map_names):
+    def run(self, interval, rep, temp_map_names, strategy = None):
+        grass_i = GRASSInterface.getG()
+        # Run through events for this lifestage
         for e in self.events:
             mask = ""
             p_intervals = self.getPhenologyIntervals(rep.instance.r_id)
             if len(p_intervals) > 1:
                 mask = self.getPhenologyMask(interval,rep.instance.r_id)
-                GRASSInterface.getG().makeMask(mask)
+                grass_i.makeMask(mask)
             
             e.run(temp_map_names[0], temp_map_names[1], rep, self.populationBased)
             
             if len(p_intervals) > 1:
-                grass_i = GRASSInterface.getG()
                 # Remove mask because we can't access anythin outside of it using mapcalc
                 grass_i.makeMask(None)
                 
@@ -238,6 +239,25 @@ class Lifestage:
                     grass_i.mapcalc(temp_map_names[1],"if(isnull(%s) && isnull(%s),%s,%s)" % (mask,temp_map_names[1],temp_map_names[0],temp_map_names[1]) )
                     
             temp_map_names.reverse()
+
+        # Get management strategy treatments that affect
+        # this lifestage.
+        treatments = []
+        if strategy is not None:
+            treatments = strategy.get_treatments_for_ls(self.name)
+        for t in treatments:
+            self.log.debug("Applying treatment %d for strategy %s" % \
+                    (t.index, strategy.get_name()))
+            if strategy.get_name() in ("test_dyn_area"):
+                pdb.set_trace()
+            t_area = t.get_treatment_area(rep)
+            self.log.debug("Treatment area map is %s" % t_area)
+            # Mask so that only treatment area is affected
+            grass_i.makeMask(t_area)
+            t.get_event().run(temp_map_names[0], temp_map_names[1], rep, False)
+            temp_map_names.reverse()
+            # Remove mask when done
+            grass_i.makeMask(None)
     
 #   def setPopulationBased(self,value):
 #       if value == 0:

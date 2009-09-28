@@ -266,7 +266,7 @@ class GRASSInterface:
             #mapNames.append(self.initMap(m))
         #return mapNames
     
-    def initMap(self,bmap):
+    def initMap(self,bmap,pop_map=None):
         name=None
         map_type=None
         bmap.xml_map_type
@@ -283,7 +283,16 @@ class GRASSInterface:
             map_type="raster"
         elif bmap.xml_map_type == "mapcalc":
             name=self.generateMapName()
-            self.mapcalc(name,bmap.value)
+            # Substitute POP_MAP by the latest map of that LS.
+            mapcalc_expr = bmap.value
+            if pop_map is None:
+                if mapcalc_expr.find("POP_MAP") != -1:
+                    self.log.error("No map passed to initMap to substitute " \
+                            + "POP_MAP variable")
+                    pdb.set_trace()
+            else:
+                mapcalc_expr.replace("POP_MAP", pop_map)
+            self.mapcalc(name,mapcalc_expr)
             map_type="raster"
         bmap.ready = True
         return name, map_type
@@ -439,7 +448,7 @@ class GRASSInterface:
         if mask_name is None:
             self.runCommand('r.mask -r none');
         else:
-            self.runCommand('r.mask -o INPUT=%s' % mask_name);
+            self.runCommand('r.mask -o input=%s' % mask_name);
     
     def checkMap(self,file_name):
         # Have to check all possible types of maps

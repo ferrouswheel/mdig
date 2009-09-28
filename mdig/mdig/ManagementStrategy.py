@@ -34,9 +34,10 @@ import mdig
 import GRASSInterface 
 import MDiGConfig
 import OutputFormats
-from GrassMap import MapMissingException
+from GrassMap import GrassMap, MapMissingException
 from GRASSInterface import SetRegionException
 import DispersalModel
+from Event import Event
 
 class ManagementStrategy:
     """
@@ -96,14 +97,17 @@ class ManagementStrategy:
     def _load_treatments(self):
         """
         Initialise treatments list
+        @TODO sort according to treatment index
         """
         self.treatments = []
         self.log.debug("Parsing management strategies")
         treatment_nodes=self.node.xpath("treatments/t")
-        self.log.debug("%d treatments found for strategy %s" %
-                (len(treatment_nodes),self.get_description()) )
+        self.log.debug("%d treatments found for strategy %s (%s)" %
+                (len(treatment_nodes),self.get_name(),self.get_description()) )
+        index_counter = 0
         for t_node in treatment_nodes:
-            self.treatments.append(Treatment(self,t_node))
+            self.treatments.append(Treatment(self,t_node,index_counter))
+            index_counter += 1
 
     def get_treatments(self):
         """
@@ -138,24 +142,27 @@ class ManagementStrategy:
 
 class Treatment:
 
-    def __init__(self, strategy, node):
+    def __init__(self, strategy, node, t_index):
         self.strategy = strategy
         self.treatment_type = None
 
         self.area_type = None
         self.area_map = None
+        self.area_ls = None
         self.area_filter = None
+
+        self.event = None
 
         if node is None:
             self.node = self.init_treatment(self.strategy)
         else:
             # if node is provided then create treatment from xml
             self.node = node
-        self.index = strategy.get_treatment_index(self)
+        self.index = t_index
         # temporary map name
-        self.area_temp = "___strategy_area_" + self.get_name() + "_" + str(self.index)
+        self.area_temp = "___strategy_"  + self.strategy.get_name() + "_area_t_" + str(self.index)
         # temporary map name
-        self.var_temp = "___strategy_var_" + self.get_name() + "_" + str(self.index)
+        self.var_temp = "___strategy_" + self.strategy.get_name() + "_var_t_" + str(self.index)
 
     def __del__(self):
         GRASSInterface.getG().removeMap(self.area_temp)
@@ -188,15 +195,15 @@ class Treatment:
         affects_var()
         """
         if ls_id == self.get_ls():
-            return true
-        return false
+            return True
+        return False
 
     def get_ls(self):
         ls_node = self.node.xpath("event")
         if len(ls_node) > 0:
             assert len(ls_node) == 1
             self.treatment_type = "event"
-            return av_node[0].attrib["ls"]
+            return ls_node[0].attrib["ls"]
         return None
         
     def get_treatment_area(self,replicate):
@@ -212,18 +219,21 @@ class Treatment:
             area_node = self.node.xpath("area")
             if len(area_node) == 0: return None
             assert(len(area_node) == 1)
-            mfilter_node = self.node.xpath("mfilter")
-            if len(area_node) == 1:
+            mfilter_node = area_node[0].xpath("mfilter")
+            self.area_ls = area_node[0].attrib['ls']
+            if len(mfilter_node) == 1:
                 self.area_type = "filter"
-                self.area_filter = Event(mfilter_node)
+                self.area_filter = Event(mfilter_node[0])
             else:
-                self.area_map = GrassMap(area_node)
+                # If it's not an mfilter it must be a map
+                self.area_type = "map"
+                self.area_map = GrassMap(area_node[0])
         if self.area_filter is not None:
-            self.area_filter.run(replicate.get_previous_map(ls_id), \
-                    self.area_temp, false, replicate)
+            self.area_filter.run(replicate.get_previous_map(self.area_ls), \
+                    self.area_temp, replicate, False)
             return output_map
-        if self.area_map is None:
-            self.area_map.getMapFilename()
+        if self.area_map is not None:
+            return self.area_map.getMapFilename(replicate.get_previous_map(self.area_ls))
         
     def get_event(self):
         """
@@ -236,7 +246,7 @@ class Treatment:
         if len(e_node) > 0:
             assert len(e_node) == 1
             self.treatment_type = "event"
-            self.event = Event(e_node)
+            self.event = Event(e_node[0])
         return self.event
 
     def get_variable_map(self, var_key):

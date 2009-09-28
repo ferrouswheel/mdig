@@ -92,6 +92,7 @@
             <treatments>
             <t>
               <area ls="all">
+                <!-- Need LS_MAP substitution -->
                 <mapcalc>if(x()&gt;3,1,null())</mapcalc>
               </area>
               <event ls="all" name="r.mdig.survival">

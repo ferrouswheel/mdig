@@ -923,6 +923,13 @@ class DispersalModel(object):
         self.log.warning("No raster output for lifestage " + ls_id)
         return -1
 
+    def get_management_strategy(self, name):
+        s = self.get_management_strategies()
+        for x in s:
+            if x.get_name() == name:
+                return x
+        return None
+        
     def get_management_strategies(self):
         if self.strategies is None:
             self.strategies = []

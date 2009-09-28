@@ -268,6 +268,8 @@ class Replicate:
         
         period = exp.get_period()
         self.log.debug("Simulation period is " + str(period))
+
+        strategy = exp.get_management_strategy(self.instance.strategy)
         
         for t in range(period[0],period[1]+1):
             self.current_t = t
@@ -302,8 +304,10 @@ class Replicate:
                     ls_key = lifestage.name
                     self.log.log(logging.INFO, 'Interval %d - Lifestage "%s"' \
                             ' started',current_interval,ls_key)
-                    lifestage.run(current_interval,self,self.temp_map_names[ls_key])
+                    lifestage.run(current_interval,self,self.temp_map_names[ls_key],strategy)
                 self.log.log(logging.INFO, 'Interval %d completed.',current_interval)
+
+            # Run any treatments related 
             
             # Run Analyses for each lifestage
             for ls_id in ls_keys:
