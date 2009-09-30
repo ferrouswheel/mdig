@@ -8,6 +8,7 @@ import mdig
 from mdig import MDiGConfig
 from mdig import GRASSInterface
 from mdig import ROCAnalysis
+from mdig import Displayer
 from mdig.DispersalModel import DispersalModel
 
 from datetime import datetime, timedelta
@@ -93,7 +94,6 @@ class RunAction(Action):
     def __init__(self):
         Action.__init__(self)
         self.time = None
-        self.show_monitor = False
 
         self.parser = OptionParser(version=mdig.version_string,
                 description = RunAction.description,
@@ -158,7 +158,7 @@ class RunAction(Action):
             self.log.debug("Maximum end time %s", self.end_time.ctime())
         self.log.debug("Executing simulation")
         
-        if self.show_monitor:
+        if self.options.show_monitor:
             mdig_model.add_listener(Displayer.Displayer())
         if self.options.rerun_instances:
             self.log.debug("Resetting model so all replicates will be rerun")

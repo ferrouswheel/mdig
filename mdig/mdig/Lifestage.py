@@ -248,16 +248,22 @@ class Lifestage:
         for t in treatments:
             self.log.debug("Applying treatment %d for strategy %s" % \
                     (t.index, strategy.get_name()))
-            if strategy.get_name() in ("test_dyn_area"):
-                pdb.set_trace()
-            t_area = t.get_treatment_area(rep)
+            t_area = t.get_treatment_area(rep,temp_map_names[0])
             self.log.debug("Treatment area map is %s" % t_area)
             # Mask so that only treatment area is affected
             grass_i.makeMask(t_area)
             t.get_event().run(temp_map_names[0], temp_map_names[1], rep, False)
-            temp_map_names.reverse()
             # Remove mask when done
             grass_i.makeMask(None)
+            # Now we have to combine the unmasked region from the original map with the
+            # the alteration made by the treatment on the masked area.
+            if t_area is not None:
+                self.tempmap = "wibble_foss"
+                grass_i.mapcalc(self.tempmap,'if(isnull("%s"),"%s","%s")' %
+                        (t_area, temp_map_names[0], temp_map_names[1]))
+                grass_i.copyMap(self.tempmap, temp_map_names[1], overwrite=True)
+            temp_map_names.reverse()
+            print temp_map_names
     
 #   def setPopulationBased(self,value):
 #       if value == 0:

@@ -303,7 +303,7 @@ class GRASSInterface:
         """
         #if grassmap.temporary and grassmap.ready:
         self.removeMap(fn) # grassmap.getMapFilename())
-            
+
     def createCoordMap(self,name,value):
         #v.in.ascii
         #v.to.rast input=name output=name [use=string] [column=name] [layer=value] [value=value] [rows=value] [--overwrite]
@@ -390,7 +390,7 @@ class GRASSInterface:
             else:
                 self.log.warning("Region didn't define resolution")
             
-            self.log.debug("Setting region using extents %s and res %f",
+            self.log.debug("Setting region using extents %s and res %s",
                     repr(extent_string), repr(res))
             ret = self.runCommand(command_string + extent_string + res_str)
         if ret is None:
@@ -441,8 +441,8 @@ class GRASSInterface:
         
             
     def mapcalc(self,map_name,expression):
-        map_name='\\"' + map_name + '\\"' 
-        self.runCommand('r.mapcalc "%s=%s"' % (map_name, expression));
+        map_name='"' + map_name + '"' 
+        self.runCommand("r.mapcalc '%s=%s'" % (map_name, expression));
     
     def makeMask(self,mask_name):
         if mask_name is None:

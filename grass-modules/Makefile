@@ -11,7 +11,8 @@ SUBDIRS = \
 	r.mdig.filter.class \
 	r.mdig.stats \
 	r.mdig.ros \
-	r.mdig.localspread
+	r.mdig.localspread \
+        r.mdig.outliers
 		
 include $(MODULE_TOPDIR)/include/Make/Dir.make
 

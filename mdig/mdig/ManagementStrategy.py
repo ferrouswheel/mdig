@@ -150,6 +150,7 @@ class Treatment:
         self.area_map = None
         self.area_ls = None
         self.area_filter = None
+        self.area_filter_output = None
 
         self.event = None
 
@@ -160,9 +161,9 @@ class Treatment:
             self.node = node
         self.index = t_index
         # temporary map name
-        self.area_temp = "___strategy_"  + self.strategy.get_name() + "_area_t_" + str(self.index)
+        self.area_temp = "x___strategy_"  + self.strategy.get_name() + "_area_t_" + str(self.index)
         # temporary map name
-        self.var_temp = "___strategy_" + self.strategy.get_name() + "_var_t_" + str(self.index)
+        self.var_temp = "x___strategy_" + self.strategy.get_name() + "_var_t_" + str(self.index)
 
     def __del__(self):
         GRASSInterface.getG().removeMap(self.area_temp)
@@ -206,13 +207,14 @@ class Treatment:
             return ls_node[0].attrib["ls"]
         return None
         
-    def get_treatment_area(self,replicate):
+    def get_treatment_area(self,replicate,dist_map):
         """
         Get the map name representing the treatment area, generating it
         dynamically if necessary Returns none if there is none (which means the
         treatment is for the whole region)
 
         @todo support multiple area maps and take the intersection.
+        @todo clean up filter map when Treatment is deleted
         """
         if self.area_filter is None and \
                 self.area_map is None:
@@ -229,11 +231,14 @@ class Treatment:
                 self.area_type = "map"
                 self.area_map = GrassMap(area_node[0])
         if self.area_filter is not None:
-            self.area_filter.run(replicate.get_previous_map(self.area_ls), \
+            if self.area_filter_output is not None:
+                GRASSInterface.getG().removeMap(self.area_filter_output)
+            self.area_filter.run( dist_map, \
                     self.area_temp, replicate, False)
-            return output_map
+            self.area_filter_output = self.area_temp
+            return self.area_filter_output
         if self.area_map is not None:
-            return self.area_map.getMapFilename(replicate.get_previous_map(self.area_ls))
+            return self.area_map.getMapFilename(dist_map) #replicate.get_previous_map(self.area_ls))
         
     def get_event(self):
         """

@@ -305,6 +305,7 @@ class Replicate:
                     self.log.log(logging.INFO, 'Interval %d - Lifestage "%s"' \
                             ' started',current_interval,ls_key)
                     lifestage.run(current_interval,self,self.temp_map_names[ls_key],strategy)
+                    print self.temp_map_names
                 self.log.log(logging.INFO, 'Interval %d completed.',current_interval)
 
             # Run any treatments related 

@@ -1,0 +1,140 @@
+#!/bin/sh
+############################################################################
+#
+# MODULE:	r.mdig.outliers
+# AUTHOR(S):	Joel Pitt
+# PURPOSE:	Find contiguous populations that are less than a certain area.
+#
+#  Copyright 2009 Joel Pitt, Fruition Technology
+#
+#  This file is part of Modular Dispersal In GIS.
+#
+#  Modular Dispersal In GIS is free software: you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or (at your
+#  option) any later version.
+#
+#  Modular Dispersal In GIS is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+#  Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License along
+#  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
+
+#%Module
+#% description: Find contiguous regions that are less than a certain maximum area.
+#%End
+#%option
+#% key: input
+#% gisprompt: old,cell,raster
+#% type: string
+#% description: Raster map to check for outliers
+#% required : yes
+#%end
+#%option
+#% key: output
+#% gisprompt: cell,raster
+#% type: string
+#% description: Output raster map
+#% required : yes
+#%end
+#%option
+#% key: max
+#% type: integer
+#% description: Maximum size for a clump of cells to be considered an 'outlier'
+#% required : yes
+#%end
+#%flag
+#% key: i
+#% description: Invert output map (i.e. filter out outliers, leave the rest)
+#%end
+#%flag
+#% key: o
+#% description: overwrite output (does nothing, only for r.mdig support, currently always overwrites)
+#%end
+#%flag
+#% key: b
+#% description: boolean (does nothing, only for r.mdig support)
+#%end
+
+if test "$GISBASE" = ""; then
+ echo "You must be in GRASS GIS to run this program." >&2
+ exit 1
+fi
+
+if [ "$1" != "@ARGS_PARSED@" ] ; then
+  exec g.parser "$0" "$@"
+fi
+     
+eval `g.gisenv`
+: ${GISBASE?} ${GISDBASE?} ${LOCATION_NAME?} ${MAPSET?}
+LOCATION=$GISDBASE/$LOCATION_NAME/$MAPSET
+
+# what to do in case of user break:
+exitprocedure()
+{
+ echo "User break!"
+ #shall we delete any TMP files?
+ exit 1
+}
+# shell check for user break (signal list: trap -l)
+trap "exitprocedure" 2 3 15
+
+program=`basename $0`
+
+#test:
+if [ ! $GIS_OPT_INPUT ]
+then
+ echo "Please provide an input name"
+ exit 1
+fi
+if [ ! $GIS_OPT_OUTPUT ]
+then
+ echo "Please provide an output name"
+ exit 1
+fi
+
+#echo "Using seed value $GIS_OPT_seed"
+if [ ! $GIS_OPT_SEED ]
+then
+ echo "Setting seed from date"
+ GIS_OPT_seed=`date +%s`
+fi
+
+#check if input file exists
+#if test -f $LOCATION/cell/$GIS_OPT_input
+if [ -z `g.findfile elem=cell file="$GIS_OPT_INPUT" | grep ^file | cut -f2 -d=` ] ; then
+    echo "<$GIS_OPT_INPUT> does not exist! Aborting."
+    exit 1
+fi
+
+TEMP_FILE_NAME=r.mdig.outliers.temp
+TEMP_STATS_FN=`g.tempfile pid=$$`
+TEMP_RECODE_FN=`g.tempfile pid=$$`
+
+r.clump input="$GIS_OPT_INPUT" output=${TEMP_FILE_NAME} --o
+r.stats -na ${TEMP_FILE_NAME} > ${TEMP_STATS_FN}
+if [ $GIS_FLAG_I -eq 1 ] ; then
+    cat ${TEMP_STATS_FN} | awk '{if ($2 > '${GIS_OPT_MAX}') { print $1 ":" $1 ":1:1" }}' \
+        > ${TEMP_RECODE_FN}
+else
+    cat ${TEMP_STATS_FN} | awk '{if ($2 <= '${GIS_OPT_MAX}') { print $1 ":" $1 ":1:1" }}' \
+        > ${TEMP_RECODE_FN}
+fi
+
+if [ ! -s ${TEMP_RECODE_FN} ]; then
+#echo "file is empty"
+# No outliers found!
+    r.mapcalc "${GIS_OPT_OUTPUT}"='null()'
+else
+#echo "file has content"
+    cat ${TEMP_RECODE_FN} | r.recode input=${TEMP_FILE_NAME} output=${GIS_OPT_OUTPUT} --o
+fi
+
+g.remove rast=$TEMP_FILE_NAME > /dev/null
+rm ${TEMP_RECODE_FN}
+
+#echo "Done."
