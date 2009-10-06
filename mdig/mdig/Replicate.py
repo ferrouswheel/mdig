@@ -308,8 +308,6 @@ class Replicate:
                     print self.temp_map_names
                 self.log.log(logging.INFO, 'Interval %d completed.',current_interval)
 
-            # Run any treatments related 
-            
             # Run Analyses for each lifestage
             for ls_id in ls_keys:
                 l = self.instance.experiment.get_lifestage(ls_id)

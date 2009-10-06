@@ -144,6 +144,7 @@ class Treatment:
 
     def __init__(self, strategy, node, t_index):
         self.strategy = strategy
+        self.log = logging.getLogger("mdig.treatment")
         self.treatment_type = None
 
         self.area_type = None
@@ -178,13 +179,13 @@ class Treatment:
         """
         Return whether the treatment modifies the variable specified by var_key
         """
-        av_node = self.node.xpath("affectsVariable")
+        av_node = self.node.xpath("affectVariable")
         if len(av_node) > 0:
             assert len(av_node) == 1
-            self.treatment_type = "affectsVariable"
+            self.treatment_type = "affectVariable"
             if av_node[0].attrib["var"] == var_key:
-                return true
-        return false
+                return True
+        return False
 
     def affects_ls(self, ls_id):
         """
@@ -207,7 +208,7 @@ class Treatment:
             return ls_node[0].attrib["ls"]
         return None
         
-    def get_treatment_area(self,replicate,dist_map):
+    def get_treatment_area(self,replicate):
         """
         Get the map name representing the treatment area, generating it
         dynamically if necessary Returns none if there is none (which means the
@@ -230,6 +231,7 @@ class Treatment:
                 # If it's not an mfilter it must be a map
                 self.area_type = "map"
                 self.area_map = GrassMap(area_node[0])
+        dist_map = replicate.temp_map_names[self.area_ls][0]
         if self.area_filter is not None:
             if self.area_filter_output is not None:
                 GRASSInterface.getG().removeMap(self.area_filter_output)
@@ -254,51 +256,52 @@ class Treatment:
             self.event = Event(e_node[0])
         return self.event
 
-    def get_variable_map(self, var_key):
+    def get_variable_map(self, var_key, var_val, replicate):
         """
         Get the map that represents a variable that is impacted by
         affectsVarable, for the specific regions withing get_treatment_area.
         Returns None if this treatment does not affect var_key.
         """
-        if self.strategy.instance is None:
-            self.log.error("Not connected to a DispersalInstance.")
-            return None
+#if self.strategy.instance is None:
+#            self.log.error("Not connected to a DispersalInstance.")
+#            return None
         if not self.affects_var(var_key):
             return None
-        area_mask_map = self.get_treatment_area()
+        area_mask_map = self.get_treatment_area(replicate)
         if area_mask_map is None:
             # This means the treatment is applied globally, no need to return a
             # map
             return None
-        altered_value = self.get_altered_variable_value(var_key)
-        orig_value = self.strategy.instance.get_var(var_key)
+        altered_value = self.get_altered_variable_value(var_key,var_val)
+        orig_value = var_val
         GRASSInterface.getG().mapcalc(self.var_temp, \
                 "if(" + area_mask_map + "==1," \
                 + str(altered_value) + "," + str(orig_value))
         return self.var_temp
 
-    def get_altered_variable_value(self,var_key):
+    def get_altered_variable_value(self,var_key,var_val):
         """
         Get the value of the variable after it is altered by affectVariable
         """
-        if not affects_var(var_key):
+        if not self.affects_var(var_key):
             return None
-        if self.strategy.instance is None:
-            self.log.error("Not connected to a DispersalInstance.")
-            return None
-        orig_value = self.strategy.instance.get_var(var_key)
+        #if self.strategy.instance is None:
+            #self.log.error("Not connected to a DispersalInstance.")
+            #return None
+        orig_value = var_val #self.strategy.instance.get_var(var_key)
         # handle decrease, increase, ratio
         av_node = self.node.xpath("affectVariable")
         # should only be one affectVariable element, and only one child indicating
         # effect
         effect = av_node[0][0].tag
-        new_value = orig_value
+        effect_amount = av_node[0][0].text
+        new_value = float(orig_value)
         if effect == "decrease":
-            new_value -= float(effect.text)
+            new_value -= float(effect_amount)
         elif effect == "increase":
-            new_value += float(effect.text)
+            new_value += float(effect_amount)
         elif effect == "ratio":
-            new_value *= float(effect.text)
+            new_value *= float(effect_amount)
         else:
             self.log.error("Unknown management effect: " + effect)
             sys.exit(mdig.mdig_exit_codes["treatment_effect"])

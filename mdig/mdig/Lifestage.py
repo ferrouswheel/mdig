@@ -248,7 +248,7 @@ class Lifestage:
         for t in treatments:
             self.log.debug("Applying treatment %d for strategy %s" % \
                     (t.index, strategy.get_name()))
-            t_area = t.get_treatment_area(rep,temp_map_names[0])
+            t_area = t.get_treatment_area(rep)
             self.log.debug("Treatment area map is %s" % t_area)
             # Mask so that only treatment area is affected
             grass_i.makeMask(t_area)
