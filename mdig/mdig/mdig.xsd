@@ -377,6 +377,7 @@
     <xsd:complexType name="variableType">
         <xsd:sequence>
             <xsd:element name="value" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="novalue" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element name="range" minOccurs="0" maxOccurs="unbounded">
                 <xsd:complexType>
                     <xsd:attribute name="start" type="xsd:decimal"/>

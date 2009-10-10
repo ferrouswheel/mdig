@@ -128,7 +128,10 @@ class Event:
                 if instance_value is not None:
                     p[p_name]=instance_value
                 else:
-                    self.log.error("Variable ID doesn't exist in variable list")
+                    self.log.info("Variable has None value for this instance")
+                    pdb.set_trace()
+                    # remove from param list
+                    del p[p_name]
             elif value[0] == "SEED":
                 p[p_name]=rep.random.randint(-2.14748e+09,2.14748e+09)
             elif value[0] == "INPUT":

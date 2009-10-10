@@ -625,6 +625,8 @@ class DispersalModel(object):
             for node in variable:
                 if node.tag=='value':
                     var_values[i].append(string.strip(node.text,"'"))
+                elif node.tag=='novalue':
+                    var_values[i].append(None)
                 elif node.tag=='range':
                     j=int(node.attrib['start'])
                     k=int(node.attrib['end'])
