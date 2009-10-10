@@ -244,7 +244,7 @@ class Lifestage:
         # this lifestage.
         treatments = []
         if strategy is not None:
-            treatments = strategy.get_treatments_for_ls(self.name)
+            treatments = strategy.get_treatments_for_ls(self.name,rep.current_t)
         for t in treatments:
             self.log.debug("Applying treatment %d for strategy %s" % \
                     (t.index, strategy.get_name()))

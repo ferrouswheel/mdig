@@ -94,6 +94,18 @@ class ManagementStrategy:
         desc_node=self.node.xpath("description")
         desc_node[0].text = desc
 
+    def get_delay(self):
+        desc_node=self.node.xpath("delay")
+        if len(desc_node) == 0:
+            return 0
+        return int(desc_node[0].text)
+
+    def set_delay(self, desc):
+        desc_node=self.node.xpath("delay")
+        if len(desc_node) == 0:
+            delay_node = lxml.etree.SubElement(self.node,'delay')
+        desc_node[0].text = repr(desc)
+
     def _load_treatments(self):
         """
         Initialise treatments list
@@ -120,21 +132,25 @@ class ManagementStrategy:
                 raise
         return self.treatments
 
-    def get_treatments_for_param(self,var_key):
+    def get_treatments_for_param(self,var_key,timestep):
         """
         Get any treatments that affect the parameter specified by var_key
         """
         result = []
+        if timestep < self.instance.experiment.get_period()[0] + self.get_delay():
+            return result
         for t in self.get_treatments():
             if t.affects_var(var_key):
                 result.append(t)
         return result # return an empty list if there are none
         
-    def get_treatments_for_ls(self,ls_id):
+    def get_treatments_for_ls(self,ls_id,timestep):
         """
         Get any treatments that affect the lifestage specified by ls_id
         """
         result = []
+        if timestep < self.instance.experiment.get_period()[0] + self.get_delay():
+            return result
         for t in self.get_treatments():
             if t.affects_ls(ls_id):
                 result.append(t)

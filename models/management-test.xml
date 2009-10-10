@@ -98,7 +98,6 @@
             <t>
               <area ls="all">
                 <!-- POP_MAP substituted by latest map in ls attribute -->
-                <!--<mapcalc>if(x()&gt;3,1,null())</mapcalc>-->
                 <mapcalc>if(x()&gt;3,1,null())</mapcalc>
               </area>
               <event ls="all" name="r.mdig.survival">

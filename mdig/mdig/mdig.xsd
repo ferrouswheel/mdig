@@ -394,6 +394,7 @@
                 <xsd:complexType>
                     <xsd:sequence>
                         <xsd:element name="description" type="xsd:string" minOccurs="1"/>
+                        <xsd:element name="delay" type="xsd:integer" minOccurs="0"/>
                         <xsd:element name="treatments" minOccurs="1">
                             <xsd:complexType>
                                 <xsd:sequence>

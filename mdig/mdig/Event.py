@@ -107,12 +107,14 @@ class Event:
 
         s_name = rep.instance.strategy
         s = rep.instance.experiment.get_management_strategy(s_name)
+        # TODO strategies should be pre initialised with instances
+        s.set_instance(rep.instance)
         for p_name,value in p.items():
             if value[0] == "VAR":
                 instance_value = rep.instance.get_var(value[1])
                 treatments = []
                 if s is not None:
-                    treatments = s.get_treatments_for_param(value[1])
+                    treatments = s.get_treatments_for_param(value[1],rep.current_t)
                     self.log.info("treatments is " + repr(treatments))
                     # TODO support blending of multiple treatments on param
                     # (move below operations from treatment to strategy)

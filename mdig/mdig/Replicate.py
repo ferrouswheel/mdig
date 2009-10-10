@@ -270,6 +270,8 @@ class Replicate:
         self.log.debug("Simulation period is " + str(period))
 
         strategy = exp.get_management_strategy(self.instance.strategy)
+        # TODO strategies should be pre initialised with instances
+        strategy.set_instance(self.instance)
         
         for t in range(period[0],period[1]+1):
             self.current_t = t
