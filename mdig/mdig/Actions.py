@@ -55,6 +55,12 @@ class Action:
                 action="store_const",
                 dest="output_level",
                 const="quiet")
+        self.parser.add_option("-r","--repository",
+                help="Set model repository location",
+                action="store",
+                type="string",
+                dest="repository",
+                default=None)
     
     def act_on_options(self,options):
         if options.output_level == "debug":
@@ -67,6 +73,9 @@ class Action:
         elif options.output_level == "quiet":
             self.output_level = "quiet"
             logging.getLogger("mdig").setLevel(logging.ERROR)
+        elif options.repository is not None:
+            self.repository = options.repository 
+            self.log.debug("Repository location manually set to " + options.repository)
 
     def get_description(self):
         pass
@@ -364,10 +373,11 @@ class ListAction(Action):
         self.preload = False
 
     def add_options(self):
-        pass
+        Action.add_options(self)
 
-    def parse_options(self,options):
-        pass
+    def parse_options(self,argv):
+        (self.options, args) = self.parser.parse_args(argv[1:])
+        Action.act_on_options(self,self.options)
 
     def do_me(self,mdig_model):
         from textwrap import TextWrapper
