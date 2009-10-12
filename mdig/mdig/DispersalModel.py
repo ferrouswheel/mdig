@@ -153,7 +153,8 @@ class DispersalModel(object):
         
         try:
             self.log.debug("Parsing %s", model_file)
-            xmltree = lxml.etree.parse(sock)
+            parser = lxml.etree.XMLParser(remove_blank_text=True)
+            xmltree = lxml.etree.parse(sock,parser)
         except lxml.etree.XMLSyntaxError, e:
             self.log.error("Error parsing %s", model_file)
             if hasattr(e,"error_log"):
@@ -291,11 +292,10 @@ class DispersalModel(object):
                     self.instances.append( \
                            DispersalInstance(node,self,r_id,None,None))
                 # If variables are in experiment:
-                # TODO this needs to be updated to handle management strategy as
-                # the first "variable"
                 else:
                     for i in range(0, num_perms):
                         node = self.get_completed_node(r_id,p["var_keys"],p["var"][i])
+                        # NOTE instance will parse management strategy out of var_keys
                         self.instances.append( \
                            DispersalInstance(node,self,r_id,p["var_keys"],p["var"][i]))
             
@@ -562,11 +562,17 @@ class DispersalModel(object):
                 strategy_name = c["strategy"]
                 if strategy_name == "None":
                     strategy_name = None
+
             p = permutations[r_id]
             
             variable_list=[]
             for k in param_keys:
                 variable_list.extend([cvar for c_varid, cvar in c["variables"] if c_varid == k])
+            # If there are variables with None as their value, replace this with
+            # NoneType so that matching works correctly
+            for i in range(0,len(variable_list)):
+                if variable_list[i] == "None":
+                    variable_list[i] = None
 
             if len(strategies) > 0:
                 variable_list.insert(0,strategy_name)
@@ -598,6 +604,7 @@ class DispersalModel(object):
                 pdb.set_trace()
             
         self.log.debug(permutations)
+        pdb.set_trace()
         return permutations
         
     def permute_variables(self, variables, keys):
@@ -631,7 +638,7 @@ class DispersalModel(object):
                     j=int(node.attrib['start'])
                     k=int(node.attrib['end'])
                     step=int(node.attrib['step'])
-                    var_values[i] = range(j,k+1,step)
+                    var_values[i].extend([str(x) for x in range(j,k+1,step)])
         return var_values
                     
     def get_description(self):
@@ -733,7 +740,8 @@ class DispersalModel(object):
         replicate_node=lxml.etree.SubElement(replicates_node,'replicate')
         
         # Add new line so that completed section doesn't produce insanely long lines
-        replicate_node.text = "\n"
+        # This breaks pretty printing
+        #replicate_node.text = "\n"
         
         return replicate_node
         
@@ -1117,6 +1125,24 @@ class DispersalModel(object):
             ls_ids = self.get_lifestage_ids()
             for id in ls_ids:
                 self.get_lifestage(id).clean_up_maps()
+
+    def _indent_xml(self, elem, level=0):
+        """ in-place prettyprint formatter - used because lxml one
+            is picky about existing whitespace.
+        """
+        i = "\n" + level*"  "
+        if len(elem):
+            if not elem.text or not elem.text.strip():
+                elem.text = i + "  "
+            if not elem.tail or not elem.tail.strip():
+                elem.tail = i
+            for elem in elem:
+                indent(elem, level+1)
+            if not elem.tail or not elem.tail.strip():
+                elem.tail = i
+        else:
+            if level and (not elem.tail or not elem.tail.strip()):
+                elem.tail = i
             
     def save_model(self, filename=None):
         if filename is None:
@@ -1137,7 +1163,10 @@ class DispersalModel(object):
                 shutil.copyfile(filename, self.backup_filename)
                 os.remove(filename)
         
-            self.xml_model.write(filename)
+            fo = open(filename,'w')
+#print >>fo, self._indent_xml(self.xml_model)
+            print >>fo, lxml.etree.tostring(self.xml_model,pretty_print=True)
+            fo.close()
         except OSError, e:
             self.log.error("Could save updated version of model file")
             self.log.error(e)

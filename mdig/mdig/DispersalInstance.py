@@ -96,22 +96,29 @@ class DispersalInstance:
                         continue
                     if "strategy" not in c_i:
                         continue
-                print "rep " + repr(self.variables) + " st " + repr(self.strategy) + " matches c_i " + repr(c_i)
                 if self.var_keys is None:
                     for r in c_i["reps"]:
                         my_rep = Replicate(r,self,r_index)
                         reps.append(my_rep)
                         r_index += 1
+#print "rep " + repr(self.variables) + " st " + repr(self.strategy) + " matches c_i " + repr(c_i)
                 else:
                     variable_list=[]
                     for k in self.var_keys:
                         variable_list.extend(([cvar for c_varid, cvar in c_i["variables"] if c_varid == k]))
+                    # If there are variables with None as their value, replace this with
+                    # NoneType so that matching works correctly
+                    for i in range(0,len(variable_list)):
+                        if variable_list[i] == "None":
+                            variable_list[i] = None
+
                     if self.variables == variable_list:
                         for r in c_i["reps"]:
                             print "loading replicate with variables " + repr(self.variables)
                             my_rep = Replicate(r,self,r_index)
                             reps.append(my_rep)
                             r_index += 1
+# print "rep " + repr(self.variables) + " st " + repr(self.strategy) + " matches c_i " + repr(c_i)
         return reps
 
     def run(self):
