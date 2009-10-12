@@ -384,8 +384,10 @@ class ListAction(Action):
         import re
         indent_amount = 30
         models = mdig.repository.get_models()
-        print "Models in the MDiG repository"
-        print "-----------------------------"
+        title_str = "Models in MDiG repository @ " + mdig.repository.location
+        print "-"*len(title_str)
+        print title_str
+        print "-"*len(title_str)
         ms=models.keys()[:]
         ms.sort()
         for m in ms:
