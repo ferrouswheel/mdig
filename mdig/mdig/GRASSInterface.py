@@ -446,7 +446,7 @@ class GRASSInterface:
     
     def makeMask(self,mask_name):
         if mask_name is None:
-            self.runCommand('r.mask -r none');
+            self.runCommand('r.mask -r');
         else:
             self.runCommand('r.mask -o input=%s' % mask_name);
     

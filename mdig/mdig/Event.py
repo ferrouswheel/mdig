@@ -108,7 +108,8 @@ class Event:
         s_name = rep.instance.strategy
         s = rep.instance.experiment.get_management_strategy(s_name)
         # TODO strategies should be pre initialised with instances
-        s.set_instance(rep.instance)
+        if s is not None:
+            s.set_instance(rep.instance)
         for p_name,value in p.items():
             if value[0] == "VAR":
                 instance_value = rep.instance.get_var(value[1])
@@ -129,7 +130,6 @@ class Event:
                     p[p_name]=instance_value
                 else:
                     self.log.info("Variable has None value for this instance")
-                    pdb.set_trace()
                     # remove from param list
                     del p[p_name]
             elif value[0] == "SEED":
