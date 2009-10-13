@@ -459,6 +459,7 @@
             <xsd:element name="increase" type="xsd:float"/>
             <xsd:element name="decrease" type="xsd:float"/>
             <xsd:element name="ratio" type="xsd:float"/>
+            <xsd:element name="value" type="xsd:float"/>
         </xsd:choice>
         <xsd:attribute name="prob" type="xsd:float"/>
         <xsd:attribute name="sequence" type="xsd:integer"/>

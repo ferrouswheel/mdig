@@ -604,7 +604,6 @@ class DispersalModel(object):
                 pdb.set_trace()
             
         self.log.debug(permutations)
-        pdb.set_trace()
         return permutations
         
     def permute_variables(self, variables, keys):

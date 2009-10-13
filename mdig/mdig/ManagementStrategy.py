@@ -318,6 +318,8 @@ class Treatment:
             new_value += float(effect_amount)
         elif effect == "ratio":
             new_value *= float(effect_amount)
+        elif effect == "value":
+            new_value = float(effect_amount)
         else:
             self.log.error("Unknown management effect: " + effect)
             sys.exit(mdig.mdig_exit_codes["treatment_effect"])
