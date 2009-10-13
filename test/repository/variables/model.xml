@@ -29,7 +29,7 @@
     <lifestage name="all" populationBased="false">
       <initialDistribution region="a">
         <sites>
-          <s x="1" y="0"/>
+          <s x="1" y="0" count="100"/>
           <s x="2" y="0"/>
           <s x="3" y="0"/>
           <s x="4" y="0"/>
@@ -53,6 +53,9 @@
         <param name="agem">
           <variable id="agem">
             <value>2</value>
+            <!-- Although this tests novalue successfully, the maps
+            won't expand. Without agem, localspread thinks that the map is a
+            population map. -->
             <novalue/>
           </variable>
         </param>
