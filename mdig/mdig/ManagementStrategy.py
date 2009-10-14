@@ -163,11 +163,8 @@ class Treatment:
         self.log = logging.getLogger("mdig.treatment")
         self.treatment_type = None
 
-        self.area_type = None
-        self.area_map = None
         self.area_ls = None
-        self.area_filter = None
-        self.area_filter_output = None
+        self.areas = None
 
         self.event = None
 
@@ -178,9 +175,9 @@ class Treatment:
             self.node = node
         self.index = t_index
         # temporary map name
-        self.area_temp = "x___strategy_"  + self.strategy.get_name() + "_area_t_" + str(self.index)
+        self.area_temp = None
         # temporary map name
-        self.var_temp = "x___strategy_" + self.strategy.get_name() + "_var_t_" + str(self.index)
+        self.var_temp = "x_t___strategy_" + self.strategy.get_name() + "_var_t_" + str(self.index)
 
     def __del__(self):
         GRASSInterface.getG().removeMap(self.area_temp)
@@ -223,40 +220,64 @@ class Treatment:
             self.treatment_type = "event"
             return ls_node[0].attrib["ls"]
         return None
-        
-    def get_treatment_area(self,replicate):
-        """
-        Get the map name representing the treatment area, generating it
-        dynamically if necessary Returns none if there is none (which means the
-        treatment is for the whole region)
 
-        @todo support multiple area maps and take the intersection.
-        @todo clean up filter map when Treatment is deleted
+    def get_treatment_area_map(self, replicate):
+        """ Ensure all TreatmentAreas are initialised and then return
+            a freshly merged version.
+            Returns none if there is no area specified (which means the
+            treatment is for the whole region)
         """
-        if self.area_filter is None and \
-                self.area_map is None:
-            area_node = self.node.xpath("area")
-            if len(area_node) == 0: return None
-            assert(len(area_node) == 1)
-            mfilter_node = area_node[0].xpath("mfilter")
-            self.area_ls = area_node[0].attrib['ls']
-            if len(mfilter_node) == 1:
-                self.area_type = "filter"
-                self.area_filter = Event(mfilter_node[0])
+        if self.areas is None:
+            self.area_node = self.node.xpath("area")
+            if len(self.area_node) == 0: return None
+            assert(len(self.area_node) == 1)
+            self.area_node = self.area_node[0]
+            self.areas = []
+            self.area_ls = self.area_node.attrib['ls']
+            for a in self.area_node:
+                if isinstance(a.tag, basestring):
+                    # Ignore comment nodes
+                    self.areas.append(TreatmentArea(a,self,len(self.areas)))
+        return self._merge_areas(replicate)
+
+    def _merge_areas(self, replicate):
+        """
+            Merge all the TreatmentArea maps based on the combine attribute
+            ("and" or "or" them)
+        """
+        generate = False
+        # Check whether the component Areas change between calls
+        if self.area_temp is not None:
+            for a in self.areas:
+                if a.is_dynamic():
+                    generate = True
+                    break
+            if not generate:
+                return self.area_temp
+        else:
+            self.area_temp = "x_t___strategy_"  + self.strategy.get_name() + \
+                              "_area_t_" + str(self.index)
+        # What operation should we use to merge maps? Should be 'and' or 'or'
+        if 'combine' not in self.area_node.attrib:
+            operation = "and"
+        else:
+            operation = self.area_node.attrib['combine']
+        assert(operation == "and" or operation == "or")
+
+        g = GRASSInterface.getG()
+        g.removeMap(self.area_temp)
+        merge_str = "if("
+        for a in self.areas:
+            if operation == "and":
+                merge_str += "!isnull(%s)" % a.get_treatment_area(replicate)
+                merge_str += " && "
             else:
-                # If it's not an mfilter it must be a map
-                self.area_type = "map"
-                self.area_map = GrassMap(area_node[0])
-        dist_map = replicate.temp_map_names[self.area_ls][0]
-        if self.area_filter is not None:
-            if self.area_filter_output is not None:
-                GRASSInterface.getG().removeMap(self.area_filter_output)
-            self.area_filter.run( dist_map, \
-                    self.area_temp, replicate, False)
-            self.area_filter_output = self.area_temp
-            return self.area_filter_output
-        if self.area_map is not None:
-            return self.area_map.getMapFilename(dist_map) #replicate.get_previous_map(self.area_ls))
+                merge_str += "!isnull(%s)" % a.get_treatment_area(replicate)
+                merge_str += " || "
+        # remove trailing operator
+        merge_str = merge_str[:-4] + ",1,null())" 
+        g.mapcalc(self.area_temp,merge_str)
+        return self.area_temp
         
     def get_event(self):
         """
@@ -283,7 +304,7 @@ class Treatment:
 #            return None
         if not self.affects_var(var_key):
             return None
-        area_mask_map = self.get_treatment_area(replicate)
+        area_mask_map = self.get_treatment_area_map(replicate)
         if area_mask_map is None:
             # This means the treatment is applied globally, no need to return a
             # map
@@ -325,8 +346,63 @@ class Treatment:
             sys.exit(mdig.mdig_exit_codes["treatment_effect"])
         return new_value
 
+class TreatmentArea:
 
+    def __init__(self, node, treatment, a_index):
+        """ Node is the xml node defining the TreatmentArea
+            treatment is the parent Treatment this area is for
+            a_index is the area index for creating the temp map name
+        """
+        self.treatment = treatment
+        self.node = node
+        self.area = None
+        self.area_filter_output = None
+        self.index = a_index
+        # temporary map name
+        self.area_temp = "x_t___strategy_"  + self.treatment.strategy.get_name() + \
+            "_area_t_" + str(self.treatment.index) + "_" +  str(self.index)
+        self.init_from_xml()
 
+    def __del__(self):
+        if self.area_filter_output is not None:
+            GRASSInterface.getG().removeMap(self.area_filter_output)
+
+    def init_from_xml(self):
+        if self.node.tag == "mfilter":
+            self.area = Event(self.node)
+        else:
+            # If it's not an mfilter it must be a map
+            self.area = GrassMap(self.node)
+
+    def is_dynamic(self):
+        """ Return whether this Area changes each timestep or not
+            (Due to using a filter or mapcalc)
+        """
+        if isinstance(self.area, Event):
+            return True
+        else:
+            return self.area.refresh
+
+    def get_treatment_area(self,replicate):
+        """
+        Get the map name representing the treatment area, generating it
+        dynamically if necessary.
+        """
+        if isinstance(self.area, Event):
+            if self.area_filter_output is not None:
+                GRASSInterface.getG().removeMap(self.area_filter_output)
+            dist_map = replicate.temp_map_names[self.treatment.area_ls][0]
+            self.area.run( dist_map, \
+                    self.area_temp, replicate, False)
+            self.area_filter_output = self.area_temp
+            return self.area_filter_output
+        if isinstance(self.area, GrassMap):
+            replacements = {
+                "POP_MAP": replicate.temp_map_names[self.treatment.area_ls][0],
+                "START_MAP": replicate.initial_maps[self.treatment.area_ls].getMapFilename()
+            }
+            return self.area.getMapFilename(replacements)
+        
 
 
 

@@ -266,10 +266,9 @@ class GRASSInterface:
             #mapNames.append(self.initMap(m))
         #return mapNames
     
-    def initMap(self,bmap,pop_map=None):
+    def initMap(self,bmap,map_replacements={"POP_MAP": None, "START_MAP": None}):
         name=None
         map_type=None
-        bmap.xml_map_type
         if bmap.xml_map_type == "sites":
             name=self.generateMapName()
             self.createCoordMap(name,bmap.value)
@@ -283,17 +282,21 @@ class GRASSInterface:
             map_type="raster"
         elif bmap.xml_map_type == "mapcalc":
             name=self.generateMapName()
-            # Substitute POP_MAP by the latest map of that LS.
             mapcalc_expr = bmap.value
-            if pop_map is None:
-                if mapcalc_expr.find("POP_MAP") != -1:
-                    self.log.error("No map passed to initMap to substitute " \
-                            + "POP_MAP variable")
+            for k in map_replacements:
+                # Substitute k by the given map:
+                if map_replacements[k] is None:
+                    if mapcalc_expr.find(k) != -1:
+                        self.log.error("No map passed to initMap to substitute " \
+                                + k + " variable in mapcalc expression")
                     pdb.set_trace()
-            else:
-                mapcalc_expr.replace("POP_MAP", pop_map)
+                else:
+                    mapcalc_expr.replace(k, map_replacements[k])
             self.mapcalc(name,mapcalc_expr)
             map_type="raster"
+        else:
+            self.log.error("Unknown GrassMap type for initialisation")
+            pdb.set_trace()
         bmap.ready = True
         return name, map_type
     

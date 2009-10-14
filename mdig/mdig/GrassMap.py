@@ -71,39 +71,39 @@ class GrassMap:
         """
         Parse map node XML
         """
-        for node in self.xml_node:
-            # If node is "sites" then it contains a list of coordinates
-            if node.tag == "sites":
-                self.xml_map_type = "sites"
-                self.value=[]
-                for s in node:
-                    x=int(s.attrib["x"])
-                    y=int(s.attrib["y"])
-                    if "count" in s.attrib.keys():
-                        count=float(s.attrib["count"])
-                    else:
-                        count=1
-                    self.value.append( (x,y,count) )
-            # If node is "map" it contains the name of an existing map
-            elif node.tag == "map":
-                    
-                self.xml_map_type="name"
-                self.value=node.text
-                self.filename = node.text
-                # Don't need to check map exists because it is done in __init__
-            
-            # If node is "value" it creates a raster map with a constant value
-            elif node.tag == "value":
-                self.xml_map_type="value"
-                self.value=node.text
+        node = self.xml_node
+        # If node is "sites" then it contains a list of coordinates
+        if node.tag == "sites":
+            self.xml_map_type = "sites"
+            self.value=[]
+            for s in node:
+                x=int(s.attrib["x"])
+                y=int(s.attrib["y"])
+                if "count" in s.attrib.keys():
+                    count=float(s.attrib["count"])
+                else:
+                    count=1
+                self.value.append( (x,y,count) )
+        # If node is "map" it contains the name of an existing map
+        elif node.tag == "map":
                 
-            # If node is "mapcalc" it computes the result of a mapcalc expression
-            elif node.tag == "mapcalc":
-                self.xml_map_type="mapcalc"
-                self.value=node.text
-                if 'refresh' in node.attrib.keys():
-                    if node.attrib['refresh'].lower() == "true":
-                        self.refresh = True
+            self.xml_map_type="name"
+            self.value=node.text
+            self.filename = node.text
+            # Don't need to check map exists because it is done in __init__
+        
+        # If node is "value" it creates a raster map with a constant value
+        elif node.tag == "value":
+            self.xml_map_type="value"
+            self.value=node.text
+            
+        # If node is "mapcalc" it computes the result of a mapcalc expression
+        elif node.tag == "mapcalc":
+            self.xml_map_type="mapcalc"
+            self.value=node.text
+            if 'refresh' in node.attrib.keys():
+                if node.attrib['refresh'].lower() == "true":
+                    self.refresh = True
 
     def changeMapType(self,maptype,value):
         """
@@ -112,14 +112,14 @@ class GrassMap:
         # TODO implement conversion between raster/vector
         raise NotImplementedError, "changeMapType: Method not implemented"
             
-    def getMapFilename(self, pop_map=None):
+    def getMapFilename(self, map_replacements=None):
         """
         Retrieve filename for the map. If this is the first time retrieving the
         map filename, or if the map is set to refresh itself every time it is
         retrieved, then generate it.
 
         @param ls The lifestage to base dynamic maps on. So that if the map is created
-        by mapcalc, LS_MAP will be replaced with the latest map from that
+        by mapcalc, POP_MAP will be replaced with the latest map from that
         lifestage.
         """
         if self.filename is None or self.refresh:
@@ -128,8 +128,11 @@ class GrassMap:
             if self.refresh and self.ready:
                 GRASSInterface.getG().destructMap(self.filename)
             
-            self.filename, self.map_type = GRASSInterface.getG().initMap(self,  
-                    pop_map)
+            if map_replacements is not None:
+                self.filename, self.map_type = GRASSInterface.getG().initMap(self,  
+                    map_replacements)
+            else:
+                self.filename, self.map_type = GRASSInterface.getG().initMap(self)
             self.ready = True
         return self.filename
     

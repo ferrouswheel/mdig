@@ -79,7 +79,7 @@ class Region:
 		bmap = None
 		bmap_node = self.xml_node.xpath('background')
 		if len(bmap_node) > 0:
-			bmap=GrassMap(bmap_node[0])
+			bmap=GrassMap(bmap_node[0][0])
 		
 		return bmap
 	

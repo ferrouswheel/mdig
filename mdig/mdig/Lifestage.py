@@ -82,7 +82,7 @@ class Lifestage:
             r_id=i_node.attrib["region"]
             # This should never happen:
             #if r_id not in self.initial_maps.keys():
-            self.initial_maps[r_id]=GrassMap(i_node)
+            self.initial_maps[r_id]=GrassMap(i_node[0])
         
         # Init phenology bins
         self.initPhenologyBins()
@@ -248,7 +248,7 @@ class Lifestage:
         for t in treatments:
             self.log.debug("Applying treatment %d for strategy %s" % \
                     (t.index, strategy.get_name()))
-            t_area = t.get_treatment_area(rep)
+            t_area = t.get_treatment_area_map(rep)
             self.log.debug("Treatment area map is %s" % t_area)
             # Mask so that only treatment area is affected
             grass_i.makeMask(t_area)

@@ -278,7 +278,7 @@
             </xsd:element>
         </xsd:sequence>
     </xsd:group>
-    
+
     <xsd:complexType name="analysisFileType">
         <xsd:simpleContent>
         <xsd:extension base="xsd:string">
@@ -417,18 +417,42 @@
             <xsd:choice>
                 <xsd:group ref="mapGroupType"/>
             </xsd:choice>
-            <xsd:element name="mfilter" type="eventType"/>
+            <xsd:element name="mfilter" type="filterEventType"/>
         </xsd:choice>
+    </xsd:group>
+
+    <xsd:complexType name="filterEventType">
+        <xsd:sequence>
+            <xsd:group ref="filterParamGroup"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="sequence" type="xsd:integer"/>
+    </xsd:complexType>
+
+    <xsd:group name="filterParamGroup">
+        <xsd:sequence>
+            <xsd:element name="param" minOccurs="0" maxOccurs="unbounded" type="parameterType"/>
+            <xsd:element name="input" minOccurs="0" maxOccurs="unbounded" type="xsd:string"/>
+            <xsd:element name="flag" minOccurs="0" maxOccurs="unbounded" type="flagType"/>
+        </xsd:sequence>
     </xsd:group>
 
     <xsd:complexType name="mTreatmentType">
         <xsd:sequence>
             <xsd:element name="area" minOccurs="0">
                 <xsd:complexType>
-                    <xsd:choice>
+                    <xsd:sequence>
                         <xsd:group ref="mAreaGroup"/>
-                    </xsd:choice>
+                    </xsd:sequence>
                     <xsd:attribute name="ls" type="xsd:IDREF"/>
+                    <xsd:attribute name="combine" use="optional" default="and">
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:string">
+                              <xsd:enumeration value="and"/>
+                              <xsd:enumeration value="or"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:attribute>
                 </xsd:complexType>
             </xsd:element>
             <xsd:choice>
