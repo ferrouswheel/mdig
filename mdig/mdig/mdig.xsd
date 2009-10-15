@@ -442,7 +442,7 @@
             <xsd:element name="area" minOccurs="0">
                 <xsd:complexType>
                     <xsd:sequence>
-                        <xsd:group ref="mAreaGroup"/>
+                        <xsd:group ref="mAreaGroup" maxOccurs="unbounded"/>
                     </xsd:sequence>
                     <xsd:attribute name="ls" type="xsd:IDREF"/>
                     <xsd:attribute name="combine" use="optional" default="and">

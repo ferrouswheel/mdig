@@ -291,7 +291,7 @@ class GRASSInterface:
                                 + k + " variable in mapcalc expression")
                     pdb.set_trace()
                 else:
-                    mapcalc_expr.replace(k, map_replacements[k])
+                    mapcalc_expr = mapcalc_expr.replace(k, map_replacements[k])
             self.mapcalc(name,mapcalc_expr)
             map_type="raster"
         else:
