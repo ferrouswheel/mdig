@@ -108,6 +108,22 @@
             </t>
             </treatments>
         </strategy>
+        <strategy name="event_fixed_input_area" region="a">
+            <description>Test to check filter with fixed input works</description>
+            <treatments>
+            <t>
+              <area ls="all">
+                <mfilter name="r.mdig.survival">
+                    <param name="survival"><value>100</value></param>
+                    <input>rightnull@PERMANENT</input>
+                </mfilter>
+              </area>
+              <event ls="all" name="r.mdig.survival">
+                <param name="survival"><value>0</value></param>
+              </event>
+            </t>
+            </treatments>
+        </strategy>
     </management>
     
 </model>

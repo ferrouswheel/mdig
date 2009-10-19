@@ -135,3 +135,132 @@ vim ~/.mdig/mdig.conf
 ./mdig.py list
 ./mdig.py list > ~/testout
 ./mdig.py list
+g.list rast
+g.list vect
+g.mremove --help
+g.mremove rast=*
+g.mremove -f rast=*
+r.mdig.localspread --help
+./mdig.py list --help
+./mdig.py --help
+cd ../mdig/mdig/
+./mdig.py --help
+./mdig.py list --help
+./mdig.py list -D
+./mdig.py run --help
+ld -la ~/.mdig/*.png
+ls -la ~/.mdig/*.png
+rm ~/.mdig/*.png
+ls -la ~/.mdig/
+rm ~/.mdig/Thumbs.db*
+ls -la ~/.mdig/
+./mdig.py run --help
+
+./mdig.py run -D management_delay
+r.mask --help
+r.mask -r
+./mdig.py run -D management_delay
+g.list rast
+g.mremove rast=[23]*
+g.mremove -f rast=[23]*
+g.list rast
+d.mon x0
+d.rast management_delay_region_a_shape_186_rep_1_ls_all_3
+d.rast management_delay_region_a_shape_186_rep_1_ls_all_0
+d.rast management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_2
+d.rast management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_3
+d.rast management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_4
+d.rast management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_5
+./mdig.py run -Da management_delay
+g.list rast
+d.rast management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_4
+d.rast management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_3
+d.rast management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_2
+d.rast management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_1
+r.mdig.localspread --help
+r.mdig.agepop --help
+d.erase
+./mdig.py list 
+./mdig.py run -D variables
+ls
+rm *.png
+ls
+rm host\=localhost\,dbname\=grass\,user\=pittj2/
+ls host\=localhost\,dbname\=grass\,user\=pittj2/
+rm -R host\=localhost\,dbname\=grass\,user\=pittj2/
+ls
+bzr status
+bzr commit -m "Delay and no value variables working"
+bzr push
+./mdig.py run --help
+./mdig.py list
+./mdig.py list --help
+./mdig.py list -r /media/tera/gis_dump/mdig_simulations/
+bzr commit -m "Add repository location command for all commands"
+bzr push
+./mdig.py list -r /media/tera/gis_dump/mdig_simulations/
+./mdig.py list
+bzr commit -m "Make list action print the location of repository"
+bzr push
+./mdig.py run -D variables
+bzr status
+bzr commit -m "Pretty print xml and fix parsing of completed novalue replicates"
+bzr push
+./mdig.py run -D variables
+./mdig.py list
+./mdig.py run -D management_alter_variable
+bzr status
+bzr revert test/repository/management_alter_variable/model.xml
+bzr revert ../test/repository/management_alter_variable/model.xml
+bzr add ../test/repository/variables/
+bzr status
+bzr add "add variable test model and support management strategies' ability to set a variable to a particular value"
+bzr add -m "add variable test model and support management strategies' ability to set a variable to a particular value"
+bzr commit -m "add variable test model and support management strategies' ability to set a variable to a particular value"
+bzr push
+g.list rast
+d.rast variables_region_a_agem_None_d1_5_rep_1_ls_all_5
+d.rast variables_region_a_agem_None_d1_5_rep_1_ls_all_4
+d.erase
+d.rast variables_region_a_agem_None_d1_5_rep_1_ls_all_4
+d.rast variables_region_a_agem_2_d1_5_rep_1_ls_all_5
+d.rast variables_region_a_agem_2_d1_3_rep_1_ls_all_5
+d.erase
+g.mapsets -p
+./mdig.py run -Dm variables
+g.list rast
+r.mdig.localspread input=variables_region_a_agem_None_d1_5_rep_1_ls_all_5 output=test --help
+r.mdig.localspread input=variables_region_a_agem_None_d1_5_rep_1_ls_all_5 output=test spread=5
+d.rast test
+r.mdig.localspread input=variables_region_a_agem_None_d1_5_rep_1_ls_all_5 output=test spread=5 -b
+r.mdig.localspread input=variables_region_a_agem_None_d1_5_rep_1_ls_all_5 output=test spread=5 -b -o
+d.rast test
+bzr revert ../test/repository/variables/model.xml
+bzr commit -m "Alter test so that population based spread works... happens due to no agem being specified"
+./mdig.py run -Dm variables
+bzr revert ../test/repository/variables/model.xml
+bzr push
+grep -rn initMap mdig/*
+grep -rn getMapFilename mdig/*
+g.manual r.mapcalc
+./mdig.py run -Dm management_event
+pydoc lxml.etree
+./mdig.py run -Dm management_event
+grep -rn GrassMap mdig/*
+grep -rn GrassMap( mdig/*
+grep -rn GrassMap\( mdig/*
+./mdig.py run -Dm management_event
+bzr status
+bzr revert ../test/repository/management_event/model.xml
+bzr commit -m "Refactor TreatmentAreas into their own class, allow multiple areas to combined to define overall treatment area"
+bzr push
+./mdig.py run -Dm management_area_combine
+./mdig.py run -Dma management_area_combine
+g.manual r.mapcalc
+g.mapset PERMANENT
+r.mapcalc "rightnull=if(x()<0,1,null())"
+g.region -p
+g.mapsets -p
+g.mapset -p
+g.mapset -l
+g.list rast

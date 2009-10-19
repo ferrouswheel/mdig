@@ -309,6 +309,8 @@
             </xsd:element>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="input" type="xsd:string" use="optional" default="input"/>
+        <xsd:attribute name="output" type="xsd:string" use="optional" default="output"/>
         <xsd:attribute name="sequence" type="xsd:integer"/>
     </xsd:complexType>
     
@@ -345,8 +347,9 @@
         <xsd:choice>
             <xsd:group ref="valueOrVariableGroup"/>
             <xsd:element name="seed"/>
-            <xsd:element name="inputMap"/>
-            <xsd:element name="outputMap"/>
+             <!-- Obsolete due to input and output attributes of event -->
+             <!-- <xsd:element name="inputMap"/> -->
+             <!-- <xsd:element name="outputMap"/> -->
         </xsd:choice>
         <xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>
@@ -426,6 +429,8 @@
             <xsd:group ref="filterParamGroup"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="input" type="xsd:string" use="optional" default="input"/>
+        <xsd:attribute name="output" type="xsd:string" use="optional" default="output"/>
         <xsd:attribute name="sequence" type="xsd:integer"/>
     </xsd:complexType>
 

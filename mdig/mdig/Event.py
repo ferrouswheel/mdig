@@ -38,6 +38,7 @@ class Event:
     def __init__(self, node):
         self.log = logging.getLogger("mdig.event")
         self.xml_node = node
+        self.fixed_input = None
 
     def get_command(self):
         """ Get the module/command name """
@@ -46,6 +47,22 @@ class Event:
             return self.xml_node.attrib["name"]
         else:
             self.log.error('Event has no "name" attribute')
+
+    def _get_attrib(self,x,default=""):
+        i = default
+        if x in self.xml_node.attrib:
+            i = self.xml_node.attrib[x]
+        return i
+
+    def get_input_name(self):
+        input = self._get_attrib("input",default="input")
+        if input == "": return None
+        return input
+
+    def get_output_name(self):
+        output = self._get_attrib("output",default="output")
+        if output == "": return None
+        return output
 
     def uses_random_seed(self):
         """ Check if the module has a parameter that uses a random seed """
@@ -85,11 +102,10 @@ class Event:
                             a=("VAR",v.attrib["id"])
                         elif v.tag == "seed":
                             a=("SEED",None)
-                        elif v.tag == "inputMap":
-                            a=("INPUT",None)
-                        elif v.tag == "outputMap":
-                            a=("OUTPUT",None)
                     params[node.attrib["name"]]=a
+                elif node.tag == "input":
+                    # Default input that doesn't change, only for Treatments
+                    self.fixed_input = node.text.strip()
         return params
 
     def run(self,in_name,out_name,rep,is_pop):
@@ -99,11 +115,17 @@ class Event:
         """
         p=self.get_params(is_pop,None)
         
-        # Default parameter names for input and output maps if none explicitly defined:
-        if ("INPUT",None) not in p.values():
-            p["input"]=in_name
-        if ("OUTPUT",None) not in p.values():
-            p["output"]=out_name
+        # If this event has a fixed input specified
+        if self.default_input is not None:
+            in_name = self.default_input
+
+        # Parameter names for input and output maps
+        in_param = self.get_input_name()
+        if in_param is not None:
+            p[in_param]=in_name
+        out_param = self.get_output_name()
+        if out_param is not None:
+            p[out_param]=out_name
 
         s_name = rep.instance.strategy
         s = rep.instance.experiment.get_management_strategy(s_name)
@@ -134,10 +156,6 @@ class Event:
                     del p[p_name]
             elif value[0] == "SEED":
                 p[p_name]=rep.random.randint(-2.14748e+09,2.14748e+09)
-            elif value[0] == "INPUT":
-                p[p_name]=in_name
-            elif value[0] == "OUTPUT":
-                p[p_name]=out_name
             elif value[0] == "VALUE":
                 p[p_name]=value[1]
             elif value[0] == "FLAG":

@@ -302,7 +302,7 @@ class GRASSInterface:
     
     def destructMap(self,fn):
         """ Remove a map
-        should only be called from GrassMap
+        should really only be called from GrassMap
         """
         #if grassmap.temporary and grassmap.ready:
         self.removeMap(fn) # grassmap.getMapFilename())
