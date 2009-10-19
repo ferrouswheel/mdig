@@ -116,8 +116,8 @@ class Event:
         p=self.get_params(is_pop,None)
         
         # If this event has a fixed input specified
-        if self.default_input is not None:
-            in_name = self.default_input
+        if self.fixed_input is not None:
+            in_name = self.fixed_input
 
         # Parameter names for input and output maps
         in_param = self.get_input_name()
