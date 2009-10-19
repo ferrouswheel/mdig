@@ -868,7 +868,7 @@ int main(int argc, char *argv[]) {
     " do not contain population age.";
 
     n_max_age = G_define_option() ;
-    n_max_age->key        = "agem";
+    n_max_age->key        = "agemax";
     n_max_age->type       = TYPE_INTEGER;
     n_max_age->required   = NO;
     n_max_age->answer     = "-1";
