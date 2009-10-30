@@ -71,6 +71,7 @@ double dist_a, dist_b, freq;
 double (*dist_function)(double, double, double)=NULL;
 long seed;
 unsigned int maturity_age;
+double truncation_limit=0.0;
 
 #define JUMP_INC 10000
 unsigned int jumps_count = 0, jumps_max = 0;
@@ -140,6 +141,7 @@ void calc(void* x, int col, int row) {
         b=dist_b;
 
         dist=dist_function(UNIFORM_RANDOM, a, b);
+        if (dist > truncation_limit) continue;
 
         angle = UNIFORM_RANDOM * (2.0 * M_PI);
 
@@ -417,6 +419,7 @@ void process_jumps() {
 
 void parse_options(int argc, char* argv[]) {
     struct Option *input, *output, *o_dist, *o_freq;
+    struct Option *o_limit;
     struct Option *o_dist_a, *o_dist_b, *o_seed, *o_agem;
     struct Flag *f_bool, *f_overwrite, *f_verbose, *f_check_zero;
 
@@ -466,6 +469,13 @@ void parse_options(int argc, char* argv[]) {
     o_freq->required   = NO;
     o_freq->answer     = "0.05";
     o_freq->description= "Frequency of jump events";
+
+    o_limit = G_define_option() ;
+    o_limit->key        = "limit";
+    o_limit->type       = TYPE_DOUBLE;
+    o_limit->required   = NO;
+    o_limit->answer     = "0.0";
+    o_limit->description= "Truncation distance. Events greater than this are discarded.";
 
     o_seed = G_define_option();
     o_seed->key        = "seed";
@@ -519,6 +529,7 @@ void parse_options(int argc, char* argv[]) {
     if (o_dist_a->answer) dist_a = atof(o_dist_a->answer);
     if (o_dist_b->answer) dist_b = atof(o_dist_b->answer);
     if (o_freq->answer) freq = atof(o_freq->answer);
+    if (o_limit->answer) truncation_limit = atof(o_limit->answer);
     if (o_seed->answer) {
         seed = atol(o_seed->answer);
 #if defined(HAVE_DRAND48)
