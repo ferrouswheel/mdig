@@ -45,7 +45,7 @@
       <event name="r.mdig.localspread">
         <param name="spread">
           <variable id="d1">
-            <value>1</value>
+            <value>3</value>
             <value>2</value>
             <range start="3" end="5" step="2"/>
           </variable>

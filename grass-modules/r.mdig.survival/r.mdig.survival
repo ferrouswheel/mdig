@@ -64,12 +64,16 @@
 #% answer:
 #%end
 #%flag
+#% key: i
+#% description: invert categories (cats option indicates non-affected cats)
+#%end
+#%flag
 #% key: o
-#% description: overwrite output (does nothing, only for r.dispersal support)
+#% description: overwrite output (does nothing, only for MDiG support)
 #%end
 #%flag
 #% key: b
-#% description: boolean (does nothing, only for r.dispersal support)
+#% description: boolean (does nothing, only for MDiG support)
 #%end
 
 
@@ -134,10 +138,17 @@ then
 #  echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
 #	  if ("2" in parts) { print parts[1],"thru",parts[2],"= 1" } else { \
 #	  print $i,"= 1"}}} END { printf "* = NULL\nend\n" }'
-  echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
-	  if ("2" in parts) { print parts[1],"thru",parts[2],"= 1" } else { \
-	  print $i,"= 1"}}} END { printf "* = NULL\nend\n" }' | \
-	  r.reclass input=$GIS_OPT_INPUT output=$TEMP_RECLASS
+  if [ $GIS_FLAG_I ]; then
+      echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
+              if ("2" in parts) { print parts[1],"thru",parts[2],"= NULL" } else { \
+              print $i,"= NULL"}}} END { printf "* = *\nend\n" }' | \
+              r.reclass input=$GIS_OPT_INPUT output=$TEMP_RECLASS
+  else
+      echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
+              if ("2" in parts) { print parts[1],"thru",parts[2],"= 1" } else { \
+              print $i,"= 1"}}} END { printf "* = NULL\nend\n" }' | \
+              r.reclass input=$GIS_OPT_INPUT output=$TEMP_RECLASS
+  fi
 fi
 
 #TEMP_FILE_NAME=r.mdig.survival.temp
@@ -155,9 +166,9 @@ unset GRASS_RND_SEED
 #g.remove rast=$TEMP_FILE_NAME > /dev/null
 
 # remove temp reclass if necessary
-if [ $GIS_OPT_CATS ]
-then
-    g.remove rast=$TEMP_RECLASS
-fi
+#if [ $GIS_OPT_CATS ]
+#then
+#g.remove rast=$TEMP_RECLASS
+#fi
 
 #echo "Done."
