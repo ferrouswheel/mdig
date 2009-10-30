@@ -138,7 +138,7 @@ then
 #  echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
 #	  if ("2" in parts) { print parts[1],"thru",parts[2],"= 1" } else { \
 #	  print $i,"= 1"}}} END { printf "* = NULL\nend\n" }'
-  if [ $GIS_FLAG_I ]; then
+  if [ $GIS_FLAG_I -eq 1 ]; then
       echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
               if ("2" in parts) { print parts[1],"thru",parts[2],"= NULL" } else { \
               print $i,"= NULL"}}} END { printf "* = *\nend\n" }' | \
@@ -166,9 +166,9 @@ unset GRASS_RND_SEED
 #g.remove rast=$TEMP_FILE_NAME > /dev/null
 
 # remove temp reclass if necessary
-#if [ $GIS_OPT_CATS ]
-#then
-#g.remove rast=$TEMP_RECLASS
-#fi
+if [ $GIS_OPT_CATS ]
+then
+g.remove rast=$TEMP_RECLASS
+fi
 
 #echo "Done."
