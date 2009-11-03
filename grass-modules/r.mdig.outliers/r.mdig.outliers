@@ -121,7 +121,8 @@ TEMP_MAP=r.mdig.outliers.temp
 TEMP_STATS_FN=`g.tempfile pid=$$`
 TEMP_RECODE_FN=`g.tempfile pid=$$`
 
-r.clump input="$GIS_OPT_INPUT" output=${TEMP_MAP} --o
+r.mapcalc pooface="if(isnull($GIS_OPT_INPUT),null(),1)"
+r.clump input=pooface output=${TEMP_MAP} --o
 if [ -z "${GIS_OPT_TOTAL}" ]; then
     # If we are not limiting the total area selected, then use this method.
     # It's faster than using a large/infinite total in the method below.
@@ -151,38 +152,37 @@ else
     partial_clump=""                      # Clump that is on threshold of total
 #temp_clump_map=r.mdig.outliers.temp2     # Map of clumps selected
     echo -n "Getting and sorting clump sizes... "
-    clump_sizes=`r.stats -an ${TEMP_MAP} | sort -n -k 2  | cut -d ' ' -f 1,2 --output-delimiter=","`
+    clump_sizes_file=`g.tempfile pid=$$`
+    r.stats -an ${TEMP_MAP} | sort -n -k 2 > ${clump_sizes_file}
     echo "Done."
     
     # Examine each clump
 # TODO support inverted option
     echo -n "Selecting clumps... "
-    
-    for i in ${clump_sizes}
-    do
-        entry=(${i/,/ })
-        if [ $(echo "${entry[1]} > ${GIS_OPT_MAX}" | bc) -eq 1 ]; then
-            # If the clump size is too large, then we can skip the rest
-            break
-        fi
-        sumarea=`echo "${accum_size} + ${entry[1]}" | bc`
-        if [ $(echo "$sumarea <= ${max_size}" | bc) -eq 1 ]; then
-            echo "${entry[0]} = 1" >> ${outlier_clumps_fn}
-            accum_size=$sumarea
-            if [ $(echo "$sumarea == ${max_size}" | bc) -eq 1 ]; then
-                # escape now we've complete, and avoid partial_clump assignment
-                # below
-                break;
-            fi
-        else
-            # In this case, there is not enough remaining area to cover the entire
-            # clump, so we have to randomly select parts in the clump
-            partial_clump=${entry[0]}
-            break;
-        fi
-
-    done
+    cat ${clump_sizes_file} | awk "BEGIN {accum = 0;}
+{
+    sumarea=\$2+accum;
+    if (sumarea <= ${max_size}) {
+        print \$1 \" = 1\"; accum = sumarea;
+        if (sumarea == ${max_size}) {
+            print \"x\"; exit
+        }
+    } else {
+        print \$1 \" \" \$2 \" \" sumarea; exit;
+    };
+    if (\$2 > ${GIS_OPT_MAX}) {exit;}
+}" > ${outlier_clumps_fn}
     echo "Done."
+
+    # extract partially included clump
+    endline=`tail -1 ${outlier_clumps_fn}`
+    head -n -1 ${outlier_clumps_fn} > temp_head
+    mv temp_head ${outlier_clumps_fn}
+    if [ "$endline" != "x" ]; then
+        vals=( $endline )
+        partial_clump=${vals[0]}
+        diff=${vals[2]}
+    fi
 
     # create complete clump map with reclass
     TEMP_MAP2=r.mdig.outliers.temp2
@@ -195,22 +195,31 @@ else
 #    echo "Partial clump = ${partial_clump}"
 
     if [ -n "${partial_clump}" ]; then
-        echo "${partial_clump} = 1
+        # convert remaining area into number of cells for r.random
+        eval `g.region -g`
+        ndiff=`echo "${diff} / ( ${nsres} * ${ewres} )" | bc`
+        echo "d=$diff ndiff=$ndiff"
+
+        if [ $ndiff -eq 0 ]; then
+            r.mapcalc "${GIS_OPT_OUTPUT}=${TEMP_MAP2}"
+        else
+            echo "${partial_clump} = 1
 * = NULL" | r.reclass input=${TEMP_MAP} output=${TEMP_MAP3} --o
-        r.random input=${TEMP_MAP3} raster_output=${TEMP_MAP4} n=`echo "${max_size} - ${accum_size}" | bc` --o
-        # merge partial and accumulated clumps into one
-        r.mapcalc "${GIS_OPT_OUTPUT}=if(isnull(${TEMP_MAP2}),${TEMP_MAP4},${TEMP_MAP2})"
+            r.random input=${TEMP_MAP3} raster_output=${TEMP_MAP4} n=${ndiff} --o
+            # merge partial and accumulated clumps into one
+            r.mapcalc "${GIS_OPT_OUTPUT}=if(isnull(${TEMP_MAP2}),${TEMP_MAP4},${TEMP_MAP2})"
+        fi
     else
         r.mapcalc "${GIS_OPT_OUTPUT}=${TEMP_MAP2}"
     fi
 
     #cleanup
 #    rm ${outlier_clumps_fn}
-    g.remove rast=${TEMP_MAP2} > /dev/null
-    g.remove rast=${TEMP_MAP3} > /dev/null
-    g.remove rast=${TEMP_MAP4} > /dev/null
+    g.remove rast=${TEMP_MAP2} > /dev/null 2> /dev/null
+    g.remove rast=${TEMP_MAP3} > /dev/null 2> /dev/null
+    g.remove rast=${TEMP_MAP4} > /dev/null 2> /dev/null
 fi
 
-g.remove rast=${TEMP_MAP} > /dev/null
+#g.remove rast=${TEMP_MAP} > /dev/null
 
 #echo "Done."
