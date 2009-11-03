@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ############################################################################
 #
 # MODULE:	r.mdig.outliers
@@ -46,6 +46,12 @@
 #% type: integer
 #% description: Maximum size for a clump of cells to be considered an 'outlier'
 #% required : yes
+#%end
+#%option
+#% key: total 
+#% type: integer
+#% description: Total area that module will select. Smallest patches selected first.
+#% required : no
 #%end
 #%flag
 #% key: i
@@ -111,30 +117,100 @@ if [ -z `g.findfile elem=cell file="$GIS_OPT_INPUT" | grep ^file | cut -f2 -d=` 
     exit 1
 fi
 
-TEMP_FILE_NAME=r.mdig.outliers.temp
+TEMP_MAP=r.mdig.outliers.temp
 TEMP_STATS_FN=`g.tempfile pid=$$`
 TEMP_RECODE_FN=`g.tempfile pid=$$`
 
-r.clump input="$GIS_OPT_INPUT" output=${TEMP_FILE_NAME} --o
-r.stats -na ${TEMP_FILE_NAME} > ${TEMP_STATS_FN}
-if [ $GIS_FLAG_I -eq 1 ] ; then
-    cat ${TEMP_STATS_FN} | awk '{if ($2 > '${GIS_OPT_MAX}') { print $1 ":" $1 ":1:1" }}' \
-        > ${TEMP_RECODE_FN}
+r.clump input="$GIS_OPT_INPUT" output=${TEMP_MAP} --o
+if [ -z "${GIS_OPT_TOTAL}" ]; then
+    # If we are not limiting the total area selected, then use this method.
+    # It's faster than using a large/infinite total in the method below.
+    r.stats -na ${TEMP_MAP} > ${TEMP_STATS_FN}
+    if [ $GIS_FLAG_I -eq 1 ] ; then
+        cat ${TEMP_STATS_FN} | awk '{if ($2 > '${GIS_OPT_MAX}') { print $1 ":" $1 ":1:1" }}' \
+            > ${TEMP_RECODE_FN}
+    else
+        cat ${TEMP_STATS_FN} | awk '{if ($2 <= '${GIS_OPT_MAX}') { print $1 ":" $1 ":1:1" }}' \
+            > ${TEMP_RECODE_FN}
+    fi
+
+    if [ ! -s "${TEMP_RECODE_FN}" ]; then
+    #echo "file is empty"
+    # No outliers found!
+        r.mapcalc "${GIS_OPT_OUTPUT}"='null()'
+    else
+    #echo "file has content"
+        cat ${TEMP_RECODE_FN} | r.recode input=${TEMP_MAP} output=${GIS_OPT_OUTPUT} --o
+    fi
+    rm ${TEMP_RECODE_FN}
 else
-    cat ${TEMP_STATS_FN} | awk '{if ($2 <= '${GIS_OPT_MAX}') { print $1 ":" $1 ":1:1" }}' \
-        > ${TEMP_RECODE_FN}
+    # This is the process for limiting the total area
+    max_size=${GIS_OPT_TOTAL}
+    accum_size=0                          # Area of clumps examined so far
+    outlier_clumps_fn=`g.tempfile pid=$$` # All the clumps that have been selected
+    partial_clump=""                      # Clump that is on threshold of total
+#temp_clump_map=r.mdig.outliers.temp2     # Map of clumps selected
+    echo -n "Getting and sorting clump sizes... "
+    clump_sizes=`r.stats -an ${TEMP_MAP} | sort -n -k 2  | cut -d ' ' -f 1,2 --output-delimiter=","`
+    echo "Done."
+    
+    # Examine each clump
+# TODO support inverted option
+    echo -n "Selecting clumps... "
+    
+    for i in ${clump_sizes}
+    do
+        entry=(${i/,/ })
+        if [ $(echo "${entry[1]} > ${GIS_OPT_MAX}" | bc) -eq 1 ]; then
+            # If the clump size is too large, then we can skip the rest
+            break
+        fi
+        sumarea=`echo "${accum_size} + ${entry[1]}" | bc`
+        if [ $(echo "$sumarea <= ${max_size}" | bc) -eq 1 ]; then
+            echo "${entry[0]} = 1" >> ${outlier_clumps_fn}
+            accum_size=$sumarea
+            if [ $(echo "$sumarea == ${max_size}" | bc) -eq 1 ]; then
+                # escape now we've complete, and avoid partial_clump assignment
+                # below
+                break;
+            fi
+        else
+            # In this case, there is not enough remaining area to cover the entire
+            # clump, so we have to randomly select parts in the clump
+            partial_clump=${entry[0]}
+            break;
+        fi
+
+    done
+    echo "Done."
+
+    # create complete clump map with reclass
+    TEMP_MAP2=r.mdig.outliers.temp2
+    TEMP_MAP3=r.mdig.outliers.temp3
+    TEMP_MAP4=r.mdig.outliers.temp4
+    echo "* = NULL" >> ${outlier_clumps_fn}
+#echo "Outliers in limits:"
+#    cat ${outlier_clumps_fn}
+    cat ${outlier_clumps_fn} | r.reclass input=${TEMP_MAP} output=${TEMP_MAP2} --o
+#    echo "Partial clump = ${partial_clump}"
+
+    if [ -n "${partial_clump}" ]; then
+        echo "${partial_clump} = 1
+* = NULL" | r.reclass input=${TEMP_MAP} output=${TEMP_MAP3} --o
+        r.random input=${TEMP_MAP3} raster_output=${TEMP_MAP4} n=`echo "${max_size} - ${accum_size}" | bc` --o
+        # merge partial and accumulated clumps into one
+        r.mapcalc "${GIS_OPT_OUTPUT}=if(isnull(${TEMP_MAP2}),${TEMP_MAP4},${TEMP_MAP2})"
+    else
+        r.mapcalc "${GIS_OPT_OUTPUT}=${TEMP_MAP2}"
+    fi
+
+    #cleanup
+#    rm ${outlier_clumps_fn}
+    g.remove rast=${TEMP_MAP2} > /dev/null
+    g.remove rast=${TEMP_MAP3} > /dev/null
+    g.remove rast=${TEMP_MAP4} > /dev/null
 fi
 
-if [ ! -s ${TEMP_RECODE_FN} ]; then
-#echo "file is empty"
-# No outliers found!
-    r.mapcalc "${GIS_OPT_OUTPUT}"='null()'
-else
-#echo "file has content"
-    cat ${TEMP_RECODE_FN} | r.recode input=${TEMP_FILE_NAME} output=${GIS_OPT_OUTPUT} --o
-fi
-
-g.remove rast=$TEMP_FILE_NAME > /dev/null
-rm ${TEMP_RECODE_FN}
+g.remove rast=${TEMP_MAP} > /dev/null
 
 #echo "Done."
