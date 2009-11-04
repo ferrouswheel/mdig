@@ -147,35 +147,55 @@ if [ -z "${GIS_OPT_TOTAL}" ]; then
 else
     # This is the process for limiting the total area
     max_size=${GIS_OPT_TOTAL}
-    accum_size=0                          # Area of clumps examined so far
     outlier_clumps_fn=`g.tempfile pid=$$` # All the clumps that have been selected
     partial_clump=""                      # Clump that is on threshold of total
-#temp_clump_map=r.mdig.outliers.temp2     # Map of clumps selected
-    echo -n "Getting and sorting clump sizes... "
     clump_sizes_file=`g.tempfile pid=$$`
-    r.stats -an ${TEMP_MAP} | sort -n -k 2 > ${clump_sizes_file}
-    echo "Done."
-    
-    # Examine each clump
-# TODO support inverted option
-    echo -n "Selecting clumps... "
-    cat ${clump_sizes_file} | awk "BEGIN {accum = 0;}
-{
-    sumarea=\$2+accum;
-    if (sumarea <= ${max_size}) {
-        print \$1 \" = 1\"; accum = sumarea;
-        if (sumarea == ${max_size}) {
-            print \"x\"; exit
-        }
-    } else {
-        print \$1 \" \" \$2 \" \" sumarea; exit;
-    };
-    if (\$2 > ${GIS_OPT_MAX}) {exit;}
-}" > ${outlier_clumps_fn}
+    echo -n "Getting and sorting clump sizes... "
+    if [ $GIS_FLAG_I -eq 1 ] ; then
+        # reverse sort, because inverse is after larger clumps
+        r.stats -an ${TEMP_MAP} | sort -r -n -k 2 > ${clump_sizes_file}
+        echo "Done."
+        
+        # Examine each clump
+        echo -n "Selecting clumps... "
+        cat ${clump_sizes_file} | awk "BEGIN {accum = 0;}
+    {
+        sumarea=\$2+accum;
+        if (sumarea <= ${max_size}) {
+            print \$1 \" = 1\"; accum = sumarea;
+            if (sumarea == ${max_size}) {
+                print \"x\"; exit
+            }
+        } else {
+            printf \"%d %d %d\", \$1, \$2, ${max_size} - accum; exit;
+        };
+        if (\$2 <= ${GIS_OPT_MAX}) {exit;}
+    }" > ${outlier_clumps_fn}
+    else
+        r.stats -an ${TEMP_MAP} | sort -n -k 2 > ${clump_sizes_file}
+        echo "Done."
+        
+        # Examine each clump
+        echo -n "Selecting clumps... "
+        cat ${clump_sizes_file} | awk "BEGIN {accum = 0;}
+    {
+        sumarea=\$2+accum;
+        if (sumarea <= ${max_size}) {
+            print \$1 \" = 1\"; accum = sumarea;
+            if (sumarea == ${max_size}) {
+                print \"x\"; exit
+            }
+        } else {
+            printf \"%d %d %d\", \$1, \$2, ${max_size} - accum; exit;
+        };
+        if (\$2 > ${GIS_OPT_MAX}) {exit;}
+    }" > ${outlier_clumps_fn}
+    fi
     echo "Done."
 
     # extract partially included clump
     endline=`tail -1 ${outlier_clumps_fn}`
+    echo $endline
     head -n -1 ${outlier_clumps_fn} > temp_head
     mv temp_head ${outlier_clumps_fn}
     if [ "$endline" != "x" ]; then
@@ -205,6 +225,7 @@ else
         else
             echo "${partial_clump} = 1
 * = NULL" | r.reclass input=${TEMP_MAP} output=${TEMP_MAP3} --o
+            echo r.random input=${TEMP_MAP3} raster_output=${TEMP_MAP4} n=${ndiff} --o
             r.random input=${TEMP_MAP3} raster_output=${TEMP_MAP4} n=${ndiff} --o
             # merge partial and accumulated clumps into one
             r.mapcalc "${GIS_OPT_OUTPUT}=if(isnull(${TEMP_MAP2}),${TEMP_MAP4},${TEMP_MAP2})"
@@ -215,9 +236,9 @@ else
 
     #cleanup
 #    rm ${outlier_clumps_fn}
-    g.remove rast=${TEMP_MAP2} > /dev/null 2> /dev/null
-    g.remove rast=${TEMP_MAP3} > /dev/null 2> /dev/null
-    g.remove rast=${TEMP_MAP4} > /dev/null 2> /dev/null
+#g.remove rast=${TEMP_MAP2} > /dev/null 2> /dev/null
+#g.remove rast=${TEMP_MAP3} > /dev/null 2> /dev/null
+#g.remove rast=${TEMP_MAP4} > /dev/null 2> /dev/null
 fi
 
 #g.remove rast=${TEMP_MAP} > /dev/null
