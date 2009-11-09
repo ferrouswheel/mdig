@@ -46,8 +46,15 @@
 #% key: survival
 #% gisprompt: old,cell,raster
 #% type: string
-#% description: Survival percentage map (with values 0-100)
+#% description: Survival percentage map (with values 0-100), or single value
 #% required : yes
+#%end
+#%option
+#% key: max
+#% type: integer
+#% description: Maximum amount of area that can be removed
+#% required: no
+#% answer:  
 #%end
 #%option
 #% key: seed
@@ -128,16 +135,18 @@ if [ -z `g.findfile elem=cell file="$GIS_OPT_INPUT" | grep ^file | cut -f2 -d=` 
     exit 1
 fi
 
-TEMP_RECLASS=mdig.survival
+#Check if survival parameter is a map or value
+SURVIVAL_VALUE=0
+if [ -z `g.findfile elem=cell file="$GIS_OPT_SURVIVAL" | grep ^file | cut -f2 -d=` ] ; then
+    #TODO use a proper check for int 0-100 instead of assuming that no map found
+    # means a correct single value.
+    SURVIVAL_VALUE=1
+fi
+
 # make temp reclass map as mask
 if [ $GIS_OPT_CATS ]
 then
-# MASKCATS_CMD='awk -F\",\" \'{for(i=1;i<=NF;i++) {split(\$i,parts,\"-\"); if \
-# (\"2\" in parts) { print parts[1],\"thru\",parts[2],\"= 1\" } else { \
-#  print \$i,\"= 1\"}}} END { printf \"*\\nend\" }\''
-#  echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
-#	  if ("2" in parts) { print parts[1],"thru",parts[2],"= 1" } else { \
-#	  print $i,"= 1"}}} END { printf "* = NULL\nend\n" }'
+  TEMP_RECLASS=mdig.survival
   if [ $GIS_FLAG_I -eq 1 ]; then
       echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
               if ("2" in parts) { print parts[1],"thru",parts[2],"= NULL" } else { \
@@ -149,14 +158,41 @@ then
               print $i,"= 1"}}} END { printf "* = NULL\nend\n" }' | \
               r.reclass input=$GIS_OPT_INPUT output=$TEMP_RECLASS
   fi
+else
+  TEMP_RECLASS=$GIS_OPT_INPUT
 fi
 
-#TEMP_FILE_NAME=r.mdig.survival.temp
-#echo GRASS_RND_SEED=$GIS_OPT_SEED
+if [ -n "$GIS_OPT_MAX" ]
+then
+#   eval `g.region -pg`
+#$GIS_OPT_MAX=(( $GIS_OPT_MAX * $nsres * $ewres ))
+    POP_AREA=`r.stats -ani input=$TEMP_RECLASS | awk 'BEGIN {a=0} {a=a+$2} END {print a}'`
+    if [ $SURVIVAL_VALUE -eq 1 -a \
+        $(( $POP_AREA * $GIS_OPT_SURVIVAL )) -gt $GIS_OPT_MAX ]; then
+        echo for single survival value
+        GIS_OPT_SURVIVAL=$(( $GIS_OPT_MAX / $POP_AREA ))
+    else
+        echo for survival maps
+        # mask with population
+        r.mask $TEMP_RECLASS
+        # get min/max/mean from r.univar in shell script mode
+        eval `r.univar -g $GIS_OPT_SURVIVAL`
+        # check whether mean x area is less than max
+        echo $mean $POP_AREA ${GIS_OPT_MAX}
+        if [ `echo "${mean} * ${POP_AREA} > $GIS_OPT_MAX" | bc` ]; then
+            echo ssss
+            # rescale doing linear transform of below and above mean
+            NEW_MEAN=`echo $GIS_OPT_MAX / $POP_AREA | bc`
+            r.mapcalc mdig.survival.newmean="($GIS_OPT_SURVIVAL-$mean)+$NEW_MEAN"
+            GIS_OPT_SURVIVAL=mdig.survival.newmean
+        fi
+        r.mask -r
+    fi
+fi
+
 export GRASS_RND_SEED=$GIS_OPT_SEED
 if [ $GIS_OPT_CATS ]
 then
-#echo r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
     r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
 else
 #    echo r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
@@ -169,6 +205,11 @@ unset GRASS_RND_SEED
 if [ $GIS_OPT_CATS ]
 then
 g.remove rast=$TEMP_RECLASS
+fi
+if [ $NEW_MEAN ]
+then
+echo s
+#$.remove rast=mdig.survival.newmean
 fi
 
 #echo "Done."
