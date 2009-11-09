@@ -73,7 +73,7 @@ class Action:
         elif options.output_level == "quiet":
             self.output_level = "quiet"
             logging.getLogger("mdig").setLevel(logging.ERROR)
-        elif options.repository is not None:
+        if options.repository is not None:
             self.repository = options.repository 
             self.log.debug("Repository location manually set to " + options.repository)
 
