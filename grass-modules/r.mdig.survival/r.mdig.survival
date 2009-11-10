@@ -178,13 +178,24 @@ then
         # get min/max/mean from r.univar in shell script mode
         eval `r.univar -g $GIS_OPT_SURVIVAL`
         # check whether mean x area is less than max
-        echo $mean $POP_AREA ${GIS_OPT_MAX}
+        echo "Pop area: $POP_AREA max: ${GIS_OPT_MAX}"
+        echo "Before rescaling mean: $mean"
         if [ `echo "${mean} * ${POP_AREA} > $GIS_OPT_MAX" | bc` ]; then
-            echo ssss
             # rescale doing linear transform of below and above mean
-            NEW_MEAN=`echo $GIS_OPT_MAX / $POP_AREA | bc`
-            r.mapcalc mdig.survival.newmean="($GIS_OPT_SURVIVAL-$mean)+$NEW_MEAN"
-            GIS_OPT_SURVIVAL=mdig.survival.newmean
+            NEW_MEAN=`echo "scale = 4; $GIS_OPT_MAX / $POP_AREA" | bc`
+            echo "NEW MEAN = $NEW_MEAN"
+#TEMP_RESCALE_BELOW=mdig.survival.newmean.below
+#TEMP_RESCALE_ABOVE=mdig.survival.newmean.above
+            TEMP_RESCALE=mdig.survival.newmean
+#r.rescale input=$GIS_OPT_SURVIVAL output=$TEMP_RESCALE_BELOW \
+#from=$min,$mean to=$min,$NEW_MEAN --o
+#r.rescale input=$GIS_OPT_SURVIVAL output=$TEMP_RESCALE_ABOVE \
+#from=$mean,$max to=$NEW_MEAN,$max --o
+#r.mapcalc $TEMP_RESCALE="if(isnull($TEMP_RESCALE_BELOW),$TEMP_RESCALE_ABOVE,$TEMP_RESCALE_BELOW)"
+            r.mapcalc $TEMP_RESCALE="($GIS_OPT_SURVIVAL-$mean)+$NEW_MEAN"
+            GIS_OPT_SURVIVAL=$TEMP_RESCALE
+            eval `r.univar -g $GIS_OPT_SURVIVAL`
+            echo "After rescaling mean: $mean"
         fi
         r.mask -r
     fi
