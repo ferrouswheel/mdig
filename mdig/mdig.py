@@ -44,8 +44,6 @@ from mdig import GRASSInterface
 from mdig import DispersalModel
 from mdig import Displayer
 
-import getopt
-
 def usage():
     usage_line = "Usage: mdig.py <action> [options] experiment.xml"
     
@@ -95,7 +93,7 @@ def process_options(argv):
         sys.exit(mdig.mdig_exit_codes["ok"])
     return the_action
 
-simulations = []
+simulations = []  # list of DispersalModels
 def main(argv):
     global simulations
     
@@ -164,29 +162,32 @@ def exit_cleanup():
 
 def setupLogger(color = "false"):
     logger = logging.getLogger("mdig")
-    logger.setLevel(logging.INFO)
-    #create console handler and set level to debug
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    #create formatter
-    #class myFormatter(logging.Formatter):
-        #def formatTime(self, record, datefmt=None):
-    if color == "true":
-        CSI = "\033["
-        TIME = CSI + "0m" + CSI + "32m"
-        RESET = CSI + "0m"
-        NAME = CSI + "1m" + CSI + "32m"
-        LEVEL = CSI + "0m" + CSI + "33m"
+    logger.setLevel(logging.DEBUG)
 
-        formatter = logging.Formatter(
-            TIME + "%(asctime)s" + RESET + NAME + " [%(name)s] " + RESET +
-            LEVEL + "%(levelname)s" + RESET + ": %(message)s", \
-            datefmt='%Y%m%d %H:%M:%S')
-    else:
-        formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s",
-            datefmt='%Y%m%d %H:%M:%S')
+    #create ANSI color formatter
+    CSI = "\033["
+    TIME = CSI + "0m" + CSI + "32m"
+    RESET = CSI + "0m"
+    NAME = CSI + "1m" + CSI + "32m"
+    LEVEL = CSI + "0m" + CSI + "33m"
+
+    color_formatter = logging.Formatter(
+        TIME + "%(asctime)s" + RESET + NAME + " [%(name)s] " + RESET +
+        LEVEL + "%(levelname)s" + RESET + ": %(message)s", \
+        datefmt='%Y%m%d %H:%M:%S')
+
+    #create non ANSI formatter
+    ascii_formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+        datefmt='%Y%m%d %H:%M:%S')
+
+    # create handlers for each stream
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.WARNING)
     #add formatter to ch
-    ch.setFormatter(formatter)
+    if color == "true":
+        ch.setFormatter(color_formatter)
+    else:
+        ch.setFormatter(ascii_formatter)
     #add ch to logger
     logger.addHandler(ch)
     

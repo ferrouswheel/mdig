@@ -34,6 +34,7 @@ import getopt
 import sys
 import pdb
 import logging
+import logging.handlers
 import string
 import os
 import shutil
@@ -107,9 +108,23 @@ class DispersalModel(object):
             self.set_base_dir(self.action.output_dir)
         elif setup:
             self.set_base_dir() 
+        self.setup_logfile()
 
         if setup:
             self.init_mapset()
+
+    def setup_logfile(self):
+        self.log_file = os.path.join(self.base_dir, "model.log")
+        logformat = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+            datefmt='%Y%m%d %H:%M:%S')
+        rollover=False
+        if os.path.isfile(self.log_file):
+            rollover=True
+        fh = logging.handlers.RotatingFileHandler(self.log_file,maxBytes=0,backupCount=5)
+        if rollover:
+            fh.doRollover()
+        fh.setFormatter(logformat)
+        self.log.addHandler(fh)
 
     def set_base_dir(self, dir=None):
         # Set up base directory for output
@@ -214,7 +229,7 @@ class DispersalModel(object):
         max_reps = 0
         min_instance = None
         
-        for i in instances:
+        for i in [ii for ii in instances if ii.enabled]:
             completed = len([x for x in i.replicates if x.complete])
             if not i.is_complete() and (completed > max_reps or min_instance == None):
                 min_instance = i
@@ -224,7 +239,7 @@ class DispersalModel(object):
     
     def resetInstances(self):
         instances = self.get_instances()
-        for i in instances:
+        for i in [x for x in instances if x.enabled]:
             i.reset()
     
     def add_listener(self,l):
@@ -249,9 +264,7 @@ class DispersalModel(object):
             
             # while there are still something in the queue to be simulated
             while instance is not None:
-                
                 instance.run()
-                
                 instance = self._getInstanceWithSmallestRepsRemaining(instances)
                 
         self.active = False
@@ -266,6 +279,8 @@ class DispersalModel(object):
     def null_bitmask(self, generate=True):
         instances = self.get_instances()
         for i in instances:
+            if not i.enabled:
+                continue
             if generate:
                 log_str = "Generating"
             else:
@@ -530,6 +545,10 @@ class DispersalModel(object):
             p_r = permutations[r_id]
             
             p_r["var"] = self.permute_variables(param_variables, param_keys)
+            filter_var_p = [tuple(x) for x in p_r["var"]]
+            p_r["var"] = list(set(filter_var_p))
+            p_r["var"] = [list(x) for x in p_r["var"]]
+                
             p_r["var_keys"] = param_keys
             if len(strategies) > 0:
                 p_r["var_keys"].insert(0,"__management_strategy")
@@ -550,7 +569,7 @@ class DispersalModel(object):
             # If p_r["var"] length is 0 then there should still be
             # at least one instance that has no variables.
             total_instances += max(len(p_r["var"]),1)
-            
+
         self.log.debug("Total number of instances: %d", total_instances)
         
         completed = self.get_completed_permutations()
@@ -620,6 +639,7 @@ class DispersalModel(object):
                     for r in results2: r.insert(0,i)
                 
                 results.extend(results2)
+            
         return results
     
     def get_variable_values(self):
@@ -704,7 +724,7 @@ class DispersalModel(object):
         if ls is None:
             ls = self.get_lifestage_ids().keys()
         
-        for i in instances:
+        for i in [x for x in instances if x.enabled]:
             self.log.debug( "Updating prob. envelope for instance %s" % repr(i) )
             period = self.get_period()
             if time is None:
@@ -721,7 +741,7 @@ class DispersalModel(object):
                 i.update_occupancy_envelope(ls, time, time, force=force)
                 
     def run_command_on_maps(self,cmd,ls,times=None,prob=True):
-        for i in self.get_instances():
+        for i in [x for x in self.get_instances() if x.enabled]:
             if not i.is_complete():
                 self.log.warning("Skipping incomplete instance " + repr(i))
                 continue

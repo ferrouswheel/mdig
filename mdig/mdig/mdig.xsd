@@ -559,10 +559,8 @@
                     <xsd:attribute name="ts" type="xsd:float"/>
                 </xsd:complexType>
             </xsd:element>
-            
-            
         </xsd:sequence>
-        
+        <xsd:attribute name="enabled" type="xsd:boolean" use="optional" default="true"/>
     </xsd:complexType>
     
     <xsd:complexType name="analysisResultType">

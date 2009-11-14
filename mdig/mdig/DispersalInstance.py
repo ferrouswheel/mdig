@@ -29,6 +29,7 @@ import re
 import os
 import time
 import pdb
+import string
 
 import lxml
 
@@ -47,6 +48,13 @@ class DispersalInstance:
         self.node = node
         self.experiment = exp
         self.r_id = r_id
+
+        # Indicates whether actions should be applied to this instance
+        # or whether it should be skipped.
+        self.enabled = True
+        if "enabled" in self.node.attrib and \
+            string.lower(self.node.attrib["enabled"]) == "false":
+            self.enabled = False
         
         # These could be null if no variables defined in experiment
         self.variables = list(p_inst)
@@ -58,15 +66,10 @@ class DispersalInstance:
         # Control strategy that this instance is associated with, if any
         self.strategy = None
         # extract management strategy from variables
-        print self.var_keys
-        print self.variables
         if "__management_strategy" == self.var_keys[0]:
             self.strategy = self.variables[0]
             del self.var_keys[0]
             del self.variables[0]
-        print "============"
-        print self.var_keys
-        print self.variables
 
         self.replicates = self._load_replicates()
         self.activeReps = []
@@ -118,7 +121,7 @@ class DispersalInstance:
                             my_rep = Replicate(r,self,r_index)
                             reps.append(my_rep)
                             r_index += 1
-# print "rep " + repr(self.variables) + " st " + repr(self.strategy) + " matches c_i " + repr(c_i)
+                            print "rep " + repr(self.variables) + " st " + repr(self.strategy) + " matches c_i " + repr(c_i)
         return reps
 
     def run(self):
@@ -249,7 +252,10 @@ class DispersalInstance:
         self.replicates = reps
     
     def remove_rep(self, rep):
-        self.node.find('replicates').remove(rep.node)
+        try:
+            self.node.find('replicates').remove(rep.node)
+        except ValueError:
+            pdb.set_trace()
         self.replicates.remove(rep)
     
     def remove_active_rep(self, rep):
@@ -464,7 +470,6 @@ class DispersalInstance:
                     
     def _add_envelope(self, env_name, lifestage_id, t):
         # Add envelope to completed/envelopes/lifestage[id=l]/envelope[t=t]
-        
         es = self.node.find('envelopes')
         if es is None:
             es = lxml.etree.SubElement(self.node,'envelopes')
@@ -488,7 +493,24 @@ class DispersalInstance:
         env.text = env_name
     
     def update_xml(self):
-        pass
+        # everything else is updated as they are accessed through class methods
+        if not self.enabled:
+            self.node.attrib["enabled"] = "false"
+
+    def __str__(self):
+        s = ""
+        s += "Parameters: " + str(zip(self.var_keys, self.variables)) + "; "
+        s += "Region ID: " + self.r_id + "; "
+        s += "Replicates: " + str(len([x for x in self.replicates if x.complete])) \
+              + "/" + str(self.experiment.get_num_replicates())
+        if len(self.activeReps) > 0:
+            s += " [" + str(self.activeReps) + "]"
+        else:
+            s += " [None] "
+#s+= " (complete/total [active]) "
+        if not self.enabled:
+            s += "[DISABLED] "
+        return s
 
 class ImcompleteInstanceException(Exception): pass
 

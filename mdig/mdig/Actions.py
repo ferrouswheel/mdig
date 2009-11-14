@@ -64,21 +64,18 @@ class Action:
     
     def act_on_options(self,options):
         if options.output_level == "debug":
-            logging.getLogger("mdig").setLevel(logging.DEBUG)
+            logging.getLogger("mdig").handlers[0].setLevel(logging.DEBUG)
             self.log.debug("Debug messages enabled.")
         elif options.output_level == "verbose":
             self.output_level = "verbose"
-            logging.getLogger("mdig").setLevel(logging.INFO)
+            logging.getLogger("mdig").handlers[0].setLevel(logging.INFO)
             self.log.info("Verbose messages enabled.")
         elif options.output_level == "quiet":
             self.output_level = "quiet"
-            logging.getLogger("mdig").setLevel(logging.ERROR)
+            logging.getLogger("mdig").handlers[0].setLevel(logging.ERROR)
         if options.repository is not None:
             self.repository = options.repository 
             self.log.debug("Repository location manually set to " + options.repository)
-
-    def get_description(self):
-        pass
 
     def parse_options(self,argv):
         (self.options, args) = self.parser.parse_args(argv[1:])
@@ -681,7 +678,7 @@ class AdminAction(Action):
                 help="Overwrite existing files",
                 action="store_true",
                 dest="overwrite_flag")
-        self.parser.add_option("-r","--remove-null",
+        self.parser.add_option("-n","--remove-null",
                 help="Remove null bitmasks from raster maps",
                 action="store_true",
                 dest="remove_null")
@@ -698,16 +695,37 @@ class AdminAction(Action):
                 action="store",
                 type="string",
                 dest="move_mapset")
+        self.parser.add_option("-l","--list-instances",
+                help="List all the instances, their index, and status",
+                action="store_true",
+                dest="list_instances")
+        self.parser.add_option("-t","--toggle-instance",
+                help="Change the whether instances are enabled or not",
+                action="store",
+                dest="toggle_instances")
 
     def do_me(self,mdig_model):
         if self.options.move_mapset:
             mdig_model.move_mapset(move_mapset)
-        if self.remove_null:
+        if self.options.remove_null:
             mdig_model.null_bitmask( False )
-        if self.generate_null:
+        if self.options.generate_null:
             mdig_model.null_bitmask( True )
-        if self.check_maps:
+        if self.options.check_maps:
             mdig_model.checkInstances()
+        if self.options.list_instances:
+            instances = mdig_model.get_instances()
+            counter = 0
+            for i in instances:
+                print( "%d: %s" % (counter, str(i) ))
+                counter += 1
+        if self.options.toggle_instances is not None:
+            instances = mdig_model.get_instances()
+            for i in self.options.toggle_instances.split(","):
+                i = int(i)
+                instances[i].enabled = not instances[i].enabled
+                print( "%d: %s" % (i, str(instances[i]) ))
+                instances[i].update_xml()
 
 class WebAction(Action):
     description = "Run a webserver that allows interaction with MDiG"

@@ -62,5 +62,37 @@
       </event>
     </lifestage>
   </lifestages>
+  <instances baseDir="/home/joel/src/mdig/test/repository/variables">
+    <completed>
+      <region id="a"/>
+      <variable id="agem">2</variable>
+      <variable id="d1">3</variable>
+    </completed>
+    <completed>
+      <region id="a"/>
+      <variable id="agem">2</variable>
+      <variable id="d1">2</variable>
+    </completed>
+    <completed>
+      <region id="a"/>
+      <variable id="agem">None</variable>
+      <variable id="d1">5</variable>
+    </completed>
+    <completed>
+      <region id="a"/>
+      <variable id="agem">None</variable>
+      <variable id="d1">2</variable>
+    </completed>
+    <completed>
+      <region id="a"/>
+      <variable id="agem">None</variable>
+      <variable id="d1">3</variable>
+    </completed>
+    <completed>
+      <region id="a"/>
+      <variable id="agem">2</variable>
+      <variable id="d1">5</variable>
+    </completed>
+  </instances>
 </model>
 
