@@ -124,7 +124,9 @@ class DispersalModel(object):
         if rollover:
             fh.doRollover()
         fh.setFormatter(logformat)
-        self.log.addHandler(fh)
+        # If we start having multiple simulations at once, then this should be
+        # changed (and also areas that are not under mdig.model)
+        logging.getLogger("mdig").addHandler(fh)
 
     def set_base_dir(self, dir=None):
         # Set up base directory for output
@@ -272,7 +274,7 @@ class DispersalModel(object):
         
     def is_complete(self):
         for i in self.get_instances():
-            if not i.is_complete():
+            if i.enabled and not i.is_complete():
                 return False
         return True
     

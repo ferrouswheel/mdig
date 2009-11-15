@@ -169,6 +169,8 @@ class RunAction(Action):
         if self.options.rerun_instances:
             self.log.debug("Resetting model so all replicates will be rerun")
             mdig_model.resetInstances()
+        elif mdig_model.is_complete():
+            self.log.error("Model is up to date (use -a to force reset and rerun instances)")
         mdig_model.run()
 
 class AnalysisAction(Action):

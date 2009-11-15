@@ -117,11 +117,12 @@ class DispersalInstance:
 
                     if self.variables == variable_list:
                         for r in c_i["reps"]:
-                            print "loading replicate with variables " + repr(self.variables)
+                            self.log.debug("loading replicate with variables " + str(self.variables))
                             my_rep = Replicate(r,self,r_index)
                             reps.append(my_rep)
                             r_index += 1
-                            print "rep " + repr(self.variables) + " st " + repr(self.strategy) + " matches c_i " + repr(c_i)
+                            #self.log.debug("rep " + repr(self.variables) + \
+                                    #" st " + repr(self.strategy) + " matches c_i " + repr(c_i))
         return reps
 
     def run(self):

@@ -595,16 +595,18 @@ class GRASSInterface:
         self.log.log(log_level, "exec: " + commandstring)
         ret = None
         
-        lvl = self.log.getEffectiveLevel()
+        lvl = logging.getLogger("mdig").handlers[0].level
         if lvl >= logging.INFO:
             p = Popen(commandstring, shell=True, stdout=subprocess.PIPE, \
                     stderr=subprocess.PIPE)
         else:
             p = Popen(commandstring, shell=True, stdout=subprocess.PIPE)
         
-        self.stdout = p.communicate()[0]
+        self.stdout, self.stderr = p.communicate()
         if len(self.stdout) > 0:
             self.log.debug("stdout: " + self.stdout)
+        if len(self.stderr) > 0:
+            self.log.debug("stderr: " + self.stderr)
         ret = p.returncode
 
         # If the command returns an error code then print it,
