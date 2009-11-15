@@ -167,10 +167,12 @@ then
 #   eval `g.region -pg`
 #$GIS_OPT_MAX=(( $GIS_OPT_MAX * $nsres * $ewres ))
     POP_AREA=`r.stats -ani input=$TEMP_RECLASS | awk 'BEGIN {a=0} {a=a+$2} END {print a}'`
+    echo "total area of input map = ${POP_AREA}"
     if [ $SURVIVAL_VALUE -eq 1 -a \
-        $(( $POP_AREA * $GIS_OPT_SURVIVAL )) -gt $GIS_OPT_MAX ]; then
+        `echo "${GIS_OPT_SURVIVAL} * ${POP_AREA} > $GIS_OPT_MAX" | bc` ]; then
         echo for single survival value
-        GIS_OPT_SURVIVAL=$(( $GIS_OPT_MAX / $POP_AREA ))
+        GIS_OPT_SURVIVAL=`echo "scale = 4; 100.0 * $GIS_OPT_MAX / $POP_AREA" | bc`
+        echo "NEW SURVIVAL CHANCE = $GIS_OPT_SURVIVAL"
     else
         echo for survival maps
         # mask with population
@@ -182,7 +184,7 @@ then
         echo "Before rescaling mean: $mean"
         if [ `echo "${mean} * ${POP_AREA} > $GIS_OPT_MAX" | bc` ]; then
             # rescale doing linear transform of below and above mean
-            NEW_MEAN=`echo "scale = 4; $GIS_OPT_MAX / $POP_AREA" | bc`
+            NEW_MEAN=`echo "scale = 4; 100.0 * $GIS_OPT_MAX / $POP_AREA" | bc`
             echo "NEW MEAN = $NEW_MEAN"
 #TEMP_RESCALE_BELOW=mdig.survival.newmean.below
 #TEMP_RESCALE_ABOVE=mdig.survival.newmean.above
@@ -206,8 +208,8 @@ if [ $GIS_OPT_CATS ]
 then
     r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
 else
-#    echo r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
-    r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
+    echo r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
+    r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0.0,100.0)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
 fi
 unset GRASS_RND_SEED
 #g.remove rast=$TEMP_FILE_NAME > /dev/null
