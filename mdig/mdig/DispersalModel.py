@@ -525,6 +525,11 @@ class DispersalModel(object):
             completed.append(c)
         
         return completed
+
+    def remove_duplicates(self, list_of_lists):
+        filtered = [tuple(x) for x in list_of_lists]
+        list_of_lists = list(set(filtered))
+        return [list(x) for x in list_of_lists]
     
     def get_instance_permutations(self):
         ''' get_instances - return a list of instances
@@ -545,9 +550,7 @@ class DispersalModel(object):
             p_r = permutations[r_id]
             
             p_r["var"] = self.permute_variables(param_variables, param_keys)
-            filter_var_p = [tuple(x) for x in p_r["var"]]
-            p_r["var"] = list(set(filter_var_p))
-            p_r["var"] = [list(x) for x in p_r["var"]]
+            p_r["var"] = self.remove_duplicates(p_r["var"])
                 
             p_r["var_keys"] = param_keys
             if len(strategies) > 0:
