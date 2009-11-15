@@ -194,10 +194,11 @@ then
 #r.rescale input=$GIS_OPT_SURVIVAL output=$TEMP_RESCALE_ABOVE \
 #from=$mean,$max to=$NEW_MEAN,$max --o
 #r.mapcalc $TEMP_RESCALE="if(isnull($TEMP_RESCALE_BELOW),$TEMP_RESCALE_ABOVE,$TEMP_RESCALE_BELOW)"
-            r.mapcalc $TEMP_RESCALE="($GIS_OPT_SURVIVAL-$mean)+$NEW_MEAN"
+            r.mapcalc $TEMP_RESCALE="if(($GIS_OPT_SURVIVAL-$mean)+$NEW_MEAN "\
+                                     "> 0, ($GIS_OPT_SURVIVAL-$mean)+$NEW_MEAN, 0)"
             GIS_OPT_SURVIVAL=$TEMP_RESCALE
-            eval `r.univar -g $GIS_OPT_SURVIVAL`
-            echo "After rescaling mean: $mean"
+#eval `r.univar -g $GIS_OPT_SURVIVAL`
+#            echo "After rescaling mean: $mean"
         fi
         r.mask -r
     fi
@@ -208,7 +209,7 @@ if [ $GIS_OPT_CATS ]
 then
     r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
 else
-    echo r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
+#echo r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
     r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0.0,100.0)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
 fi
 unset GRASS_RND_SEED
