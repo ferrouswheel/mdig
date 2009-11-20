@@ -7,7 +7,7 @@ import shelve
 from numpy import *
 from pylab import *
 from subprocess import *
-from IPython.numutils import frange
+#from IPython.numutils import frange
 
 import mdig
 from mdig import GRASSInterface
@@ -672,7 +672,7 @@ class ROCAnalysis:
         self.g_run("r.mask -r")
 
         #### Calculate the total area for each map at each threshold
-        thresholds = frange(-0.01,1.0,0.01)
+        thresholds = [-0.01 + (i*0.01) for i in range(0,102)]
         self.g_run("r.mask " + self.area_mask)
         cmd = "r.stats -1N input=" + self.area_mask
         areas=[]
@@ -745,7 +745,7 @@ class ROCAnalysis:
 
             (presences, absences) = \
                 self.run_stats_across_models(t,ROCAnalysis.temp_rast_name)
-            thresholds = frange(-0.01,1.0,0.01)
+            thresholds =  [-0.01 + (i*0.01) for i in range(0,102)]
             areas = self.calculate_thresholded_areas(t,thresholds)
             
             # init result S

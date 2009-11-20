@@ -106,9 +106,9 @@ class DispersalModel(object):
         self.base_dir = None
         if self.action is not None:
             self.set_base_dir(self.action.output_dir)
+            self.setup_logfile()
         elif setup:
             self.set_base_dir() 
-        self.setup_logfile()
 
         if setup:
             self.init_mapset()

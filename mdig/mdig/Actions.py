@@ -17,7 +17,7 @@ class Action:
 
     def __init__(self):
         # The model name that the action is being performed on
-        self.model_name = None
+        self.model_names = None
         # check that model definition is consistent and that all maps exist
         self.check_model = True
         # The model repository

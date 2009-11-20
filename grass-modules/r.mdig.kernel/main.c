@@ -71,7 +71,10 @@ double dist_a, dist_b, freq;
 double (*dist_function)(double, double, double)=NULL;
 long seed;
 unsigned int maturity_age;
+// Distances must be less than this...
 double truncation_limit=0.0;
+// Distances must be greater than this...
+double min_limit=0.0;
 
 #define JUMP_INC 10000
 unsigned int jumps_count = 0, jumps_max = 0;
@@ -118,17 +121,17 @@ void calc(void* x, int col, int row) {
 
     switch (data_type) {
     case CELL_TYPE:
-	if (((CELL*)x)[col] < maturity_age) return;
-	break;
+        if (((CELL*)x)[col] < maturity_age) return;
+        break;
     case FCELL_TYPE:
-	if (((FCELL*)x)[col] < maturity_age) return;
-	break;
+        if (((FCELL*)x)[col] < maturity_age) return;
+        break;
     case DCELL_TYPE:
-	if (((DCELL*)x)[col] < maturity_age) return;
-	break;
+        if (((DCELL*)x)[col] < maturity_age) return;
+        break;
     default:
-	G_fatal_error ("Unknown data_type");
-	break;
+        G_fatal_error ("Unknown data_type");
+        break;
     }
 
     events = get_number_of_events(UNIFORM_RANDOM, freq);
@@ -141,7 +144,12 @@ void calc(void* x, int col, int row) {
         b=dist_b;
 
         dist=dist_function(UNIFORM_RANDOM, a, b);
-        if (dist > truncation_limit) continue;
+        if (dist < 0.0) dist = -dist;
+        if ((truncation_limit > 0.0 && dist > truncation_limit)
+                || dist < min_limit) {
+            out_of_bounds_counter++;
+            continue;  
+        }
 
         angle = UNIFORM_RANDOM * (2.0 * M_PI);
 
@@ -153,11 +161,11 @@ void calc(void* x, int col, int row) {
         if (rint(a) == 0 && rint(b) == 0) {
             /*if (fabs(a) > fabs(b))
             {
-            	if (a > 0) a = ewres;
-            	else a = -1;
+                if (a > 0) a = ewres;
+                else a = -1;
             } else{
-            	if (b > 0) b = nsres;
-            	else b = -1;
+                if (b > 0) b = nsres;
+                else b = -1;
             }*/
             existing_counter++;
             continue;
@@ -291,9 +299,9 @@ main(int argc, char *argv[]) {
 
     // When we thought freq should change with res...
     //if (is_perimeter)
-    //	freq = (freq / 10000.0) * (2* (ewres + nsres));
+    //  freq = (freq / 10000.0) * (2* (ewres + nsres));
     //else
-    //	freq = (freq / 10000.0) * (nsres * ewres);
+    //  freq = (freq / 10000.0) * (nsres * ewres);
 
     // ...when it is really the same
     // (kernel, res, limited and earlier experiments used this method, 10000 as freq
@@ -419,7 +427,7 @@ void process_jumps() {
 
 void parse_options(int argc, char* argv[]) {
     struct Option *input, *output, *o_dist, *o_freq;
-    struct Option *o_limit;
+    struct Option *o_limit, *o_minlimit;
     struct Option *o_dist_a, *o_dist_b, *o_seed, *o_agem;
     struct Flag *f_bool, *f_overwrite, *f_verbose, *f_check_zero;
 
@@ -453,7 +461,7 @@ void parse_options(int argc, char* argv[]) {
     o_dist_a->key        = "d_a";
     o_dist_a->type       = TYPE_DOUBLE;
     o_dist_a->required   = NO;
-    o_dist_a->answer	 = "0.0";
+    o_dist_a->answer     = "0.0";
     o_dist_a->description= "Parameter specifying parameter of distribution (a)";
 
     o_dist_b = G_define_option() ;
@@ -477,6 +485,13 @@ void parse_options(int argc, char* argv[]) {
     o_limit->answer     = "0.0";
     o_limit->description= "Truncation distance. Events greater than this are discarded.";
 
+    o_minlimit = G_define_option() ;
+    o_minlimit->key        = "min";
+    o_minlimit->type       = TYPE_DOUBLE;
+    o_minlimit->required   = NO;
+    o_minlimit->answer     = "0.0";
+    o_minlimit->description= "Minimum distance. Events less than this are discarded.";
+
     o_seed = G_define_option();
     o_seed->key        = "seed";
     o_seed->type       = TYPE_INTEGER;
@@ -491,7 +506,7 @@ void parse_options(int argc, char* argv[]) {
     o_agem->required   = NO;
     o_agem->answer     = "0";
     o_agem->description= "Age of maturity. Implies map values contain population age. \n"
-	"Only cells > this value generate events.";
+        "Only cells > this value generate events.";
 
     /* Define the different flags */
 
@@ -530,6 +545,7 @@ void parse_options(int argc, char* argv[]) {
     if (o_dist_b->answer) dist_b = atof(o_dist_b->answer);
     if (o_freq->answer) freq = atof(o_freq->answer);
     if (o_limit->answer) truncation_limit = atof(o_limit->answer);
+    if (o_minlimit->answer) min_limit = atof(o_minlimit->answer);
     if (o_seed->answer) {
         seed = atol(o_seed->answer);
 #if defined(HAVE_DRAND48)

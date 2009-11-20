@@ -499,18 +499,24 @@ class DispersalInstance:
             self.node.attrib["enabled"] = "false"
 
     def __str__(self):
-        s = ""
-        s += "Parameters: " + str(zip(self.var_keys, self.variables)) + "; "
-        s += "Region ID: " + self.r_id + "; "
-        s += "Replicates: " + str(len([x for x in self.replicates if x.complete])) \
+        s = "[DispersalInstance] "
+        if not self.enabled:
+            s += "*DISABLED* \n"
+        else:
+            s += "\n"
+        if self.strategy is not None:
+            s += "  Strategy: " + self.strategy + "; \n"
+        s += "  Parameters: \n"
+        for vv in zip(self.var_keys, self.variables):
+             s += "    " + str(vv) + "\n"
+        s += "  Region ID: " + self.r_id + "; \n"
+        s += "  Replicates: " + str(len([x for x in self.replicates if x.complete])) \
               + "/" + str(self.experiment.get_num_replicates())
         if len(self.activeReps) > 0:
-            s += " [" + str(self.activeReps) + "]"
+            s += " [Active: " + str(self.activeReps) + "]"
         else:
-            s += " [None] "
+            s += " [Active: None] "
 #s+= " (complete/total [active]) "
-        if not self.enabled:
-            s += "[DISABLED] "
         return s
 
 class ImcompleteInstanceException(Exception): pass

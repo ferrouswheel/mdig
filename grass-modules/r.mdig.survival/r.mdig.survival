@@ -52,7 +52,7 @@
 #%option
 #% key: max
 #% type: integer
-#% description: Maximum amount of area that can be removed
+#% description: Maximum amount of area that can NOT survive 
 #% required: no
 #% answer:  
 #%end
@@ -162,6 +162,8 @@ else
   TEMP_RECLASS=$GIS_OPT_INPUT
 fi
 
+# TODO: Provide an alternative that finds sites to remove, but then uses
+# r.random to select GIS_OPT_MAX points 
 if [ -n "$GIS_OPT_MAX" ]
 then
 #   eval `g.region -pg`
@@ -169,9 +171,9 @@ then
     POP_AREA=`r.stats -ani input=$TEMP_RECLASS | awk 'BEGIN {a=0} {a=a+$2} END {print a}'`
     echo "total area of input map = ${POP_AREA}"
     if [ $SURVIVAL_VALUE -eq 1 -a \
-        `echo "${GIS_OPT_SURVIVAL} * ${POP_AREA} > $GIS_OPT_MAX" | bc` ]; then
+        `echo "(100 - ${GIS_OPT_SURVIVAL}) * ${POP_AREA} > $GIS_OPT_MAX" | bc` ]; then
         echo for single survival value
-        GIS_OPT_SURVIVAL=`echo "scale = 4; 100.0 * $GIS_OPT_MAX / $POP_AREA" | bc`
+        GIS_OPT_SURVIVAL=`echo "scale = 4; 100 - (100.0 * ($GIS_OPT_MAX / $POP_AREA))" | bc`
         echo "NEW SURVIVAL CHANCE = $GIS_OPT_SURVIVAL"
     else
         echo for survival maps
@@ -182,9 +184,9 @@ then
         # check whether mean x area is less than max
         echo "Pop area: $POP_AREA max: ${GIS_OPT_MAX}"
         echo "Before rescaling mean: $mean"
-        if [ `echo "${mean} * ${POP_AREA} > $GIS_OPT_MAX" | bc` ]; then
+        if [ `echo "(100 - ${mean}) * ${POP_AREA} > $GIS_OPT_MAX" | bc` ]; then
             # rescale doing linear transform of below and above mean
-            NEW_MEAN=`echo "scale = 4; 100.0 * $GIS_OPT_MAX / $POP_AREA" | bc`
+            NEW_MEAN=`echo "scale = 4; 100 - (100.0 * $GIS_OPT_MAX / $POP_AREA)" | bc`
             echo "NEW MEAN = $NEW_MEAN"
 #TEMP_RESCALE_BELOW=mdig.survival.newmean.below
 #TEMP_RESCALE_ABOVE=mdig.survival.newmean.above

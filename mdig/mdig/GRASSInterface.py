@@ -605,7 +605,7 @@ class GRASSInterface:
         self.stdout, self.stderr = p.communicate()
         if len(self.stdout) > 0:
             self.log.debug("stdout: " + self.stdout)
-        if len(self.stderr) > 0:
+        if self.stderr is not None and len(self.stderr) > 0:
             self.log.debug("stderr: " + self.stderr)
         ret = p.returncode
 
