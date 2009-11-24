@@ -75,6 +75,9 @@ def getG(create=True):
 class InitMapException(Exception):
     pass
 
+class EnvironmentException(Exception):
+    pass
+
 class GRASSInterface:
 
     grass_vars = { "GISRC": None, "GISBASE": None }
@@ -100,6 +103,8 @@ class GRASSInterface:
             self.log.log(logging.INFO, "Saving GRASS region")
             self.runCommand('g.region --o save='+self.old_region)
             self.old_mapset = self.getMapset()
+        else:
+            raise EnvironmentException()
     
     def checkEnvironment(self):
         okay=True
