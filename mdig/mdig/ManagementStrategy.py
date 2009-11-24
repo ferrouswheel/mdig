@@ -332,13 +332,24 @@ class Treatment:
         # effect
         effect = av_node[0][0].tag
         effect_amount = av_node[0][0].text
-        new_value = float(orig_value)
+        new_value=None
+        if orig_value is not None:
+            new_value = float(orig_value)
         if effect == "decrease":
-            new_value -= float(effect_amount)
+            if new_value is not None:
+                new_value -= float(effect_amount)
+            else:
+                raise InvalidAlterationException()
         elif effect == "increase":
-            new_value += float(effect_amount)
+            if new_value is not None:
+                new_value += float(effect_amount)
+            else:
+                raise InvalidAlterationException()
         elif effect == "ratio":
-            new_value *= float(effect_amount)
+            if new_value is not None:
+                new_value *= float(effect_amount)
+            else:
+                raise InvalidAlterationException()
         elif effect == "value":
             new_value = float(effect_amount)
         else:
