@@ -75,6 +75,7 @@ unsigned int maturity_age;
 double truncation_limit=0.0;
 // Distances must be greater than this...
 double min_limit=0.0;
+char *min_limit_str;
 
 #define JUMP_INC 10000
 unsigned int jumps_count = 0, jumps_max = 0;
@@ -116,7 +117,7 @@ void expand_jump_array() {
  * Calc finds out the distance and direction for
  * a dispersal event and adds to the jumps array
  */
-void calc(void* x, int col, int row) {
+void calc(void* x, int col, int row, float limit_min) {
     int events = 0, i;
 
     switch (data_type) {
@@ -146,7 +147,7 @@ void calc(void* x, int col, int row) {
         dist=dist_function(UNIFORM_RANDOM, a, b);
         if (dist < 0.0) dist = -dist;
         if ((truncation_limit > 0.0 && dist > truncation_limit)
-                || dist < min_limit) {
+                || dist < limit_min) {
             out_of_bounds_counter++;
             continue;  
         }
@@ -226,7 +227,13 @@ int
 main(int argc, char *argv[]) {
     struct Cell_head cellhd;
 
+    // name and mapset of original map if input is a reclass
     char rname[256], rmapset[256];
+    // datatype and mapset of min_limit map
+    RASTER_MAP_TYPE minmap_data_type; char* minmap_mapset;
+    int minmap_fd;
+    void* in_minmap_rast;
+
     char buff[1024];
     int row,col,is_reclass;
     int (*is_present)(void*, int) = NULL;
@@ -254,6 +261,28 @@ main(int argc, char *argv[]) {
 
     if ( (infd = G_open_cell_old (name, mapset)) < 0)
         G_fatal_error ("Cannot open cell file [%s]", name);
+
+    //---------------
+    // Try to open min_limit_str as a map
+
+    // find map in mapset
+    minmap_mapset = G_find_cell2 (min_limit_str, "");
+    if (mapset != NULL) {
+        // determine the inputmap type (CELL/FCELL/DCELL)
+        minmap_data_type = G_raster_map_type(min_limit_str, minmap_mapset);
+        if ( (minmap_fd = G_open_cell_old (min_limit_str, minmap_mapset)) >= 0) {
+            /* Allocate input buffer */
+            in_minmap_rast = G_allocate_raster_buf(minmap_data_type);
+        }
+    } else if (min_limit_str != NULL) {
+        // Try as a number
+        min_limit = atof(min_limit_str);
+        G_free(min_limit_str);
+        min_limit_str = NULL;
+        in_minmap_rast = NULL;
+        // otherwise, no min limit
+    }
+    //-----
 
     // resolution information should come from active region
     // NOT from the input map
@@ -315,13 +344,48 @@ main(int argc, char *argv[]) {
         if (G_get_raster_row (infd, inrast, row, data_type) < 0)
             G_fatal_error ("Could not read from <%s>",name);
 
+        /* read min map */
+        if (in_minmap_rast) {
+            if (G_get_raster_row (minmap_fd, in_minmap_rast, row, minmap_data_type) < 0)
+                G_fatal_error ("Could not read from <%s>",min_limit_str);
+        }
+
         /* process the data */
-        for (col=0; col < ncols; col++) {
-            if (is_present(inrast,col))
-                calc(inrast,col,row);
+        if (in_minmap_rast) {
+            for (col=0; col < ncols; col++) {
+                if (is_present(inrast,col)) {
+                    min_limit = 0.0f;
+                    switch (minmap_data_type) {
+                    case CELL_TYPE:
+                        if (!G_is_null_value(in_minmap_rast + (col*sizeof(CELL)), CELL_TYPE))
+                            min_limit = (float) ((CELL*)in_minmap_rast)[col];
+                        break;
+                    case FCELL_TYPE:
+                        if (!G_is_null_value(in_minmap_rast + (col*sizeof(FCELL)), FCELL_TYPE))
+                            min_limit = (float) ((FCELL*)in_minmap_rast)[col];
+                        break;
+                    case DCELL_TYPE:
+                        if (!G_is_null_value(in_minmap_rast + (col*sizeof(DCELL)), DCELL_TYPE))
+                            min_limit = (float) ((DCELL*)in_minmap_rast)[col];
+                        break;
+                    default:
+                        G_fatal_error ("Unknown data_type");
+                        break;
+                    }
+                    calc(inrast,col,row, min_limit);
+                }
+            }
+        } else {
+            for (col=0; col < ncols; col++) {
+                if (is_present(inrast,col))
+                        calc(inrast,col,row, min_limit);
+            }
         }
 
     }
+
+    G_close_cell (minmap_fd);
+    G_free(in_minmap_rast);
 
     G_close_cell (infd);
     if ( (infd = G_open_cell_old (name, mapset)) < 0)
@@ -487,10 +551,10 @@ void parse_options(int argc, char* argv[]) {
 
     o_minlimit = G_define_option() ;
     o_minlimit->key        = "min";
-    o_minlimit->type       = TYPE_DOUBLE;
+    o_minlimit->type       = TYPE_STRING;
     o_minlimit->required   = NO;
     o_minlimit->answer     = "0.0";
-    o_minlimit->description= "Minimum distance. Events less than this are discarded.";
+    o_minlimit->description= "Minimum distance (map or val). Events less than this are discarded.";
 
     o_seed = G_define_option();
     o_seed->key        = "seed";
@@ -545,7 +609,13 @@ void parse_options(int argc, char* argv[]) {
     if (o_dist_b->answer) dist_b = atof(o_dist_b->answer);
     if (o_freq->answer) freq = atof(o_freq->answer);
     if (o_limit->answer) truncation_limit = atof(o_limit->answer);
-    if (o_minlimit->answer) min_limit = atof(o_minlimit->answer);
+    // Min limit can either be a string (map name) or a value
+    // This is determined outside of parse_options
+    if (o_minlimit->answer) {
+        min_limit_str = G_strdup(o_minlimit->answer);
+    } else {
+        min_limit_str = NULL;
+    }
     if (o_seed->answer) {
         seed = atol(o_seed->answer);
 #if defined(HAVE_DRAND48)
