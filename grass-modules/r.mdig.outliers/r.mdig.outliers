@@ -58,6 +58,10 @@
 #% description: Invert output map (i.e. filter out outliers, leave the rest)
 #%end
 #%flag
+#% key: r
+#% description: Randomize clumps and don't sort clumps by size
+#%end
+#%flag
 #% key: o
 #% description: overwrite output (does nothing, only for r.mdig support, currently always overwrites)
 #%end
@@ -118,11 +122,12 @@ if [ -z `g.findfile elem=cell file="$GIS_OPT_INPUT" | grep ^file | cut -f2 -d=` 
 fi
 
 TEMP_MAP=r.mdig.outliers.temp
+TEMP_MASK=r.mdig.outliers.temp2
 TEMP_STATS_FN=`g.tempfile pid=$$`
 TEMP_RECODE_FN=`g.tempfile pid=$$`
 
-r.mapcalc pooface="if(isnull($GIS_OPT_INPUT),null(),1)"
-r.clump input=pooface output=${TEMP_MAP} --o
+r.mapcalc ${TEMP_MASK}="if(isnull($GIS_OPT_INPUT),null(),1)"
+r.clump input=${TEMP_MASK} output=${TEMP_MAP} --o
 if [ -z "${GIS_OPT_TOTAL}" ]; then
     # If we are not limiting the total area selected, then use this method.
     # It's faster than using a large/infinite total in the method below.
@@ -151,9 +156,12 @@ else
     partial_clump=""                      # Clump that is on threshold of total
     clump_sizes_file=`g.tempfile pid=$$`
     echo -n "Getting and sorting clump sizes... "
+    if [ $GIS_FLAG_R -eq 1 ] ; then
+        IS_RANDOM=-R
+    fi
     if [ $GIS_FLAG_I -eq 1 ] ; then
         # reverse sort, because inverse is after larger clumps
-        r.stats -an ${TEMP_MAP} | sort -r -n -k 2 > ${clump_sizes_file}
+        r.stats -an ${TEMP_MAP} | sort -r ${IS_RANDOM} -n -k 2 > ${clump_sizes_file}
         echo "Done."
         
         # Examine each clump
@@ -172,7 +180,7 @@ else
         if (\$2 <= ${GIS_OPT_MAX}) {exit;}
     }" > ${outlier_clumps_fn}
     else
-        r.stats -an ${TEMP_MAP} | sort -n -k 2 > ${clump_sizes_file}
+        r.stats -an ${TEMP_MAP} | sort -n ${IS_RANDOM} -k 2 > ${clump_sizes_file}
         echo "Done."
         
         # Examine each clump
@@ -235,12 +243,13 @@ else
     fi
 
     #cleanup
-#    rm ${outlier_clumps_fn}
-#g.remove rast=${TEMP_MAP2} > /dev/null 2> /dev/null
-#g.remove rast=${TEMP_MAP3} > /dev/null 2> /dev/null
-#g.remove rast=${TEMP_MAP4} > /dev/null 2> /dev/null
+    rm ${outlier_clumps_fn}
+    g.remove rast=${TEMP_MAP2} > /dev/null 2> /dev/null
+    g.remove rast=${TEMP_MAP3} > /dev/null 2> /dev/null
+    g.remove rast=${TEMP_MAP4} > /dev/null 2> /dev/null
 fi
 
-#g.remove rast=${TEMP_MAP} > /dev/null
+g.remove rast=${TEMP_MAP} > /dev/null
+g.remove rast=${TEMP_MASK} > /dev/null
 
 #echo "Done."
