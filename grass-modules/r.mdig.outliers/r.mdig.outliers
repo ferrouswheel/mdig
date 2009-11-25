@@ -45,7 +45,7 @@
 #% key: max
 #% type: integer
 #% description: Maximum size for a clump of cells to be considered an 'outlier'
-#% required : yes
+#% required : no 
 #%end
 #%option
 #% key: total 
@@ -132,12 +132,16 @@ if [ -z "${GIS_OPT_TOTAL}" ]; then
     # If we are not limiting the total area selected, then use this method.
     # It's faster than using a large/infinite total in the method below.
     r.stats -na ${TEMP_MAP} > ${TEMP_STATS_FN}
-    if [ $GIS_FLAG_I -eq 1 ] ; then
-        cat ${TEMP_STATS_FN} | awk '{if ($2 > '${GIS_OPT_MAX}') { print $1 ":" $1 ":1:1" }}' \
-            > ${TEMP_RECODE_FN}
+    if [ -n "$GIS_OPT_MAX" ]; then
+        if [ $GIS_FLAG_I -eq 1 ] ; then
+            cat ${TEMP_STATS_FN} | awk '{if ($2 > '${GIS_OPT_MAX}') { print $1 ":" $1 ":1:1" }}' \
+                > ${TEMP_RECODE_FN}
+        else
+            cat ${TEMP_STATS_FN} | awk '{if ($2 <= '${GIS_OPT_MAX}') { print $1 ":" $1 ":1:1" }}' \
+                > ${TEMP_RECODE_FN}
+        fi
     else
-        cat ${TEMP_STATS_FN} | awk '{if ($2 <= '${GIS_OPT_MAX}') { print $1 ":" $1 ":1:1" }}' \
-            > ${TEMP_RECODE_FN}
+        cat ${TEMP_STATS_FN} | awk '{ print $1 ":" $1 ":1:1" }' > ${TEMP_RECODE_FN}
     fi
 
     if [ ! -s "${TEMP_RECODE_FN}" ]; then
@@ -159,45 +163,43 @@ else
     if [ $GIS_FLAG_R -eq 1 ] ; then
         IS_RANDOM=-R
     fi
+    awk_script="BEGIN {accum = 0;}
+    {
+    sumarea=\$2+accum;
+    if (sumarea <= ${max_size}) {
+        print \$1 \" = 1\"; accum = sumarea;
+        if (sumarea == ${max_size}) {
+            print \"x\"; exit
+        }
+    } else {
+        printf \"%d %d %d\", \$1, \$2, ${max_size} - accum; exit;
+    };"
     if [ $GIS_FLAG_I -eq 1 ] ; then
+        echo "inverse!"
         # reverse sort, because inverse is after larger clumps
         r.stats -an ${TEMP_MAP} | sort -r ${IS_RANDOM} -n -k 2 > ${clump_sizes_file}
         echo "Done."
         
         # Examine each clump
         echo -n "Selecting clumps... "
-        cat ${clump_sizes_file} | awk "BEGIN {accum = 0;}
-    {
-        sumarea=\$2+accum;
-        if (sumarea <= ${max_size}) {
-            print \$1 \" = 1\"; accum = sumarea;
-            if (sumarea == ${max_size}) {
-                print \"x\"; exit
-            }
-        } else {
-            printf \"%d %d %d\", \$1, \$2, ${max_size} - accum; exit;
-        };
-        if (\$2 <= ${GIS_OPT_MAX}) {exit;}
-    }" > ${outlier_clumps_fn}
+        if [ -n "$GIS_OPT_MAX" ]; then
+            awk_script="${awk_script} if (\$2 <= ${GIS_OPT_MAX}) {exit;} }" 
+        else 
+            awk_script="${awk_script} }"
+        fi
+        cat ${clump_sizes_file} | awk "${awk_script}" > ${outlier_clumps_fn}
     else
         r.stats -an ${TEMP_MAP} | sort -n ${IS_RANDOM} -k 2 > ${clump_sizes_file}
         echo "Done."
         
         # Examine each clump
         echo -n "Selecting clumps... "
-        cat ${clump_sizes_file} | awk "BEGIN {accum = 0;}
-    {
-        sumarea=\$2+accum;
-        if (sumarea <= ${max_size}) {
-            print \$1 \" = 1\"; accum = sumarea;
-            if (sumarea == ${max_size}) {
-                print \"x\"; exit
-            }
-        } else {
-            printf \"%d %d %d\", \$1, \$2, ${max_size} - accum; exit;
-        };
-        if (\$2 > ${GIS_OPT_MAX}) {exit;}
-    }" > ${outlier_clumps_fn}
+        if [ -n "$GIS_OPT_MAX" ]; then
+            awk_script="${awk_script} if (\$2 > ${GIS_OPT_MAX}) {exit;} }" 
+        else 
+            awk_script="${awk_script} }"
+        fi
+        cat ${clump_sizes_file} | awk "${awk_script}" > ${outlier_clumps_fn}
     fi
     echo "Done."
 
