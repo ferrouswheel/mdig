@@ -52,7 +52,7 @@
 #%option
 #% key: max
 #% type: integer
-#% description: Maximum amount of area that can NOT survive 
+#% description: Maximum amount of area that will be removed. 
 #% required: no
 #% answer:  
 #%end
@@ -73,6 +73,10 @@
 #%flag
 #% key: i
 #% description: invert categories (cats option indicates non-affected cats)
+#%end
+#%flag
+#% key: e
+#% description: set max as amount of area to evaluate (not necessarily removed)
 #%end
 #%flag
 #% key: o
@@ -162,12 +166,19 @@ else
   TEMP_RECLASS=$GIS_OPT_INPUT
 fi
 
-# TODO: Provide an alternative that finds sites to remove, but then uses
-# r.random to select GIS_OPT_MAX points 
 if [ -n "$GIS_OPT_MAX" ]
 then
-#   eval `g.region -pg`
-#$GIS_OPT_MAX=(( $GIS_OPT_MAX * $nsres * $ewres ))
+if [ $GIS_FLAG_E -eq 1 ]; then
+# Alternative that finds sites to remove using r.random to select GIS_OPT_MAX points 
+# but no guarantee that these are removed, they are evaluated to normal chance
+    TEMP_RANDOM_SELECT=mdig.survival.randomselect
+    eval `g.region -pg`
+    POINTS=`echo "scale=4; $GIS_OPT_MAX / ($nsres * $ewres)" | bc`
+    r.random input=$TEMP_RECLASS raster_output=$TEMP_RANDOM_SELECT n=$POINTS --o
+    r.mapcalc "${TEMP_RANDOM_SELECT}=if(isnull(${TEMP_RANDOM_SELECT}),100,${GIS_OPT_SURVIVAL})"
+    GIS_OPT_SURVIVAL=${TEMP_RANDOM_SELECT}
+else
+# Treat maximum as maximum area that is successfully removed, not just evaluated
     POP_AREA=`r.stats -ani input=$TEMP_RECLASS | awk 'BEGIN {a=0} {a=a+$2} END {print a}'`
     echo "total area of input map = ${POP_AREA}"
     if [ $POP_AREA -ne 0 ]; then
@@ -189,7 +200,6 @@ then
                 # rescale doing linear transform of below and above mean
                 NEW_MEAN=`echo "scale = 4; 100 - (100.0 * $GIS_OPT_MAX / $POP_AREA)" | bc`
                 echo "NEW MEAN = $NEW_MEAN"
-#TEMP_RESCALE_BELOW=mdig.survival.newmean.below
 #TEMP_RESCALE_ABOVE=mdig.survival.newmean.above
                 TEMP_RESCALE=mdig.survival.newmean
 #r.rescale input=$GIS_OPT_SURVIVAL output=$TEMP_RESCALE_BELOW \
@@ -205,29 +215,28 @@ then
             fi
             r.mask -r
         fi
-    fi
-fi
+    fi # POP_AREA != 0
+fi # GIS_FLAG_E 1 or 0
+fi # GIS_OPT_MAX is defined
 
+# NOTE: null values in category reclass map will mean that input is unchanged...
 export GRASS_RND_SEED=$GIS_OPT_SEED
-if [ $GIS_OPT_CATS ]
-then
-    r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
-else
-#echo r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
-    r.mapcalc "$GIS_OPT_OUTPUT=if(rand(0.0,100.0)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null())"
-fi
+r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
 unset GRASS_RND_SEED
 #g.remove rast=$TEMP_FILE_NAME > /dev/null
 
 # remove temp reclass if necessary
-if [ $GIS_OPT_CATS ]
-then
+if [ $GIS_OPT_CATS ]; then
 g.remove rast=$TEMP_RECLASS
 fi
-if [ $NEW_MEAN ]
-then
+
+if [ $NEW_MEAN ]; then
 echo s
-#$.remove rast=mdig.survival.newmean
+g.remove rast=mdig.survival.newmean
+fi
+
+if [ $TEMP_RANDOM_SELECT ]; then
+g.remove rast=mdig.survival.randomselect
 fi
 
 #echo "Done."
