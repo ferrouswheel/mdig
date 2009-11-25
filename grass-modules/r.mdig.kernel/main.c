@@ -267,7 +267,7 @@ main(int argc, char *argv[]) {
 
     // find map in mapset
     minmap_mapset = G_find_cell2 (min_limit_str, "");
-    if (mapset != NULL) {
+    if (minmap_mapset != NULL) {
         // determine the inputmap type (CELL/FCELL/DCELL)
         minmap_data_type = G_raster_map_type(min_limit_str, minmap_mapset);
         if ( (minmap_fd = G_open_cell_old (min_limit_str, minmap_mapset)) >= 0) {
