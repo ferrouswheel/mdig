@@ -130,11 +130,11 @@ class GRASSInterface:
 
     def get_GIS_env(self):
         # sends command to GRASS session and returns result via stdout (piped)
-        output = subprocess.Popen("g.gisenv", shell=True, stdout=subprocess.PIPE).communicate()[0]
+        output = subprocess.Popen("g.gisenv -n", shell=True, stdout=subprocess.PIPE).communicate()[0]
         pre_range_data = StringIO.StringIO(output).readlines()
         ret = {}
         for line in pre_range_data:
-            fields = line.split('=')
+            fields = line.strip().split('=')
             ret[fields[0]] = fields[1]
         return ret
     
@@ -514,14 +514,16 @@ class GRASSInterface:
 
         if self.getMapset() == mapset_name: 
             self.changeMapset("PERMANENT")
-        gisdb = self.get_GIS_env()["GISDBASE"]
-        mapset_dir = os.path.join(gisdb,mapset_name)
+        env = self.get_GIS_env()
+        gisdb = env["GISDBASE"]
+        loc = env["LOCATION_NAME"]
+        mapset_dir = os.path.join(gisdb,loc,mapset_name)
         ans = "N"
         if not force and os.path.isdir(mapset_dir):
             ans = raw_input("Remove mapset at %s? [y/N] " % mapset_dir)
 
         if ans.upper() == "Y" or force:
-            print 'self.runCommand("rm -rf %s" %' + mapset_dir + ')'
+            self.runCommand("rm -rf %s" % mapset_dir)
             return True 
         return False
 

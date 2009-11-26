@@ -259,10 +259,10 @@
     </xsd:complexType>
     
     <xsd:group name="paramGroup">
-        <xsd:sequence>
-            <xsd:element name="param" minOccurs="0" maxOccurs="unbounded" type="parameterType"/>
-            <xsd:element name="flag" minOccurs="0" maxOccurs="unbounded" type="flagType"/>
-        </xsd:sequence>
+        <xsd:choice>
+            <xsd:element name="param" type="parameterType"/>
+            <xsd:element name="flag" type="flagType"/>
+        </xsd:choice>
     </xsd:group>
     
     <xsd:group name="analysisParamGroup">
@@ -292,18 +292,18 @@
     
     <xsd:complexType name="eventType">
         <xsd:sequence>
-            <xsd:group ref="paramGroup"/>
+            <xsd:group ref="paramGroup" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element name="ifNotPopulationBased" minOccurs="0" maxOccurs="1">
                 <xsd:complexType>
                     <xsd:sequence>
-                        <xsd:group ref="paramGroup"/>
+                        <xsd:group ref="paramGroup" minOccurs="0" maxOccurs="unbounded"/>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
             <xsd:element name="ifPopulationBased" minOccurs="0" maxOccurs="1">
                 <xsd:complexType>
                     <xsd:sequence>
-                        <xsd:group ref="paramGroup"/>
+                        <xsd:group ref="paramGroup" minOccurs="0" maxOccurs="unbounded"/>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
@@ -460,9 +460,7 @@
                     </xsd:attribute>
                 </xsd:complexType>
             </xsd:element>
-            <xsd:choice>
-                <xsd:group ref="mTreatmentGroup"/>
-            </xsd:choice>
+            <xsd:group ref="mTreatmentGroup" minOccurs="1" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -475,7 +473,7 @@
 
     <xsd:complexType name="treatmentEventType">
         <xsd:sequence>
-            <xsd:group ref="paramGroup"/>
+            <xsd:group ref="paramGroup" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
         <xsd:attribute name="ls" type="xsd:IDREF"/>
