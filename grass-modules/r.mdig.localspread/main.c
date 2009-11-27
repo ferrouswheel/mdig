@@ -791,13 +791,14 @@ void d_calc(DCELL* x, output_row* out, double spread_value, int col)
 int main(int argc, char *argv[]) {
     struct Cell_head active_cellhd, in_cellhd, sm_cellhd;
     char *name, *result, *mapset;
+
     char *spread_map;
+    char *spread_mapset;
 
     char *out_mapset;
     output_row* start_row, *current_row;
     output_row* i_row;
 
-    char *spread_mapset;
     char buffer[64];
 
     char rname[256], rmapset[256];
@@ -811,7 +812,7 @@ int main(int argc, char *argv[]) {
 
     struct GModule *module;
     struct Option *input, *output;
-    struct Option *n_maturity_age, *n_max_age, *n_spread, *n_spread_map, *n_proportion;
+    struct Option *n_maturity_age, *n_max_age, *n_spread, *n_proportion;
     struct Option *n_seed;
     struct Flag *f_bool, *f_overwrite, *f_check_zero, *f_stochastic;
 
@@ -840,16 +841,9 @@ int main(int argc, char *argv[]) {
 
     n_spread = G_define_option() ;
     n_spread->key        = "spread";
-    n_spread->type       = TYPE_DOUBLE;
-    n_spread->required   = NO;
-    n_spread->description= "Spread in metres";
-
-    n_spread_map = G_define_option() ;
-    n_spread_map->key        = "spreadmap";
-    n_spread_map->type       = TYPE_STRING;
-    n_spread_map->required   = NO;
-    n_spread_map->gisprompt  = "old,cell,raster";
-    n_spread_map->description= "Raster map containing spread rates in metres";
+    n_spread->type       = TYPE_STRING;
+    n_spread->required   = YES;
+    n_spread->description= "Spread in metres (or name of a map with spread values)";
 
     n_proportion = G_define_option() ;
     n_proportion->key        = "proportion";
@@ -911,25 +905,23 @@ int main(int argc, char *argv[]) {
 
     name    = input->answer;
     result  = output->answer;
-    if (n_spread->answer)
-    spread = atof(n_spread->answer);
-    else
-    spread = -1.0;
-    spread_map = n_spread_map->answer;
+
+    // Determine whether this is *actually* a map or just a value later.
+    spread_map = n_spread->answer;
+
     spread_proportion = atof(n_proportion->answer);
 
     // Work out whether maps are expected to contain age of population
     maturity_age = atoi(n_maturity_age->answer);
     max_age = atoi(n_max_age->answer);
+    age_based = 0;
     if (maturity_age == -1) {
         maturity_age = 0;
-        age_based = 0;
     } else {
         age_based = 1;
     }
     if (max_age == -1) {
         max_age = INT_MAX;
-        age_based = 0;
     } else {
         age_based = 1;
     }
@@ -984,30 +976,36 @@ int main(int argc, char *argv[]) {
     else
         check_zero=0;
 
+    // check if a map or value was given for the spread rate
+    //--
     // find spread map in mapset
-    if (spread_map) {
     spread_mapset = G_find_cell2 (spread_map, "");
-    if (spread_mapset == NULL)
-        G_fatal_error ("cell file [%s] not found", spread_map);
+    if (spread_mapset == NULL) {
+        // G_warning("cell file [%s] not found", spread_map);
+        // map not found, so try to convert the string to a float
+        spread = atof(spread_map);
+        if (spread <=0) {
+            G_fatal_error ("Invalid spread rate");
+        }
+        printf("spread rate %f\n", spread);
+    } else {
+        // map found
 
-    // determine the spread map type (CELL/FCELL/DCELL)
-    sm_data_type = G_raster_map_type(spread_map, spread_mapset);
+        // determine the spread map type (CELL/FCELL/DCELL)
+        sm_data_type = G_raster_map_type(spread_map, spread_mapset);
 
-    // open spread map
-    if ( (smfd = G_open_cell_old (spread_map, spread_mapset)) < 0)
-        G_fatal_error ("Cannot open cell file [%s]", spread_map);
+        // open spread map
+        if ( (smfd = G_open_cell_old (spread_map, spread_mapset)) < 0)
+            G_fatal_error ("Cannot open cell file [%s]", spread_map);
 
-    // read the spread map header
-    if (G_get_cellhd (spread_map, spread_mapset, &sm_cellhd) < 0)
-        G_fatal_error ("Cannot read file header of [%s]", spread_map);
+        // read the spread map header
+        if (G_get_cellhd (spread_map, spread_mapset, &sm_cellhd) < 0)
+            G_fatal_error ("Cannot read file header of [%s]", spread_map);
 
-    // allocate spread row buffer
-    spread_rast = G_allocate_raster_buf(sm_data_type);
-    
-    } else if (spread <=0) {
-    G_fatal_error ("Invalid spread rate");
+        // allocate spread row buffer
+        spread_rast = G_allocate_raster_buf(sm_data_type);
     }
-
+    
     // get active region settings
     G_get_set_window(&active_cellhd);
 
@@ -1050,80 +1048,76 @@ int main(int argc, char *argv[]) {
         G_percent (row, nrows, 2);
 
 #ifdef DEBUG
-    printf("Row %d\n", row);
+        printf("Row %d\n", row);
 #endif
         // read input map
         if (G_get_raster_row (infd, in_rast, row, data_type) < 0)
             G_fatal_error ("Could not read from <%s>",name);
 
-    // read spread map
-    if (spread_rast) {
-        if (G_get_raster_row (smfd, spread_rast, row, sm_data_type) < 0)
-        G_fatal_error ("Could not read from <%s>",name);
-    }
+        // read spread map
+        if (spread_rast) {
+            if (G_get_raster_row (smfd, spread_rast, row, sm_data_type) < 0)
+            G_fatal_error ("Could not read from <%s>",name);
+        }
 
         switch (data_type) {
         case CELL_TYPE:
             // process the data
             for (col=0; col < ncols; col++) {
                 if (is_present(in_rast,col)) {
-            // work out spread amount, either from map or cmd line
-            // if map:
-            if (spread_rast)
-            spread = get_spread_from_map(spread_rast,col);
-
+                    // work out spread amount, either from map or cmd line
+                    // if map:
+                    if (spread_rast)
+                        spread = get_spread_from_map(spread_rast,col);
 #ifdef DEBUG
-            printf("col %d\n", col);
+                    printf("col %d\n", col);
 #endif
                     c_calc((CELL *)in_rast,current_row,spread,col);
-        }
+                }
             }
             break;
-
         case FCELL_TYPE:
             // process the data
             for (col=0; col < ncols; col++) {
                 if (is_present(in_rast,col)) {
-            // work out spread amount, either from map or cmd line
-            // if map:
-            if (spread_rast)
-            spread = get_spread_from_map(spread_rast,col);
+                    // work out spread amount, either from map or cmd line
+                    // if map:
+                    if (spread_rast)
+                        spread = get_spread_from_map(spread_rast,col);
 
                     f_calc((FCELL *)in_rast,current_row,spread,col);
-        }
+                }
             }
             break;
-
         case DCELL_TYPE:
             // process the data
             for (col=0; col < ncols; col++) {
                 if (is_present(in_rast,col)) {
-            // work out spread amount, either from map or cmd line
-            // if map:
-            if (spread_rast)
-            spread = get_spread_from_map(spread_rast,col);
+                    // work out spread amount, either from map or cmd line
+                    // if map:
+                    if (spread_rast)
+                        spread = get_spread_from_map(spread_rast,col);
 
                     d_calc((DCELL*)in_rast,current_row,spread,col);
-        }
+                }
             }
             break;
-
         }
 
 #ifdef DEBUG
-    print_rows(start_row,ncols);
+        print_rows(start_row,ncols);
 #endif
-    if (!current_row->next) {
-        current_row->next = new_output_row(ncols,data_type);
-        current_row->next->prev = current_row;
-    }
-    current_row = current_row->next;
+        if (!current_row->next) {
+            current_row->next = new_output_row(ncols,data_type);
+            current_row->next->prev = current_row;
+        }
+        current_row = current_row->next;
 
 
         // Once the output buffer row is no longer needed...
         //if (row > (spread - 1)) {
-    //  if (G_put_raster_row (outfd, outrast[0], data_type) < 0)
-    //    G_fatal_error ("Cannot write to <%s>",result);
+        //  if (G_put_raster_row (outfd, outrast[0], data_type) < 0)
+        //    G_fatal_error ("Cannot write to <%s>",result);
         //}
 
         // G_set_null_value(outrast[0],ncols,data_type);
@@ -1138,15 +1132,15 @@ int main(int argc, char *argv[]) {
     }
     for ( i_row = start_row; i_row; i_row = i_row->next) {
 #ifdef DEBUG
-    printf("saving row\n");
+        printf("saving row\n");
 #endif
         if (G_put_raster_row (outfd, i_row->outrast, data_type) < 0)
             G_fatal_error ("Cannot write to <%s>",result);
-    G_free( i_row->outrast );
-    if ( i_row->prev ) {
-        G_free( i_row->prev );
-        i_row->prev = NULL;
-    }
+        G_free( i_row->outrast );
+        if ( i_row->prev ) {
+            G_free( i_row->prev );
+            i_row->prev = NULL;
+        }
     }
 
     /* DIsabled because glibc throws a spaz
