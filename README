@@ -4,7 +4,16 @@ MDiG - Modular Dispersal in GIS
 
 General:
 
-* GRASS 6.4 or later.
+* GRASS 6.4 or later, hasn't been tested with the new GRASS 7.0
+
+    http://grass.itc.it/download/index.php
+
+* GDAL 1.6.0 or later (earlier versions have bugs)
+    Although it is a GRASS requirement instead of a direct MDiG one, stuff can
+    break if you have earlier buggy versions. Unfortunately this isn't
+    automatically included in many major linux distributions yet (as of 2009)
+
+    http://trac.osgeo.org/gdal/wiki/DownloadingGdalBinaries
 
 For Python based MDiG controller, the following python packages (with Ubuntu
 package name in brackets):
@@ -17,4 +26,9 @@ For grass modules:
 
 * GNU Scientific Library (libgsl, libgsl0-dev)
 
+== Feature requests ==
+
+These are the requests that I've had for MDiG to support:
+
+* [PRIORITY] Keep track of area treated by management strategies.
 
