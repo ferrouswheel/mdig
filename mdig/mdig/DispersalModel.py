@@ -130,13 +130,15 @@ class DispersalModel(object):
 
     def set_base_dir(self, dir=None):
         # Set up base directory for output
-        existing_base_dir = self.get_base_dir()
+        existing_instances_dir = self.get_instances_dir()
         if dir is not None:
             self.base_dir = dir
         else:
             self.base_dir = os.path.dirname(self.model_file)
-        if existing_base_dir not in [None, ""] and \
-            self.base_dir != existing_base_dir:
+        if existing_instances_dir not in [None, ""] and \
+            self.base_dir != existing_instances_dir:
+            self.log.warn("Existing instances dir is: " + existing_instances_dir)
+            self.log.warn("Model definition is in: " + self.base_dir)
             self.log.warn("Current base dir is different to that already " +
                     "set... some analysis results may be unavailable. " + 
                     "This could break things.")
@@ -146,10 +148,8 @@ class DispersalModel(object):
 
     def init_paths(self):
         c = MDiGConfig.getConfig()
-        if self.base_dir is None:
-            base_d = './'
-        else:
-            base_d = self.base_dir
+        assert( self.base_dir is not None )
+        base_d = self.base_dir
         filename = os.path.join(base_d, c.analysis_dir)
         MDiGConfig.makepath(filename)
         filename = os.path.join(base_d, c.maps_dir)
@@ -711,7 +711,7 @@ class DispersalModel(object):
             popmod_xml = self.get_popmod_file()
             if popmod_xml is not None:
                 self.lifestage_transition = \
-                    LifestageTransition(os.path.join(self.get_base_dir(), \
+                    LifestageTransition(os.path.join(self.get_instances_dir(), \
                                 popmod_xml), self)
         return self.lifestage_transition
 
@@ -805,8 +805,8 @@ class DispersalModel(object):
         completed_node=model_node.find('instances')
         if completed_node is None:
             completed_node = lxml.etree.SubElement(model_node,"instances")
-        if self.base_dir is not None:
-            completed_node.attrib["baseDir"] = self.base_dir
+        assert(self.base_dir is not None)
+        completed_node.attrib["baseDir"] = self.base_dir
         
         completed_node = lxml.etree.SubElement(completed_node,"completed")
         
@@ -827,7 +827,7 @@ class DispersalModel(object):
     
         return completed_node   
     
-    def get_base_dir(self):
+    def get_instances_dir(self):
         completed_node = self.xml_model.xpath("/model/instances")
         
         if len(completed_node) > 0:
