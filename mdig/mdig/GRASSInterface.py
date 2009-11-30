@@ -75,7 +75,7 @@ def getG(create=True):
 class InitMapException(Exception):
     pass
 
-class EnvironmentException(Exception):
+class EnvironmentException(EnvironmentError):
     pass
 
 class GRASSInterface:
@@ -495,12 +495,17 @@ class GRASSInterface:
             return True
         return False
 
-    def changeMapset(self, mapset_name, create=False):
+    def changeMapset(self, mapset_name = None, create=False):
         """
         Change to specified mapset. If create is True than create it if necessary       
         """
+        if mapset_name is None:
+            mapset_name = "PERMANENT"
         if self.getMapset() != mapset_name: 
-            self.runCommand("g.mapset -c mapset=%s" % mapset_name)
+            if create:
+                self.runCommand("g.mapset -c mapset=%s" % mapset_name)
+            else:
+                self.runCommand("g.mapset mapset=%s" % mapset_name)
         
         return True
 
@@ -513,7 +518,7 @@ class GRASSInterface:
             return False
 
         if self.getMapset() == mapset_name: 
-            self.changeMapset("PERMANENT")
+            self.changeMapset()
         env = self.get_GIS_env()
         gisdb = env["GISDBASE"]
         loc = env["LOCATION_NAME"]
