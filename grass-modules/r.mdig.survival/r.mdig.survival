@@ -172,9 +172,17 @@ if [ $GIS_FLAG_E -eq 1 ]; then
 # Alternative that finds sites to remove using r.random to select GIS_OPT_MAX points 
 # but no guarantee that these are removed, they are evaluated to normal chance
     TEMP_RANDOM_SELECT=mdig.survival.randomselect
+    TEMP_STDERR_OUT=mdig.survival.stderr
     eval `g.region -pg`
     POINTS=`echo "scale=4; $GIS_OPT_MAX / ($nsres * $ewres)" | bc`
-    r.random input=$TEMP_RECLASS raster_output=$TEMP_RANDOM_SELECT n=$POINTS --o
+    r.random input=$TEMP_RECLASS raster_output=$TEMP_RANDOM_SELECT n=$POINTS \
+                   --o 2> ${TEMP_STDERR_OUT}
+    # Catch the case where there are less cells in raster than the max 
+    # r.random is stupid and gives error instead of just selecting what's there
+    if [ -n "`sed -ne "/There aren't \[.*\] non-NULL cells/p" ${TEMP_STDERR_OUT}`" ]; then
+        # so we have to copy it manually
+        g.copy rast=$TEMP_RECLASS,$TEMP_RANDOM_SELECT   
+    fi
     r.mapcalc "${TEMP_RANDOM_SELECT}=if(isnull(${TEMP_RANDOM_SELECT}),100,${GIS_OPT_SURVIVAL})"
     GIS_OPT_SURVIVAL=${TEMP_RANDOM_SELECT}
 else
