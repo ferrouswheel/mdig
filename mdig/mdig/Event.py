@@ -147,7 +147,7 @@ class Event:
                                 instance_value, rep)
                         if instance_map is None:
                             instance_value = treatments[0].get_altered_variable_value(value[1],instance_value)
-                        assert( instance_value is not None )
+                            assert( instance_value is not None )
                 if instance_value is not None:
                     p[p_name]=instance_value
                 else:

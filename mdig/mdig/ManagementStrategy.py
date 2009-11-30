@@ -310,10 +310,14 @@ class Treatment:
             # map
             return None
         altered_value = self.get_altered_variable_value(var_key,var_val)
+        if altered_value is None:
+            altered_value = "null()"
         orig_value = var_val
+        if orig_value is None:
+            orig_value = "null()"
         GRASSInterface.getG().mapcalc(self.var_temp, \
                 "if(" + area_mask_map + "==1," \
-                + str(altered_value) + "," + str(orig_value))
+                + str(altered_value) + "," + str(orig_value) + ")")
         return self.var_temp
 
     def get_altered_variable_value(self,var_key,var_val):
@@ -330,8 +334,14 @@ class Treatment:
         av_node = self.node.xpath("affectVariable")
         # should only be one affectVariable element, and only one child indicating
         # effect
-        effect = av_node[0][0].tag
-        effect_amount = av_node[0][0].text
+        effect = None
+        # Find the first non-comment element
+        for i in av_node[0]:
+            if isinstance(i.tag, basestring):
+                effect = i.tag
+                effect_amount = i.text
+                break
+        assert(effect is not None)
         new_value=None
         if orig_value is not None:
             new_value = float(orig_value)
@@ -353,7 +363,7 @@ class Treatment:
         elif effect == "value":
             new_value = float(effect_amount)
         else:
-            self.log.error("Unknown management effect: " + effect)
+            self.log.error("Unknown management effect: " + str(effect) )
             sys.exit(mdig.mdig_exit_codes["treatment_effect"])
         return new_value
 
