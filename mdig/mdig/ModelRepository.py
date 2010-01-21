@@ -44,7 +44,7 @@ class ModelRepository:
         dm = DispersalModel.DispersalModel(model_fn,setup=False)
         dest_dir = os.path.join(repo_dir,dm.get_name())
         if os.path.exists(dest_dir):
-            if self.options.overwrite_flag:
+            if MDiGConfig.getConfig().overwrite_flag:
                 self.log.error("A model with the same name as %s already exists. Use " % model_fn +
                         "'remove' first.")
                 sys.exit(mdig.mdig_exit_codes["exists"])
