@@ -57,8 +57,11 @@ class DispersalInstance:
             self.enabled = False
         
         # These could be null if no variables defined in experiment
-        self.variables = list(p_inst)
-        self.var_keys = list(_var_keys)
+        self.variables = None
+        self.var_keys = None
+        if p_inst:
+            self.variables = list(p_inst)
+            self.var_keys = list(_var_keys)
         
         self.listeners = []
         self.replicates = []
@@ -66,7 +69,7 @@ class DispersalInstance:
         # Control strategy that this instance is associated with, if any
         self.strategy = None
         # extract management strategy from variables
-        if "__management_strategy" == self.var_keys[0]:
+        if self.var_keys and "__management_strategy" == self.var_keys[0]:
             self.strategy = self.variables[0]
             del self.var_keys[0]
             del self.variables[0]

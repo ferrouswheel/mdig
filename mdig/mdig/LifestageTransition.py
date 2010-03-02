@@ -61,8 +61,13 @@ class TVGenerator(list):
         \s*            #matches any number of whitespaces         
         (\w*)          #matches any number (0+) of alphanumeric characters (parameter name)
                 ''', re.VERBOSE)
+        grid_string = ""
         for i in range(len(expressions)):
-            print expressions[i]
+            if i > 0 and i % tm_size == 0:
+                grid_string += "\n"
+            grid_string += "%4s " % expressions[i]
+            # Parse the expressions, find any operators and whether they
+            # include variables
             self.parameters_in_expressions.append([])
             expression_temp = pattern.search(expressions[i]).groups()
             temp_exp_list = []
@@ -87,6 +92,7 @@ class TVGenerator(list):
             # combines elements of tempExpList into a single string and adds them
             # to the expressionList
             self.expanded_expressions.append(''.join(go_between_list))
+        self.log.debug("Expressions for transitions matrix: [\n" + grid_string + " ]")
         self.generate_default_parameter_map(index_values)
 
     def check_parameters(self, index_values):
@@ -106,6 +112,8 @@ class TVGenerator(list):
         return is_okay
 
     def generate_default_parameter_map(self, index_values):
+        """ This makes the parameter for unknown indices the same as the default
+        """
         for i in range(len(self.expanded_expressions)):
             for par in self.parameters_in_expressions[i]:
                 for index_value in index_values:
@@ -143,7 +151,7 @@ class ParamGenerator():
                 g = GRASSInterface.getG()
                 self.map_name = str(vals[0])
                 if (g.checkMap(self.map_name) != "raster"):
-                    raise GRASSInterface.MapNotFoundException()
+                    raise GRASSInterface.MapNotFoundException(self.map_name)
                 map_range = g.getRange()
                 n_rows = int(map_range[8][6:])
                 n_cols = int(map_range[9][6:])
@@ -217,13 +225,14 @@ class LifestageTransition:
 
         # End timing of load process
         load_time = time.time() - start_time
-        self.log.debug('Transition matrix set to %i x %i' % (self.tm_size, self.tm_size) )
         self.log.debug('Transition sources loaded.  Load time %f seconds'
                 % load_time)
+        self.log.debug('Transition matrix size set to %i x %i' % (self.tm_size, self.tm_size) )
 
         # Get the different indexes available
         index_values = GRASSInterface.getG().rasterValueFreq(self.index_source)
         index_values = [int(x[0]) for x in index_values]
+        self.log.debug('Index values found were: ' + str(index_values))
         
         # Create matrix instance
         self.t_matrix = TVGenerator(self.parameters, self.expressions,
@@ -239,14 +248,7 @@ class LifestageTransition:
         # check list of rasters that comprise stages (in order)
         pop_raster_list = GRASSInterface.getG().getRasterList(current_pop_maps)
 
-        # create list of temp output raster names
-        #output_raster_list = []
-        #for i in popRasterList:
-        #    outputRasterList.append(str(i) + "_1")
-        # ^ replaced by passed destination_maps
-
-        # convert GRASS rasters to temp ASCII files
-        print "Converting stage rasters to ASCII..."
+        self.log.debug("Converting stage rasters to ASCII...")
         ascii_pop_rasters = []
         ascii_out_rasters = []
         for i in pop_raster_list:
@@ -255,7 +257,7 @@ class LifestageTransition:
             ascii_pop_rasters.append(data_fn)
             ascii_out_rasters.append(data_out_fn)
 
-        print "Converting index file..."
+        self.log.debug("Converting index file...")
         ascii_indexes = GRASSInterface.getG().indexToAscii(index_raster)
 
         # apply matrix multiplication
@@ -310,17 +312,17 @@ class LifestageTransition:
                 in_row_array[i] = temp_row
 
             # process individual cells
-            # TODO only works if an index map is specified!
+            # TODO: only works if an index map is specified - should
+            # be able to work without one when it's all the same
             for j in range(in_row_array.shape[1]):
                 #Calculate cell coordinates
-                #E = int(rangeData[4][6:])+(j*float(rangeData[7][6:]))
-                #N = int(rangeData[3][6:])+(int(rangeData[2][6:])-row)*float(rangeData[6][6:])
                 coords = (row,j)
 
                 #Create and apply transition matrix instance            
+                # in_row_array[0,j] because that's the index
+                # in_row_array[1:,j] is data
                 tm = self.t_matrix.build_matrix(in_row_array[0,j], coords)
                 
-                #print "T matrix: " + str(MatrixInstance)
                 #print "cell contents: " + str(inRowArray[1:,j]) + str(type(inRowArray[1:,j]))
                 #print "len(cell contents) = " +str(len(inRowArray[1:,j]))
                 pop_cell = in_row_array[1:,j]
@@ -328,6 +330,10 @@ class LifestageTransition:
                 pop_cell = pop_cell.reshape((1, pop_cell.shape[0]))
                 #print "popCell = " + str(popCell)
                 out_cell = numpy.dot(tm,in_row_array[1:,j])
+                #if pop_cell[0,0] != 0:
+                    #print "T matrix: " + str(tm)
+                    #print "before: " + str(pop_cell)
+                    #print "after: " + str(out_cell)
                 #print "outCell_1 = " + str(outCell)
                 #print "outCell_shape = " + str(outCell.shape)
                 out_row_array[0,j] = in_row_array[0,j]
@@ -336,8 +342,8 @@ class LifestageTransition:
             for i in range(array_depth): 
                 if row == 0:
                     fo_out_list[i].writelines(self.header)
-                fo_out_list[i].writelines(str(out_row_array[i]).strip(' []') \
-                        + '\n')
+                self.write_lines_remove_zero(fo_out_list[i], out_row_array[i])
+
             
         for i in range(1,len(fo_out_list)):
             fo_out_list[i].close() # close temp out files
@@ -346,9 +352,22 @@ class LifestageTransition:
             else: # re-write temp ascii files to rasters in GRASS workspace
                 ascii_fn = temp_out_rasters[i-1][1]
                 rast_name = out_pop_rasters[i-1]
-                GRASSInterface.getG().importAsciiToRaster(ascii_fn,rast_name)
+                GRASSInterface.getG().importAsciiToRaster(ascii_fn,rast_name,0)
+
+    def write_lines_remove_zero(self,out_file,out_row):
+        for val in out_row:
+            if val == 0:
+                out_file.write('* ')
+            else:
+                out_file.write(str(val) + " ")
+        out_file.write("\n")
+
+        #out_file.writelines(str(out_row_array[i]).strip(' []') \
+                #+ '\n')
 
     def xml_to_initial_state(self):
+        """ No longer needed! Initial map states come from MDiG """
+        raise DeprecationWarning()
         raster_maps = self.xml_dom.getElementsByTagName("raster")
         #print rasterMaps.childNodes[0].data
         initial_state_maps = []
@@ -430,51 +449,4 @@ class LifestageTransition:
                 expression_list[position].update(formula)
         
         return expression_list
-
-    #Old transition reading from xml file
-    # ASK: to delete?
-    #def xml_to_transition_list(self):
-        #x = self.xml_dom.firstChild
-        #transitions = x.getElementsByTagName("TransitionValue")
-        #transition_list = []
-        #for i in range(self.tm_size*self.tm_size):
-            #transition_list.append(0)
-
-        #for i in transitions:
-            #position = i.getElementsByTagName('position')
-            #position = int(position[0].childNodes[0].data)
-            #source = i.getElementsByTagName('source')
-            #source = str(source[0].childNodes[0].data)
-            #index = i.getElementsByTagName('index')
-            #if source=='CODA':
-                #index = str(index[0].childNodes[0].data)
-            #else:
-                #if str(index[0].childNodes[0].data) == 'None':
-                    #index = None
-                #else: index = int(index[0].childNodes[0].data)
-            #dist = i.getElementsByTagName('distribution')
-            #dist = str(dist[0].childNodes[0].data)
-            #value_list = []
-            #values = i.getElementsByTagName('d')
-            #for i in values:
-                #try:
-                    #if source == 'CODA':
-                        #value_list.append(str(i.childNodes[0].data))
-                    #else:
-                        #value_list.append(float(i.childNodes[0].data))
-                #except:
-                    #pass
-            #if transition_list[position] == 0:
-                ## ASK: This used to initialise TVgenerator_dict
-                #if source == 'CODA':
-                    #transition_list[position] = TVGenerator(source, index, dist,
-                            #value_list)
-                #else:
-                    #transition_list[position] = TVGenerator(source, index, dist,
-                            #value_list)
-            #else:
-                #transition_list[position].update(TVGenerator(source, index, dist,
-                            #value_list))
-        
-        #return transition_list
 

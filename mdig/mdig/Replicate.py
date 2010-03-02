@@ -292,7 +292,7 @@ class Replicate:
                     dest_maps.append(self.temp_map_names[ls_id][1])
                 # Lifestage transition should automatically swap source/dest
                 # maps
-                self.log.debug("Applying lifestage transition matrix" + str(period))
+                self.log.debug("Applying lifestage transition matrix")
                 ls_trans.apply_transition(source_maps,dest_maps)
                 # clean up the source/dest maps so that source=dest and
                 # dest=source

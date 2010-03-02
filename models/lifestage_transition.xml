@@ -1,10 +1,5 @@
 <populationModule>
     <indexMap>landscape</indexMap>
-    <initialState>
-        <raster>stage1</raster>
-        <raster>stage2</raster>
-        <raster>stage3</raster>
-    </initialState>
     <habitatMap>index</habitatMap>
     <ParameterValue>
         <parameterName>B1</parameterName>

@@ -31,7 +31,13 @@ from subprocess import Popen
 import StringIO
 import tempfile
 
-class MapNotFoundException (Exception): pass        
+class MapNotFoundException (Exception):
+    def __init__(self, _map_name=""):
+        self.map_name = _map_name
+
+    def __str__(self):
+        return "MapNotFoundException (map_name=" + self.map_name + ")"
+
 class SetRegionException (Exception): pass        
     
 import DispersalModel
@@ -756,9 +762,11 @@ class GRASSInterface:
                     suffix='.txt', text=True))
         return tempDataFileName, tempOutDataFileName
 
-    def importAsciiToRaster(self, ascii_fn, raster_fn):
+    def importAsciiToRaster(self, ascii_fn, raster_fn, nv = None):
         temp_to_rast_cmd = "r.in.ascii --o input=%s output=%s" % \
             (ascii_fn, raster_fn)
+        if nv:
+            temp_to_rast_cmd += " nv=%s" % str(nv)
         self.runCommand(temp_to_rast_cmd)
 
     def count_sites(self, vmap):
