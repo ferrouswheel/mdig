@@ -1,0 +1,108 @@
+<model>
+  <user>
+    <email>joel.pitt@gmail.com</email>
+  </user>
+  <name> lifestage_test </name>
+  <description>
+    A model demonstrating the use of spread models with
+    multiple lifestages.
+    </description>
+  <random>
+    <!-- Starting seed for replicates -->
+    <initialSeed> 1 </initialSeed>
+    <!-- Number of times to repeat simulation for each combination of parameters -->
+    <replicates> 1 </replicates>
+    <!-- The last state of the random number generator in case the simulation didn't
+			 finish last time -->
+    <offset>14</offset>
+  </random>
+  <regions>
+    <!-- Simulation may be run at different resolutions or in different regions -->
+    <region id="a">
+      <!-- id is for referral from replicates below,
+					    name loads region from file -->
+      <!-- Resolution to run simulation in -->
+      <resolution>1</resolution>
+      <!-- Extent of the region in coordinates -->
+      <!--<extents north="6609068" south="6354012" west="2568074" east="2829814"/>-->
+    </region>
+  </regions>
+  <period>
+    <!-- Time period to run the simulation for -->
+    <startTime> 0 </startTime>
+    <!-- refer to a variable id or use value -->
+    <endTime> 10 </endTime>
+    <!--<step> <value> 1 </value> </step>-->
+    <!--Optionally indicate that simulation steps by step amount-->
+  </period>
+  <output>
+    <!-- Define how to output results -->
+    <!-- Output a map every year -->
+    <raster>
+      <interval>1</interval>
+      <lifestage>seed</lifestage>
+    </raster>
+    <raster>
+      <interval>1</interval>
+      <lifestage>juvenile</lifestage>
+    </raster>
+    <raster>
+      <interval>1</interval>
+      <lifestage>adult</lifestage>
+    </raster>
+  </output>
+  <lifestages>
+    <transition>
+      <popMod file="lifestage_transition.xml"/>
+    </transition>
+    <lifestage name="seed">
+      <initialDistribution region="a">
+        <sites>
+          <s x="0" y="0"/>
+        </sites>
+      </initialDistribution>
+      <phenology region="a">
+        <value> 1 </value>
+      </phenology>
+      <event name="r.mdig.neighbour">
+        <param name="shape">
+          <value>186</value>
+        </param>
+        <param name="radius">
+          <value>1</value>
+        </param>
+      </event>
+    </lifestage>
+    <lifestage name="juvenile">
+      <initialDistribution region="a">
+        <sites>
+          <s x="0" y="0"/>
+        </sites>
+      </initialDistribution>
+      <phenology region="a">
+        <value> 2 </value>
+      </phenology>
+      <event name="r.mdig.survival">
+        <param name="survival">
+          <value>90</value>
+        </param>
+      </event>
+    </lifestage>
+    <lifestage name="adult">
+      <initialDistribution region="a">
+        <sites>
+          <s x="0" y="0"/>
+        </sites>
+      </initialDistribution>
+      <phenology region="a">
+        <value> 3 </value>
+      </phenology>
+      <event name="r.mdig.kernel">
+        <param name="frequency">
+          <value>1</value>
+        </param>
+      </event>
+    </lifestage>
+  </lifestages>
+</model>
+
