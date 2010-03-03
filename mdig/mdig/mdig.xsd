@@ -245,7 +245,7 @@
             <xsd:element name="initialDistribution"
             type="initialDistributionType" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="phenology" type="phenologyType" minOccurs="1" maxOccurs="unbounded"/>
-            <xsd:element name="event" type="eventType" maxOccurs="unbounded"/>
+            <xsd:element name="event" type="eventType" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element name="analyses" minOccurs="0" maxOccurs="1">
                 <xsd:complexType>
                     <xsd:sequence>
