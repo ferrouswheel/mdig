@@ -23,77 +23,42 @@ class TVGenerator(list):
         self.tm_size = tm_size
         self.parameters = parameters
         self.expressions = expressions
-        self.expanded_expressions = []
         self.parameters_in_expressions = []
         self.log = logging.getLogger("mdig.tvgen")
 
         if not self.check_parameters(index_values):
             self.log.error("Parameters were not okay: exiting...")
             sys.exit(mdig.mdig_exit_codes['popmod'])
-
-        # TODO replace the below regex with a more generic and smaller one
-        pattern = re.compile(r'''
-                       #Don't specify matching beginning of string (no ^)
-        \s*            #matches any number of whitespaces         
-        (\w*)          #matches any number (0+) of alphanumeric characters (parameter name)
-        \s*            #matches any number of whitespaces         
-        ([/+/-/*//]?)  #Match any mathematical operators (optional)
-        \s*            #matches any number of whitespaces         
-        (\w*)          #matches any number (0+) of alphanumeric characters (parameter name)
-        \s*            #matches any number of whitespaces         
-        ([/+/-/*//]?)  #Match any mathematical operators (optional)
-        \s*            #matches any number of whitespaces         
-        (\w*)          #matches any number (0+) of alphanumeric characters (parameter name)
-        \s*            #matches any number of whitespaces         
-        ([/+/-/*//]?)  #Match any mathematical operators (optional)
-        \s*            #matches any number of whitespaces         
-        (\w*)          #matches any number (0+) of alphanumeric characters (parameter name)
-        \s*            #matches any number of whitespaces         
-        ([/+/-/*//]?)  #Match any mathematical operators (optional)
-        \s*            #matches any number of whitespaces         
-        (\w*)          #matches any number (0+) of alphanumeric characters (parameter name)
-        \s*            #matches any number of whitespaces         
-        ([/+/-/*//]?)  #Match any mathematical operators (optional)
-        \s*            #matches any number of whitespaces         
-        (\w*)          #matches any number (0+) of alphanumeric characters (parameter name)
-        \s*            #matches any number of whitespaces         
-        ([/+/-/*//]?)  #Match any mathematical operators (optional)
-        \s*            #matches any number of whitespaces         
-        (\w*)          #matches any number (0+) of alphanumeric characters (parameter name)
-                ''', re.VERBOSE)
-        grid_string = ""
+        
+        self.map_pattern = re.compile(r'MAP_(\w*)', re.VERBOSE)
         for i in range(len(expressions)):
-            if i > 0 and i % tm_size == 0:
-                grid_string += "\n"
-            grid_string += "%s " % expressions[i]
-            # Parse the expressions, find any operators and whether they
-            # include variables
-            self.parameters_in_expressions.append([])
-            expression_temp = pattern.search(expressions[i]).groups()
-            temp_exp_list = []
-            go_between_list = []
+            # Parse the expressions
 
-            #remove blank groups from parsing, move expression elements to a
-            # list (tempExpList)
-            for j in expression_temp:
-                if j !='':
-                    temp_exp_list.append(j)
-                    
-            for g in temp_exp_list:
-                #if expression element is a parameter, add 'gen_val' syntax
-                if parameters.has_key(g):
-                    self.parameters_in_expressions[i].append(g)
-                    temp_string = "self.parameters['%s'][%s].gen_val(%s, coords)" % \
-                        (g, "%(index_value)i", "%(index_value)i")
-                    go_between_list.append(temp_string)
-                else:
-                    go_between_list.append(g)
-                    
-            # combines elements of tempExpList into a single string and adds them
-            # to the expressionList
-            self.expanded_expressions.append(''.join(go_between_list))
-        self.log.debug("Expressions for transitions matrix: [\n" + grid_string + " ]")
-        self.generate_default_parameter_map(index_values)
+            # Sort parameter names by length so prefixes don't break longer names
+            p_keys = parameters.keys()
+            p_keys.sort(key=lambda x: -len(x))
+
+            self.parameters_in_expressions.append({})
+            # find all occurrences of parameter names
+            for p in p_keys:
+                if expressions[i].find(p) != -1:
+                    self.parameters_in_expressions[i][p] = 1
+            # search for MAP_* occurrences 
+            matches = self.map_pattern.findall(self.expressions[i])
+            for m in matches:
+                self.parameters_in_expression[i][m.group()] = 1
+            
+        self.log.debug("Expressions for transitions matrix: [\n" + str(self) + " ]")
+        #self.generate_default_parameter_map(index_values)
+
+    def __str__(self):
+        grid_string = ""
+        for i in range(len(self.expressions)):
+            # Code for printing out the matrix
+            if i > 0 and i % self.tm_size == 0:
+                grid_string += "\n"
+            grid_string += "%s " % self.expressions[i]
+        return grid_string
 
     def check_parameters(self, index_values):
         is_okay = True
@@ -123,11 +88,29 @@ class TVGenerator(list):
                         self.parameters[par][int(index_value)] = \
                             self.parameters[par]["None"]
 
-    def build_matrix(self, index_value, coords):
-        tv_list = []
-        for i in range(len(self.expanded_expressions)):
-            t_val = self.expanded_expressions[i] % vars()
-            tv_list.append(eval(t_val))
+    def build_matrix(self, index_value, coords, pop_maps):
+        tv_list=[]
+        for i in range(len(self.expressions)):
+            # arrange parameters so that longest get replaced first
+            keys = self.parameters_in_expressions[i].keys()
+            keys.sort(key=lambda x: -len(x))
+            expanded_expression = self.expressions[i]
+            for param_name in keys:
+                if param_name[0:3] == "MAP":
+                    ls_name = param_name[3:len(param_name)]
+                    if ls_name in pop_maps:
+                        expanded_expression = expanded_expression.replace(param_name, pop_maps[ls_name])
+                    else:
+                        self.log.error("Couldn't find map %s for expression %s" % (ls_name, self.expressions[i]))
+                else:
+                    # check whether index_value exists for parameter
+                    if index_value in self.parameters[param_name]:
+                        expanded_expression = expanded_expression.replace(param_name, \
+                             str(self.parameters[param_name][index_value].gen_val(index_value, coords)))
+                    else:
+                        expanded_expression = expanded_expression.replace(param_name, \
+                             str(self.parameters[param_name]["None"].gen_val(index_value, coords)))
+            tv_list.append(eval(expanded_expression))
         tm = array(tv_list)
         tm = tm.reshape(self.tm_size, self.tm_size)
         return tm
@@ -238,12 +221,12 @@ class LifestageTransition:
         index_values = GRASSInterface.getG().rasterValueFreq(self.index_source)
         index_values = [int(x[0]) for x in index_values]
         self.log.debug('Index values found were: ' + str(index_values))
-        
+
         # Create matrix instance
         self.t_matrix = TVGenerator(self.parameters, self.expressions,
                 self.tm_size, index_values)
 
-    def apply_transition(self, current_pop_maps, destination_maps):
+    def apply_transition(self, ls_ids, current_pop_maps, destination_maps):
         #Timing of process
         start_time = time.time()
 
@@ -266,14 +249,14 @@ class LifestageTransition:
         ascii_indexes = GRASSInterface.getG().indexToAscii(index_raster)
 
         # apply matrix multiplication
-        self.process_rows(ascii_indexes, ascii_pop_rasters, ascii_out_rasters,
+        self.process_rows(ls_ids, ascii_indexes, ascii_pop_rasters, ascii_out_rasters,
                 destination_maps) 
 
         processingTime = time.time() - start_time
         print 'Transition matrix application completed. ' + \
             'Processing time %f seconds' % processingTime
 
-    def process_rows(self, indexes, temp_rasters, temp_out_rasters, \
+    def process_rows(self, ls_ids, indexes, temp_rasters, temp_out_rasters, \
             out_pop_rasters):
         """ Applies an instance of the transition matrix to the population 
         rasters and outputs new rasters to the current GRASS workspace.
@@ -326,7 +309,11 @@ class LifestageTransition:
                 #Create and apply transition matrix instance            
                 # in_row_array[0,j] because that's the index
                 # in_row_array[1:,j] is data
-                tm = self.t_matrix.build_matrix(in_row_array[0,j], coords)
+                pop_maps = {}
+                for l_i in range(0,len(ls_ids)):
+                    pop_maps[ls_ids[l_i]] = in_row_array[l_i+1,j]
+                    
+                tm = self.t_matrix.build_matrix(in_row_array[0,j], coords, pop_maps)
                 
                 #print "cell contents: " + str(inRowArray[1:,j]) + str(type(inRowArray[1:,j]))
                 #print "len(cell contents) = " +str(len(inRowArray[1:,j]))
@@ -369,20 +356,6 @@ class LifestageTransition:
 
         #out_file.writelines(str(out_row_array[i]).strip(' []') \
                 #+ '\n')
-
-    def xml_to_initial_state(self):
-        """ No longer needed! Initial map states come from MDiG """
-        raise DeprecationWarning()
-        raster_maps = self.xml_dom.getElementsByTagName("raster")
-        #print rasterMaps.childNodes[0].data
-        initial_state_maps = []
-        try:
-            for i in raster_maps:
-                initial_state_maps.append(str(i.childNodes[0].data))
-        except IndexError:
-            print "Index Error - Blank initial_state raster specification " + \
-                "in XML file?"         
-        return initial_state_maps
 
     def xml_to_index(self):
         x = self.xml_dom.firstChild

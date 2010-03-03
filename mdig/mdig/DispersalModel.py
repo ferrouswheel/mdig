@@ -72,6 +72,7 @@ class DispersalModel(object):
         self.model_filename = model_file
         self.backup_filename = None
         self.regions={}
+        self.ls_ids=None
         self.lifestages={}
         self.instances = None
         self.strategies = None
@@ -687,11 +688,12 @@ class DispersalModel(object):
         return maps
     
     def get_lifestage_ids(self):
-        nodes = self.xml_model.xpath('/model/lifestages/lifestage')
-        ls = {}
-        for node in nodes:
-            ls[node.attrib["name"]] = node
-        return ls
+        if not self.ls_ids:
+            self.ls_ids = []
+            nodes = self.xml_model.xpath('/model/lifestages/lifestage')
+            for node in nodes:
+                self.ls_ids.append(node.attrib["name"])
+        return self.ls_ids
         
     def get_lifestage(self, ls_id):
         if ls_id in self.lifestages.keys():

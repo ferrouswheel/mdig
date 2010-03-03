@@ -284,6 +284,7 @@ class Replicate:
             # invoke lifestage transitions
             ls_trans = self.instance.experiment.get_lifestage_transition()
             if ls_trans:
+                # 
                 # build lists of source/dest maps
                 source_maps = []
                 dest_maps = []
@@ -293,7 +294,7 @@ class Replicate:
                 # Lifestage transition should automatically swap source/dest
                 # maps
                 self.log.debug("Applying lifestage transition matrix")
-                ls_trans.apply_transition(source_maps,dest_maps)
+                ls_trans.apply_transition(ls_keys, source_maps,dest_maps)
                 # clean up the source/dest maps so that source=dest and
                 # dest=source
                 for ls_id in ls_keys:
