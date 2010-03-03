@@ -10,6 +10,7 @@ from subprocess import Popen
 
 from scipy.io import read_array
 
+import math
 import numpy
 from numpy import vstack, concatenate, random, array
 
@@ -150,7 +151,6 @@ class ParamGenerator():
             elif source == 'CODA':
                 self.coda = {}
                 self.coda_index = read_array(index)
-                #import pdb; pdb.set_trace()
                 for i in range(len(vals)):
                     temp = read_array(vals[i])
                     if i == 0:
@@ -168,21 +168,26 @@ class ParamGenerator():
                 self.static = vals[0]
         except IOError:
             print '%s   %s   %s   %s parameter value source coding not valid' %(source, index, dist, vals)
+            self.log.error("Are your CODA files okay?")
+            sys.exit(849)
 
     def gen_val(self, index_value, coords):
         """Draws a random CODA iteration from the range specified in index for
            the corresponding parameter level
         """
         if self.source == 'CODA':
-           return self.coda[index_value][random.random_integers(0,len(self.coda[index_value]))]
+            if index_value in self.coda:
+                return self.coda[index_value][random.random_integers(0,len(self.coda[index_value]))]
+            elif int(index_value) in self.coda:
+                return self.coda[int(index_value)][random.random_integers(0,len(self.coda[int(index_value)]))]
         elif self.source == 'random':
-           return eval(self.str)
+            return eval(self.str)
         elif self.source == 'zero':
-           return 0
+            return 0
         elif self.source == 'static':
-           return self.static
+            return self.static
         elif self.source == 'map':
-           return self.mat[coords[0], coords[1]]
+            return self.mat[coords[0], coords[1]]
 
 class LifestageTransition:
 
