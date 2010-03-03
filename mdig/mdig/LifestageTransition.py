@@ -65,7 +65,7 @@ class TVGenerator(list):
         for i in range(len(expressions)):
             if i > 0 and i % tm_size == 0:
                 grid_string += "\n"
-            grid_string += "%4s " % expressions[i]
+            grid_string += "%s " % expressions[i]
             # Parse the expressions, find any operators and whether they
             # include variables
             self.parameters_in_expressions.append([])
@@ -144,6 +144,7 @@ class ParamGenerator():
         self.data = [0]
         self.source = source
         self.coda = None
+        self.log = logging.getLogger("mdig.paramgen")
         print '%s   %s   %s   %s is parameter value source' %(source, index, dist, vals)
         try:
             if source == 'map':
@@ -157,7 +158,11 @@ class ParamGenerator():
                 n_cols = int(map_range[9][6:])
                 cmd = "r.out.ascii -h input=" + self.map_name
                 p = Popen(cmd, shell=True, stdout=subprocess.PIPE)
-                self.mat = numpy.matrix(p.communicate()[0])
+                map_ascii = p.communicate()[0]
+                if map_ascii.find('*') != -1:
+                    self.log.error("Null values in parameter map %s not allowed" % self.map_name) 
+                    sys.exit(53)
+    	        self.mat = numpy.matrix(map_ascii)
                 self.mat = self.mat.reshape((n_rows,n_cols))
             elif source == 'CODA':
                 self.coda = []
