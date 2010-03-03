@@ -148,17 +148,18 @@ class ParamGenerator():
     	        self.mat = numpy.matrix(map_ascii)
                 self.mat = self.mat.reshape((n_rows,n_cols))
             elif source == 'CODA':
-                self.coda = []
-                self.coda.append(read_array(index))
+                self.coda = {}
+                self.coda_index = read_array(index)
+                #import pdb; pdb.set_trace()
                 for i in range(len(vals)):
                     temp = read_array(vals[i])
                     if i == 0:
-                        for j in range(len(self.coda[0])):
-                            self.coda.append(temp[int(self.coda[0][j,1])-1:int(self.coda[0][j,2]),1])
+                        for j in range(len(self.coda_index[:,0])):
+                            self.coda[j+1] = temp[int(self.coda_index[j,1])-1:int(self.coda_index[j,2]),1]
                     else:
-                        for j in range(len(self.coda[0])):
+                        for j in range(len(self.coda_index[:,0])):
                             self.coda[j+1] = concatenate((self.coda[j+1], \
-                                temp[int(self.coda[0][j,1]-1):int(self.coda[0][j,2]), 1]))
+                                temp[int(self.coda_index[j,1]-1):int(self.coda_index[j,2]), 1]))
             elif source == 'random':
                 self.str = ("(%s.%s(%f,%f))" %(source, dist, vals[0], vals[1]))
 #elif source == 'zero':
@@ -402,7 +403,12 @@ class LifestageTransition:
                         value_list.append(str(v.childNodes[0].data))
                     else: value_list.append(float(v.childNodes[0].data))
                 except: pass
-            param_dict[parameter][index] = ParamGenerator(source, index, dist,
+            if source == 'CODA':
+                # Not actually None, but CODA deals with index within gen_val
+                param_dict[parameter]["None"] = ParamGenerator(source, index, dist,
+                    value_list)
+            else:
+                param_dict[parameter][index] = ParamGenerator(source, index, dist,
                     value_list)
             self.log.debug("Adding parameter " + parameter + " [index " +
                     str(index) + "]")
