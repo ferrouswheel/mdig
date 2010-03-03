@@ -124,7 +124,7 @@ class ParamGenerator():
     Produces either static or random values,
     from source specified in xml file.
     """
-    def __init__(self, source, index, dist, vals):
+    def __init__(self, source, index, dist, vals, model_dir):
         self.data = [0]
         self.source = source
         self.coda = None
@@ -150,9 +150,12 @@ class ParamGenerator():
                 self.mat = self.mat.reshape((n_rows,n_cols))
             elif source == 'CODA':
                 self.coda = {}
-                self.coda_index = read_array(index)
+                prefix = ""
+                if not os.path.exists(index):
+                    prefix = model_dir
+                self.coda_index = read_array(os.path.join(prefix,index))
                 for i in range(len(vals)):
-                    temp = read_array(vals[i])
+                    temp = read_array(os.path.join(prefix,vals[i]))
                     if i == 0:
                         for j in range(len(self.coda_index[:,0])):
                             self.coda[j+1] = temp[int(self.coda_index[j,1])-1:int(self.coda_index[j,2]),1]
@@ -177,9 +180,9 @@ class ParamGenerator():
         """
         if self.source == 'CODA':
             if index_value in self.coda:
-                return self.coda[index_value][random.random_integers(0,len(self.coda[index_value]))]
+                return self.coda[index_value][random.random_integers(0,len(self.coda[index_value])-1)]
             elif int(index_value) in self.coda:
-                return self.coda[int(index_value)][random.random_integers(0,len(self.coda[int(index_value)]))]
+                return self.coda[int(index_value)][random.random_integers(0,len(self.coda[int(index_value)])-1)]
         elif self.source == 'random':
             return eval(self.str)
         elif self.source == 'zero':
@@ -196,6 +199,7 @@ class LifestageTransition:
         start_time = time.time()
 
 #self.m_instance = model_instance 
+        self.model = model
         self.log = logging.getLogger("mdig.popmod")
 
         # XML parsing
@@ -206,7 +210,7 @@ class LifestageTransition:
         # same as number of lifestages
         self.tm_size = len(model.get_lifestage_ids())
 
-        self.parameters = self.xml_to_param()
+        self.parameters = self.xml_to_param(model.base_dir)
         self.expressions = self.xml_to_expression_list()
 
         # determine size of rasters
@@ -375,7 +379,7 @@ class LifestageTransition:
         output_file = str(output_file_source[0].childNodes[0].data)
         return output_file
 
-    def xml_to_param(self):
+    def xml_to_param(self, model_dir):
         x = self.xml_dom.firstChild
         parameters = x.getElementsByTagName("ParameterValue")
         param_dict = {}
@@ -411,10 +415,10 @@ class LifestageTransition:
             if source == 'CODA':
                 # Not actually None, but CODA deals with index within gen_val
                 param_dict[parameter]["None"] = ParamGenerator(source, index, dist,
-                    value_list)
+                    value_list, model_dir)
             else:
                 param_dict[parameter][index] = ParamGenerator(source, index, dist,
-                    value_list)
+                    value_list, model_dir)
             self.log.debug("Adding parameter " + parameter + " [index " +
                     str(index) + "]")
         return param_dict
