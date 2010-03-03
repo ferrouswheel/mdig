@@ -44,13 +44,12 @@ class ModelRepository:
         dm = DispersalModel.DispersalModel(model_fn,setup=False)
         dest_dir = os.path.join(repo_dir,dm.get_name())
         if os.path.exists(dest_dir):
-            if MDiGConfig.getConfig().overwrite_flag:
+            if not MDiGConfig.getConfig().overwrite_flag:
                 self.log.error("A model with the same name as %s already exists. Use " % model_fn +
                         "'remove' first.")
                 sys.exit(mdig.mdig_exit_codes["exists"])
             else:
-                self.log.warning("A model with the same name as %s already exists." +
-                        " Overwriting...")
+                self.log.warning("A model with the same name as %s already exists. Overwriting." % dm.get_name())
                 shutil.rmtree(dest_dir)
         MDiGConfig.makepath(dest_dir)
         self.log.info("Created repo dir for model " + dm.get_name())
