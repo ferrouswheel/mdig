@@ -47,7 +47,7 @@ class TVGenerator(list):
             # search for MAP_* occurrences 
             matches = self.map_pattern.findall(self.expressions[i])
             for m in matches:
-                self.parameters_in_expression[i][m.group()] = 1
+                self.parameters_in_expressions[i][m.group()] = 1
             
         self.log.debug("Expressions for transitions matrix: [\n" + str(self) + " ]")
         #self.generate_default_parameter_map(index_values)
@@ -146,7 +146,7 @@ class ParamGenerator():
                 if map_ascii.find('*') != -1:
                     self.log.error("Null values in parameter map %s not allowed" % self.map_name) 
                     sys.exit(53)
-    	        self.mat = numpy.matrix(map_ascii)
+                self.mat = numpy.matrix(map_ascii)
                 self.mat = self.mat.reshape((n_rows,n_cols))
             elif source == 'CODA':
                 self.coda = {}
@@ -201,6 +201,10 @@ class LifestageTransition:
 #self.m_instance = model_instance 
         self.model = model
         self.log = logging.getLogger("mdig.popmod")
+
+        # Do lifestage transitions by individual rather than using
+        # matrix multiplication. (SLOW!)
+        self.by_individual = True
 
         # XML parsing
         self.xml_dom = xml.dom.minidom.parse(xml_file)
@@ -331,7 +335,37 @@ class LifestageTransition:
                 #print "popCell.shape = " + str(popCell.shape)
                 pop_cell = pop_cell.reshape((1, pop_cell.shape[0]))
                 #print "popCell = " + str(popCell)
-                out_cell = numpy.dot(tm,in_row_array[1:,j])
+                
+        # Long way to calculate transition, by individual behaviour
+                if self.by_individual:
+                    n_ls = pop_cell.shape[1]
+                    out_cell = numpy.zeros(n_ls)
+                    for ls_pop in range(0,n_ls):
+                        if pop_cell[0,ls_pop] == 0: continue
+                        norm_tm = tm[:,ls_pop]
+                        sum_col = norm_tm.sum()
+                        if sum_col > 1.0:
+                            norm_tm = norm_tm / sum_col
+                            # stochastically decide if decimal part of sum
+                            # considered an individual
+                            remainder = sum_col - int(sum_col)
+                            if random.rand() < remainder:
+                                sum_col = int(sum_col) + 1
+                            else:
+                                sum_col = int(sum_col)
+                        else: sum_col = 1
+                        x = random.rand(int(pop_cell[0,ls_pop] * sum_col))
+                        threshold = 0; sum_so_far = 0
+                        for ls_dest in range(0,n_ls):
+                            threshold += norm_tm[ls_dest]
+                            individuals = (x < threshold).sum()
+                            out_cell[ls_dest] += individuals - sum_so_far
+                            sum_so_far = individuals
+                else:
+                    out_cell2 = numpy.dot(tm,in_row_array[1:,j])
+                out_cell2 = numpy.dot(tm,in_row_array[1:,j])
+                if out_cell2[0] != 0:
+                    import pdb; pdb.set_trace()
                 #if pop_cell[0,0] != 0:
                     #print "T matrix: " + str(tm)
                     #print "before: " + str(pop_cell)
