@@ -8,11 +8,9 @@ import xml.dom.minidom
 import subprocess
 from subprocess import Popen
 
-from scipy.io import read_array
-
 import math
 import numpy
-from numpy import vstack, concatenate, random, array
+from numpy import vstack, concatenate, random, array, loadtxt
 
 import mdig
 import GRASSInterface
@@ -153,9 +151,10 @@ class ParamGenerator():
                 prefix = ""
                 if not os.path.exists(index):
                     prefix = model_dir
-                self.coda_index = read_array(os.path.join(prefix,index))
+                self.coda_index = \
+                    loadtxt(os.path.join(prefix,index),converters={0: lambda x: 0.0})
                 for i in range(len(vals)):
-                    temp = read_array(os.path.join(prefix,vals[i]))
+                    temp = loadtxt(os.path.join(prefix,vals[i]),converters={0: lambda x: 0.0})
                     if i == 0:
                         for j in range(len(self.coda_index[:,0])):
                             self.coda[j+1] = temp[int(self.coda_index[j,1])-1:int(self.coda_index[j,2]),1]
@@ -204,9 +203,10 @@ class LifestageTransition:
 
         # Do lifestage transitions by individual rather than using
         # matrix multiplication. (SLOW!)
-        self.by_individual = True
+        self.by_individual = False
 
         # XML parsing
+        self.xml_file = xml_file
         self.xml_dom = xml.dom.minidom.parse(xml_file)
         self.index_source = self.xml_to_index()
 
@@ -214,7 +214,12 @@ class LifestageTransition:
         # same as number of lifestages
         self.tm_size = len(model.get_lifestage_ids())
 
-        self.parameters = self.xml_to_param(model.base_dir)
+        if model.base_dir:
+            self.parameters = self.xml_to_param(model.base_dir)
+        else:
+            # This should only occur when loading files during model addition
+            # to repository
+            self.parameters = self.xml_to_param(os.path.dirname(self.xml_file))
         self.expressions = self.xml_to_expression_list()
 
         # determine size of rasters
@@ -362,10 +367,9 @@ class LifestageTransition:
                             out_cell[ls_dest] += individuals - sum_so_far
                             sum_so_far = individuals
                 else:
-                    out_cell2 = numpy.dot(tm,in_row_array[1:,j])
-                out_cell2 = numpy.dot(tm,in_row_array[1:,j])
-                if out_cell2[0] != 0:
-                    import pdb; pdb.set_trace()
+                    out_cell = numpy.dot(tm,in_row_array[1:,j])
+                #if out_cell2[0] != 0:
+                    #import pdb; pdb.set_trace()
                 #if pop_cell[0,0] != 0:
                     #print "T matrix: " + str(tm)
                     #print "before: " + str(pop_cell)
@@ -477,3 +481,38 @@ class LifestageTransition:
         
         return expression_list
 
+    def get_coda_files_in_xml(self):
+        x = self.xml_dom.firstChild
+        parameters = x.getElementsByTagName("ParameterValue")
+        coda_files = []
+
+        for i in parameters:
+            source = str(i.getElementsByTagName('source')[0].childNodes[0].data)
+            index = i.getElementsByTagName('index')
+            if source=='CODA':
+                index = str(index[0].childNodes[0].data)
+                coda_files.append(index)
+                values = i.getElementsByTagName('d')
+                for v in values:
+                    if len(v.childNodes) > 0:
+                        coda_files.append(str(v.childNodes[0].data))
+        return coda_files
+
+    def set_coda_files_in_xml(self, coda_files):
+        x = self.xml_dom.firstChild
+        parameters = x.getElementsByTagName("ParameterValue")
+        counter=0
+        for i in parameters:
+            source = str(i.getElementsByTagName('source')[0].childNodes[0].data)
+            index = i.getElementsByTagName('index')
+            if source=='CODA':
+                index[0].childNodes[0].data = coda_files[counter]
+                counter += 1
+                values = i.getElementsByTagName('d')
+                for v in values:
+                    if len(v.childNodes) > 0:
+                        v.childNodes[0].data = coda_files[counter]
+                        counter += 1
+        file_out = open(self.xml_file,'w')
+        self.xml_dom.writexml(file_out,addindent=" ")
+        file_out.close()

@@ -158,7 +158,22 @@ class GRASSInterface:
     def clearMonitor(self):
         os.environ['GRASS_PNG_READ']="FALSE"
 
-    def paintMap(self, map_name):
+    def paintMap(self, map_name, layer=None):
+        """ Draw map_name on to the currently active GRASS monitor """
+        if layer != None:
+            colors = { 0: [(0,255,0), (0,50,0)],
+                 1: [(255,255,0), (50,50,0)],
+                 2: [(255,0,0), (50,0,0)],
+                 3: [(0,0,255), (0,0,50)]
+            }
+            if layer in colors:
+                pcolor= subprocess.Popen('r.colors map=%s rules=-' % map_name, \
+                        shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                rule_string = "0%% %d:%d:%d\n" % colors[layer][1]
+                rule_string += "100%% %d:%d:%d\n" % colors[layer][0]
+                rule_string += 'end'
+                output = pcolor.communicate(rule_string)[0]
+
         self.runCommand('d.rast map=%s -x -o bg=white' % map_name, logging.DEBUG)
         os.environ['GRASS_PNG_READ']="TRUE"
         

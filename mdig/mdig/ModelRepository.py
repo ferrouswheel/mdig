@@ -46,7 +46,7 @@ class ModelRepository:
         if os.path.exists(dest_dir):
             if not MDiGConfig.getConfig().overwrite_flag:
                 self.log.error("A model with the same name as %s already exists. Use " % model_fn +
-                        "'remove' first.")
+                        "'remove' first or use overwrite flag.")
                 sys.exit(mdig.mdig_exit_codes["exists"])
             else:
                 self.log.warning("A model with the same name as %s already exists. Overwriting." % dm.get_name())
@@ -64,8 +64,24 @@ class ModelRepository:
                     self.log.error("Can't find internally specified popmod lifestage transition file!")
                     sys.exit(mdig.mdig_exit_codes["missing_popmod"])
             
+            lt = dm.get_lifestage_transition()
+            coda_files = lt.get_coda_files_in_xml()
+            new_coda_files = []
+            for cf in coda_files:
+                # check if this exists, directly and then relative to transition file
+                if not os.path.exists(cf):
+                    cf = os.path.join(os.path.dirname(src_file), cf)
+                    if not os.path.exists(cf):
+                        self.log.error("Can't find internally specified " + \
+                                "lifestage transition CODA file!")
+                        sys.exit(mdig.mdig_exit_codes["missing_popmod"])
+                shutil.copyfile(cf,os.path.join(dest_dir,os.path.basename(cf)))
+                new_coda_files.append(os.path.basename(cf))
+            lt.set_coda_files_in_xml(new_coda_files)
+
             shutil.copyfile(src_file,os.path.join(dest_dir,"lifestage_transition.xml"))
             dm.set_popmod_file("lifestage_transition.xml")
+            
 
         # write dispersal model to new dir 
         #shutil.copyfile(model_fn,os.path.join(dest_dir,"model.xml"))
