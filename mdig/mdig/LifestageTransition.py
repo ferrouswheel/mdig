@@ -341,7 +341,7 @@ class LifestageTransition:
                 pop_cell = pop_cell.reshape((1, pop_cell.shape[0]))
                 #print "popCell = " + str(popCell)
                 
-        # Long way to calculate transition, by individual behaviour
+                # Long way to calculate transition, by individual behaviour
                 if self.by_individual:
                     n_ls = pop_cell.shape[1]
                     out_cell = numpy.zeros(n_ls)
@@ -370,10 +370,10 @@ class LifestageTransition:
                     out_cell = numpy.dot(tm,in_row_array[1:,j])
                 #if out_cell2[0] != 0:
                     #import pdb; pdb.set_trace()
-                #if pop_cell[0,0] != 0:
-                    #print "T matrix: " + str(tm)
-                    #print "before: " + str(pop_cell)
-                    #print "after: " + str(out_cell)
+                if pop_cell[0,0] != 0:
+                    print "T matrix: " + str(tm)
+                    print "before: " + str(pop_cell)
+                    print "after: " + str(out_cell)
                 #print "outCell_1 = " + str(outCell)
                 #print "outCell_shape = " + str(outCell.shape)
                 out_row_array[0,j] = in_row_array[0,j]

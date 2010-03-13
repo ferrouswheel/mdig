@@ -77,7 +77,7 @@ class DispersalModel(object):
         self.instances = None
         self.strategies = None
         self.activeInstances = []
-        self.lifestage_transition = None
+        self.lifestage_transitions = None
         
         schema_file = sys.path[0]+"/mdig/mdig.xsd"
         self.load_xml(model_file)
@@ -376,12 +376,13 @@ class DispersalModel(object):
         nodes = self.xml_model.xpath('/model/name')
         nodes[0].text = name
         
-    def get_popmod_file(self):
+    def get_popmod_files(self):
         nodes = self.xml_model.xpath('/model/lifestages/transition/popMod')
-        if len(nodes) == 1:
-            return nodes[0].attrib['file']
-        else:
-            return None
+        files = []
+        if len(nodes) > 1:
+            for i in nodes:
+                files.append(i.attrib['file'])
+        return files
 
     def set_popmod_file(self,filename):
         nodes = self.xml_model.xpath('/model/lifestages/transition/popMod')
@@ -708,14 +709,15 @@ class DispersalModel(object):
                 self.log.error(
                         "Could not get unique lifestage from id '%s'" % ls_id)
         
-    def get_lifestage_transition(self):
-        if self.lifestage_transition is None:
-            popmod_xml = self.get_popmod_file()
-            if popmod_xml is not None:
-                self.lifestage_transition = \
+    def get_lifestage_transitions(self):
+        if self.lifestage_transitions is None:
+            self.lifestage_transitions = []
+            popmod_xml_files = self.get_popmod_files()
+            for popmod_xml in popmod_xml_files:
+                self.lifestage_transitions.append( \
                     LifestageTransition(os.path.join(self.get_instances_dir(), \
-                                popmod_xml), self)
-        return self.lifestage_transition
+                                popmod_xml), self))
+        return self.lifestage_transitions
 
     def get_period(self):
         start_time = int(self.xml_model.xpath(
