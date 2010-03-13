@@ -400,14 +400,17 @@ class ListAction(Action):
         ms=models.keys()[:]
         ms.sort()
         for m in ms:
-            dm = DispersalModel(models[m],setup=False)
-            tw = TextWrapper(expand_tabs = False, replace_whitespace = True )
-            tw.initial_indent = " "*4
-            tw.subsequent_indent = " "*4
-            desc = dm.get_description()
-            desc = re.sub("[\\s\\t]+"," ",desc)
-            desc = tw.fill(desc)
-            print "" + m + ":\n" + desc
+            try:
+                dm = DispersalModel(models[m],setup=False)
+                tw = TextWrapper(expand_tabs = False, replace_whitespace = True )
+                tw.initial_indent = " "*4
+                tw.subsequent_indent = " "*4
+                desc = dm.get_description()
+                desc = re.sub("[\\s\\t]+"," ",desc)
+                desc = tw.fill(desc)
+                print "" + m + ":\n" + desc
+            except mdig.DispersalModel.ValidationError, e:
+                pass
         sys.exit(0)
 
 class InfoAction(Action):
