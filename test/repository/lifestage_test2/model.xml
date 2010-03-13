@@ -14,7 +14,7 @@
     <replicates> 1 </replicates>
     <!-- The last state of the random number generator in case the simulation didn't
 			 finish last time -->
-    <offset>41</offset>
+    <offset>43</offset>
   </random>
   <regions>
     <!-- Simulation may be run at different resolutions or in different regions -->
@@ -103,8 +103,8 @@
     <completed>
       <region id="a"/>
       <replicates>
-        <replicate ts="1267681040.9437089">
-          <seed>2115454254</seed>
+        <replicate ts="1267846717.7665589">
+          <seed>-1628262459</seed>
           <lifestage id="seed">
 <maps><map time="0">lifestage_test2_region_a_rep_0_ls_seed_0</map><map time="1">lifestage_test2_region_a_rep_0_ls_seed_1</map><map time="2">lifestage_test2_region_a_rep_0_ls_seed_2</map><map time="3">lifestage_test2_region_a_rep_0_ls_seed_3</map><map time="4">lifestage_test2_region_a_rep_0_ls_seed_4</map><map time="5">lifestage_test2_region_a_rep_0_ls_seed_5</map><map time="6">lifestage_test2_region_a_rep_0_ls_seed_6</map><map time="7">lifestage_test2_region_a_rep_0_ls_seed_7</map><map time="8">lifestage_test2_region_a_rep_0_ls_seed_8</map><map time="9">lifestage_test2_region_a_rep_0_ls_seed_9</map><map time="10">lifestage_test2_region_a_rep_0_ls_seed_10</map></maps></lifestage>
           <lifestage id="juvenile">
