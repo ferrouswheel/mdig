@@ -406,19 +406,19 @@ class LifestageTransition:
                 #+ '\n')
 
     def xml_to_index(self):
-        x = self.xml_dom.firstChild
+        x = self.xml_dom.getElementsByTagName("populationModule")[0]
         hab_source = x.getElementsByTagName("indexMap")
         index = str(hab_source[0].childNodes[0].data)
         return index
 
     def xml_to_output_file(self):
-        x = self.xml_dom.firstChild
+        x = self.xml_dom.getElementsByTagName("populationModule")[0]
         output_file_source = x.getElementsByTagName("outputFile")
         output_file = str(output_file_source[0].childNodes[0].data)
         return output_file
 
     def xml_to_param(self, model_dir):
-        x = self.xml_dom.firstChild
+        x = self.xml_dom.getElementsByTagName("populationModule")[0]
         parameters = x.getElementsByTagName("ParameterValue")
         param_dict = {}
 
@@ -462,7 +462,7 @@ class LifestageTransition:
         return param_dict
 
     def xml_to_expression_list(self):
-        x = self.xml_dom.firstChild
+        x = self.xml_dom.getElementsByTagName("populationModule")[0]
         expressions = x.getElementsByTagName("expression")
         expression_list = [0]*(self.tm_size * self.tm_size)
 
@@ -475,14 +475,14 @@ class LifestageTransition:
             if expression_list[position] == 0:
                 expression_list[position] = formula
             else:
-                self.log.warning("Expression for position " + position + \
-                        "already exists, overwriting...")
-                expression_list[position].update(formula)
+                self.log.warning("Expression for position " + str(position) + \
+                        " already exists, overwriting...")
+                expression_list[position] = formula
         
         return expression_list
 
     def get_coda_files_in_xml(self):
-        x = self.xml_dom.firstChild
+        x = self.xml_dom.getElementsByTagName("populationModule")[0]
         parameters = x.getElementsByTagName("ParameterValue")
         coda_files = []
 
@@ -499,7 +499,7 @@ class LifestageTransition:
         return coda_files
 
     def set_coda_files_in_xml(self, coda_files):
-        x = self.xml_dom.firstChild
+        x = self.xml_dom.getElementsByTagName("populationModule")[0]
         parameters = x.getElementsByTagName("ParameterValue")
         counter=0
         for i in parameters:

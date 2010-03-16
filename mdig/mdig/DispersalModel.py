@@ -375,23 +375,36 @@ class DispersalModel(object):
     def set_name(self,name):
         nodes = self.xml_model.xpath('/model/name')
         nodes[0].text = name
+
+    def find_file(self,fn):
+        # Check for absolute path
+        if os.path.exists(fn):
+            return fn
+        # Check for file in instances dir first...
+        i_dir = self.get_instances_dir()
+        if i_dir:
+            fn2 = os.path.join(i_dir, fn)
+            if os.path.exists(fn2):
+                return fn2
+        # Check relative to model file
+        fn2 = os.path.join(os.path.dirname(self.model_filename), fn)
+        if os.path.exists(fn2):
+            return fn2
+        return None
         
     def get_popmod_files(self):
         nodes = self.xml_model.xpath('/model/lifestages/transition/popMod')
         files = []
         if len(nodes) > 1:
             for i in nodes:
-                files.append(i.attrib['file'])
+                fn = i.attrib['file']
+                fn2 = self.find_file(fn)
+                if fn2 is None:
+                    self.log.error("Can't find file %s" % fn)
+                    sys.exit(44)
+                files.append(fn2)
         return files
 
-    def set_popmod_file(self,filename):
-        nodes = self.xml_model.xpath('/model/lifestages/transition/popMod')
-        if len(nodes) == 1:
-            nodes[0].attrib['file'] = filename
-            return filename
-        else:
-            return None
-        
     def get_initial_random_seed(self):
         nodes = self.xml_model.xpath('/model/random/initialSeed')
         if len(nodes) == 1:
@@ -715,8 +728,7 @@ class DispersalModel(object):
             popmod_xml_files = self.get_popmod_files()
             for popmod_xml in popmod_xml_files:
                 self.lifestage_transitions.append( \
-                    LifestageTransition(os.path.join(self.get_instances_dir(), \
-                                popmod_xml), self))
+                    LifestageTransition(popmod_xml, self))
         return self.lifestage_transitions
 
     def get_period(self):

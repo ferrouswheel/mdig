@@ -55,8 +55,8 @@ class ModelRepository:
         self.log.info("Created repo dir for model " + dm.get_name())
 
         # copy lifestage transition model file if it exists
-        if dm.get_popmod_file() is not None:
-            src_file = dm.get_popmod_file()
+        for pm in dm.get_popmod_files():
+            src_file = pm
             # check if this exists, directly and then relative to model file
             if not os.path.exists(src_file):
                 src_file = os.path.join(os.path.dirname(model_fn), src_file)
@@ -64,24 +64,21 @@ class ModelRepository:
                     self.log.error("Can't find internally specified popmod lifestage transition file!")
                     sys.exit(mdig.mdig_exit_codes["missing_popmod"])
             
-            lt = dm.get_lifestage_transition()
-            coda_files = lt.get_coda_files_in_xml()
-            new_coda_files = []
-            for cf in coda_files:
-                # check if this exists, directly and then relative to transition file
-                if not os.path.exists(cf):
-                    cf = os.path.join(os.path.dirname(src_file), cf)
+            for lt in dm.get_lifestage_transitions():
+                coda_files = lt.get_coda_files_in_xml()
+                new_coda_files = []
+                for cf in coda_files:
+                    # check if this exists, directly and then relative to transition file
                     if not os.path.exists(cf):
-                        self.log.error("Can't find internally specified " + \
-                                "lifestage transition CODA file!")
-                        sys.exit(mdig.mdig_exit_codes["missing_popmod"])
-                shutil.copyfile(cf,os.path.join(dest_dir,os.path.basename(cf)))
-                new_coda_files.append(os.path.basename(cf))
-            lt.set_coda_files_in_xml(new_coda_files)
-
-            shutil.copyfile(src_file,os.path.join(dest_dir,"lifestage_transition.xml"))
-            dm.set_popmod_file("lifestage_transition.xml")
-            
+                        cf = os.path.join(os.path.dirname(src_file), cf)
+                        if not os.path.exists(cf):
+                            self.log.error("Can't find internally specified " + \
+                                    "lifestage transition CODA file!")
+                            sys.exit(mdig.mdig_exit_codes["missing_popmod"])
+                    shutil.copyfile(cf,os.path.join(dest_dir,os.path.basename(cf)))
+                    new_coda_files.append(os.path.basename(cf))
+                lt.set_coda_files_in_xml(new_coda_files)
+            shutil.copyfile(src_file,os.path.join(dest_dir,os.path.basename(src_file)))
 
         # write dispersal model to new dir 
         #shutil.copyfile(model_fn,os.path.join(dest_dir,"model.xml"))
