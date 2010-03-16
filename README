@@ -4,7 +4,9 @@ MDiG - Modular Dispersal in GIS
 
 General:
 
-* GRASS 6.4 or later, hasn't been tested with the new GRASS 7.0
+* GRASS 6.4RC5 or later, hasn't been tested with the new GRASS 7.0.
+    In particular, we recommend an SVN snapshot as RC5 has an annoying
+    g.region issue that can be confusing for new users.
 
     http://grass.itc.it/download/index.php
 
