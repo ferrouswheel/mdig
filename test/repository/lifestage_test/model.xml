@@ -14,7 +14,7 @@
     <replicates> 1 </replicates>
     <!-- The last state of the random number generator in case the simulation didn't
 			 finish last time -->
-    <offset>14</offset>
+    <offset>21</offset>
   </random>
   <regions>
     <!-- Simulation may be run at different resolutions or in different regions -->
@@ -24,7 +24,7 @@
       <!-- Resolution to run simulation in -->
       <resolution>1</resolution>
       <!-- Extent of the region in coordinates -->
-      <!--<extents north="6609068" south="6354012" west="2568074" east="2829814"/>-->
+      <extents north="16" south="0" west="0" east="10"/>
     </region>
   </regions>
   <period>
@@ -58,7 +58,7 @@
     <lifestage name="seed">
       <initialDistribution region="a">
         <sites>
-          <s x="0" y="0"/>
+          <s x="1" y="1" count="10"/>
         </sites>
       </initialDistribution>
       <phenology region="a">
@@ -74,31 +74,26 @@
       </event>
     </lifestage>
     <lifestage name="juvenile">
-      <initialDistribution region="a">
-        <sites>
-          <s x="0" y="0"/>
-        </sites>
-      </initialDistribution>
       <phenology region="a">
         <value> 2 </value>
       </phenology>
       <event name="r.mdig.survival">
         <param name="survival">
-          <value>90</value>
+          <value>1</value>
         </param>
       </event>
     </lifestage>
     <lifestage name="adult">
       <initialDistribution region="a">
         <sites>
-          <s x="0" y="0"/>
+          <s x="1" y="1"/>
         </sites>
       </initialDistribution>
       <phenology region="a">
         <value> 3 </value>
       </phenology>
-      <event name="r.mdig.kernel">
-        <param name="frequency">
+      <event name="r.mdig.survival">
+        <param name="survival">
           <value>1</value>
         </param>
       </event>

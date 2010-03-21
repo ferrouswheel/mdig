@@ -35,7 +35,7 @@ class ModelRepository:
     def add_model(self, model_fn):
         import shutil
         if not os.path.isfile(model_fn):
-            log.error("Model file %s is not a file."%model_fn)
+            self.log.error("Model file %s is not a file."%model_fn)
             sys.exit(5)
 
         # create dir in repo
