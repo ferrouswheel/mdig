@@ -43,8 +43,8 @@ class TVGenerator(list):
                 if expressions[i].find(p) != -1:
                     self.parameters_in_expressions[i][p] = 1
             # search for MAP_* occurrences 
-            matches = self.map_pattern.findall(self.expressions[i])
-            for m in matches:
+            #matches = self.map_pattern.findall(self.expressions[i])
+            for m in self.map_pattern.finditer(self.expressions[i]):
                 self.parameters_in_expressions[i][m.group()] = 1
             
         self.log.debug("Expressions for transitions matrix: [\n" + str(self) + " ]")
@@ -89,6 +89,7 @@ class TVGenerator(list):
 
     def build_matrix(self, index_value, coords, pop_maps):
         tv_list=[]
+	
         for i in range(len(self.expressions)):
             # arrange parameters so that longest get replaced first
             keys = self.parameters_in_expressions[i].keys()
@@ -106,6 +107,12 @@ class TVGenerator(list):
                     if index_value in self.parameters[param_name]:
                         expanded_expression = expanded_expression.replace(param_name, \
                              str(self.parameters[param_name][index_value].gen_val(index_value, coords)))
+                    # protect against float based index maps when
+                    # parameters use int
+                    elif int(index_value) in self.parameters[param_name]:
+			int_index = int(index_value)
+                        expanded_expression = expanded_expression.replace(param_name, \
+                             str(self.parameters[param_name][int_index].gen_val(int_index, coords)))
                     else:
                         expanded_expression = expanded_expression.replace(param_name, \
                              str(self.parameters[param_name]["None"].gen_val(index_value, coords)))
@@ -408,7 +415,7 @@ class LifestageTransition:
     def xml_to_index(self):
         x = self.xml_dom.getElementsByTagName("populationModule")[0]
         hab_source = x.getElementsByTagName("indexMap")
-        index = str(hab_source[0].childNodes[0].data)
+        index = str(hab_source[0].childNodes[0].data).strip()
         return index
 
     def xml_to_output_file(self):
@@ -428,6 +435,7 @@ class LifestageTransition:
                 param_dict[parameter] = {}
                 
             source = str(i.getElementsByTagName('source')[0].childNodes[0].data)
+            source = source.strip()
             index = i.getElementsByTagName('index')
             if source=='CODA':
                 index = str(index[0].childNodes[0].data)
