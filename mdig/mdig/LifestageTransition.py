@@ -119,9 +119,16 @@ class TVGenerator(list):
                         expanded_expression = expanded_expression.replace(param_name, \
                              str(self.parameters[param_name]["None"].gen_val(index_value, coords)))
             try:
-                tv_list.append(eval(expanded_expression))
+                expression_result = eval(expanded_expression)
+                tv_list.append(expression_result)
             except ZeroDivisionError:
-                self.log.error("ZeroDivisionError in expression: %s" % expanded_expression)
+                self.log.error("ZeroDivisionError in expression" + \
+                        ": %s" % expanded_expression)
+                sys.exit()
+            except NameError, e:
+                self.log.error("%s in expression" + \
+                        ": %s" % (str(e),expanded_expression))
+                sys.exit()
         tm = array(tv_list)
         tm = tm.reshape(self.tm_size, self.tm_size)
         return tm
@@ -531,5 +538,5 @@ class LifestageTransition:
                         v.childNodes[0].data = coda_files[counter]
                         counter += 1
         file_out = open(self.xml_file,'w')
-        self.xml_dom.writexml(file_out,addindent=" ")
+        self.xml_dom.writexml(file_out)
         file_out.close()
