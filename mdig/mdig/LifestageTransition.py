@@ -97,9 +97,11 @@ class TVGenerator(list):
             expanded_expression = self.expressions[i]
             for param_name in keys:
                 if param_name[0:3] == "MAP":
-                    ls_name = param_name[3:len(param_name)]
+                    ls_name = param_name[4:len(param_name)]
+                    print "ls stage is " + ls_name
+                    print "pop_maps keys " + str(pop_maps)
                     if ls_name in pop_maps:
-                        expanded_expression = expanded_expression.replace(param_name, pop_maps[ls_name])
+                        expanded_expression = expanded_expression.replace(param_name, str(pop_maps[ls_name]))
                     else:
                         self.log.error("Couldn't find map %s for expression %s" % (ls_name, self.expressions[i]))
                 else:
@@ -116,7 +118,10 @@ class TVGenerator(list):
                     else:
                         expanded_expression = expanded_expression.replace(param_name, \
                              str(self.parameters[param_name]["None"].gen_val(index_value, coords)))
-            tv_list.append(eval(expanded_expression))
+            try:
+                tv_list.append(eval(expanded_expression))
+            except ZeroDivisionError:
+                self.log.error("ZeroDivisionError in expression: %s" % expanded_expression)
         tm = array(tv_list)
         tm = tm.reshape(self.tm_size, self.tm_size)
         return tm
@@ -421,7 +426,7 @@ class LifestageTransition:
     def xml_to_output_file(self):
         x = self.xml_dom.getElementsByTagName("populationModule")[0]
         output_file_source = x.getElementsByTagName("outputFile")
-        output_file = str(output_file_source[0].childNodes[0].data)
+        output_file = str(output_file_source[0].childNodes[0].data).strip()
         return output_file
 
     def xml_to_param(self, model_dir):
@@ -431,6 +436,7 @@ class LifestageTransition:
 
         for i in parameters:
             parameter = str(i.getElementsByTagName('parameterName')[0].childNodes[0].data)
+            parameter = parameter.strip()
             if parameter not in param_dict:
                 param_dict[parameter] = {}
                 
@@ -438,7 +444,7 @@ class LifestageTransition:
             source = source.strip()
             index = i.getElementsByTagName('index')
             if source=='CODA':
-                index = str(index[0].childNodes[0].data)
+                index = str(index[0].childNodes[0].data).strip()
             elif source=='map':
                 # TODO check that index actually equals None in file
                 index = 'None'
@@ -447,17 +453,19 @@ class LifestageTransition:
                     index = 'None'
                 else: index = int(index[0].childNodes[0].data)
             dist = i.getElementsByTagName('distribution')
-            dist = str(dist[0].childNodes[0].data)
+            dist = str(dist[0].childNodes[0].data).strip()
             value_list = []
             values = i.getElementsByTagName('d')
             for v in values:
                 try:
                     if source == 'CODA':
-                        value_list.append(str(v.childNodes[0].data))
+                        value_list.append(str(v.childNodes[0].data).strip())
                     if source == 'map':
-                        value_list.append(str(v.childNodes[0].data))
-                    else: value_list.append(float(v.childNodes[0].data))
-                except: pass
+                        value_list.append(str(v.childNodes[0].data).strip())
+                    else:
+                        value_list.append(float(v.childNodes[0].data.strip()))
+                except:
+                    pass
             if source == 'CODA':
                 # Not actually None, but CODA deals with index within gen_val
                 param_dict[parameter]["None"] = ParamGenerator(source, index, dist,
@@ -476,9 +484,9 @@ class LifestageTransition:
 
         for i in expressions:
             position = i.getElementsByTagName('position')
-            position = int(position[0].childNodes[0].data)
+            position = int(position[0].childNodes[0].data.strip())
             formula = i.getElementsByTagName('formula')
-            formula = str(formula[0].childNodes[0].data)
+            formula = str(formula[0].childNodes[0].data).strip()
             
             if expression_list[position] == 0:
                 expression_list[position] = formula
@@ -496,14 +504,15 @@ class LifestageTransition:
 
         for i in parameters:
             source = str(i.getElementsByTagName('source')[0].childNodes[0].data)
+            source = source.strip()
             index = i.getElementsByTagName('index')
             if source=='CODA':
-                index = str(index[0].childNodes[0].data)
+                index = str(index[0].childNodes[0].data).strip()
                 coda_files.append(index)
                 values = i.getElementsByTagName('d')
                 for v in values:
                     if len(v.childNodes) > 0:
-                        coda_files.append(str(v.childNodes[0].data))
+                        coda_files.append(str(v.childNodes[0].data).strip())
         return coda_files
 
     def set_coda_files_in_xml(self, coda_files):
