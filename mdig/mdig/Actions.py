@@ -142,6 +142,10 @@ class RunAction(Action):
                 help="Do lifestage transitions by individual (SLOW)",
                 action="store_true",
                 dest="ls_trans_individual")
+        self.parser.add_option("-z","--ignore-div-by-zero",
+                help="Ignore div by zero when carrying out lifestage transitions",
+                action="store_true",
+                dest="ls_trans_ignore_div_by_zero")
         self.parser.add_option("-d","--dir",
                 help="Base directory to save output in (don't use repository)",
                 action="store",
@@ -176,8 +180,13 @@ class RunAction(Action):
         if self.options.show_monitor:
             mdig_model.add_listener(Displayer.Displayer())
         if self.options.ls_trans_individual:
-            mdig_model.get_lifestage_transition().by_individual = True
-
+            self.log.debug("Calculating lifestage transitions by individual. This is SLOW.")
+            for i in mdig_model.get_lifestage_transitions():
+                i.by_individual = True
+        if self.options.ls_trans_ignore_div_by_zero:
+            self.log.debug("Will ignoring division by zero errors in lifestage transition.")
+            for i in mdig_model.get_lifestage_transitions():
+                i.ignore_div_by_zero = True
         if self.options.rerun_instances:
             self.log.debug("Resetting model so all replicates will be rerun")
             mdig_model.resetInstances()

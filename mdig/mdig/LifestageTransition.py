@@ -124,7 +124,10 @@ class TVGenerator(list):
             except ZeroDivisionError:
                 self.log.error("ZeroDivisionError in expression" + \
                         ": %s" % expanded_expression)
-                sys.exit()
+                if not self.ignore_div_by_zero:
+                    sys.exit()
+                else:
+                    tv_list.append(0.0)
             except NameError, e:
                 self.log.error("%s in expression" + \
                         ": %s" % (str(e),expanded_expression))
@@ -223,6 +226,10 @@ class LifestageTransition:
         # Do lifestage transitions by individual rather than using
         # matrix multiplication. (SLOW!)
         self.by_individual = False
+
+        # Should we continue if an expression in the transition matrix tries to
+        # divide by zero? Default: abort
+        self.ignore_div_by_zero = False
 
         # XML parsing
         self.xml_file = xml_file
