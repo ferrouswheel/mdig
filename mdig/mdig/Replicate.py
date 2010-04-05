@@ -94,7 +94,8 @@ class Replicate:
             except MapMissingException, e:
                 missing_maps[ls_key]=e.missing_maps
                 complete=False
-                self.log.warning("Maps missing from replicate %s", repr(missing_maps[ls_key]))
+                self.log.warning("Maps missing from replicate, marked as " + \
+                        "incomplete: %s", repr(missing_maps[ls_key]))
 
         # If all maps listed in xml are present, then check there is one for
         # every year that is expected to have map output
@@ -227,10 +228,18 @@ class Replicate:
         
         exp = self.instance.experiment
         
-        self.log.log(logging.INFO, "Replicate %d/%d of exp. instance [var_keys: %s, vars: %s ]"\
-                     % (self.instance.replicates.index(self) + 1, exp.get_num_replicates(),\
-                        repr(self.instance.var_keys),repr(self.instance.variables)))
-        self.log.log(logging.INFO, "Management strategy is %s" % self.instance.strategy)
+        var_dict = None
+        if self.instance.var_keys:
+            var_dict = dict(zip(self.instance.var_keys, self.instance.variables)) 
+        rep_info_str = "Replicate %d/%d of exp. instance" % \
+            (self.instance.replicates.index(self) + 1, exp.get_num_replicates())
+        if var_dict:
+            rep_info_str += " [vars: %s]" % repr(var_dict)
+        if self.instance.strategy:
+            rep_info_str += " [strategy: %s]" % self.instance.strategy
+        if MDiGConfig.getConfig().output_level == "normal":
+            print rep_info_str
+        self.log.log(logging.INFO, rep_info_str)
         
         self.instance.set_region()
         
@@ -309,7 +318,6 @@ class Replicate:
                     self.log.log(logging.INFO, 'Interval %d - Lifestage "%s"' \
                             ' started',current_interval,ls_key)
                     lifestage.run(current_interval,self,self.temp_map_names[ls_key],strategy)
-                    print self.temp_map_names
                 self.log.log(logging.INFO, 'Interval %d completed.',current_interval)
 
             # Run Analyses for each lifestage

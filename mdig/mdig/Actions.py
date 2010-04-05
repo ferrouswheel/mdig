@@ -73,6 +73,8 @@ class Action:
         elif options.output_level == "quiet":
             self.output_level = "quiet"
             logging.getLogger("mdig").handlers[0].setLevel(logging.ERROR)
+        # Make the verbosity level globally available through the config object
+        MDiGConfig.getConfig().output_level = self.output_level
         if options.repository is not None:
             self.repository = options.repository 
             self.log.debug("Repository location manually set to " + options.repository)

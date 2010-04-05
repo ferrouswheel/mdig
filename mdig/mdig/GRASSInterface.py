@@ -342,8 +342,9 @@ class GRASSInterface:
         vector_prefix = "v____"
         cmd = 'v.in.ascii output=' + vector_prefix + name + ' cat=3'
         if self.log.getEffectiveLevel() >= logging.DEBUG:
+            # Hide the v.in.ascii output unless FINE debuggins is on
             p = Popen(cmd, shell=True, stdin=subprocess.PIPE, \
-                    stdout=subprocess.PIPE)
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         else:
             p = Popen(cmd, shell=True, stdin=subprocess.PIPE)
             
@@ -413,19 +414,19 @@ class GRASSInterface:
                     elif key == "west":
                         extent_string += 'w=' + str(extents[key] + ' ')
             else:
-                self.log.warning("Region didn't define extents")
+                self.log.warning("Region %s didn't define extents" % region.id)
 
             res = region.getResolution()
             if res is not None:
                 res_str = 'res=' + repr(res)
             else:
-                self.log.warning("Region didn't define resolution")
+                self.log.warning("Region %s didn't define resolution" % region.id)
             
             self.log.debug("Setting region using extents %s and res %s",
                     repr(extent_string), repr(res))
             ret = self.runCommand(command_string + extent_string + res_str)
         if ret is None:
-            self.log.error("Error setting region")
+            self.log.error("Error setting region %s" % region.id)
             raise SetRegionException()
         else:
             return True
