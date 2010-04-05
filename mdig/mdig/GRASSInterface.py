@@ -753,14 +753,15 @@ class GRASSInterface:
         if null_as_zero: null_char = '0'
         imp_cmd = "r.out.ascii -hi input=%s output=- null=%s" % (rasterName,null_char)
         data = subprocess.Popen(imp_cmd, shell=True, stdout=subprocess.PIPE)
-        tempDataFileName = (tempfile.mkstemp(prefix = 'popMod_inRast_', \
+        tempDataFile, tempDataFileName = (tempfile.mkstemp(prefix = 'popMod_inRast_', \
                     suffix='.txt', text=True))
-        tempDataFile = open(tempDataFileName[1], 'w')
+        tempDataFile = os.fdopen(tempDataFile, 'w')
         tempDataFile.write(data.communicate()[0])
         tempDataFile.close()
         if IO==1:
-            tempOutDataFileName = (tempfile.mkstemp(prefix='popMod_outRast_', \
+            tempOutDataFile, tempOutDataFileName = (tempfile.mkstemp(prefix='popMod_outRast_', \
                         suffix='.txt', text=True))
+            os.close(tempOutDataFile)
             return tempDataFileName, tempOutDataFileName
         else:
             return tempDataFileName
@@ -770,14 +771,15 @@ class GRASSInterface:
         # export index to temporary ascii map
         imp_cmd = "r.out.ascii -hi input=%s output=-" % (indexRaster)
         data = subprocess.Popen(imp_cmd, shell=True, stdout=subprocess.PIPE)
-        tempDataFileName = (tempfile.mkstemp(prefix='popMod_inIndex_', \
+        tempDataFile, tempDataFileName = (tempfile.mkstemp(prefix='popMod_inIndex_', \
                     suffix='.txt', text=True))
-        tempDataFile = open(tempDataFileName[1], 'w')
+        tempDataFile = os.fdopen(tempDataFile, 'w')
         tempDataFile.write(data.communicate()[0])
         tempDataFile.close()
         # create temporary output filename for ascii index map
-        tempOutDataFileName = (tempfile.mkstemp(prefix='popMod_outIndex_', \
+        tempOutDataFile, tempOutDataFileName = (tempfile.mkstemp(prefix='popMod_outIndex_', \
                     suffix='.txt', text=True))
+        os.close(tempOutDataFile)
         return tempDataFileName, tempOutDataFileName
 
     def importAsciiToRaster(self, ascii_fn, raster_fn, nv = None):

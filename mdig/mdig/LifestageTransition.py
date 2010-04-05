@@ -325,17 +325,17 @@ class LifestageTransition:
         fo_out_list = []
 
         # add readable file object containing index data
-        f_in = open(indexes[0][1])
+        f_in = open(indexes[0])
         fo_in_list.append(f_in)
         # 2nd (write) index file once opened erases contents of temp file
-        f_out = open(indexes[1][1], 'w')
+        f_out = open(indexes[1], 'w')
         fo_out_list.append(f_out)
 
         # add read and write file objects containing stage raster data
         for i in range(len(temp_rasters)):
-            f_in = open(temp_rasters[i][1])
+            f_in = open(temp_rasters[i])
             fo_in_list.append(f_in)
-            f_out = open(temp_out_rasters[i][1], 'w')
+            f_out = open(temp_out_rasters[i], 'w')
             fo_out_list.append(f_out)
     
         # Append array with raster data file objects from list        
@@ -415,12 +415,16 @@ class LifestageTransition:
             
         for i in range(1,len(fo_out_list)):
             fo_out_list[i].close() # close temp out files
+            fo_in_list[i].close() # close temp in files
             if i==0:
                 pass # closes index file without re-writing it
             else: # re-write temp ascii files to rasters in GRASS workspace
-                ascii_fn = temp_out_rasters[i-1][1]
+                ascii_fn = temp_out_rasters[i-1]
                 rast_name = out_pop_rasters[i-1]
                 GRASSInterface.getG().importAsciiToRaster(ascii_fn,rast_name,0)
+            # remove temporary ascii map files
+            os.remove(temp_rasters[i-1])
+            os.remove(temp_out_rasters[i-1])
 
     def write_lines_remove_zero(self,out_file,out_row):
         for val in out_row:
