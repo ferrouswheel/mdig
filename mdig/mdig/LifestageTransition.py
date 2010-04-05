@@ -3,6 +3,7 @@ import sys
 import os
 import logging
 import re
+import pdb
 import xml.dom.minidom
 
 import subprocess
@@ -10,6 +11,7 @@ from subprocess import Popen
 
 import math
 import numpy
+
 from numpy import vstack, concatenate, random, array, loadtxt
 
 import mdig
@@ -24,6 +26,10 @@ class TVGenerator(list):
         self.expressions = expressions
         self.parameters_in_expressions = []
         self.log = logging.getLogger("mdig.tvgen")
+
+        # Should we continue if an expression in the transition matrix tries to
+        # divide by zero? Default: abort
+        self.ignore_div_by_zero = False
 
         if not self.check_parameters(index_values):
             self.log.error("Parameters were not okay: exiting...")
@@ -226,10 +232,6 @@ class LifestageTransition:
         # Do lifestage transitions by individual rather than using
         # matrix multiplication. (SLOW!)
         self.by_individual = False
-
-        # Should we continue if an expression in the transition matrix tries to
-        # divide by zero? Default: abort
-        self.ignore_div_by_zero = False
 
         # XML parsing
         self.xml_file = xml_file

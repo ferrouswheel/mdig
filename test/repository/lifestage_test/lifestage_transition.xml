@@ -79,11 +79,11 @@
     <ParameterValue>
         <parameterName>B3</parameterName>
         <source>CODA</source>
-        <index>~/trowel/mdig/CODA/fecundityCODAindex.txt</index>
+        <index>fecundityCODAindex.txt</index>
         <distribution>None</distribution>
         <values>
-            <d>~/trowel/mdig/CODA/fecundityCODAchain1.txt</d>
-            <d>~/trowel/mdig/CODA/fecundityCODAchain2.txt</d>
+            <d>fecundityCODAchain1.txt</d>
+            <d>fecundityCODAchain2.txt</d>
             <d></d>
         </values>
     </ParameterValue>
@@ -189,11 +189,11 @@
     <ParameterValue>
         <parameterName>B8</parameterName>
         <source>CODA</source>
-        <index>~/trowel/mdig/CODA/floweringCODAindex.txt</index>
+        <index>floweringCODAindex.txt</index>
         <distribution>None</distribution>
         <values>
-            <d>~/trowel/mdig/CODA/floweringCODAchain1.txt</d>
-            <d>~/trowel/mdig/CODA/floweringCODAchain2.txt</d>
+            <d>floweringCODAchain1.txt</d>
+            <d>floweringCODAchain2.txt</d>
             <d></d>
         </values>
     </ParameterValue>

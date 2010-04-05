@@ -395,14 +395,13 @@ class DispersalModel(object):
     def get_popmod_files(self):
         nodes = self.xml_model.xpath('/model/lifestages/transition/popMod')
         files = []
-        if len(nodes) > 1:
-            for i in nodes:
-                fn = i.attrib['file']
-                fn2 = self.find_file(fn)
-                if fn2 is None:
-                    self.log.error("Can't find file %s" % fn)
-                    sys.exit(44)
-                files.append(fn2)
+        for i in nodes:
+            fn = i.attrib['file']
+            fn2 = self.find_file(fn)
+            if fn2 is None:
+                self.log.error("Can't find file %s" % fn)
+                sys.exit(44)
+            files.append(fn2)
         return files
 
     def get_initial_random_seed(self):

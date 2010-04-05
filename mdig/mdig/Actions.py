@@ -179,6 +179,7 @@ class RunAction(Action):
         
         if self.options.show_monitor:
             mdig_model.add_listener(Displayer.Displayer())
+
         if self.options.ls_trans_individual:
             self.log.debug("Calculating lifestage transitions by individual. This is SLOW.")
             for i in mdig_model.get_lifestage_transitions():
@@ -186,7 +187,7 @@ class RunAction(Action):
         if self.options.ls_trans_ignore_div_by_zero:
             self.log.debug("Will ignoring division by zero errors in lifestage transition.")
             for i in mdig_model.get_lifestage_transitions():
-                i.ignore_div_by_zero = True
+                i.t_matrix.ignore_div_by_zero = True
         if self.options.rerun_instances:
             self.log.debug("Resetting model so all replicates will be rerun")
             mdig_model.resetInstances()
