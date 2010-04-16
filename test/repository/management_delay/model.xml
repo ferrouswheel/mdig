@@ -82,12 +82,4 @@
         </strategy>
     </management>
     
-<instances baseDir="/home/joel/src/mdig/test/repository/management_delay"><completed><region id="a"/><variable id="shape">186</variable><replicates><replicate ts="1255325663.895751">
-<seed>-1207824196</seed><lifestage id="all">
-<maps><map time="0">management_delay_region_a_shape_186_rep_0_ls_all_0</map><map time="1">management_delay_region_a_shape_186_rep_0_ls_all_1</map><map time="2">management_delay_region_a_shape_186_rep_0_ls_all_2</map><map time="3">management_delay_region_a_shape_186_rep_0_ls_all_3</map><map time="4">management_delay_region_a_shape_186_rep_0_ls_all_4</map><map time="5">management_delay_region_a_shape_186_rep_0_ls_all_5</map></maps></lifestage></replicate><replicate ts="1255325665.7070291">
-<seed>-902879557</seed><lifestage id="all">
-<maps><map time="0">management_delay_region_a_shape_186_rep_1_ls_all_0</map><map time="1">management_delay_region_a_shape_186_rep_1_ls_all_1</map><map time="2">management_delay_region_a_shape_186_rep_1_ls_all_2</map><map time="3">management_delay_region_a_shape_186_rep_1_ls_all_3</map><map time="4">management_delay_region_a_shape_186_rep_1_ls_all_4</map><map time="5">management_delay_region_a_shape_186_rep_1_ls_all_5</map></maps></lifestage></replicate></replicates></completed><completed><region id="a"/><strategy name="delay"/><variable id="shape">186</variable><replicates><replicate ts="1255325667.954041">
-<seed>1449883903</seed><lifestage id="all">
-<maps><map time="0">management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_0</map><map time="1">management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_1</map><map time="2">management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_2</map><map time="3">management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_3</map><map time="4">management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_4</map><map time="5">management_delay_region_a_strategy_delay_shape_186_rep_0_ls_all_5</map></maps></lifestage></replicate><replicate ts="1255325670.3986521">
-<seed>611148597</seed><lifestage id="all">
-<maps><map time="0">management_delay_region_a_strategy_delay_shape_186_rep_1_ls_all_0</map><map time="1">management_delay_region_a_strategy_delay_shape_186_rep_1_ls_all_1</map><map time="2">management_delay_region_a_strategy_delay_shape_186_rep_1_ls_all_2</map><map time="3">management_delay_region_a_strategy_delay_shape_186_rep_1_ls_all_3</map><map time="4">management_delay_region_a_strategy_delay_shape_186_rep_1_ls_all_4</map><map time="5">management_delay_region_a_strategy_delay_shape_186_rep_1_ls_all_5</map></maps></lifestage></replicate></replicates></completed></instances></model>
+</model>

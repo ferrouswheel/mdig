@@ -102,21 +102,5 @@
       </event>
     </lifestage>
   </lifestages>
-  <instances baseDir="/home/joel/src/mdig/test/repository/lifestage_test_multi">
-    <completed>
-      <region id="a"/>
-      <replicates>
-        <replicate ts="1268448101.7261939">
-          <seed>1277339347</seed>
-          <lifestage id="seed">
-<maps><map time="0">lifestage_test_multi_region_a_rep_0_ls_seed_0</map><map time="1">lifestage_test_multi_region_a_rep_0_ls_seed_1</map><map time="2">lifestage_test_multi_region_a_rep_0_ls_seed_2</map><map time="3">lifestage_test_multi_region_a_rep_0_ls_seed_3</map><map time="4">lifestage_test_multi_region_a_rep_0_ls_seed_4</map></maps></lifestage>
-          <lifestage id="juvenile">
-<maps><map time="0">lifestage_test_multi_region_a_rep_0_ls_juvenile_0</map><map time="1">lifestage_test_multi_region_a_rep_0_ls_juvenile_1</map><map time="2">lifestage_test_multi_region_a_rep_0_ls_juvenile_2</map><map time="3">lifestage_test_multi_region_a_rep_0_ls_juvenile_3</map><map time="4">lifestage_test_multi_region_a_rep_0_ls_juvenile_4</map></maps></lifestage>
-          <lifestage id="adult">
-<maps><map time="0">lifestage_test_multi_region_a_rep_0_ls_adult_0</map><map time="1">lifestage_test_multi_region_a_rep_0_ls_adult_1</map><map time="2">lifestage_test_multi_region_a_rep_0_ls_adult_2</map><map time="3">lifestage_test_multi_region_a_rep_0_ls_adult_3</map><map time="4">lifestage_test_multi_region_a_rep_0_ls_adult_4</map></maps></lifestage>
-        </replicate>
-      </replicates>
-    </completed>
-  </instances>
 </model>
 
