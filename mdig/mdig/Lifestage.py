@@ -279,7 +279,6 @@ class Lifestage:
 #               return True
 #       return False
     
-    
     def analyses(self):
         if len(self.analysis_list) == 0:
             nodes = self.xml_node.xpath("analyses/analysis")
@@ -287,9 +286,7 @@ class Lifestage:
             for node in nodes:
                 a=Analysis(node)
                 self.analysis_list.append(a)
-
-        for i in self.analysis_list:
-            yield i
+        return self.analysis_list
 
     def clean_up_maps(self):
         for grassmap in self.initial_maps.values():

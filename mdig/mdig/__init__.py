@@ -45,6 +45,7 @@ mdig_exit_codes = {
     "coda_file": 60, # error loading coda file
     "tmatrix": 61, # error applying transition matrix
     "null_map": 62, # null in parameter map
+    "up_to_date": 70, # model is all up to date, nothing to be done
 
 }
 repository = None

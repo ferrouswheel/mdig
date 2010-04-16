@@ -708,7 +708,7 @@ class GRASSInterface:
             #cmd = "r.info -m %s --v" %(indexRaster)
             #r = grass.pipe_command(cmd) 
             #r.stdout, r.stderr = r.communicate()
-        self.log.info("Index raster set to " + str(indexRaster))
+        self.log.debug('Index raster set to "' + str(indexRaster) + '"')
         return indexRaster
 
     def raster_to_ascii(self,rasterName, IO=1, null_as_zero=False):

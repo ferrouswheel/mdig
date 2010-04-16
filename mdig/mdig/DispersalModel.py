@@ -263,6 +263,11 @@ class DispersalModel(object):
                 
         self.active = False
         self.end_time = datetime.now()
+
+    def log_instance_times(self):
+        self.log.info("Average time to run replicates for each instance:")
+        for i in self.get_instances():
+            self.log.info("%s: %s" % (str(i), str(i.get_average_time())))
         
     def is_complete(self):
         for i in self.get_instances():

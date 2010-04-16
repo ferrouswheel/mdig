@@ -193,7 +193,11 @@ class RunAction(Action):
             mdig_model.resetInstances()
         elif mdig_model.is_complete():
             self.log.error("Model is up to date (use -a to force reset and rerun instances)")
+            sys.exit(mdig.mdig_exit_codes['up_to_date'])
         mdig_model.run()
+        time_taken = mdig_model.end_time - mdig_model.start_time
+        mdig_model.log_instance_times()
+        print "Total time taken: %s" % time_taken
 
 class AnalysisAction(Action):
     description = "Perform analysis on a model and create occupancy envelopes"
@@ -447,7 +451,7 @@ class InfoAction(Action):
         Action.act_on_options(self,options)
 
     def do_me(self,mdig_model):
-        print repr(mdig_model)
+        print str(mdig_model)
         if self.options.complete_flag:
             mstr=[]
             mstr.append( "Complete: " )
@@ -744,7 +748,7 @@ class AdminAction(Action):
             instances = mdig_model.get_instances()
             counter = 0
             for i in instances:
-                print( "%d: %s" % (counter, str(i) ))
+                print( "%d: %s" % (counter, i.long_str() ))
                 counter += 1
         if self.options.toggle_instances is not None:
             instances = mdig_model.get_instances()

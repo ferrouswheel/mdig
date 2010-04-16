@@ -29,6 +29,9 @@ import string
 import os
 import time
 import pdb
+import datetime
+
+import mdig
 
 import GRASSInterface 
 import MDiGConfig
@@ -60,6 +63,8 @@ class Replicate:
         self.map_intervals = None
         # used to keep track of index in replicates while loading:
         self.r_index = r_index
+        # used to calculate time taken to complete
+        self.start_time = None
 
         if node is None:
             self.node = self.instance.experiment.add_replicate(self.instance.node)
@@ -282,6 +287,8 @@ class Replicate:
         # TODO strategies should be pre initialised with instances
         if strategy is not None:
             strategy.set_instance(self.instance)
+
+        self.start_time = datetime.datetime.now()
         
         for t in range(period[0],period[1]+1):
             self.current_t = t
@@ -324,12 +331,16 @@ class Replicate:
             for ls_id in ls_keys:
                 l = self.instance.experiment.get_lifestage(ls_id)
                 analyses = l.analyses()
-                self.log.log(logging.INFO, 'Lifestage %s - Running analyses',ls_id)
-                for a in analyses:
-                    a.run(self.temp_map_names[ls_key][0], self)
-                self.log.log(logging.INFO, 'Lifestage %s - Analyses complete',ls_id)
-            
+                if len(analyses) > 0:
+                    self.log.info('Lifestage %s - Running analyses',ls_id)
+                    for a in analyses:
+                        a.run(self.temp_map_names[ls_key][0], self)
+                    self.log.info('Lifestage %s - Analyses complete',ls_id)
+                else:
+                    self.log.debug('Lifestage %s - No analyses',ls_id)
             self.fire_time_completed(t)
+
+        self.instance.rep_times.append(datetime.datetime.now() - self.start_time)
 
         self.instance.remove_active_rep(self)
         self.instance.experiment.save_model()

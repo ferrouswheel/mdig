@@ -30,6 +30,7 @@ import os
 import time
 import pdb
 import string
+import datetime
 
 import lxml
 
@@ -48,6 +49,9 @@ class DispersalInstance:
         self.node = node
         self.experiment = exp
         self.r_id = r_id
+
+        # used to record times to complete replicate 
+        self.rep_times = []
 
         # Indicates whether actions should be applied to this instance
         # or whether it should be skipped.
@@ -271,10 +275,18 @@ class DispersalInstance:
         if rep not in self.activeReps:
             self.activeReps.append(rep)
             self.experiment.add_active_instance(self)
+
+    def get_average_time(self):
+        sum_time = datetime.timedelta()
+        for i in self.rep_times:
+            sum_time += i
+        return sum_time / len(self.rep_times)
     
     def reset(self):
         while len(self.replicates) > 0:
             self.remove_rep(self.replicates[-1])
+        # reset rep times
+        self.rep_times = []
     
     def get_occupancy_envelopes(self):
         prob_env = {}
@@ -283,7 +295,6 @@ class DispersalInstance:
             return None
         
         ls_nodes = self.node.xpath('envelopes/lifestage')
-        
         
         if len(ls_nodes) == 0:
             self.log.debug("Probability envelopes don't exist yet")
@@ -502,6 +513,30 @@ class DispersalInstance:
             self.node.attrib["enabled"] = "false"
 
     def __str__(self):
+        s = "[Instance "
+        if not self.enabled:
+            s += "*disabled* -"
+        else:
+            s += "-"
+        if self.strategy is not None:
+            s += " s:" + self.strategy + ";"
+        if self.var_keys is not None:
+            s += " p: {"
+            for vv in zip(self.var_keys, self.variables):
+                 s += str(vv) + ","
+            s += "};"
+        s += " region: " + self.r_id + ";"
+        s += " replicates: " + str(len([x for x in self.replicates if x.complete])) \
+                  + "/" + str(self.experiment.get_num_replicates()) + ";"
+        if len(self.activeReps) > 0:
+            s += " active: " + str(self.activeReps)
+        else:
+            s += " active: None"
+            #s+= " (complete/total [active]) "
+        s += "]"
+        return s
+
+    def long_str(self):
         s = "[DispersalInstance] "
         if not self.enabled:
             s += "*DISABLED* \n"
@@ -509,9 +544,10 @@ class DispersalInstance:
             s += "\n"
         if self.strategy is not None:
             s += "  Strategy: " + self.strategy + "; \n"
-        s += "  Parameters: \n"
-        for vv in zip(self.var_keys, self.variables):
-             s += "    " + str(vv) + "\n"
+        if self.var_keys is not None:
+            s += "  Parameters: \n"
+            for vv in zip(self.var_keys, self.variables):
+                 s += "    " + str(vv) + "\n"
         s += "  Region ID: " + self.r_id + "; \n"
         s += "  Replicates: " + str(len([x for x in self.replicates if x.complete])) \
               + "/" + str(self.experiment.get_num_replicates())
@@ -519,7 +555,7 @@ class DispersalInstance:
             s += " [Active: " + str(self.activeReps) + "]"
         else:
             s += " [Active: None] "
-#s+= " (complete/total [active]) "
+            #s+= " (complete/total [active]) "
         return s
 
 class ImcompleteInstanceException(Exception): pass
