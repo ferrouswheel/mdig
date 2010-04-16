@@ -68,7 +68,7 @@ popen = os.popen
 #    def removeNullOutput():
 #        pass
 
-def getG(create=True):
+def get_g(create=True):
     global grass_i
     if grass_i is None:
         if create:
@@ -91,7 +91,7 @@ class GRASSInterface:
     old_region="mdig_temp_region"
     
     def __init__(self):
-        self.config = MDiGConfig.getConfig()
+        self.config = MDiGConfig.get_config()
         self.log = logging.getLogger("mdig.grass")
         self.stderr = ""
         self.stdout = ""
@@ -101,18 +101,18 @@ class GRASSInterface:
         self.old_mapset = None
         self.blank_map = None
         
-        if not self.checkEnvironment():
+        if not self.check_environment():
             self.log.debug("Attempting setup of GRASS from config file")
             self._set_vars()
         
-        if self.checkEnvironment():
+        if self.check_environment():
             self.log.log(logging.INFO, "Saving GRASS region")
-            self.runCommand('g.region --o save='+self.old_region)
-            self.old_mapset = self.getMapset()
+            self.run_command('g.region --o save='+self.old_region)
+            self.old_mapset = self.get_mapset()
         else:
             raise EnvironmentException()
     
-    def checkEnvironment(self):
+    def check_environment(self):
         okay=True
         first_run=True
         for var in self.grass_vars.keys():
@@ -134,7 +134,7 @@ class GRASSInterface:
             
         return okay
 
-    def get_GIS_env(self):
+    def get_gis_env(self):
         # sends command to GRASS session and returns result via stdout (piped)
         output = subprocess.Popen("g.gisenv -n", shell=True, stdout=subprocess.PIPE).communicate()[0]
         pre_range_data = StringIO.StringIO(output).readlines()
@@ -155,10 +155,10 @@ class GRASSInterface:
             os.environ["LD_LIBRARY_PATH"]="/".join([self.grass_vars["GISBASE"], "/lib:$LD_LIBRARY_PATH"])
         self.log.debug("GRASS Environment is now: %s", self.grass_vars)
 
-    def clearMonitor(self):
+    def clear_monitor(self):
         os.environ['GRASS_PNG_READ']="FALSE"
 
-    def paintMap(self, map_name, layer=None):
+    def paint_map(self, map_name, layer=None):
         """ Draw map_name on to the currently active GRASS monitor """
         if layer != None:
             colors = { 0: [(0,255,0), (0,50,0)],
@@ -174,30 +174,30 @@ class GRASSInterface:
                 rule_string += 'end'
                 output = pcolor.communicate(rule_string)[0]
 
-        self.runCommand('d.rast map=%s -x -o bg=white' % map_name, logging.DEBUG)
+        self.run_command('d.rast map=%s -x -o bg=white' % map_name, logging.DEBUG)
         os.environ['GRASS_PNG_READ']="TRUE"
         
-    def paintGrid(self, res):
-        self.runCommand('d.grid -b size=%d' % res,logging.DEBUG )
+    def paint_grid(self, res):
+        self.run_command('d.grid -b size=%d' % res,logging.DEBUG )
         os.environ['GRASS_PNG_READ']="TRUE"
         
-    def paintYear(self, year):
-        self.runCommand('echo \"Year %d\" | d.text color=black line=10' % year,logging.DEBUG );
+    def paint_year(self, year):
+        self.run_command('echo \"Year %d\" | d.text color=black line=10' % year,logging.DEBUG );
         os.environ['GRASS_PNG_READ']="TRUE"
         
     def null_bitmask(self, filename, generate=True):
         if generate:
             # Should use the -n flag to only generate bitmasks if necessary,
             # however the -n flag is currently broken
-            self.runCommand('r.null map=%s' % filename, logging.DEBUG);
+            self.run_command('r.null map=%s' % filename, logging.DEBUG);
         else:
-            self.runCommand('r.null -r map=%s' % filename, logging.DEBUG);
+            self.run_command('r.null -r map=%s' % filename, logging.DEBUG);
     
-    def setOutput(self, filename=".png", width=480, height=480, display="default"):
+    def set_output(self, filename=".png", width=480, height=480, display="default"):
         # close output before setting new one, even if it's the same
         # filename
         if self.filename:
-            self.closeOutput()
+            self.close_output()
         self.filename = filename
         if self.filename == ".png":
             self.filename = repr(int(random.random()*1000)) + "_temp.png"
@@ -234,14 +234,14 @@ class GRASSInterface:
         os.environ['GRASS_PNGFILE']=self.tempOutputFile
         os.environ['GRASS_PNG_READ']="FALSE"
 
-    def closeOutput(self):
+    def close_output(self):
         # copy self.tempOutputFile to pid_disp_filename.png (check
         # self.displays mapping between filename and temp display
         # filename) and to filename 
         
         # copy from tempfilanem to filename
         if self.filename and self.filename.find(".png") != -1 and not self.outputIsTemporary:
-            c = MDiGConfig.getConfig()
+            c = MDiGConfig.get_config()
             # TODO: make a temp directory in the home dir for these sorts of things
             if MDiGConfig.home_dir:
                 dest_dir = os.path.join(MDiGConfig.home_dir)
@@ -258,7 +258,7 @@ class GRASSInterface:
             
             # create display process if necessary
             if d[2] is None:
-                d = (d[0], d[1], self.spawnDisplay(d[1]))
+                d = (d[0], d[1], self.spawn_display(d[1]))
                 self.displays[d_name] = d
             break
 
@@ -266,19 +266,19 @@ class GRASSInterface:
         os.remove(self.tempOutputFile)
         self.filename = None
 
-    def spawnDisplay(self, fileToWatch):
+    def spawn_display(self, fileToWatch):
         pid = Popen(["python",
             os.path.join(os.path.dirname(sys.argv[0]), "mdig", "ImageShow.py"), fileToWatch]).pid
         return pid
 
-    def closeDisplay(self, d_name=None):
+    def close_display(self, d_name=None):
         # kill display subprocess
         # ... display program automatically ends when file is no longer
         # available
         if d_name is None:
             d_keys = self.displays.keys()
             for i in d_keys:
-                self.closeDisplay(i)
+                self.close_display(i)
 
         # delete self.displays[display][1]... i.e. tempfilename in
         # setOutput
@@ -289,25 +289,25 @@ class GRASSInterface:
     #def initMaps(self,map_nodes):
         #mapNames=[]
         #for m in map_nodes:
-            #mapNames.append(self.initMap(m))
+            #mapNames.append(self.init_map(m))
         #return mapNames
     
-    def initMap(self,bmap,map_replacements={"POP_MAP": None, "START_MAP": None}):
+    def init_map(self,bmap,map_replacements={"POP_MAP": None, "START_MAP": None}):
         name=None
         map_type=None
         if bmap.xml_map_type == "sites":
-            name=self.generateMapName()
-            self.createCoordMap(name,bmap.value)
+            name=self.generate_map_name()
+            self.create_coord_map(name,bmap.value)
             map_type="vector"
         elif bmap.xml_map_type == "name":
             name = bmap.value
-            map_type = self.checkMap(name)
+            map_type = self.check_map(name)
         elif bmap.xml_map_type == "value":
-            name=self.generateMapName()
+            name=self.generate_map_name()
             self.mapcalc(name,bmap.value)
             map_type="raster"
         elif bmap.xml_map_type == "mapcalc":
-            name=self.generateMapName()
+            name=self.generate_map_name()
             mapcalc_expr = bmap.value
             for k in map_replacements:
                 # Substitute k by the given map:
@@ -326,14 +326,14 @@ class GRASSInterface:
         bmap.ready = True
         return name, map_type
     
-    def destructMap(self,fn):
+    def destruct_map(self,fn):
         """ Remove a map
         should really only be called from GrassMap
         """
         #if grassmap.temporary and grassmap.ready:
-        self.removeMap(fn) # grassmap.getMapFilename())
+        self.remove_map(fn) # grassmap.getMapFilename())
 
-    def createCoordMap(self,name,value):
+    def create_coord_map(self,name,value):
         #v.in.ascii
         #v.to.rast input=name output=name [use=string] [column=name] [layer=value] [value=value] [rows=value] [--overwrite]
         
@@ -356,17 +356,17 @@ class GRASSInterface:
             # @todo throw exception
             pass
 
-        self.runCommand('v.to.rast input=%s%s output=%s use=cat --o' % \
+        self.run_command('v.to.rast input=%s%s output=%s use=cat --o' % \
                 (vector_prefix, name, name))
-        self.removeMap('v____' + name)
+        self.remove_map('v____' + name)
         
-    def copyMap(self,src, dest,overwrite=False):
+    def copy_map(self,src, dest,overwrite=False):
         if overwrite:
-            self.removeMap(dest)
-        self.runCommand('g.copy rast=%s,%s' % (src, dest), logging.DEBUG)
+            self.remove_map(dest)
+        self.run_command('g.copy rast=%s,%s' % (src, dest), logging.DEBUG)
     
-    def getCurrentResolution(self):
-        if self.checkEnvironment():
+    def get_current_resolution(self):
+        if self.check_environment():
             output=Popen("g.region -p", shell=True, stdout=subprocess.PIPE).communicate()[0]
             res=re.search("nsres:\s+(\d+)\newres:\s+(\d+)",output)
             if res is None:
@@ -380,7 +380,7 @@ class GRASSInterface:
             self.log.warning("Using default resolution (1)")
             return 1
 
-    def rasterValueFreq(self,mapname):
+    def raster_value_freq(self,mapname):
         cmd = "r.stats --q -c input=%s" % mapname
         self.log.debug("Getting raster stats with command: %s" % cmd)
         p=Popen(cmd, shell=True, stdout=subprocess.PIPE)
@@ -392,11 +392,11 @@ class GRASSInterface:
             
         return res
         
-    def setRegion(self,region):
+    def set_region(self,region):
         name = region.get_name()
         if name is not None:
             self.log.debug("Setting region to %s", name)
-            ret = self.runCommand('g.region region=%s' % name)
+            ret = self.run_command('g.region region=%s' % name)
         else:
             extents = region.getExtents()
             command_string = 'g.region '
@@ -424,14 +424,14 @@ class GRASSInterface:
             
             self.log.debug("Setting region using extents %s and res %s",
                     repr(extent_string), repr(res))
-            ret = self.runCommand(command_string + extent_string + res_str)
+            ret = self.run_command(command_string + extent_string + res_str)
         if ret is None:
             self.log.error("Error setting region %s" % region.id)
             raise SetRegionException()
         else:
             return True
                     
-    def getMapInfo(self,map_name):
+    def get_map_info(self,map_name):
         # Have to check all possible types of maps
         map_types=[ "cell", "fcell", "dcell", "vector", "windows" ]
         
@@ -458,31 +458,31 @@ class GRASSInterface:
         else:
             return False
 
-    def removeMap(self,map_name):
-        map_type = self.checkMap(map_name)
+    def remove_map(self,map_name):
+        map_type = self.check_map(map_name)
         #if map_type is None:
         #   self.log.debug('Trying to remove non existant map')
-        #   if MDiGConfig.getConfig().DEBUG:
+        #   if MDiGConfig.get_config().DEBUG:
         #       pdb.set_trace()
 
         if map_type: self.log.debug("Removing %s map %s", map_type, map_name)
         if map_type == 'raster':
-            self.runCommand('g.remove rast=%s' % map_name, logging.DEBUG);      
+            self.run_command('g.remove rast=%s' % map_name, logging.DEBUG);      
         elif map_type == 'vector':
-            self.runCommand('g.remove vect=%s' % map_name, logging.DEBUG);
+            self.run_command('g.remove vect=%s' % map_name, logging.DEBUG);
         
             
     def mapcalc(self,map_name,expression):
         map_name='"' + map_name + '"' 
-        self.runCommand("r.mapcalc '%s=%s'" % (map_name, expression));
+        self.run_command("r.mapcalc '%s=%s'" % (map_name, expression));
     
-    def makeMask(self,mask_name):
+    def make_mask(self,mask_name):
         if mask_name is None:
-            self.runCommand('r.mask -r');
+            self.run_command('r.mask -r');
         else:
-            self.runCommand('r.mask -o input=%s' % mask_name);
+            self.run_command('r.mask -o input=%s' % mask_name);
     
-    def checkMap(self,file_name):
+    def check_map(self,file_name):
         # Have to check all possible types of maps
         map_types=[ "cell", "fcell", "dcell", "vector" ]
         
@@ -499,7 +499,7 @@ class GRASSInterface:
                 return t
         return None
 
-    def getMapset(self):
+    def get_mapset(self):
         """
         Get current mapset
         """
@@ -508,7 +508,7 @@ class GRASSInterface:
         mapsets = output.split()
         return mapsets[0]
 
-    def checkMapset(self, mapset_name):
+    def check_mapset(self, mapset_name):
         """
         Check if mapset already exists
         """
@@ -519,21 +519,21 @@ class GRASSInterface:
             return True
         return False
 
-    def changeMapset(self, mapset_name = None, create=False):
+    def change_mapset(self, mapset_name = None, create=False):
         """
         Change to specified mapset. If create is True than create it if necessary       
         """
         if mapset_name is None:
             mapset_name = "PERMANENT"
-        if self.getMapset() != mapset_name: 
+        if self.get_mapset() != mapset_name: 
             if create:
-                self.runCommand("g.mapset -c mapset=%s" % mapset_name)
+                self.run_command("g.mapset -c mapset=%s" % mapset_name)
             else:
-                self.runCommand("g.mapset mapset=%s" % mapset_name)
+                self.run_command("g.mapset mapset=%s" % mapset_name)
         
         return True
 
-    def removeMapset (self, mapset_name, force=False):
+    def remove_mapset(self, mapset_name, force=False):
         """
         Remove mapset, ask for user confirmation unless force is True.
         """
@@ -541,9 +541,9 @@ class GRASSInterface:
             # Can't remove permanent mapset!
             return False
 
-        if self.getMapset() == mapset_name: 
-            self.changeMapset()
-        env = self.get_GIS_env()
+        if self.get_mapset() == mapset_name: 
+            self.change_mapset()
+        env = self.get_gis_env()
         gisdb = env["GISDBASE"]
         loc = env["LOCATION_NAME"]
         mapset_dir = os.path.join(gisdb,loc,mapset_name)
@@ -552,11 +552,11 @@ class GRASSInterface:
             ans = raw_input("Remove mapset at %s? [y/N] " % mapset_dir)
 
         if ans.upper() == "Y" or force:
-            self.runCommand("rm -rf %s" % mapset_dir)
+            self.run_command("rm -rf %s" % mapset_dir)
             return True 
         return False
 
-    def occupancyEnvelope(self, maps_to_combine, filename):
+    def occupancy_envelope(self, maps_to_combine, filename):
         """ Generates an occupancy envelope from boolean,
             population, or age of population maps.
 
@@ -584,28 +584,28 @@ class GRASSInterface:
             # a one, since we are interested in the percentage of occupancy.
             reclass_to_occupancy_maps = []
             for i in range(index,index+max_maps):
-                reclass_map = self.generateMapName();
+                reclass_map = self.generate_map_name();
                 # check the map name isn't already being used
                 while reclass_map in reclass_to_occupancy_maps:
-                    reclass_map = self.generateMapName();
-                self.runCommand("echo \"* = 1\nend\" | r.reclass "
+                    reclass_map = self.generate_map_name();
+                self.run_command("echo \"* = 1\nend\" | r.reclass "
                         "input=%s output=%s" % (maps_to_combine[i],reclass_map))
                 reclass_to_occupancy_maps.append(reclass_map)
             map_str = ','.join(reclass_to_occupancy_maps)
             index = index+max_maps
             num_maps = num_maps - max_maps
-            temp_file = self.generateMapName();
-            self.runCommand("r.series input=%s output=%s method=count" % (map_str,temp_file))
+            temp_file = self.generate_map_name();
+            self.run_command("r.series input=%s output=%s method=count" % (map_str,temp_file))
             # Now remove temporary reclass maps
             for r_map in reclass_to_occupancy_maps:
-                self.removeMap(r_map)
+                self.remove_map(r_map)
             c_maps.append(temp_file)
         
         # combine maps if more than 100 are being used.
         if len(c_maps) > 1:
             map_str = ','.join(c_maps)
-            prob_env = self.generateMapName();
-            self.runCommand("r.series input=%s output=%s method=sum" % (map_str,prob_env))
+            prob_env = self.generate_map_name();
+            self.run_command("r.series input=%s output=%s method=sum" % (map_str,prob_env))
         else:
             prob_env = c_maps[0]
             # clear c_maps so we don't try to delete c_map[0] later
@@ -618,16 +618,16 @@ class GRASSInterface:
         
         # remove temporary maps
         for c in c_maps:
-            self.removeMap(c)
-        self.removeMap(prob_env)
+            self.remove_map(c)
+        self.remove_map(prob_env)
         
         # set color table for occupancy envelope
-        self.runCommand("r.colors map=%s color=gyr --quiet" % (filename))
+        self.run_command("r.colors map=%s color=gyr --quiet" % (filename))
         
         return filename
         
     
-    def runCommand(self, commandstring, log_level=logging.DEBUG, ignoreOnFail=[]):
+    def run_command(self, commandstring, log_level=logging.DEBUG, ignoreOnFail=[]):
         self.log.log(log_level, "exec: " + commandstring)
         ret = None
         
@@ -659,26 +659,26 @@ class GRASSInterface:
     def clean_up(self):
         self.log.log(logging.INFO,'Restoring region')
         
-        self.changeMapset(self.old_mapset)
-        self.runCommand('g.region region='+self.old_region,ignoreOnFail=[256])
+        self.change_mapset(self.old_mapset)
+        self.run_command('g.region region='+self.old_region,ignoreOnFail=[256])
         if self.blank_map is not None:
-            self.destructMap(self.blank_map)
-        self.closeDisplay()
+            self.destruct_map(self.blank_map)
+        self.close_display()
 
     def get_blank_map(self):
         blank_map_name = "_____mdig_blank_map"
         if self.blank_map is None:
             self.blank_map = blank_map_name
-            self.runCommand('r.mapcalc "' + blank_map_name + '=null()"')
+            self.run_command('r.mapcalc "' + blank_map_name + '=null()"')
         return self.blank_map
 
-    def generateMapName(self, base=""):
+    def generate_map_name(self, base=""):
         random_name = None
-        while random_name is None or self.checkMap(random_name) is not None:
+        while random_name is None or self.check_map(random_name) is not None:
             random_name = repr(os.getpid()) + "_" + base + "_" + repr(int(random.random()*1000000))
         return random_name
 
-    def getRange(self):
+    def get_range(self):
         """ provides region data to be passed to LifestageTransition
         (rowProcessing.process function from Steve Wangens popMod)
         @todo rename to get_region
@@ -695,7 +695,7 @@ class GRASSInterface:
         rangeData = pre_rangeData.readlines()
         return (rangeData)
 
-    def getIndexRaster(self,indexRaster):
+    def get_index_raster(self,indexRaster):
         '''Imports the raster layers representing the index layer.'''
         cmd = "r.info -m %s --v" % (indexRaster)
         r = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
@@ -711,40 +711,7 @@ class GRASSInterface:
         self.log.info("Index raster set to " + str(indexRaster))
         return indexRaster
 
-    def getRasterList(self,popRasterList):
-        '''Manually enter the raster layers representing the population stages
-           and return a list of the corresponding names.'''
-    # This method seems to be obsolete because it doesn't do anything?
-    ##    popRasterList = []
-    ##    rastNo = 1
-    ##    while 1:
-    ##        print "Enter the name of the raster for population stage %i. 
-    # Enter 'done' if complete, or 'list' to list available rasters in the 
-    # current mapset." %(rastNo)
-    ##        raster = raw_input()
-    ##        if raster == "done":
-    ##            break
-    ##        if raster =="list":
-    ##            r = grass.pipe_command("g.list type=rast")
-    ##            print r.communicate()[0]
-    #    for i in popRasterList:
-    #        cmd = "r.info -m %s --v" %(i)
-    #        r = grass.pipe_command(cmd) 
-    #        r.stdout, r.stderr = r.communicate()
-    ##            if r.stdout != '':
-    ##                if raster in popRasterList:
-    ##                    print "That raster has already been specified for a 
-    #different stage.  Please specify a different raster for this stage."
-    ##                else:
-    ##                    popRasterList.append(raster)
-    ##                    rastNo = rastNo+1
-    ##            else:
-    ##                print "That raster does not exist in the current mapset
-    #- please try again"
-    #    print "Population rasters set to "+ str(popRasterList)
-        return popRasterList
-
-    def rasterToAscii(self,rasterName, IO=1, null_as_zero=False):
+    def raster_to_ascii(self,rasterName, IO=1, null_as_zero=False):
         """ Creates a temporary file storing the raster data in ascii format
         (accessable for LifestageTransition processing), and if IO=1 also
         creates a temp file to write the new data to after being processed.
@@ -770,7 +737,7 @@ class GRASSInterface:
         else:
             return tempDataFileName
 
-    def indexToAscii(self,indexRaster):
+    def index_to_ascii(self,indexRaster):
         """ @todo merge with the above code and generalise """
         # export index to temporary ascii map
         imp_cmd = "r.out.ascii -hi input=%s output=-" % (indexRaster)
@@ -787,12 +754,12 @@ class GRASSInterface:
         os.close(tempOutDataFile)
         return tempDataFileName, tempOutDataFileName
 
-    def importAsciiToRaster(self, ascii_fn, raster_fn, nv = None):
+    def import_ascii_to_raster(self, ascii_fn, raster_fn, nv = None):
         temp_to_rast_cmd = "r.in.ascii --o input=%s output=%s" % \
             (ascii_fn, raster_fn)
         if nv:
             temp_to_rast_cmd += " nv=%s" % str(nv)
-        self.runCommand(temp_to_rast_cmd)
+        self.run_command(temp_to_rast_cmd)
 
     def count_sites(self, vmap):
         """ Counts the number of points within a vector map """

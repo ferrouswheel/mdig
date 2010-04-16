@@ -24,7 +24,7 @@ class ModelRepository:
                         dir)
         # Otherwise find the repository location through the config file
         if self.location is None:
-            c = MDiGConfig.getConfig()
+            c = MDiGConfig.get_config()
             self.location = c["repository"]["location"]
             self.log.debug("Using repository location " + self.location)
             if not os.path.isdir(self.location):
@@ -44,7 +44,7 @@ class ModelRepository:
         dm = DispersalModel.DispersalModel(model_fn,setup=False)
         dest_dir = os.path.join(repo_dir,dm.get_name())
         if os.path.exists(dest_dir):
-            if not MDiGConfig.getConfig().overwrite_flag:
+            if not MDiGConfig.get_config().overwrite_flag:
                 self.log.error("A model with the same name as %s already exists. Use " % model_fn +
                         "'remove' first or use overwrite flag.")
                 sys.exit(mdig.mdig_exit_codes["exists"])
@@ -111,7 +111,7 @@ class ModelRepository:
         if force:
             import shutil
             shutil.rmtree(model_dir)
-            GRASSInterface.getG().removeMapset(model_name, force)
+            GRASSInterface.get_g().remove_mapset(model_name, force)
 
     def get_models(self):
         models = {}

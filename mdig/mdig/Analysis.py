@@ -175,7 +175,7 @@ class Analysis:
             cmd += " > "
             
         # run command!
-        GRASSInterface.getG().runCommand(cmd + fn)
+        GRASSInterface.get_g().run_command(cmd + fn)
             
         # if a file was generated then add this to the replicate
         ls_id = self.get_lifestage_id()
@@ -191,7 +191,7 @@ class Analysis:
         return name[0]
 
     def _make_filename(self,rep):
-        mdig_config = MDiGConfig.getConfig()
+        mdig_config = MDiGConfig.get_config()
         
         nodes = self.xml_node.xpath("output/file")
         if len(nodes) == 0:

@@ -87,7 +87,7 @@ class ROCAnalysis:
         self.yearly_vectors = {}
         self.save_to_star = False
 
-        self.g = GRASSInterface.getG()
+        self.g = GRASSInterface.get_g()
         self.log = logging.getLogger("mdig.roc")
         self.reps = []
 
@@ -165,7 +165,7 @@ class ROCAnalysis:
             self.models[m_name].update_occupancy_envelope()
 
     def g_run(self,cmd):
-        self.g.runCommand(cmd)
+        self.g.run_command(cmd)
 
     def add_new_random_absences(self, source_map, presence_map):
         N = ( ROCAnalysis.start_sites_N + (self.g.count_sites(presence_map) * \
@@ -506,7 +506,7 @@ class ROCAnalysis:
         # make yearly vector maps
         temp_rep_vector="x__sites_rep"
         # Keep track of the mapset this are being made in...
-        current_mapset = self.g.getMapset()
+        current_mapset = self.g.get_mapset()
         output = Popen("v.out.ascii --q input=" +orig_name + " columns=year,est_prob", \
                 shell=True, stdout=PIPE).communicate()[0]
         output = output.split('\n')
@@ -638,7 +638,7 @@ class ROCAnalysis:
 
             # remove all temp maps:
             for t in self.yearly_vectors:
-                self.g.changeMapset(self.yearly_vectors_mapset)
+                self.g.change_mapset(self.yearly_vectors_mapset)
                 self.g_run("g.remove vect=" + self.yearly_vectors[t])
         return reps
 

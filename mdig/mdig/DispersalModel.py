@@ -88,7 +88,7 @@ class DispersalModel(object):
         for l in outputListeners:
             self.add_listener(l)
     
-        self.grass_i=GRASSInterface.getG()
+        self.grass_i=GRASSInterface.get_g()
         self.random = None
         
         self.active=False
@@ -139,7 +139,7 @@ class DispersalModel(object):
         self.init_paths()
 
     def init_paths(self):
-        c = MDiGConfig.getConfig()
+        c = MDiGConfig.get_config()
         assert( self.base_dir is not None )
         base_d = self.base_dir
         filename = os.path.join(base_d, c.analysis_dir)
@@ -354,7 +354,7 @@ class DispersalModel(object):
         #Check that the event commands exist or are supported.
         
         
-        #self.grass_i.checkMap(self.model.getBackgroundMap())
+        #self.grass_i.check_map(self.model.getBackgroundMap())
     
     def get_user(self):
         nodes = self.xml_model.xpath('user/email')
@@ -695,7 +695,7 @@ class DispersalModel(object):
             else:
                 # lifestage doesn't have an initial map for this region
                 maps[id] = GrassMap( \
-                        filename=GRASSInterface.getG().get_blank_map())
+                        filename=GRASSInterface.get_g().get_blank_map())
         return maps
     
     def get_lifestage_ids(self):
@@ -811,7 +811,7 @@ class DispersalModel(object):
         return completed_node
         
     def _add_completed(self,r_id,var_keys,var):
-        mdig_config = MDiGConfig.getConfig()
+        mdig_config = MDiGConfig.get_config()
         
         model_node=self.xml_model.getroot()
         
@@ -981,13 +981,13 @@ class DispersalModel(object):
         return self.strategies
 
     def init_mapset(self):
-        G = GRASSInterface.getG()
-        if G.checkMapset(self.get_name()):
-            G.changeMapset(self.get_name())
+        G = GRASSInterface.get_g()
+        if G.check_mapset(self.get_name()):
+            G.change_mapset(self.get_name())
         else:
             self.log.info("Mapset " +self.get_name() + \
                     " doesn't exist, creating it.")
-            G.changeMapset(self.get_name(),True)
+            G.change_mapset(self.get_name(),True)
 
     def get_mapset(self):
         """ Get the mapset where this model's maps are contained.
@@ -1002,9 +1002,9 @@ class DispersalModel(object):
         Moves all Grass related files to another mapset. Files that have mapset given
         using map@mapset notation are not moved, but others are.
         """
-        G = GRASSInterface.getG()
+        G = GRASSInterface.get_g()
 
-        if G.checkMapset(new_mapset):
+        if G.check_mapset(new_mapset):
             self.log.error("Mapset %s already exists, shouldn't move into an existing mapset!" % new_mapset)
             raw_input("press enter to continue")
 
@@ -1020,7 +1020,7 @@ class DispersalModel(object):
         def add_map_to_move(x):
             if not x.temporary:
                 if G.no_mapset_component(x.filename):
-                    x_info=G.getMapInfo(x.filename)
+                    x_info=G.get_map_info(x.filename)
                     components[x_info["type"]].append((x_info["name"],x_info["mapset"]))
 
         self.log.debug("Processing region files for copying")
@@ -1029,7 +1029,7 @@ class DispersalModel(object):
             # Regions
             r_name = self.get_regions()[r].get_name()
             if r_name and G.no_mapset_component(r_name):
-                r_info = G.getMapInfo(r_name)
+                r_info = G.get_map_info(r_name)
                 components["region"].append((r_info["name"],r_info["mapset"]))
 
             # Background maps
@@ -1038,7 +1038,7 @@ class DispersalModel(object):
 
             #if not bmap.temporary:
             #   if G.no_mapset_component(b_map.filename):
-            #       b_info=G.getMapInfo(bmap.filename)
+            #       b_info=G.get_map_info(bmap.filename)
             #       components[b_info["type"]]=b_map.filename
 
             for ls_id in self.get_lifestage_ids():
@@ -1061,7 +1061,7 @@ class DispersalModel(object):
                         # r_map is just the map name not a GrassMap
                         
                         if G.no_mapset_component(r_map):
-                            r_info=G.getMapInfo(r_map)
+                            r_info=G.get_map_info(r_map)
                             components[r_info["type"]].append((r_info["name"],r_info["mapset"]))
                             
             # Envelopes
@@ -1071,7 +1071,7 @@ class DispersalModel(object):
                     for t in prob_env[ls_id]:
                         e_map=prob_env[ls_id][t]
                         if G.no_mapset_component(e_map):
-                            e_info=G.getMapInfo(e_map)
+                            e_info=G.get_map_info(e_map)
                             components[e_info["type"]].append((e_info["name"],e_info["mapset"]))
         ## Copy all maps ##
         self.log.debug("%d region to copy" % len(components["region"]))
@@ -1079,22 +1079,22 @@ class DispersalModel(object):
         self.log.debug("%d vector maps to copy" % len(components["vector"]))
         
         # Change into new mapset
-        G.changeMapset(new_mapset, create=True)
+        G.change_mapset(new_mapset, create=True)
 
         # Copy regions
         for r in components["region"]:
             r_map, r_mapset = r
-            G.runCommand('g.copy region=%s@%s,%s' % (r_map, r_mapset, r_map), logging.DEBUG)
+            G.run_command('g.copy region=%s@%s,%s' % (r_map, r_mapset, r_map), logging.DEBUG)
 
         # Copy rasters
         for r in components["raster"]:
             r_map, r_mapset = r
-            G.runCommand('g.copy rast=%s@%s,%s' % (r_map, r_mapset, r_map), logging.DEBUG)
+            G.run_command('g.copy rast=%s@%s,%s' % (r_map, r_mapset, r_map), logging.DEBUG)
 
         # Copy vectors
         for v in components["vector"]:
             v_map, v_mapset = v
-            G.runCommand('g.copy vect=%s@%s,%s' % (r_map, r_mapset, r_map), logging.DEBUG)
+            G.run_command('g.copy vect=%s@%s,%s' % (r_map, r_mapset, r_map), logging.DEBUG)
 
         ## Delete all maps ##
         self.log.debug("regions to delete: %s" % components["region"])
@@ -1110,28 +1110,28 @@ class DispersalModel(object):
         for r in components["region"]:
             r_map, r_mapset = r
             if r_mapset != current_mapset:
-                G.changeMapset(r_mapset)
+                G.change_mapset(r_mapset)
                 current_mapset = r_mapset
-            G.runCommand('g.remove region=%s' % r_map, logging.DEBUG)
+            G.run_command('g.remove region=%s' % r_map, logging.DEBUG)
 
         # Del rasters
         for r in components["raster"]:
             r_map, r_mapset = r
             if r_mapset != current_mapset:
-                G.changeMapset(r_mapset)
+                G.change_mapset(r_mapset)
                 current_mapset = r_mapset
-            G.runCommand('g.remove rast=%s' % r_map, logging.DEBUG)
+            G.run_command('g.remove rast=%s' % r_map, logging.DEBUG)
 
         # Del vectors
         for v in components["vector"]:
             v_map, v_mapset = v
             if v_mapset != current_mapset:
-                G.changeMapset(v_mapset)
+                G.change_mapset(v_mapset)
                 current_mapset = v_mapset
-            G.runCommand('g.remove vect=%s' % r_map, logging.DEBUG)
+            G.run_command('g.remove vect=%s' % r_map, logging.DEBUG)
 
         # Change into new mapset again
-        G.changeMapset(new_mapset)
+        G.change_mapset(new_mapset)
 
     def delete_maps(self):
         # TODO: implement me

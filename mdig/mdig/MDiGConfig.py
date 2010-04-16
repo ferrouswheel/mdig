@@ -57,7 +57,7 @@ logging.getLogger("mdig.config").debug("MDIG config/working dir is " + home_dir)
 
 mdig_config = None
 
-def getConfig():
+def get_config():
     global mdig_config
     if mdig_config is None:
         mdig_config = MDiGConfig()

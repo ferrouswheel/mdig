@@ -74,7 +74,7 @@ class Action:
             self.output_level = "quiet"
             logging.getLogger("mdig").handlers[0].setLevel(logging.ERROR)
         # Make the verbosity level globally available through the config object
-        MDiGConfig.getConfig().output_level = self.output_level
+        MDiGConfig.get_config().output_level = self.output_level
         if options.repository is not None:
             self.repository = options.repository 
             self.log.debug("Repository location manually set to " + options.repository)
@@ -154,7 +154,7 @@ class RunAction(Action):
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
-        c = MDiGConfig.getConfig()
+        c = MDiGConfig.get_config()
         if options.output_dir is not None:
             if not os.path.isdir(options.output_dir):
                 self.log.info("Directory %s doesn't exist, attemping to" +
@@ -258,7 +258,7 @@ class AnalysisAction(Action):
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
-        c = MDiGConfig.getConfig()
+        c = MDiGConfig.get_config()
         c.analysis_add_to_xml = self.options.analysis_add_to_xml
         c.analysis_filename_base = self.options.analysis_filename_base
         c.analysis_print_time = self.options.analysis_print_time
@@ -350,12 +350,12 @@ class AddAction(Action):
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
-        MDiGConfig.getConfig().overwrite_flag = self.options.overwrite_flag
+        MDiGConfig.get_config().overwrite_flag = self.options.overwrite_flag
 
     def do_me(self,mdig_model):
         for m in self.model_names:
             mdig.repository.add_model(m)
-        GRASSInterface.getG().clean_up()
+        GRASSInterface.get_g().clean_up()
         
 class RemoveAction(Action):
     description = "Remove a model from the repository and delete mapset."
@@ -496,7 +496,7 @@ class ExportAction(Action):
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
-        MDiGConfig.getConfig().overwrite_flag = self.options.overwrite_flag
+        MDiGConfig.get_config().overwrite_flag = self.options.overwrite_flag
         if self.options.output_lifestage is None:
             self.options.output_lifestage = "all"
     
@@ -566,18 +566,18 @@ class ExportAction(Action):
         return gif_fn
 
     def create_frame(self, map_name, output_name, model_name, year, ls):
-        g = GRASSInterface.getG()
-        g.runCommand("d.mon png1", ignoreOnFail=[1])
-        g.runCommand("d.erase")
-        #####g.runCommand("d.vect nzcoast_low type=area fcolor=black")
-        g.runCommand("r.colors map=" + map_name + " color=byr")
-        g.runCommand("d.rast " + map_name + " -o")
-        g.runCommand("d.barscale tcolor=0:0:0 bcolor=none at=2,18 -l -t")
-        g.runCommand("d.legend " + map_name + " at=5,50,85,90")
-        g.runCommand("d.text at=2,90 size=3 text=" + model_name)
+        g = GRASSInterface.get_g()
+        g.run_command("d.mon png1", ignoreOnFail=[1])
+        g.run_command("d.erase")
+        #####g.run_command("d.vect nzcoast_low type=area fcolor=black")
+        g.run_command("r.colors map=" + map_name + " color=byr")
+        g.run_command("d.rast " + map_name + " -o")
+        g.run_command("d.barscale tcolor=0:0:0 bcolor=none at=2,18 -l -t")
+        g.run_command("d.legend " + map_name + " at=5,50,85,90")
+        g.run_command("d.text at=2,90 size=3 text=" + model_name)
         #d.text text="Land-cover model" at=2,87 size=3
-        g.runCommand("d.text text=" + year + " at=2,93")
-        g.runCommand("d.out.png output=" + output_name + " res=2")
+        g.run_command("d.text text=" + year + " at=2,93")
+        g.run_command("d.out.png output=" + output_name + " res=2")
         return output_name + ".png"
     
 class ROCAction(Action):
@@ -660,7 +660,7 @@ class ROCAction(Action):
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
-        MDiGConfig.getConfig().overwrite_flag = self.options.overwrite_flag
+        MDiGConfig.get_config().overwrite_flag = self.options.overwrite_flag
         if self.options.lifestage is None:
             self.options.lifestage = "all"
         if self.options.sites_vector is None:

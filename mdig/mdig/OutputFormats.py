@@ -88,7 +88,7 @@ class PngOutput:
         self.listeningTo = []
         
     def replicateUpdate(self,rep,t):
-        g = GRASSInterface.getG()
+        g = GRASSInterface.get_g()
         
         fn = None
         
@@ -98,24 +98,24 @@ class PngOutput:
             fn+="_"+repr(t)+".png"
             self.log.debug("Writing PNG %s" % fn)
             
-            g.setOutput(fn,display=None)
-            g.clearMonitor()
+            g.set_output(fn,display=None)
+            g.clear_monitor()
             
             current_region = rep.instance.experiment.get_region(rep.instance.r_id)
             
             if current_region.getBackgroundMap():
-                g.paintMap(current_region.getBackgroundMap().getMapFilename())
+                g.paint_map(current_region.getBackgroundMap().getMapFilename())
             
             for l in rep.temp_map_names.keys():
-                g.paintMap(rep.temp_map_names[l][0])
+                g.paint_map(rep.temp_map_names[l][0])
             
             if self.show_grid:
-                g.paintGrid(5)
+                g.paint_grid(5)
             if self.show_year:
-                g.paintYear(t)
+                g.paint_year(t)
                 
             self.last_output = t
-            g.closeOutput()
+            g.close_output()
             
         return [ None, fn ]
         
@@ -140,7 +140,7 @@ class RasterOutput:
         self.listeningTo = []
         
     def replicateUpdate(self,rep,t):
-        g = GRASSInterface.getG()
+        g = GRASSInterface.get_g()
         fn = None
 
         if rep.instance.experiment.interval_modulus(self.interval,t) == 0:
@@ -149,7 +149,7 @@ class RasterOutput:
                     fn = createFilename(rep)
                     fn += "_ls_" + l + "_" + repr(t)
                     self.log.debug("Writing raster %s" % fn)
-                    g.copyMap(rep.temp_map_names[l][0],fn,True)
+                    g.copy_map(rep.temp_map_names[l][0],fn,True)
             self.last_output = t
             
         return [ self.lifestage, fn ]

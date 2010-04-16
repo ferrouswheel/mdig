@@ -53,7 +53,7 @@ class GrassMap:
             self._readXML()
         elif self.filename is not None:
             # If a filename was passed, check it's type and if it exists
-            self.map_type = GRASSInterface.getG().checkMap(self.filename)
+            self.map_type = GRASSInterface.get_g().check_map(self.filename)
             if self.map_type is None:
                 # ... raise an exception if it doesn't
                 raise MapMissingException([self.filename])
@@ -65,7 +65,7 @@ class GrassMap:
 
     def __del__ (self):
         if self.temporary and self.ready:
-            GRASSInterface.getG().destructMap(self.filename)
+            GRASSInterface.get_g().destruct_map(self.filename)
         
     def _readXML(self):
         """
@@ -126,13 +126,13 @@ class GrassMap:
             # If the map needs to be refreshed and has already been initiated
             # then destroy the old map...
             if self.refresh and self.ready:
-                GRASSInterface.getG().destructMap(self.filename)
+                GRASSInterface.get_g().destruct_map(self.filename)
             
             if map_replacements is not None:
-                self.filename, self.map_type = GRASSInterface.getG().initMap(self,  
+                self.filename, self.map_type = GRASSInterface.get_g().init_map(self,  
                     map_replacements)
             else:
-                self.filename, self.map_type = GRASSInterface.getG().initMap(self)
+                self.filename, self.map_type = GRASSInterface.get_g().init_map(self)
             self.ready = True
         return self.filename
     
@@ -141,7 +141,7 @@ class GrassMap:
         Just removes map if it is temporary
         """
         if self.temporary and self.ready:
-            GRASSInterface.getG().destructMap(self.filename)
+            GRASSInterface.get_g().destruct_map(self.filename)
 
 class MapMissingException(Exception):
     def __init__(self,maps):

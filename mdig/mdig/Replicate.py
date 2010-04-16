@@ -49,7 +49,7 @@ class Replicate:
         self.instance = instance
         self.log = logging.getLogger("mdig.replicate")
         
-        self.grass_i = GRASSInterface.getG()
+        self.grass_i = GRASSInterface.get_g()
         
         self.temp_map_names={}
         self.active = False
@@ -68,7 +68,7 @@ class Replicate:
         else:
             # if node is provided then create replicate node from xml
             self.node = node
-            c = MDiGConfig.getConfig()
+            c = MDiGConfig.get_config()
             if "replicate" not in c or \
                 "check_complete" not in c["replicate"] or \
                 c["replicate"]["check_complete"] != "no":
@@ -132,7 +132,7 @@ class Replicate:
                 for m in ls_maps_node[0]:
                     if m.tag == "map":
                         time_step=m.attrib["time"]
-                        if not GRASSInterface.getG().checkMap(m.text):
+                        if not GRASSInterface.get_g().check_map(m.text):
                             missing_maps.append(m.text)
                         else:
                             self.saved_maps[ls_key][time_step] = m.text
@@ -162,7 +162,7 @@ class Replicate:
         for ls_key in ls_keys:
             maps=self.get_saved_maps(ls_key)
             for m in maps.values():
-                GRASSInterface.getG().null_bitmask(m,generate=generate_null)
+                GRASSInterface.get_g().null_bitmask(m,generate=generate_null)
     
     def set_seed(self,s):
         seed_node=lxml.etree.SubElement(self.node,'seed')
@@ -213,11 +213,11 @@ class Replicate:
 
     def record_maps(self, remove_null=False):
         for ls_id in self.instance.experiment.get_lifestage_ids():
-            self.push_previous_map(ls_id,GRASSInterface.getG().generateMapName(ls_id))
+            self.push_previous_map(ls_id,GRASSInterface.get_g().generate_map_name(ls_id))
             #if first_year:
-                #self.grass_i.copyMap(self.initial_maps[ls_id].getMapFilename(),self.get_previous_map(ls_id),True)
+                #self.grass_i.copy_map(self.initial_maps[ls_id].getMapFilename(),self.get_previous_map(ls_id),True)
             #else:
-            self.grass_i.copyMap(self.temp_map_names[ls_id][0],self.get_previous_map(ls_id),True)
+            self.grass_i.copy_map(self.temp_map_names[ls_id][0],self.get_previous_map(ls_id),True)
             if remove_null:
                 self.grass_i.null_bitmask(self.get_previous_map(ls_id),generate=False)
 
@@ -237,7 +237,7 @@ class Replicate:
             rep_info_str += " [vars: %s]" % repr(var_dict)
         if self.instance.strategy:
             rep_info_str += " [strategy: %s]" % self.instance.strategy
-        if MDiGConfig.getConfig().output_level == "normal":
+        if MDiGConfig.get_config().output_level == "normal":
             print rep_info_str
         self.log.log(logging.INFO, rep_info_str)
         
@@ -253,12 +253,12 @@ class Replicate:
             # Create temporary map names
             # - input is in [0], output in [1]
             self.temp_map_names[ls_key] = [
-                GRASSInterface.getG().generateMapName(ls_key),
-                GRASSInterface.getG().generateMapName(ls_key)
+                GRASSInterface.get_g().generate_map_name(ls_key),
+                GRASSInterface.get_g().generate_map_name(ls_key)
             ]
             
             # copy initial map to temporary source map, overwrite if necessary
-            self.grass_i.copyMap( \
+            self.grass_i.copy_map( \
                     initial_maps[ls_key].getMapFilename(), \
                     self.temp_map_names[ls_key][0],True)
             
@@ -344,7 +344,7 @@ class Replicate:
         """
         result = (analysis_cmd.cmd_string,analysis_cmd.output_fn)
 
-        mdig_config = MDiGConfig.getConfig()
+        mdig_config = MDiGConfig.get_config()
         
         current_dir = os.path.dirname(os.path.abspath(result[1]))
         filename = os.path.basename(result[1])
@@ -406,12 +406,12 @@ class Replicate:
 
     def clean_up(self):
         for l in self.temp_map_names.values():
-            self.grass_i.removeMap(l[0])
-            self.grass_i.removeMap(l[1])
+            self.grass_i.remove_map(l[0])
+            self.grass_i.remove_map(l[1])
         for ls_key in self.instance.experiment.get_lifestage_ids():
             prev_maps = self.get_previous_maps(ls_key)
             for m in prev_maps:
-                self.grass_i.removeMap(m)
+                self.grass_i.remove_map(m)
         self.previous_maps = None
                         
     def fire_time_completed(self,t):
@@ -435,12 +435,12 @@ class Replicate:
         return float(self.node.attrib['ts'])
     
     def add_completed_raster_map(self,t,ls,file_name,interval=1):
-        mdig_config = MDiGConfig.getConfig()
+        mdig_config = MDiGConfig.get_config()
         
         # If the command line has specified that the null bitmask
         # of completed raster maps should be removed:
         if mdig_config.remove_null:
-            GRASSInterface.getG().null_bitmask(file_name,generate="False")
+            GRASSInterface.get_g().null_bitmask(file_name,generate="False")
         
         # TODO: Check if the filename has already been associated with an analysis
         

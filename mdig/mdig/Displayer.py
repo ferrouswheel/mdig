@@ -33,17 +33,17 @@ class Displayer:
         self.listeningTo = []
         
     def replicateUpdate(self,rep,t):
-        g = GRASSInterface.getG()
+        g = GRASSInterface.get_g()
         
-        g.setOutput()
-        g.clearMonitor()
+        g.set_output()
+        g.clear_monitor()
         
         bm=rep.instance.experiment.get_region(rep.instance.r_id).getBackgroundMap()
         if bm is not None:      
-            g.paintMap(bm.getMapFilename())
+            g.paint_map(bm.getMapFilename())
         
         layer_index = 0
         for l in rep.temp_map_names.keys():
-            g.paintMap(rep.temp_map_names[l][0],layer=layer_index)
+            g.paint_map(rep.temp_map_names[l][0],layer=layer_index)
             layer_index+=1
-        g.closeOutput()
+        g.close_output()

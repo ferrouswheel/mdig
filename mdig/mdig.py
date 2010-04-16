@@ -73,7 +73,7 @@ def process_options(argv):
     global logger
     
     model_file = None
-    mdig_config = MDiGConfig.getConfig()
+    mdig_config = MDiGConfig.get_config()
 
     # Remove action keyword first
     action_keyword = None
@@ -99,7 +99,7 @@ simulations = []  # list of DispersalModels
 def main(argv):
     global simulations
     
-    mdig_config = MDiGConfig.getConfig()
+    mdig_config = MDiGConfig.get_config()
     logger = setupLogger(mdig_config["ansi"])
     mdig.repository = ModelRepository.ModelRepository()
     the_action = process_options(argv)
@@ -107,7 +107,7 @@ def main(argv):
     signal.signal(signal.SIGINT, exit_catcher)
     
     # Check for grass environment and set up interface
-    grass_interface = GRASSInterface.getG()
+    grass_interface = GRASSInterface.get_g()
     
     # Load model repository 
     if the_action.repository is not None:
@@ -155,10 +155,10 @@ def exit_cleanup():
     for exp in simulations:
         exp.clean_up()
         exp.save_model()
-    if GRASSInterface.getG(False) is not None:
-        GRASSInterface.getG().clean_up()
+    if GRASSInterface.get_g(False) is not None:
+        GRASSInterface.get_g().clean_up()
 
-    MDiGConfig.getConfig().write()
+    MDiGConfig.get_config().write()
         
     logger.info("Finished at %s" % repr(datetime.now().ctime()))
 

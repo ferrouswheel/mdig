@@ -163,8 +163,8 @@ class Event:
         
         cmd=self.create_cmd_string(p)
         
-        GRASSInterface.getG().removeMap(out_name)
-        GRASSInterface.getG().runCommand(cmd)
+        GRASSInterface.get_g().remove_map(out_name)
+        GRASSInterface.get_g().run_command(cmd)
         #self.log.debug(cmd)
 
     def create_cmd_string(self,params):

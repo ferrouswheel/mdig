@@ -55,7 +55,7 @@ class AnalysisCommand:
 
     def get_output_filename_base(self):
         if self.output_fn_base is None:
-            mdig_config = MDiGConfig.getConfig()
+            mdig_config = MDiGConfig.get_config()
             if mdig_config.analysis_filename_base is None:
                 #create random name
                 self.output_fn_base = \
@@ -67,7 +67,7 @@ class AnalysisCommand:
 
     def init_output_file(self, instance, rep=None):
         """ Initialise a new output file """
-        mdig_config = MDiGConfig.getConfig()
+        mdig_config = MDiGConfig.get_config()
         tmp_fn = self.get_output_filename_base()
         #   append variable/ls/region info
         if rep:
@@ -131,7 +131,7 @@ class AnalysisCommand:
                     tmp_cmd_string)
         
         # Add time to the output file if option is enabled.
-        mdig_config = MDiGConfig.getConfig()
+        mdig_config = MDiGConfig.get_config()
         if mdig_config.analysis_print_time:
             file = open(self.output_fn,'a')
             file.write('%d ' % t)

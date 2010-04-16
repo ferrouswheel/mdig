@@ -51,7 +51,7 @@ class ManagementStrategy:
     def __init__(self,node,instance):
         self.log = logging.getLogger("mdig.strategy")
         
-        self.grass_i = GRASSInterface.getG()
+        self.grass_i = GRASSInterface.get_g()
         
         self.temp_map_names={}
         self.active = False
@@ -180,8 +180,8 @@ class Treatment:
         self.var_temp = "x_t___strategy_" + self.strategy.get_name() + "_var_t_" + str(self.index)
 
     def __del__(self):
-        GRASSInterface.getG().removeMap(self.area_temp)
-        GRASSInterface.getG().removeMap(self.var_temp)
+        GRASSInterface.get_g().remove_map(self.area_temp)
+        GRASSInterface.get_g().remove_map(self.var_temp)
 
     def init_treatment(self):
         # TODO create the required elements with a default global area
@@ -264,8 +264,8 @@ class Treatment:
             operation = self.area_node.attrib['combine']
         assert(operation == "and" or operation == "or")
 
-        g = GRASSInterface.getG()
-        g.removeMap(self.area_temp)
+        g = GRASSInterface.get_g()
+        g.remove_map(self.area_temp)
         merge_str = "if("
         for a in self.areas:
             if operation == "and":
@@ -315,7 +315,7 @@ class Treatment:
         orig_value = var_val
         if orig_value is None:
             orig_value = "null()"
-        GRASSInterface.getG().mapcalc(self.var_temp, \
+        GRASSInterface.get_g().mapcalc(self.var_temp, \
                 "if(" + area_mask_map + "==1," \
                 + str(altered_value) + "," + str(orig_value) + ")")
         return self.var_temp
@@ -386,7 +386,7 @@ class TreatmentArea:
 
     def __del__(self):
         if self.area_filter_output is not None:
-            GRASSInterface.getG().removeMap(self.area_filter_output)
+            GRASSInterface.get_g().remove_map(self.area_filter_output)
 
     def init_from_xml(self):
         if self.node.tag == "mfilter":
@@ -411,7 +411,7 @@ class TreatmentArea:
         """
         if isinstance(self.area, Event):
             if self.area_filter_output is not None:
-                GRASSInterface.getG().removeMap(self.area_filter_output)
+                GRASSInterface.get_g().remove_map(self.area_filter_output)
             dist_map = replicate.temp_map_names[self.treatment.area_ls][0]
             self.area.run( dist_map, \
                     self.area_temp, replicate, False)

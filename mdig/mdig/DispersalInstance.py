@@ -178,7 +178,7 @@ class DispersalInstance:
                 ac.set_times(self.experiment.get_period(),times,r_times)
                 ac.run_command(saved_maps)
                 
-                if MDiGConfig.getConfig().analysis_add_to_xml:
+                if MDiGConfig.get_config().analysis_add_to_xml:
                     # add the analysis result to xml filename
                     # under instance...
                     r.add_analysis_result(ls_id, ac)
@@ -332,7 +332,7 @@ class DispersalInstance:
                     missing_years[l].append(t)
                 else:
                     # yes... then check if map exists
-                    if GRASSInterface.getG().checkMap(previous_envelopes[l][str(t)]) is None:
+                    if GRASSInterface.get_g().check_map(previous_envelopes[l][str(t)]) is None:
                         missing_years[l].append(t)
         return missing_years
 
@@ -354,7 +354,7 @@ class DispersalInstance:
         """
         result = (analysis_cmd.cmd_string,analysis_cmd.output_fn)
         
-        mdig_config = MDiGConfig.getConfig()
+        mdig_config = MDiGConfig.get_config()
         
         current_dir = os.path.dirname(os.path.abspath(result[1]))
         filename = os.path.basename(result[1])
@@ -421,7 +421,7 @@ class DispersalInstance:
     def set_region(self):
         current_region = self.experiment.get_region(self.r_id)
         try:
-            GRASSInterface.getG().setRegion(current_region)
+            GRASSInterface.get_g().set_region(current_region)
         except GRASSInterface.SetRegionException, e:
             pdb.set_trace()
             return
@@ -468,7 +468,7 @@ class DispersalInstance:
                         else:
                             filename += repr(var_value)
                 filename += "_ls_" + l + "_" + repr(t) + "_prob"
-                prob_env = GRASSInterface.getG().occupancyEnvelope(maps_to_combine,filename)
+                prob_env = GRASSInterface.get_g().occupancy_envelope(maps_to_combine,filename)
                 if prob_env is not None:
                     self._add_envelope(prob_env,l,t)
                     

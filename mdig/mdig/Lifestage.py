@@ -133,7 +133,7 @@ class Lifestage:
                 
                     sums=[0]*n_bins
                     bin_counts=[0]*n_bins
-                    freqs=GRASSInterface.getG().rasterValueFreq(p_mapname)
+                    freqs=GRASSInterface.get_g().raster_value_freq(p_mapname)
                     
                     min_cell=int(freqs[0][0])
                     max_cell=int(freqs[-1][0])
@@ -192,9 +192,9 @@ class Lifestage:
         Actually generates a mask for a given interval and region (r_id)
         """
         # Get GRASS interface instance
-        g = GRASSInterface.getG()
+        g = GRASSInterface.get_g()
         # Generate a random map name
-        mapname = g.generateMapName("mask")
+        mapname = g.generate_map_name("mask")
                 
         if r_id in self.bins.keys():
             bins = self.bins[r_id]
@@ -214,20 +214,20 @@ class Lifestage:
         self.log.debug("No appropriate interval range found for interval %d" % interval )
         
     def run(self, interval, rep, temp_map_names, strategy = None):
-        grass_i = GRASSInterface.getG()
+        grass_i = GRASSInterface.get_g()
         # Run through events for this lifestage
         for e in self.events:
             mask = ""
             p_intervals = self.getPhenologyIntervals(rep.instance.r_id)
             if len(p_intervals) > 1:
                 mask = self.getPhenologyMask(interval,rep.instance.r_id)
-                grass_i.makeMask(mask)
+                grass_i.make_mask(mask)
             
             e.run(temp_map_names[0], temp_map_names[1], rep, self.populationBased)
             
             if len(p_intervals) > 1:
                 # Remove mask because we can't access anythin outside of it using mapcalc
-                grass_i.makeMask(None)
+                grass_i.make_mask(None)
                 
                 # Join Maps
                 grass_i.mapcalc(temp_map_names[0],"if(isnull(%s),%s,%s)" % (mask, temp_map_names[0], temp_map_names[1]))
@@ -251,17 +251,17 @@ class Lifestage:
             t_area = t.get_treatment_area_map(rep)
             self.log.debug("Treatment area map is %s" % t_area)
             # Mask so that only treatment area is affected
-            grass_i.makeMask(t_area)
+            grass_i.make_mask(t_area)
             t.get_event().run(temp_map_names[0], temp_map_names[1], rep, False)
             # Remove mask when done
-            grass_i.makeMask(None)
+            grass_i.make_mask(None)
             # Now we have to combine the unmasked region from the original map with the
             # the alteration made by the treatment on the masked area.
             if t_area is not None:
                 self.tempmap = "wibble_foss"
                 grass_i.mapcalc(self.tempmap,'if(isnull("%s"),"%s","%s")' %
                         (t_area, temp_map_names[0], temp_map_names[1]))
-                grass_i.copyMap(self.tempmap, temp_map_names[1], overwrite=True)
+                grass_i.copy_map(self.tempmap, temp_map_names[1], overwrite=True)
             temp_map_names.reverse()
     
 #   def setPopulationBased(self,value):
@@ -294,7 +294,7 @@ class Lifestage:
     def clean_up_maps(self):
         for grassmap in self.initial_maps.values():
             del grassmap
-            #GRASSInterface.getG().destructMap(grassmap)
+            #GRASSInterface.get_g().destruct_map(grassmap)
             
     def update_xml(self):
         self.xml_node.attrib["name"] = self.name
