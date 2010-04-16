@@ -22,7 +22,7 @@
 Command line interface/launcher for MDiG.
 
 The user should be in GRASS environment before running. Some commands might
-work but no guarantees.
+work outside of the GRASS env. but no guarantees.
 
 '''
 
@@ -45,7 +45,7 @@ from mdig import DispersalModel
 from mdig import Displayer
 
 def usage():
-    usage_line = "Usage: mdig.py <action> [options] experiment.xml"
+    usage_line = "Usage: mdig.py <action> [options] [model_name|model.xml]"
     
     max_length = 0
     for a in Actions.mdig_actions:
@@ -64,8 +64,10 @@ def usage():
     print """Options:
 -h (--help) \t Display action specific help
 
-experiment.xml is the file containing the simulation details.
+model_name is the name of a model within the repository.
+model.xml is the file containing the simulation details.
 """
+    print "MDiG repository @ " + mdig.repository.location
 
 def process_options(argv):
     global logger

@@ -263,7 +263,6 @@ class Lifestage:
                         (t_area, temp_map_names[0], temp_map_names[1]))
                 grass_i.copyMap(self.tempmap, temp_map_names[1], overwrite=True)
             temp_map_names.reverse()
-            print temp_map_names
     
 #   def setPopulationBased(self,value):
 #       if value == 0:

@@ -135,15 +135,17 @@ class DispersalModel(object):
         if dir is not None:
             self.base_dir = dir
         else:
-            self.base_dir = os.path.dirname(self.model_file)
+            # We want to use relative paths, otherwise the repository isn't
+            # portable
+            self.base_dir = "" 
         if existing_instances_dir not in [None, ""] and \
             self.base_dir != existing_instances_dir:
             self.log.warn("Existing instances dir is: " + existing_instances_dir)
-            self.log.warn("Model definition is in: " + self.base_dir)
+            self.log.warn("Model definition is in: " + os.path.dirname(self.model_file))
             self.log.warn("Current base dir is different to that already " +
-                    "set... some analysis results may be unavailable. " + 
-                    "This could break things.")
+                    "set. Existing dir will be replaced which means some analysis results may be unavailable. ")
             raw_input("Press enter to continue, or CTRL-C to abort.")
+            pdb.set_trace()
         # Initialise paths
         self.init_paths()
 

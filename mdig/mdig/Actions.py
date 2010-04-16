@@ -337,7 +337,7 @@ class AddAction(Action):
         Action.__init__(self)
         self.parser = OptionParser(version=mdig.version_string,
                 description = AddAction.description,
-                usage = "%prog add [model definition].xml")
+                usage = "%prog add <path/model.xml>")
         self.add_options()
         self.preload = False
 
@@ -432,7 +432,7 @@ class InfoAction(Action):
         Action.__init__(self)
         self.parser = OptionParser(version=mdig.version_string,
                 description = InfoAction.description,
-                usage = "%prog info")
+                usage = "%prog info <model_name>")
         self.check_model = False
         self.add_options()
 
@@ -462,7 +462,7 @@ class ExportAction(Action):
         Action.__init__(self)
         self.parser = OptionParser(version=mdig.version_string,
                 description = ExportAction.description,
-                usage = "%prog export [options] model_name")
+                usage = "%prog export [options] <model_name>")
         self.add_options()
         
     def add_options(self):
@@ -588,7 +588,7 @@ class ROCAction(Action):
         Action.__init__(self)
         self.parser = OptionParser(version=mdig.version_string,
                 description = ROCAction.description,
-                usage = "%prog roc [options] model_name1 model_name2 ...")
+                usage = "%prog roc [options] <model_name1> <model_name2> ...")
         # Can theoretically run on any number of models
         self.model_limit = None
         self.preload = False
@@ -696,7 +696,7 @@ class AdminAction(Action):
         Action.__init__(self)
         self.parser = OptionParser(version=mdig.version_string,
                 description = AdminAction.description,
-                usage = "%prog admin [options] model_name")
+                usage = "%prog admin [options] <model_name>")
         self.add_options()
 
     def add_options(self):

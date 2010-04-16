@@ -41,7 +41,11 @@ mdig_exit_codes = {
     "management": 39,
     "strategy": 40,
     "treatment": 41,
-    "treatment_effect": 42
+    "treatment_effect": 42,
+    "coda_file": 60, # error loading coda file
+    "tmatrix": 61, # error applying transition matrix
+    "null_map": 62, # null in parameter map
+
 }
 repository = None
 

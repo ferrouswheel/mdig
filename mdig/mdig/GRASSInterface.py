@@ -684,7 +684,9 @@ class GRASSInterface:
         @todo rename to get_region
         """
         # sends command to GRASS session and returns result via stdout (piped)
-        output = subprocess.Popen("g.region -p", shell=True, stdout=subprocess.PIPE).communicate()[0]
+        output = subprocess.Popen("g.region -p", shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE).communicate()[0]
         # pipes input from r.info and formats it as a StringIO object
         # (additional functionality vs. string, like 'readlines')
         pre_rangeData = StringIO.StringIO(output)
@@ -696,7 +698,8 @@ class GRASSInterface:
     def getIndexRaster(self,indexRaster):
         '''Imports the raster layers representing the index layer.'''
         cmd = "r.info -m %s --v" % (indexRaster)
-        r = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        r = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
         r.stdout, r.stderr = r.communicate()
         if r.stdout == '':
             self.log.error("That raster does not exist in the current mapset.")
@@ -752,7 +755,8 @@ class GRASSInterface:
         null_char = '*'
         if null_as_zero: null_char = '0'
         imp_cmd = "r.out.ascii -hi input=%s output=- null=%s" % (rasterName,null_char)
-        data = subprocess.Popen(imp_cmd, shell=True, stdout=subprocess.PIPE)
+        data = subprocess.Popen(imp_cmd, shell=True, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
         tempDataFile, tempDataFileName = (tempfile.mkstemp(prefix = 'popMod_inRast_', \
                     suffix='.txt', text=True))
         tempDataFile = os.fdopen(tempDataFile, 'w')
@@ -770,7 +774,8 @@ class GRASSInterface:
         """ @todo merge with the above code and generalise """
         # export index to temporary ascii map
         imp_cmd = "r.out.ascii -hi input=%s output=-" % (indexRaster)
-        data = subprocess.Popen(imp_cmd, shell=True, stdout=subprocess.PIPE)
+        data = subprocess.Popen(imp_cmd, shell=True, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
         tempDataFile, tempDataFileName = (tempfile.mkstemp(prefix='popMod_inIndex_', \
                     suffix='.txt', text=True))
         tempDataFile = os.fdopen(tempDataFile, 'w')

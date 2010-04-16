@@ -104,8 +104,8 @@ class TVGenerator(list):
             for param_name in keys:
                 if param_name[0:3] == "MAP":
                     ls_name = param_name[4:len(param_name)]
-                    print "ls stage is " + ls_name
-                    print "pop_maps keys " + str(pop_maps)
+                    #print "ls stage is " + ls_name
+                    #print "pop_maps keys " + str(pop_maps)
                     if ls_name in pop_maps:
                         expanded_expression = expanded_expression.replace(param_name, str(pop_maps[ls_name]))
                     else:
@@ -131,13 +131,13 @@ class TVGenerator(list):
                 self.log.error("ZeroDivisionError in expression" + \
                         ": %s" % expanded_expression)
                 if not self.ignore_div_by_zero:
-                    sys.exit()
+                    sys.exit(mdig.mdig_exit_codes['tmatrix'])
                 else:
                     tv_list.append(0.0)
             except NameError, e:
                 self.log.error("%s in expression" + \
                         ": %s" % (str(e),expanded_expression))
-                sys.exit()
+                sys.exit(mdig.mdig_exit_codes['tmatrix'])
         tm = array(tv_list)
         tm = tm.reshape(self.tm_size, self.tm_size)
         return tm
@@ -155,7 +155,7 @@ class ParamGenerator():
         self.source = source
         self.coda = None
         self.log = logging.getLogger("mdig.paramgen")
-        print '%s   %s   %s   %s is parameter value source' %(source, index, dist, vals)
+        #print '%s   %s   %s   %s is parameter value source' %(source, index, dist, vals)
         try:
             if source == 'map':
                 # TODO create a GRASSInterface command to load map to an array
@@ -171,7 +171,7 @@ class ParamGenerator():
                 map_ascii = p.communicate()[0]
                 if map_ascii.find('*') != -1:
                     self.log.error("Null values in parameter map %s not allowed" % self.map_name) 
-                    sys.exit(53)
+                    sys.exit(mdig.mdig_exit_codes['null_map'])
                 self.mat = numpy.matrix(map_ascii)
                 self.mat = self.mat.reshape((n_rows,n_cols))
             elif source == 'CODA':
@@ -197,9 +197,9 @@ class ParamGenerator():
             elif source == 'static':
                 self.static = vals[0]
         except IOError:
-            print '%s   %s   %s   %s parameter value source coding not valid' %(source, index, dist, vals)
-            self.log.error("Are your CODA files okay?")
-            sys.exit(849)
+            errstr = '%s   %s   %s   %s parameter value source coding not valid' % (source, index, dist, vals)
+            self.log.error(errstr + "\nAre your CODA files okay?")
+            sys.exit(mdig.mdig_exit_codes['coda_file'])
 
     def gen_val(self, index_value, coords):
         """Draws a random CODA iteration from the range specified in index for
@@ -300,8 +300,8 @@ class LifestageTransition:
                 destination_maps) 
 
         processingTime = time.time() - start_time
-        print 'Transition matrix application completed. ' + \
-            'Processing time %f seconds' % processingTime
+        self.log.debug('Transition matrix application completed. ' + \
+            'Processing time %f seconds' % processingTime)
 
     def process_rows(self, ls_ids, indexes, temp_rasters, temp_out_rasters, \
             out_pop_rasters):
@@ -396,14 +396,10 @@ class LifestageTransition:
                             sum_so_far = individuals
                 else:
                     out_cell = numpy.dot(tm,in_row_array[1:,j])
-                #if out_cell2[0] != 0:
-                    #import pdb; pdb.set_trace()
-                if pop_cell[0,0] != 0:
-                    print "T matrix: " + str(tm)
-                    print "before: " + str(pop_cell)
-                    print "after: " + str(out_cell)
-                #print "outCell_1 = " + str(outCell)
-                #print "outCell_shape = " + str(outCell.shape)
+                #if pop_cell[0,0] != 0:
+                #    print "T matrix: " + str(tm)
+                #    print "before: " + str(pop_cell)
+                #    print "after: " + str(out_cell)
                 out_row_array[0,j] = in_row_array[0,j]
                 out_row_array[1:,j] = out_cell
                 
