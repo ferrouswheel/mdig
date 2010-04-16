@@ -381,8 +381,8 @@ class GRASSInterface:
             return 1
 
     def rasterValueFreq(self,mapname):
-        cmd = "r.stats -c input=%s" % mapname
-	self.log.debug("Getting raster stats with command: %s" % cmd)
+        cmd = "r.stats --q -c input=%s" % mapname
+        self.log.debug("Getting raster stats with command: %s" % cmd)
         p=Popen(cmd, shell=True, stdout=subprocess.PIPE)
         output=p.communicate()[0]
         res=re.findall("(\d+) (\d+)\n",output)
