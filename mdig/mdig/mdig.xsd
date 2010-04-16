@@ -66,7 +66,7 @@
                         <xsd:sequence>
                             <xsd:element name="completed" type="completedType" minOccurs="1" maxOccurs="unbounded"/>
                         </xsd:sequence>
-                        <xsd:attribute name="baseDir" type="xsd:string" use="optional"/>
+                        <xsd:attribute name="baseDir" type="xsd:string" use="optional"/> <!-- deprecated -->
                     </xsd:complexType>
                 </xsd:element>
             </xsd:sequence>

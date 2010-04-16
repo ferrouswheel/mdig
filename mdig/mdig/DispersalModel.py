@@ -131,21 +131,10 @@ class DispersalModel(object):
 
     def set_base_dir(self, dir=None):
         # Set up base directory for output
-        existing_instances_dir = self.get_instances_dir()
         if dir is not None:
             self.base_dir = dir
         else:
-            # We want to use relative paths, otherwise the repository isn't
-            # portable
-            self.base_dir = "" 
-        if existing_instances_dir not in [None, ""] and \
-            self.base_dir != existing_instances_dir:
-            self.log.warn("Existing instances dir is: " + existing_instances_dir)
-            self.log.warn("Model definition is in: " + os.path.dirname(self.model_file))
-            self.log.warn("Current base dir is different to that already " +
-                    "set. Existing dir will be replaced which means some analysis results may be unavailable. ")
-            raw_input("Press enter to continue, or CTRL-C to abort.")
-            pdb.set_trace()
+            self.base_dir = os.path.dirname(self.model_file)
         # Initialise paths
         self.init_paths()
 
@@ -302,6 +291,13 @@ class DispersalModel(object):
             self.instances = []
             permutations = self.get_instance_permutations()
             
+            # check and clean deprecated instances dir
+            completed_node = self.xml_model.xpath("/model/instances")
+            if len(completed_node) > 0:
+                if "baseDir" in completed_node[0].attrib.keys():
+                    del completed_node[0].attrib["baseDir"]
+                    self.log.warning("Removed deprecated baseDir attribute")
+
             # Turn each returned variable combination into an actual
             # DispersalInstance object instance
             for r_id, p in permutations.items():
@@ -383,7 +379,7 @@ class DispersalModel(object):
         if os.path.exists(fn):
             return fn
         # Check for file in instances dir first...
-        i_dir = self.get_instances_dir()
+        i_dir = self.base_dir
         if i_dir:
             fn2 = os.path.join(i_dir, fn)
             if os.path.exists(fn2):
@@ -822,8 +818,6 @@ class DispersalModel(object):
         completed_node=model_node.find('instances')
         if completed_node is None:
             completed_node = lxml.etree.SubElement(model_node,"instances")
-        assert(self.base_dir is not None)
-        completed_node.attrib["baseDir"] = self.base_dir
         
         completed_node = lxml.etree.SubElement(completed_node,"completed")
         
@@ -843,14 +837,6 @@ class DispersalModel(object):
         self.log.debug('Added "completed" node: ' + repr(completed_node))
     
         return completed_node   
-    
-    def get_instances_dir(self):
-        completed_node = self.xml_model.xpath("/model/instances")
-        
-        if len(completed_node) > 0:
-            if "baseDir" in completed_node[0].attrib.keys():
-                return completed_node[0].attrib["baseDir"]
-        return None
     
     def get_region_ids(self):
         nodes = self.xml_model.xpath("//regions/region/@id")
