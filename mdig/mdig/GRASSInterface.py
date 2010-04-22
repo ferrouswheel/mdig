@@ -721,7 +721,7 @@ class GRASSInterface:
         """
         null_char = '*'
         if null_as_zero: null_char = '0'
-        imp_cmd = "r.out.ascii -hi input=%s output=- null=%s" % (rasterName,null_char)
+        imp_cmd = "r.out.ascii -h input=%s output=- null=%s" % (rasterName,null_char)
         data = subprocess.Popen(imp_cmd, shell=True, stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
         tempDataFile, tempDataFileName = (tempfile.mkstemp(prefix = 'popMod_inRast_', \
