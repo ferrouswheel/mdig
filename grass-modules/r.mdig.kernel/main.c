@@ -59,6 +59,7 @@ int infd;
 RASTER_MAP_TYPE data_type;
 
 int is_boolean, is_overwrite, is_verbose, is_perimeter, is_conserved;
+int is_popdep;
 int make_lt_zero_null;
 int check_zero=-1;
 
@@ -123,7 +124,7 @@ void expand_jump_array() {
  */
 void calc(void* x, void* out, int col, int row, float limit_min) {
     int events = 0, i;
-    CELL cpop; FCELL fpop; DCELL dpop;
+    CELL cpop = 1; FCELL fpop = 1.0f; DCELL dpop = 1.0;
 
     switch (data_type) {
     case CELL_TYPE:
@@ -140,7 +141,12 @@ void calc(void* x, void* out, int col, int row, float limit_min) {
         break;
     }
 
-    events = get_number_of_events(UNIFORM_RANDOM, freq);
+    if (is_popdep) {
+        // Be cheeky and just multiply by all since the default is 1
+        events = get_number_of_events(UNIFORM_RANDOM, freq * cpop * fpop * dpop);
+    } else {
+        events = get_number_of_events(UNIFORM_RANDOM, freq);
+    }
     if (is_conserved) {
         switch (data_type) {
         case CELL_TYPE:
@@ -270,6 +276,15 @@ void calc(void* x, void* out, int col, int row, float limit_min) {
             break;
         }
     }
+}
+
+void remove_temp_map() {
+    int return_val;
+    char buffer[512];
+    sprintf(buffer, "g.remove --q rast=%s 2> /dev/null", TEMP_MAP);
+    return_val = system(buffer);
+    if (return_val != 0)
+        G_fatal_error ("Error removing temp map <%s>",TEMP_MAP);
 }
 
 int
@@ -466,6 +481,7 @@ main(int argc, char *argv[]) {
            total_counter - (existing_counter + out_of_bounds_counter),
            existing_counter,out_of_bounds_counter, total_counter);
 
+    remove_temp_map();
     jumps_count = 0;
     G_free(jumps);
 
@@ -493,7 +509,7 @@ int open_output_map(char* map_name) {
         if ( is_overwrite == TRUE) {
             int return_val;
             char buffer[512];
-            sprintf(buffer, "g.remove rast=%s > /dev/null", map_name);
+            sprintf(buffer, "g.remove --q rast=%s 2> /dev/null", map_name);
             return_val = system(buffer);
             if (return_val != 0)
                 G_fatal_error ("Error removing existing output map <%s>",map_name);
@@ -588,7 +604,7 @@ void parse_options(int argc, char* argv[]) {
     struct Option *o_limit, *o_minlimit;
     struct Option *o_dist_a, *o_dist_b, *o_seed, *o_agem;
     struct Flag *f_bool, *f_overwrite, *f_verbose, *f_check_zero;
-    struct Flag *f_conserve, *f_makenull;
+    struct Flag *f_conserve, *f_makenull, *f_popdep;
 
     char buffer[64];
 
@@ -684,6 +700,11 @@ void parse_options(int argc, char* argv[]) {
     f_makenull->description = "Convert values that are less than 1 to NULL.";
     f_makenull->answer      = FALSE;
 
+    f_popdep = G_define_flag() ;
+    f_popdep->key         = 'p' ;
+    f_popdep->description = "Make frequency dependent on population/value (population is multiplied by freq option).";
+    f_popdep->answer      = FALSE;
+
     f_overwrite = G_define_flag();
     f_overwrite->key    = 'o' ;
     f_overwrite->description = "Overwrite output file if it exists";
@@ -708,6 +729,7 @@ void parse_options(int argc, char* argv[]) {
     is_conserved = f_conserve->answer;
     is_overwrite = f_overwrite->answer;
     is_verbose = !(f_verbose->answer);
+    is_popdep = f_popdep->answer;
     make_lt_zero_null = f_makenull->answer;
     maturity_age = atoi(o_agem->answer);
     if (f_check_zero->answer) check_zero = 1;
@@ -742,6 +764,9 @@ void parse_options(int argc, char* argv[]) {
     }
     if (is_boolean && maturity_age != 0) {
         G_fatal_error ("Using a map of population ages as presence/absence makes no sense!");
+    }
+    if (is_popdep && is_boolean) {
+        G_fatal_error ("Population dependency with presence/absence makes no sense!");
     }
 
     if (o_dist->answer) {
