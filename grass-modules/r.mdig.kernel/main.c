@@ -49,7 +49,8 @@ void expand_jump_array();
 
 void parse_options(int argc, char* argv[]);
 int compare_jumps(const void *a, const void *b);
-void process_jumps();
+void process_jumps(int out_fd);
+int open_output_map(char* map_name);
 
 int get_number_of_events(double, double);
 
@@ -57,14 +58,15 @@ int nrows, ncols;
 int infd;
 RASTER_MAP_TYPE data_type;
 
-int is_boolean, is_overwrite, is_verbose, is_perimeter;
+int is_boolean, is_overwrite, is_verbose, is_perimeter, is_conserved;
+int make_lt_zero_null;
 int check_zero=-1;
 
 char *name, *result, *mapset;
 void *inrast;
 
 char *out_mapset;
-void **outrast;
+void *outrast;
 
 enum { GENERAL, CAUCHY, EXPONENTIAL, LOG } distribution;
 double dist_a, dist_b, freq;
@@ -93,6 +95,8 @@ double nsres, ewres;
 #define UNIFORM_RANDOM ((double)rand()/RAND_MAX)
 #endif
 
+#define TEMP_MAP "r_mdig_kernel_temp_map_delete_me"
+
 /*-------------------------------------
 Utility functions for jump array
   -------------------------------------*/
@@ -117,25 +121,40 @@ void expand_jump_array() {
  * Calc finds out the distance and direction for
  * a dispersal event and adds to the jumps array
  */
-void calc(void* x, int col, int row, float limit_min) {
+void calc(void* x, void* out, int col, int row, float limit_min) {
     int events = 0, i;
+    CELL cpop; FCELL fpop; DCELL dpop;
 
     switch (data_type) {
     case CELL_TYPE:
-        if (((CELL*)x)[col] < maturity_age) return;
+        cpop = ((CELL*)x)[col];
+        if (cpop < maturity_age) return;
         break;
     case FCELL_TYPE:
-        if (((FCELL*)x)[col] < maturity_age) return;
+        fpop = ((FCELL*)x)[col];
+        if (fpop < maturity_age) return;
         break;
     case DCELL_TYPE:
-        if (((DCELL*)x)[col] < maturity_age) return;
-        break;
-    default:
-        G_fatal_error ("Unknown data_type");
+        dpop = ((DCELL*)x)[col];
+        if (dpop < maturity_age) return;
         break;
     }
 
     events = get_number_of_events(UNIFORM_RANDOM, freq);
+    if (is_conserved) {
+        switch (data_type) {
+        case CELL_TYPE:
+            if ((CELL)events > cpop) events = (int)cpop;
+            break;
+        case FCELL_TYPE:
+            if ((FCELL)events > fpop) events = (int)fpop;
+            break;
+        case DCELL_TYPE:
+            if ((DCELL)events > dpop) events = (int)dpop;
+            break;
+        }
+    }
+
     total_counter += events;
     for (i=0; i < events; i++) {
         double dist, a, b, angle;
@@ -220,7 +239,37 @@ void calc(void* x, int col, int row, float limit_min) {
 
     }
 
-
+    if (is_conserved) {
+        switch (data_type) {
+        case CELL_TYPE:
+            ((CELL*)out)[col] = cpop - events;
+            if (make_lt_zero_null && ((CELL*)out)[col] < 1)
+                G_set_c_null_value( ((CELL*)out) + col, 1 );
+            break;
+        case FCELL_TYPE:
+            ((FCELL*)out)[col] = fpop - events;
+            if (make_lt_zero_null && ((FCELL*)out)[col] < 1.0f)
+                G_set_f_null_value( ((FCELL*)out) + col, 1 );
+            break;
+        case DCELL_TYPE:
+            ((DCELL*)out)[col] = dpop - events;
+            if (make_lt_zero_null && ((DCELL*)out)[col] < 1.0)
+                G_set_d_null_value( ((DCELL*)out) + col, 1 );
+            break;
+        }
+    } else {
+        switch (data_type) {
+        case CELL_TYPE:
+            ((CELL*)out)[col] = cpop;
+            break;
+        case FCELL_TYPE:
+            ((FCELL*)out)[col] = fpop;
+            break;
+        case DCELL_TYPE:
+            ((DCELL*)out)[col] = dpop;
+            break;
+        }
+    }
 }
 
 int
@@ -233,6 +282,7 @@ main(int argc, char *argv[]) {
     RASTER_MAP_TYPE minmap_data_type; char* minmap_mapset;
     int minmap_fd;
     void* in_minmap_rast;
+    int out_fd;
 
     char buff[1024];
     int row,col,is_reclass;
@@ -314,8 +364,13 @@ main(int argc, char *argv[]) {
         break;
     }
 
+    // Open output map
+    out_fd = open_output_map(TEMP_MAP);
+
     /* Allocate input buffer */
     inrast = G_allocate_raster_buf(data_type);
+    /* Allocate output buffer */
+    outrast = G_allocate_raster_buf(data_type);
 
     /* Get region size */
     nrows = G_window_rows();
@@ -343,6 +398,9 @@ main(int argc, char *argv[]) {
         /* read input map */
         if (G_get_raster_row (infd, inrast, row, data_type) < 0)
             G_fatal_error ("Could not read from <%s>",name);
+
+        /* clear outrast buffer */
+        G_set_null_value(outrast,ncols,data_type);
 
         /* read min map */
         if (in_minmap_rast) {
@@ -372,28 +430,37 @@ main(int argc, char *argv[]) {
                         G_fatal_error ("Unknown data_type");
                         break;
                     }
-                    calc(inrast,col,row, min_limit);
+                    calc(inrast,outrast,col,row, min_limit);
                 }
             }
         } else {
             for (col=0; col < ncols; col++) {
                 if (is_present(inrast,col))
-                        calc(inrast,col,row, min_limit);
+                        calc(inrast,outrast,col,row, min_limit);
             }
         }
+        if (G_put_raster_row (out_fd, outrast, data_type) < 0)
+            G_fatal_error ("Cannot write to temp map <%s>",TEMP_MAP);
 
     }
 
     G_close_cell (minmap_fd);
     G_free(in_minmap_rast);
-
+    G_close_cell (out_fd);
     G_close_cell (infd);
-    if ( (infd = G_open_cell_old (name, mapset)) < 0)
-        G_fatal_error ("Cannot open cell file [%s]", name);
 
-    process_jumps();
+    // Open temp map for reading
+    if ( (infd = G_open_cell_old (TEMP_MAP, mapset)) < 0)
+        G_fatal_error ("Couldn't re-open output raster <%s>",TEMP_MAP);
 
+    // Re-open output map
+    G_close_cell (out_fd);
+    out_fd = open_output_map(result);
+    // ... and add jumps destinations
+    process_jumps(out_fd);
+    G_close_cell (out_fd);
     G_free(inrast);
+    G_free(outrast);
 
     printf("%d/%d/%d/%d new/existing/OOB/total dispersal events\n",
            total_counter - (existing_counter + out_of_bounds_counter),
@@ -416,28 +483,35 @@ int compare_jumps(const void *a, const void *b) {
     return value;
 }
 
-void process_jumps() {
-    int row;
-    int outfd;
-    int jump_index=0;
-
+int open_output_map(char* map_name) {
+    int out_fd;
     /* Open output file */
 
     /* Check for existing map and remove if overwrite flag is on */
-    out_mapset = G_find_cell2 (result, mapset);
+    out_mapset = G_find_cell2 (map_name, mapset);
     if ( out_mapset != NULL ) {
-        if (is_overwrite == TRUE) {
+        if ( is_overwrite == TRUE) {
+            int return_val;
             char buffer[512];
-            sprintf(buffer, "g.remove rast=%s > /dev/null", result);
-            system(buffer);
-
+            sprintf(buffer, "g.remove rast=%s > /dev/null", map_name);
+            return_val = system(buffer);
+            if (return_val != 0)
+                G_fatal_error ("Error removing existing output map <%s>",map_name);
         } else {
             G_fatal_error ("Output map <%s> exists (use -o flag to force"
-                           " overwrite)",result);
+                           " overwrite)",map_name);
         }
     }
-    if ( (outfd = G_open_raster_new (result, data_type)) < 0)
-        G_fatal_error ("Couldn't create new raster <%s>",result);
+    if ( (out_fd = G_open_raster_new (map_name, data_type)) < 0)
+        G_fatal_error ("Couldn't create new raster <%s>",map_name);
+    return out_fd;
+
+}
+
+void process_jumps(int out_fd) {
+#define IS_POPULATION (!is_boolean && maturity_age == 0)
+    int row;
+    int jump_index=0;
 
     qsort(jumps, (unsigned int) jumps_count, sizeof(Jump), *compare_jumps);
 
@@ -446,7 +520,7 @@ void process_jumps() {
 
         /* read input map */
         if (G_get_raster_row (infd, inrast, row, data_type) < 0)
-            G_fatal_error ("Could not read from <%s>",name);
+            G_fatal_error ("Could not read from <%s>",TEMP_MAP);
 
         switch (data_type) {
         case CELL_TYPE:
@@ -454,9 +528,21 @@ void process_jumps() {
                 int i = jump_index;
                 int col = jumps[i].col;
 
-                if (G_is_c_null_value(inrast + (col*sizeof(CELL))))
+                if (G_is_c_null_value(inrast + (col*sizeof(CELL)))) {
+                    //printf("jump %d\n", jumps[i].cvalue);
                     ((CELL *) inrast)[col] = jumps[i].cvalue;
-                else existing_counter++;
+                } else {
+                    //printf("jump exists %d\n", jumps[i].cvalue);
+                    if (IS_POPULATION) {
+                        //printf(".. but is population\n");
+                        ((CELL *) inrast)[col] += jumps[i].cvalue;
+                    }
+                    // There is a weird thing here with the existing counter,
+                    // if there are multiple jumps to the same destination, then
+                    // the first one will be "new" and the rest will contribute
+                    // to the "existing" counter.
+                    existing_counter++;
+                }
             }
             break;
         case FCELL_TYPE:
@@ -466,7 +552,12 @@ void process_jumps() {
 
                 if (G_is_f_null_value(inrast + (col*sizeof(FCELL))))
                     ((FCELL *) inrast)[col] = jumps[i].fvalue;
-                else existing_counter++;
+                else {
+                    if (IS_POPULATION) {
+                        ((FCELL *) inrast)[col] += jumps[i].fvalue;
+                    }
+                    existing_counter++;
+                }
             }
             break;
         case DCELL_TYPE:
@@ -476,17 +567,20 @@ void process_jumps() {
 
                 if (G_is_d_null_value(inrast + (col*sizeof(DCELL))))
                     ((DCELL *) inrast)[col] = jumps[i].dvalue;
-                else existing_counter++;
+                else {
+                    if (IS_POPULATION) {
+                        ((DCELL *) inrast)[col] += jumps[i].dvalue;
+                    }
+                    existing_counter++;
+                }
             }
             break;
         }
 
-        if (G_put_raster_row (outfd, inrast, data_type) < 0)
+        if (G_put_raster_row (out_fd, inrast, data_type) < 0)
             G_fatal_error ("Cannot write to <%s>",result);
 
     }
-    G_close_cell (outfd);
-
 }
 
 void parse_options(int argc, char* argv[]) {
@@ -494,6 +588,7 @@ void parse_options(int argc, char* argv[]) {
     struct Option *o_limit, *o_minlimit;
     struct Option *o_dist_a, *o_dist_b, *o_seed, *o_agem;
     struct Flag *f_bool, *f_overwrite, *f_verbose, *f_check_zero;
+    struct Flag *f_conserve, *f_makenull;
 
     char buffer[64];
 
@@ -579,6 +674,16 @@ void parse_options(int argc, char* argv[]) {
     f_bool->description = "Boolean spread, cells are present/absent";
     f_bool->answer      = FALSE;
 
+    f_conserve = G_define_flag() ;
+    f_conserve->key         = 'c' ;
+    f_conserve->description = "Conserve individuals - events redistribute individuals rather than create new ones";
+    f_conserve->answer      = FALSE;
+
+    f_makenull = G_define_flag() ;
+    f_makenull->key         = 'm' ;
+    f_makenull->description = "Convert values that are less than 1 to NULL.";
+    f_makenull->answer      = FALSE;
+
     f_overwrite = G_define_flag();
     f_overwrite->key    = 'o' ;
     f_overwrite->description = "Overwrite output file if it exists";
@@ -600,8 +705,10 @@ void parse_options(int argc, char* argv[]) {
     name    = input->answer;
     result  = output->answer;
     is_boolean = f_bool->answer;
+    is_conserved = f_conserve->answer;
     is_overwrite = f_overwrite->answer;
     is_verbose = !(f_verbose->answer);
+    make_lt_zero_null = f_makenull->answer;
     maturity_age = atoi(o_agem->answer);
     if (f_check_zero->answer) check_zero = 1;
 
@@ -623,6 +730,18 @@ void parse_options(int argc, char* argv[]) {
 #else
         srand((unsigned int) seed);
 #endif
+    }
+
+    // Check flags don't clash
+    if (is_conserved && is_boolean) {
+        G_fatal_error ("Can't conserve individuals on a boolean population distribution (only specify"
+                " one of -c or -b)");
+    }
+    if (is_conserved && maturity_age != 0) {
+        G_fatal_error ("Can't conserve individuals while treating map as population age (maturity != 0)");
+    }
+    if (is_boolean && maturity_age != 0) {
+        G_fatal_error ("Using a map of population ages as presence/absence makes no sense!");
     }
 
     if (o_dist->answer) {
