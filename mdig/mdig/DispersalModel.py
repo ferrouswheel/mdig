@@ -79,7 +79,7 @@ class DispersalModel(object):
         self.activeInstances = []
         self.lifestage_transitions = None
         
-        schema_file = sys.path[0]+"/mdig/mdig.xsd"
+        schema_file = os.path.join(os.path.dirname(__file__),"mdig.xsd")
         self.load_xml(model_file)
         self.validate_xml(schema_file)
         
@@ -267,7 +267,8 @@ class DispersalModel(object):
     def log_instance_times(self):
         self.log.info("Average time to run replicates for each instance:")
         for i in self.get_instances():
-            self.log.info("%s: %s" % (str(i), str(i.get_average_time())))
+            if i.enabled:
+                self.log.info("%s: %s" % (str(i), str(i.get_average_time())))
         
     def is_complete(self):
         for i in self.get_instances():

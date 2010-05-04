@@ -757,26 +757,61 @@ class AdminAction(Action):
                 instances[i].enabled = not instances[i].enabled
                 print( "%d: %s" % (i, str(instances[i]) ))
                 instances[i].update_xml()
+            #mdig_model.save_model()
 
 class WebAction(Action):
     description = "Run a webserver that allows interaction with MDiG"
 
     def __init__(self):
         Action.__init__(self)
+        self.parser = OptionParser(version=mdig.version_string,
+                description = WebAction.description,
+                usage = "%prog web [options] <model_name>")
+        self.preload = False
+        self.add_options()
         
-    def get_usage(self):
-        usage_str = mdig.version_string
-    
-        usage_str += '''
-        "web" action : Run a webserver that allows interaction with MDig
-        
-        NOT IMPLEMENTED
-        '''
-        return usage_str
+    def add_options(self):
+        Action.add_options(self)
+        #self.parser.add_option("-o","--overwrite",
+        #        help="Overwrite existing files",
+        #        action="store_true",
+        #        dest="overwrite_flag")
+        #self.parser.add_option("-n","--remove-null",
+        #        help="Remove null bitmasks from raster maps",
+        #        action="store_true",
+        #        dest="remove_null")
+        #self.parser.add_option("-g","--generate",
+        #        help="Generate null bitmasks for raster maps",
+        #        action="store_true",
+        #        dest="generate_null")
+        #self.parser.add_option("-c","--check-maps",
+        #        help="Check all maps for the model are present",
+        #        action="store_true",
+        #        dest="check_maps")
+        #self.parser.add_option("-m","--move-mapset",
+        #        help="Check all maps for the model are present",
+        #        action="store",
+        #        type="string",
+        #        dest="move_mapset")
+        #self.parser.add_option("-l","--list-instances",
+        #        help="List all the instances, their index, and status",
+        #        action="store_true",
+        #        dest="list_instances")
+        #self.parser.add_option("-t","--toggle-instance",
+        #        help="Change the whether instances are enabled or not",
+        #        action="store",
+        #        dest="toggle_instances")
 
     def parse_options(self, argv):
-        print self.get_usage()
-        sys.exit(mdig.mdig_exit_codes["not_implemented"])
+        pass
+        #sys.exit(mdig.mdig_exit_codes["not_implemented"])
+
+    def do_me(self,mdig_model):
+        # initialise web system - needs to create new mapset
+        from WebService import start_web_service
+
+        # start web monitoring loop
+        start_web_service()
     
 class ClientAction(Action):
     description = "Runs MDiG as a node in a distributed instance of MDiG"

@@ -280,7 +280,9 @@ class DispersalInstance:
         sum_time = datetime.timedelta()
         for i in self.rep_times:
             sum_time += i
-        return sum_time / len(self.rep_times)
+        if len(self.rep_times) > 0:
+            return sum_time / len(self.rep_times)
+        return None
     
     def reset(self):
         while len(self.replicates) > 0:
@@ -511,6 +513,8 @@ class DispersalInstance:
         # everything else is updated as they are accessed through class methods
         if not self.enabled:
             self.node.attrib["enabled"] = "false"
+        else:
+            self.node.attrib["enabled"] = "true"
 
     def __str__(self):
         s = "[Instance "

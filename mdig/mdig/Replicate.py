@@ -76,7 +76,8 @@ class Replicate:
             c = MDiGConfig.get_config()
             if "replicate" not in c or \
                 "check_complete" not in c["replicate"] or \
-                c["replicate"]["check_complete"] != "no":
+                c["replicate"]["check_complete"] != "false":
+                import pdb; pdb.set_trace()
                 self.complete = self.check_complete()
             else:
                 # If the mdig.conf file has turned off check
