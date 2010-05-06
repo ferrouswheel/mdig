@@ -380,6 +380,14 @@ class DispersalModel(object):
         nodes = self.xml_model.xpath('/model/name')
         nodes[0].text = name
 
+    def get_location(self):
+        nodes = self.xml_model.xpath('/model/GISLocation')
+        return nodes[0].text.strip()
+        
+    def set_location(self, loc):
+        nodes = self.xml_model.xpath('/model/GISLocation')
+        nodes[0].text = loc
+        
     def find_file(self,fn):
         # Check for absolute path
         if os.path.exists(fn):
@@ -988,12 +996,18 @@ class DispersalModel(object):
 
     def init_mapset(self):
         G = GRASSInterface.get_g()
+        loc = self.get_location()
+        if not g.check_location(loc):
+            self.log.error("Location %s in model definition does not exist" % loc)
+            return False
+        result = False
         if G.check_mapset(self.get_name()):
-            G.change_mapset(self.get_name())
+            result=G.change_mapset(self.get_name(),location=loc)
         else:
             self.log.info("Mapset " +self.get_name() + \
                     " doesn't exist, creating it.")
-            G.change_mapset(self.get_name(),True)
+            result=G.change_mapset(self.get_name(),True)
+        return result
 
     def get_mapset(self):
         """ Get the mapset where this model's maps are contained.

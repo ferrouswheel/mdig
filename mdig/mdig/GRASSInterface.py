@@ -103,7 +103,7 @@ class GRASSInterface:
         
         if not self.check_environment():
             self.log.debug("Attempting setup of GRASS from config file")
-            self._set_vars()
+            self.init_environment()
         
         if self.check_environment():
             self.log.log(logging.INFO, "Saving GRASS region")
@@ -134,17 +134,7 @@ class GRASSInterface:
             
         return okay
 
-    def get_gis_env(self):
-        # sends command to GRASS session and returns result via stdout (piped)
-        output = subprocess.Popen("g.gisenv -n", shell=True, stdout=subprocess.PIPE).communicate()[0]
-        pre_range_data = StringIO.StringIO(output).readlines()
-        ret = {}
-        for line in pre_range_data:
-            fields = line.strip().split('=')
-            ret[fields[0]] = fields[1]
-        return ret
-    
-    def _set_vars(self):
+    def init_environment(self):
         for var in self.grass_vars:
             if self.config.has_key(var):
                 self.grass_vars[var]=self.config[var]
@@ -155,6 +145,25 @@ class GRASSInterface:
             os.environ["LD_LIBRARY_PATH"]="/".join([self.grass_vars["GISBASE"], "/lib:$LD_LIBRARY_PATH"])
         self.log.debug("GRASS Environment is now: %s", self.grass_vars)
 
+        # TODO set these up
+        #PATH="$GISBASE/bin:$GISBASE/scripts:$PATH"
+        #LD_LIBRARY_PATH="$GISBASE/lib"
+        #GRASS_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
+        #export PYTHONPATH="$GISBASE/etc/python:$PYTHONPATH"
+        #export GIS_LOCK=$$
+        #export GRASS_VERSION="7.0.svn"
+
+
+    def get_gis_env(self):
+        # sends command to GRASS session and returns result via stdout (piped)
+        output = subprocess.Popen("g.gisenv -n", shell=True, stdout=subprocess.PIPE).communicate()[0]
+        pre_range_data = StringIO.StringIO(output).readlines()
+        ret = {}
+        for line in pre_range_data:
+            fields = line.strip().split('=')
+            ret[fields[0]] = fields[1]
+        return ret
+    
     def clear_monitor(self):
         os.environ['GRASS_PNG_READ']="FALSE"
 
@@ -519,19 +528,36 @@ class GRASSInterface:
             return True
         return False
 
-    def change_mapset(self, mapset_name = None, create=False):
+    def change_mapset(self, mapset_name = None, location = None, create=False):
         """
         Change to specified mapset. If create is True than create it if necessary       
         """
         if mapset_name is None:
             mapset_name = "PERMANENT"
+        if location is None:
+            location = ""
+        else:
+            location = " location=" + location
         if self.get_mapset() != mapset_name: 
             if create:
-                self.run_command("g.mapset -c mapset=%s" % mapset_name)
+                result = self.run_command("g.mapset -c mapset=%s%s" % (mapset_name,location))
             else:
-                self.run_command("g.mapset mapset=%s" % mapset_name)
-        
+                result = self.run_command("g.mapset mapset=%s%s" % (mapset_name,location))
+            if result != 0:
+                return False
         return True
+
+    def create_mdig_subdir(self,mapset):
+        env = self.get_gis_env()
+        dest_dir = os.path.join([env["GISDBASE"],env["LOCATION_NAME"],mapset])
+        os.mkdir(dest_dir)
+
+    def check_location(self, location):
+        env = self.get_gis_env()
+        gisdb = env["GISDBASE"]
+        if os.path.isdir(os.path.join([gisdb,location,"PERMANENT"])):
+            return True
+        return False
 
     def remove_mapset(self, mapset_name, force=False):
         """
@@ -540,9 +566,10 @@ class GRASSInterface:
         if mapset_name == "PERMANENT":
             # Can't remove permanent mapset!
             return False
-
+        # change mapset to PERMANENT before removing map
         if self.get_mapset() == mapset_name: 
             self.change_mapset()
+        # get the path to the mapset for removal
         env = self.get_gis_env()
         gisdb = env["GISDBASE"]
         loc = env["LOCATION_NAME"]
@@ -550,7 +577,6 @@ class GRASSInterface:
         ans = "N"
         if not force and os.path.isdir(mapset_dir):
             ans = raw_input("Remove mapset at %s? [y/N] " % mapset_dir)
-
         if ans.upper() == "Y" or force:
             self.run_command("rm -rf %s" % mapset_dir)
             return True 
@@ -650,7 +676,6 @@ class GRASSInterface:
         # @todo throw exception on error instead
         if (ret is not None) and ret != 0 and not (ret in ignoreOnFail):
             self.log.log(logging.ERROR, 'Exit status for "%s" was %d' % (commandstring,ret))
-            pdb.set_trace()
             exit_function = signal.getsignal(signal.SIGINT)
             exit_function(None, None)
         

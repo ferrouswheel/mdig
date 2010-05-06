@@ -5,6 +5,9 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <!--<link rel="stylesheet" href="css/style.css" type="text/css" /> -->
 <style type="text/css">
+body {
+font-family:"Arial";
+}
 table, td, th
 {
 border:1px solid green;
@@ -19,6 +22,21 @@ th
 background-color:green;
 color:white;
 padding: 0px 10px;
+}
+div.events ol {
+border: 1px solid #000;
+background-color:green;
+}
+div.events ol > li {
+color:white;
+background-color:green;
+}
+div.events ol > li a {
+color:white;
+}
+div.events ol li ul {
+color:black;
+background-color:white;
 }
 </style>
 </head>
@@ -42,11 +60,34 @@ region {{r_id}}: {{ls.getPhenologyBins(r_id)}}
 </ul>
 </p>
 <div class="events"><h4>Events</h4>
-<ol>
+    <ol>
+<FORM ACTION="ls/{{ls_id}}/events" METHOD="POST" NAME="delE">
+<INPUT TYPE="HIDDEN" NAME="delEvent" VALUE="-1">
+</FORM>
+    
 %for e in ls.events:
-<li>{{e.get_command()}} - {{str(e.get_params(True,None))}} </li>
+        <li>
+% e_url = "ls/%s/events/%d" % (ls_id,ls.events.index(e))
+        <a href="{{e_url}}">{{e.get_command()}}</a> [<A HREF="ls/{{ls_id}}/events" onClick="document.delE.elements['delEvent'].value='{{ls.events.index(e)}}';document.delE.submit();return false">delete</A>]
+            <ul>
+% params = e.get_params(True,None)
+%for p in params:
+                <li> {{p}}: \\
+%if params[p][1] != None:
+%if params[p][0] == 'VALUE':
+{{params[p][1]}}
+%else:
+{{params[p][1]}} ({{params[p][0]}})
 %end
-</ol>
+%else:
+{{params[p][0]}}
+%end
+</li>
+%end
+            </ul>
+        </li>
+%end
+    </ol>
 </div>
 </div>
 %end

@@ -132,6 +132,35 @@ class DispersalInstance:
                                     #" st " + repr(self.strategy) + " matches c_i " + repr(c_i))
         return reps
 
+    def get_mapset(self):
+        if "mapset" in self.node.attrib:
+            return self.node.attrib["mapset"].strip()
+        else:
+            # For old style system of keeping all instances in one mapset
+            # as well as for experiments with only one instance
+            return self.experiment.get_mapset()
+
+    def set_mapset(self, mapset, init=False):
+        g = GRASSInterface.get_g()
+        if not init:
+            if g.check_mapset(mapset):
+                self.node.attrib["mapset"] = mapset
+            else:
+                raise MapsetError("Invalid mapset %s" % mapset)
+        else:
+            # Create new mapset and link back to experiment's original mapset
+            if g.check_mapset(mapset):
+                raise MapsetError("Tried to create mapset %s, but already exists" % mapset)
+            if not g.change_mapset(mapset,self.experiment.get_location(),True):
+                raise MapsetError("Failure to create mapset %s" % mapset)
+
+            # create mdig dir in mapset
+            try:
+                g.create_mdig_subdir(mapset)
+            except OSError, e:
+                g.remove_mapset(mapset,force=True)
+                raise e
+
     def run(self):
         # Process replicates that exist but are incomplete
         for rep in [x for x in self.replicates if not x.complete]:

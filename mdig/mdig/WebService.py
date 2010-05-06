@@ -1,4 +1,4 @@
-from bottle import route, validate, run, request
+from bottle import route, validate, run, request, redirect
 from bottle import view
 import bottle
 import sys
@@ -7,7 +7,8 @@ import re
 import pdb
 
 import mdig
-from mdig.DispersalModel import DispersalModel
+from DispersalModel import DispersalModel
+import GRASSInterface
 
 reloader = False
 if True:
@@ -17,6 +18,10 @@ if True:
 # TODO - make this based on where mdig executable is
 bottle.TEMPLATE_PATH = ['./mdig/views/', './mdig/' ]
 # needed for error template to find bottle
+
+@route('/models/')
+def redirect_index():
+    redirect('/')
 
 @route('/')
 @view('index.tpl')
@@ -29,7 +34,6 @@ def index():
     m_list = []
     for m in ms:
         try:
-            print m
             dm = DispersalModel(models[m],setup=False)
             desc = dm.get_description()
             desc = re.sub("[\\s\\t]+"," ",desc)
@@ -37,8 +41,11 @@ def index():
         except mdig.DispersalModel.ValidationError, e:
             print str(e)
             pass
-    return dict(name=mdig.version_string, models=m_list,
-            repo_location=mdig.repository.location)
+    env = GRASSInterface.get_g().get_gis_env()
+    return dict(name=mdig.version_string, version=mdig.version,
+            v_name=mdig.version_name, models=m_list,
+            repo_location=mdig.repository.db,
+            grass_env=env)
 
 def validate_model_name(mname):
     # Get existing models in repository
@@ -59,21 +66,28 @@ def show_model(model):
     dm=model
     if request.method=="POST":
         to_enable = [int(x) for x in request.POST.getall('enabled')]
-        print to_enable
-        i_index=0
-        for i in dm.get_instances():
-            if i.enabled and i_index not in to_enable:
-                print "changing to false"
-                i.enabled=False
-                i.update_xml()
-            if not i.enabled and i_index in to_enable:
-                print "changing to true"
-                i.enabled=True
-                i.update_xml()
-            i_index+=1
+        if len(to_enable) != 0:
+            i_index=0
+            for i in dm.get_instances():
+                if i.enabled and i_index not in to_enable:
+                    print "changing to false"
+                    i.enabled=False
+                    i.update_xml()
+                if not i.enabled and i_index in to_enable:
+                    print "changing to true"
+                    i.enabled=True
+                    i.update_xml()
+                i_index+=1
+                # TODO this isn't saving the models, instead it's creating a new model
+                # everytime I think
+        else:
+            print "unknown post"
+        #event_to_remove = request.POST.getall('delEvent')]
+        #elif if len(event_to_remove) > 0:
+        #    ls.delEvent(
 
     return dict(model=dm, name=mdig.version_string,
-            repo_location=mdig.repository.location)
+            repo_location=mdig.repository.db)
 
 @route('/models/:model/instances/:instance',method='GET')
 @route('/models/:model/instances/:instance',method='POST')
@@ -88,7 +102,7 @@ def show_instance(model,instance):
         pass
 
     return dict(idx=idx, instance=instance, name=mdig.version_string,
-            repo_location=mdig.repository.location)
+            repo_location=mdig.repository.db)
 
 def start_web_service():
     run(host='192.168.1.100', port=1444, reloader=reloader)

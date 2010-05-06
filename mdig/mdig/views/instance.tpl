@@ -5,6 +5,9 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <!--<link rel="stylesheet" href="css/style.css" type="text/css" /> -->
 <style type="text/css">
+body {
+font-family:"Arial";
+}
 table, td, th
 {
 border:1px solid green;

@@ -5,6 +5,9 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <!--<link rel="stylesheet" href="css/style.css" type="text/css" /> -->
 <style type="text/css">
+body {
+font-family:"Arial";
+}
 table, td, th
 {
 border:1px solid green;
@@ -25,12 +28,15 @@ padding: 0px 10px;
 <body>
 <div class="description">
 <h1>Modular Dispersal in GIS</h1>
+<p>Version {{version}} "{{v_name}}" - <a href="http://fruitionnz.com/mdig">website</a></p>
 <p>You can browse, run, analyse and export existing spread models, or submit a new model
 description.</p>
 </div>
-<div class="model-list">
+<div class="repository">
 <h2>Model Repository</h2>
-<p><small>Repository location: {{repo_location}}</small></p>
+<h3> Submit a model </h3>
+<form action="/models/" method="post">
+<h3> Existing models </h3>
 <table>
 <thead><th>Model name</th><th>Description</th></thead>
 <tbody>
@@ -41,12 +47,13 @@ description.</p>
 %end
 </tbody>
 </table>
+<p class="rdetails"><small>Repository directory: {{repo_location}}</small> | <small>GRASS details - GRASSDB: {{grass_env["GISDBASE"]}}, Location:
+{{grass_env["LOCATION_NAME"]}}, Mapset: {{grass_env["MAPSET"]}}</small></p>
 </div>
 <div class="footer">
 <p class="copyright">
-Copyright 2005-2010 Dr. Joel Pitt<br/>
-Copyright 2008-2009 AgResearch<br/>
-Copyright 2005-2007,2010 Lincoln University<br/>
+&copy; 2005-2010 <a href="http://ferrouswheel.me">Dr. Joel Pitt</a><br/>
+&copy; 2005-2007, 2010 <a href="http://lincoln.ac.nz">Lincoln University</a><br/>
 </p>
 </div>
 </body>

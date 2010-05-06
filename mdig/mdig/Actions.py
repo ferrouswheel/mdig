@@ -409,7 +409,7 @@ class ListAction(Action):
         import re
         indent_amount = 30
         models = mdig.repository.get_models()
-        title_str = "Models in MDiG repository @ " + mdig.repository.location
+        title_str = "Models in MDiG GRASS db @ " + mdig.repository.db
         print "-"*len(title_str)
         print title_str
         print "-"*len(title_str)

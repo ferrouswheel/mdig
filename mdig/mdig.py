@@ -67,7 +67,7 @@ def usage():
 model_name is the name of a model within the repository.
 model.xml is the file containing the simulation details.
 """
-    print "MDiG repository @ " + mdig.repository.location
+    print "MDiG using GRASS repository @ " + mdig.repository.db
 
 def process_options(argv):
     global logger
@@ -99,8 +99,16 @@ simulations = []  # list of DispersalModels
 def main(argv):
     global simulations
     
+    # Do a migration of model repository data
+    if argv[0] == 'migrate':
+        MDiGConfig.MDiGConfig.migration_is_allowed = True
+        mdig_config = MDiGConfig.get_config()
+        if not mdig_config.migrated:
+            print "Nothing to migrate."
+        sys.exit(0)
+    # Otherwise start up normally
     mdig_config = MDiGConfig.get_config()
-    logger = setupLogger(mdig_config["ansi"])
+    logger = setupLogger(mdig_config["LOGGING"]["ansi"])
     mdig.repository = ModelRepository.ModelRepository()
     the_action = process_options(argv)
     
