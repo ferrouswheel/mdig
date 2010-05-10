@@ -102,15 +102,12 @@ class GRASSInterface:
         self.blank_map = None
         
         if not self.check_environment():
-            self.log.debug("Attempting setup of GRASS from config file")
+            self.log.debug("GRASS environment not detected, attempting setup of GRASS from config file")
             self.init_environment()
         
-        if self.check_environment():
-            self.log.log(logging.INFO, "Saving GRASS region")
-            self.run_command('g.region --o save='+self.old_region)
-            self.old_mapset = self.get_mapset()
-        else:
-            raise EnvironmentException()
+        self.log.log(logging.INFO, "Saving GRASS region")
+        self.run_command('g.region --o save='+self.old_region)
+        self.old_mapset = self.get_mapset()
     
     def check_environment(self):
         okay=True
@@ -145,6 +142,8 @@ class GRASSInterface:
             os.environ["LD_LIBRARY_PATH"]="/".join([self.grass_vars["GISBASE"], "/lib:$LD_LIBRARY_PATH"])
         self.log.debug("GRASS Environment is now: %s", self.grass_vars)
 
+        # TODO check basic command works?
+        if False: raise EnvironmentException()
         # TODO set these up
         #PATH="$GISBASE/bin:$GISBASE/scripts:$PATH"
         #LD_LIBRARY_PATH="$GISBASE/lib"
