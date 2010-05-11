@@ -67,7 +67,7 @@ def usage():
 model_name is the name of a model within the repository.
 model.xml is the file containing the simulation details.
 """
-    print "MDiG using GRASS repository @ " + mdig.repository.db
+    print "MDiG repository @ " + mdig.repository.db
 
 def process_options(argv):
     global logger
@@ -95,17 +95,31 @@ def process_options(argv):
         sys.exit(mdig.mdig_exit_codes["ok"])
     return the_action
 
+def do_migration(args):
+    if len(args) == 0:
+        MDiGConfig.MDiGConfig.migration_is_allowed = True
+        mdig_config = MDiGConfig.get_config()
+        if not mdig_config.migration_occurred:
+            print "Nothing to migrate within mdig.conf"
+            print "Use 'mdig.py migrate old_repo_dir grassdb' to manually migrate a repository"
+    elif len(args) == 2:
+        import mdig.migrate
+        print "Old repository: %s" % args[0]
+        print "GRASSDB destination: %s" % args[1]
+        mdig.migrate.migrate_repository(args[0],args[1])
+    else:
+        print "Syntax error"
+        print "Use 'mdig.py migrate old_repo_dir grassdb' to manually migrate a repository"
+    sys.exit(0)
+
 simulations = []  # list of DispersalModels
 def main(argv):
     global simulations
     
     # Do a migration of model repository data
-    if argv[0] == 'migrate':
-        MDiGConfig.MDiGConfig.migration_is_allowed = True
-        mdig_config = MDiGConfig.get_config()
-        if not mdig_config.migrated:
-            print "Nothing to migrate."
-        sys.exit(0)
+    if len(argv) > 0 and argv[0] == 'migrate':
+        do_migration(argv[1:])
+
     # Otherwise start up normally
     mdig_config = MDiGConfig.get_config()
     logger = setupLogger(mdig_config["LOGGING"]["ansi"])

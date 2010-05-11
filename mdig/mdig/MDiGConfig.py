@@ -108,7 +108,7 @@ class MDiGConfig(ConfigObj):
             "GRASS_TRANSPARENT":'TRUE',
             "GRASS_PNG_AUTO_WRITE":'TRUE',
             "GISDBASE":'',
-            "LOCATION":'',
+            "LOCATION_NAME":'',
             "MAPSET":'PERMANENT'
         },
         'LOGGING': {
@@ -160,6 +160,8 @@ class MDiGConfig(ConfigObj):
 
     # permit migration of model data
     migration_is_allowed = False
+    # To keep track of whether a migration actually occurred
+    migration_occurred=False
     
     def __init__(self):
         if os.path.isfile(self.config_file):
@@ -169,28 +171,14 @@ class MDiGConfig(ConfigObj):
         self.cf_full_path = os.path.join(self.config_path,self.config_file)
         # Initialise parent, and create the config file if it doesn't exist
         ConfigObj.__init__(self,self.cf_full_path, create_empty=True)
-        self.migrated=False # To keep track of whether a migration actually occurred
         self.updates()
         self.add_missing_defaults()
         self.setup()
-        if not self.validate():
-            sys.exit(mdig.mdig_exit_codes['config'])
 
     def setup(self):
         # setup msys directory if necessary
         if sys.platform == 'win32' and self.has_key("MSYS_BIN"):
             os.environ["PATH"] += ";" + self["MSYS_BIN"]
-
-    def validate(self):
-        is_ok = True
-        # check directories etc:
-        if not os.path.isdir(self['GRASS']['GISDBASE']):
-            print "In mdig.conf: GRASS DB dir doesn't exist: %s" % self['GRASS']['GISDBASE']
-            is_ok = False
-        if not os.path.isdir(self['GRASS']['GISBASE']):
-            print "In mdig.conf: GRASS software dir doesn't exist: %s" % self['GRASS']['GISBASE']
-            is_ok = False
-        return is_ok
 
     def updates(self):
         """ This function does a variety of things to try to gracefully
@@ -199,36 +187,28 @@ class MDiGConfig(ConfigObj):
         if "version" not in self:
             # before we started tracking the config file version
             if "ansi" in self:
-                mdig_config['LOGGING'] = mdig_config["ansi"]
-                del mdig_config['LOGGING']
+                self['LOGGING'] = self["ansi"]
+                del self['LOGGING']
             if self.has_key("repository"):
                 # repository was an old way of storing models and output, now we keep them as
                 # part of GRASS mapsets. This copies to the grassdb
                 migration_is_allowed = True
                 if self.migration_is_allowed: 
-                    self.migrate_repository()
-                    self.migrated = True
+                    if len(self["GRASS"]["GISDBASE"]) == 0:
+                        sys.stderr.write('No GIS database directory specified, please '+\
+                            ' edit %s and update the GRASS->GISDBASE value\n' % self.cf_full_path)
+                        sys.exit(mdig.mdig_exit_codes['grass_setup'])
+                    import mdig.migrate
+                    mdig.migrate.migrate_repository(self["repository"]["location"],self["GRASS"]["GISDBASE"])
+                    del self["repository"]
+                    self.migration_occurred = True
                 else:
-                    #TODO add migrate command
                     sys.stderr.write("Deprecated MDiG repository detected, please run 'mdig.py migrate'\n")
                     sys.exit(mdig.mdig_exit_codes['migrate'])
             self['version']=mdig.version
             self.write()
-        else:
-            # currently nothing to do
-            pass
 
     def add_missing_defaults(self):
-        # repository is deprecated
-        #if self.has_key("repository") is False:
-        #    repo_dir = os.path.join(home_dir,"mdig_repos")
-        #    logging.getLogger("mdig").warning("No repository location defined. "
-        #            + "Using " + repo_dir + " but "
-        #            + "you'll probably want to change this.")
-        #    self["repository"] = {
-        #        "location" : repo_dir }
-        #    if not os.path.exists(repo_dir):
-        #        os.makedirs(repo_dir)
         for section in MDiGConfig.defaults:
             if not self.has_key(section):
                 self[section] = MDiGConfig.defaults[section]
@@ -238,57 +218,6 @@ class MDiGConfig(ConfigObj):
                         self[section][k] = MDiGConfig.defaults[section][k]
         self.write()
 
-    def migrate_repository(self):
-        model_names = {}
-        for i in os.listdir(self['repository']['location']):
-            model_dir = os.path.join(self['repository']['location'],i)
-            # check dir has model.xml
-            if os.path.isfile( os.path.join( model_dir,'model.xml' ) ) \
-                or os.path.isfile( os.path.join( model_dir,i+'.xml')):
-                # create a dictionary of model names
-                model_names[i] = None
-
-        if len(self['GRASS']['GISDBASE']) == 0:
-            sys.stderr.write('No GIS database directory specified, please '+\
-                ' edit %s and update the GRASS->GISDBASE value\n' % self.cf_full_path)
-            sys.exit(mdig.mdig_exit_codes['grass_setup'])
-            
-        for location in os.listdir(self['GRASS']['GISDBASE']):
-            mapset_dir = os.path.join(self['GRASS']['GISDBASE'],location)
-            if not os.path.isdir(mapset_dir): continue
-            for mapset in os.listdir(mapset_dir):
-                if mapset in model_names:
-                    model_names[mapset] = location
-            
-        for m in model_names:
-            if model_names[m] is not None:
-                print "Will move model %s to mapset %s" % (m, model_names[m])
-            else:
-                print "Couldn't find destination for model %s, will not move." % m
-        ans = raw_input("Does this seem sane?\n" + \
-            "(y will copy model dirs) ")
-        if ans != 'y':
-            print "Aborting..."
-            sys.exit(0)
-        import shutil
-        for m in model_names:
-            if model_names[m] is not None:
-                # copy if mapset found
-                model_dir = os.path.join(self['repository']['location'],m)
-                dest_dir = os.path.join(self['GRASS']['GISDBASE'],model_names[m],m,"mdig")
-                print "Copying %s to %s..." % (m, dest_dir)
-                if os.path.isdir(dest_dir):
-                    ans = raw_input( "Destination dir exists, overwrite? (y/n) ")
-                    if ans != 'y': 
-                        continue
-                    shutil.rmtree(dest_dir)
-                shutil.copytree(model_dir,dest_dir)
-        old_dir = self['repository']['location']
-        del self['repository']
-        print "Migrate complete."
-        print "Your config file has been updated and you will have to manually remove \n the" + \
-                " old repository directory (or you can keep it as a backup,\n " + \
-                " just in case) currently stored at:\n%s" % old_dir
     
 def makepath(path):
     """ creates missing directories for the given path and

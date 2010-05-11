@@ -412,6 +412,8 @@ class ListAction(Action):
         title_str = "Models in MDiG GRASS db @ " + mdig.repository.db
         print "-"*len(title_str)
         print title_str
+        print "model_name [location]"
+        print "    description"
         print "-"*len(title_str)
         ms=models.keys()[:]
         ms.sort()
@@ -424,7 +426,12 @@ class ListAction(Action):
                 desc = dm.get_description()
                 desc = re.sub("[\\s\\t]+"," ",desc)
                 desc = tw.fill(desc)
-                print "" + m + ":\n" + desc
+                loc = dm.get_location()
+                if not loc:
+                    loc = dm.infer_location()
+                if not loc:
+                    loc = "unknown"
+                print "%s [%s]:\n%s" % (m,loc,desc)
             except mdig.DispersalModel.ValidationError, e:
                 pass
         sys.exit(0)

@@ -39,6 +39,7 @@ class MapNotFoundException (Exception):
         return "MapNotFoundException (map_name=" + self.map_name + ")"
 
 class SetRegionException (Exception): pass        
+class CommandException (Exception): pass        
     
 import DispersalModel
 import MDiGConfig
@@ -86,8 +87,19 @@ class EnvironmentException(EnvironmentError):
 
 class GRASSInterface:
 
-    grass_vars = { "GISRC": None, "GISBASE": None }
-    in_grass_vars = { "GISDBASE": None, "LOCATION_NAME": None, "MAPSET": None }
+    grass_var_names = [ "GISRC", "GISBASE",
+            "GISDBASE", "LOCATION_NAME", "MAPSET",
+            "GRASS_GNUPLOT",
+            "GRASS_WIDTH",
+            "GRASS_HEIGHT",
+            "GRASS_HTML_BROWSER",
+            "GRASS_PAGER",
+            "GRASS_WISH",
+            "GRASS_PYTHON",
+            "GRASS_MESSAGE_FORMAT",
+            "GRASS_TRUECOLOR",
+            "GRASS_TRANSPARENT",
+            "GRASS_PNG_AUTO_WRITE" ]
     old_region="mdig_temp_region"
     
     def __init__(self):
@@ -96,6 +108,7 @@ class GRASSInterface:
         self.stderr = ""
         self.stdout = ""
         self.displays = {}
+        self.grass_vars = {}
         self.filename = None
         self.outputIsTemporary = False
         self.old_mapset = None
@@ -106,22 +119,30 @@ class GRASSInterface:
             self.init_environment()
         
         self.log.log(logging.INFO, "Saving GRASS region")
-        self.run_command('g.region --o save='+self.old_region)
+        result=self.run_command('g.region --o save='+self.old_region, ignoreOnFail=[1,127])
+        if result != 0:
+            output = subprocess.Popen("env", shell=True, stdout=subprocess.PIPE).communicate()[0]
+            print output
+            self.log.error("Couldn't backup region, is GRASS environment set up correctly?")
+            self.log.error("GISDBASE='%s' LOCATION_NAME='%s' MAPSET='%s'" % \
+                    (self.grass_vars['GISDBASE'],self.grass_vars['LOCATION_NAME'],self.grass_vars['MAPSET']))
+            raise EnvironmentException()
+
         self.old_mapset = self.get_mapset()
     
     def check_environment(self):
         okay=True
         first_run=True
-        for var in self.grass_vars.keys():
-            
+        for var in self.grass_var_names:
             # If this is NOT the first time the grass environment was checked
-            if self.grass_vars[var] is not None:
-                first_run=False
+            if var in self.grass_vars: first_run=False
                 
             if os.environ.has_key(var):
+                # if the env variable exists
                 self.grass_vars[var]=os.environ[var]
             else:
-                self.log.log(logging.DEBUG, "Environment variable %s not found", var)
+                # else make it None
+                self.grass_vars[var]=None
                 okay=False
         
         if not okay:
@@ -131,27 +152,80 @@ class GRASSInterface:
             
         return okay
 
+    def insert_environ_path(self, var, path):
+        """ Insert a path at the start of a environment variable. If the
+        variable doesn't exist, create it.
+        """
+        old_path = None
+        if var in os.environ:
+            old_path = os.environ[var]
+        if old_path:
+            path += ":" + old_path
+        os.environ[var] = path
+
     def init_environment(self):
         for var in self.grass_vars:
-            if self.config.has_key(var):
-                self.grass_vars[var]=self.config[var]
-                os.environ[var]=self.config[var]
+            if self.config['GRASS'].has_key(var):
+                if len(self.config['GRASS'][var]) == 0:
+                    self.log.error("GRASS variable %s is empty, check your mdig.conf" % (var))
+                    raise EnvironmentException()
+                self.grass_vars[var]=self.config['GRASS'][var]
+                os.environ[var]=self.config['GRASS'][var]
         
-        os.environ["GIS_LOCK"]=str(os.getpid())
         if self.grass_vars["GISBASE"]:
-            os.environ["LD_LIBRARY_PATH"]="/".join([self.grass_vars["GISBASE"], "/lib:$LD_LIBRARY_PATH"])
+            self.insert_environ_path("LD_LIBRARY_PATH",
+                    os.path.join(self.grass_vars["GISBASE"],"lib"))
+            os.environ["GRASS_LD_LIBRARY_PATH"]=os.environ["LD_LIBRARY_PATH"]
+
+            self.insert_environ_path("PATH",
+                    os.path.join(self.grass_vars["GISBASE"],"bin"))
+            self.insert_environ_path("PATH",
+                    os.path.join(self.grass_vars["GISBASE"],"scripts"))
+
+            self.insert_environ_path("PYTHONPATH",
+                    os.path.join(self.grass_vars["GISBASE"],"etc/python"))
+        else: 
+            raise EnvironmentException()
+
+        #export GIS_LOCK=$$
+        pid = str(os.getpid())
+        os.environ["GIS_LOCK"]=pid
+        #export GRASS_VERSION="7.0.svn"
+        os.environ["GIS_VERSION"]="6.4.svn"
+        #setup GISRC file
+        tmp="/tmp/grass6-mdig-" + pid
+        os.environ["GISRC"]=tmp + "/gisrc"
+        os.mkdir(tmp)
+        from MDiGConfig import home_dir
+        shutil.copyfile(os.path.join(home_dir,"../.grassrc6"),os.environ["GISRC"])
+        #TODO cleanup tmp dir
+        
+        if not self.check_paths():
+            raise EnvironmentException()
         self.log.debug("GRASS Environment is now: %s", self.grass_vars)
 
-        # TODO check basic command works?
-        if False: raise EnvironmentException()
-        # TODO set these up
-        #PATH="$GISBASE/bin:$GISBASE/scripts:$PATH"
-        #LD_LIBRARY_PATH="$GISBASE/lib"
-        #GRASS_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
-        #export PYTHONPATH="$GISBASE/etc/python:$PYTHONPATH"
-        #export GIS_LOCK=$$
-        #export GRASS_VERSION="7.0.svn"
+    def check_paths(self):
+        """ Check paths that should exist with the current GRASS environment,
+        things like the GISDBASE, the LOCATION and MAPSET among others."""
+        # Check paths
+        is_ok = True
+        # check directories etc:
+        if not os.path.isdir(self.grass_vars['GISDBASE']):
+            self.log.error("GRASS DB dir doesn't exist: %s" % self.grass_vars['GISDBASE'])
+            is_ok = False
+        loc_path = os.path.join(self.grass_vars['GISDBASE'],self.grass_vars['LOCATION_NAME'])
+        if is_ok and not os.path.isdir(loc_path):
+            self.log.error("GRASS location dir doesn't exist: %s" % loc_path)
+            is_ok = False
+        mapset_path = os.path.join(loc_path,self.grass_vars['MAPSET'])
+        if is_ok and not os.path.isdir(mapset_path):
+            self.log.error("GRASS mapset dir doesn't exist: %s" % mapset_path)
+            is_ok = False
+        if not os.path.isdir(self.grass_vars['GISBASE']):
+            self.log.error("GRASS software dir doesn't exist: %s" % self.grass_vars['GISBASE'])
+            is_ok = False
 
+        return is_ok
 
     def get_gis_env(self):
         # sends command to GRASS session and returns result via stdout (piped)
@@ -677,7 +751,6 @@ class GRASSInterface:
             self.log.log(logging.ERROR, 'Exit status for "%s" was %d' % (commandstring,ret))
             exit_function = signal.getsignal(signal.SIGINT)
             exit_function(None, None)
-        
         return ret
 
     def clean_up(self):

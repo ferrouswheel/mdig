@@ -11,11 +11,14 @@ from mdig import DispersalModel
 
 class ModelRepository:
 
-    def __init__(self):
+    def __init__(self, grassdb=None):
         self.log = logging.getLogger("mdig.repos")
         c = MDiGConfig.get_config()
-        # Model repository is no a part of a GRASS db directory
-        self.db = c["GRASS"]["GISDBASE"]
+        # Model repository is now a part of a GRASS db directory
+        if grassdb:
+            self.db = grassdb 
+        else:
+            self.db = c["GRASS"]["GISDBASE"]
         self.log.info("Using GRASS DB location " + self.db)
 
     def add_model(self, model_fn):
@@ -129,5 +132,4 @@ class ModelRepository:
                 if model_file is not None:
                     models[mapset] = model_file
         return models
-
 

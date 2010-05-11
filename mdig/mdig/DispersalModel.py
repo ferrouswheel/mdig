@@ -382,11 +382,31 @@ class DispersalModel(object):
 
     def get_location(self):
         nodes = self.xml_model.xpath('/model/GISLocation')
+        if len(nodes) == 0:
+            return None
         return nodes[0].text.strip()
         
+    def infer_location(self):
+        """ Older model format didn't include GIS location name.
+
+        This method is to try to infer the location from the path. But obviously
+        won't work unless the model has actually been added to the repository.
+        """
+        if not os.path.isfile(self.model_file):
+            return None
+        the_dir = os.path.dirname(self.model_file)
+        if not os.path.isdir(os.path.join(the_dir, "../../PERMANENT")):
+            return None
+        # this long expression returns the location part of the path
+        return os.path.split(os.path.normpath(os.path.join(the_dir, "../..")))[1]
+
     def set_location(self, loc):
         nodes = self.xml_model.xpath('/model/GISLocation')
-        nodes[0].text = loc
+        if len(nodes) == 0:
+            nodes = self.xml_model.xpath('/model')
+            node = lxml.etree.SubElement(nodes[0],'GISLocation')
+        else:
+            nodes[0].text = loc
         
     def find_file(self,fn):
         # Check for absolute path
