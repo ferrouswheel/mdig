@@ -34,8 +34,8 @@
                 <xsd:element name="user" minOccurs="0" type="userType"/>
                 <xsd:element name="name" type="xsd:string"/>
                 <xsd:element name="description" minOccurs="0" type="xsd:string"/>
-                <xsd:element name="GISLocation" minOccurs="0" type="xsd:string"/>
                 <xsd:element name="random" type="randomType"/>
+                <xsd:element name="GISLocation" minOccurs="0" type="xsd:string"/>
                 <xsd:element name="regions">
                     <xsd:complexType>
                         <xsd:sequence>

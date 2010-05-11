@@ -1,5 +1,6 @@
-<populationModule>
-    <indexMap>index</indexMap>     <ParameterValue>
+<?xml version="1.0" ?><populationModule>
+    <indexMap>index</indexMap> 
+    <ParameterValue>
         <parameterName>B1</parameterName>
         <source>random</source>
         <index>1</index>
@@ -7,7 +8,7 @@
         <values>
             <d>112</d>
             <d>3084</d>
-            <d></d>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -18,7 +19,7 @@
         <values>
             <d>87</d>
             <d>3167</d>
-            <d></d>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -29,7 +30,7 @@
         <values>
             <d>132</d>
             <d>3122</d>
-            <d></d>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -40,7 +41,7 @@
         <values>
             <d>64</d>
             <d>3191</d>
-            <d></d>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -51,7 +52,7 @@
         <values>
             <d>28</d>
             <d>3226</d>
-            <d></d>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -62,7 +63,7 @@
         <values>
             <d>78</d>
             <d>3177</d>
-            <d></d>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -72,8 +73,8 @@
         <distribution>None</distribution>
         <values>
             <d>0</d>
-            <d></d>
-            <d></d>
+            <d/>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -84,7 +85,7 @@
         <values>
             <d>fecundityCODAchain1.txt</d>
             <d>fecundityCODAchain2.txt</d>
-            <d></d>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -95,7 +96,7 @@
         <values>
             <d>0.5</d>
             <d>0</d>
-            <d></d>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -105,8 +106,8 @@
         <distribution>None</distribution>
         <values>
             <d>0.477</d>
-            <d></d>
-            <d></d>
+            <d/>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -116,8 +117,8 @@
         <distribution>None</distribution>
         <values>
             <d>0.308</d>
-            <d></d>
-            <d></d>
+            <d/>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -127,8 +128,8 @@
         <distribution>None</distribution>
         <values>
             <d>0.358</d>
-            <d></d>
-            <d></d>
+            <d/>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -138,8 +139,8 @@
         <distribution>None</distribution>
         <values>
             <d>0.572</d>
-            <d></d>
-            <d></d>
+            <d/>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -149,8 +150,8 @@
         <distribution>None</distribution>
         <values>
             <d>0.488</d>
-            <d></d>
-            <d></d>
+            <d/>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -160,8 +161,8 @@
         <distribution>None</distribution>
         <values>
             <d>0.558</d>
-            <d></d>
-            <d></d>
+            <d/>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -171,8 +172,8 @@
         <distribution>None</distribution>
         <values>
             <d>0</d>
-            <d></d>
-            <d></d>
+            <d/>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -182,8 +183,8 @@
         <distribution>None</distribution>
         <values>
             <d>0</d>
-            <d></d>
-            <d></d>
+            <d/>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -194,7 +195,7 @@
         <values>
             <d>floweringCODAchain1.txt</d>
             <d>floweringCODAchain2.txt</d>
-            <d></d>
+            <d/>
         </values>
     </ParameterValue>
     <ParameterValue>
@@ -205,7 +206,7 @@
         <values>
             <d>0.901</d>
             <d>0</d>
-            <d></d>
+            <d/>
         </values>
     </ParameterValue>      
     <expression>

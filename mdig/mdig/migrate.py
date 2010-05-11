@@ -50,8 +50,8 @@ def migrate_repository(old_format_dir, grassdb_dir):
             shutil.copytree(model_dir,dest_dir)
     old_dir = old_format_dir
 
-    print "Migrate complete.\n=============="
+    print "Migrate complete.\n================="
     print "You will have to manually remove the" + \
-            " old repository directory (or you can keep it as a backup, " + \
+            " old repository directory (or you can keep it as a backup," + \
             " just in case) currently stored at:\n%s" % old_dir
 

@@ -122,7 +122,6 @@ class GRASSInterface:
         result=self.run_command('g.region --o save='+self.old_region, ignoreOnFail=[1,127])
         if result != 0:
             output = subprocess.Popen("env", shell=True, stdout=subprocess.PIPE).communicate()[0]
-            print output
             self.log.error("Couldn't backup region, is GRASS environment set up correctly?")
             self.log.error("GISDBASE='%s' LOCATION_NAME='%s' MAPSET='%s'" % \
                     (self.grass_vars['GISDBASE'],self.grass_vars['LOCATION_NAME'],self.grass_vars['MAPSET']))
@@ -198,10 +197,12 @@ class GRASSInterface:
         os.mkdir(tmp)
         from MDiGConfig import home_dir
         shutil.copyfile(os.path.join(home_dir,"../.grassrc6"),os.environ["GISRC"])
+        
         #TODO cleanup tmp dir
         
         if not self.check_paths():
             raise EnvironmentException()
+        self.set_gis_env()
         self.log.debug("GRASS Environment is now: %s", self.grass_vars)
 
     def check_paths(self):
@@ -226,6 +227,13 @@ class GRASSInterface:
             is_ok = False
 
         return is_ok
+
+    def set_gis_env(self):
+        """ Use g.gisenv to update gisrc file from environment variables """
+        var_list = [ "GISDBASE", "LOCATION_NAME", "MAPSET" ]
+        for v in var_list:
+            output = subprocess.Popen("g.gisenv set=%s=%s" % (v,self.grass_vars[v]),
+                    shell=True, stdout=subprocess.PIPE).communicate()[0]
 
     def get_gis_env(self):
         # sends command to GRASS session and returns result via stdout (piped)
@@ -622,15 +630,20 @@ class GRASSInterface:
 
     def create_mdig_subdir(self,mapset):
         env = self.get_gis_env()
-        dest_dir = os.path.join([env["GISDBASE"],env["LOCATION_NAME"],mapset])
+        dest_dir = os.path.join(env["GISDBASE"],env["LOCATION_NAME"],mapset,"mdig")
         os.mkdir(dest_dir)
+        return dest_dir
 
     def check_location(self, location):
         env = self.get_gis_env()
         gisdb = env["GISDBASE"]
-        if os.path.isdir(os.path.join([gisdb,location,"PERMANENT"])):
+        if os.path.isdir(os.path.join(gisdb,location,"PERMANENT")):
             return True
         return False
+
+    def get_mapset_full_path(self, mapset):
+        dir = os.path.join(self.grass_vars["GISDBASE"],self.grass_vars["LOCATION_NAME"],mapset)
+        return dir
 
     def remove_mapset(self, mapset_name, force=False):
         """

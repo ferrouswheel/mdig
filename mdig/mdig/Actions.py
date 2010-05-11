@@ -20,7 +20,7 @@ class Action:
         self.model_names = None
         # check that model definition is consistent and that all maps exist
         self.check_model = True
-        # The model repository
+        # The model repository (== GRASS's GISDBASE)
         self.repository = None
         # The models directory is used for output if this isn't set
         self.output_dir = None

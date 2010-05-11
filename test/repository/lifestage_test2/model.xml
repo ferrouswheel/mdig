@@ -16,6 +16,7 @@
 			 finish last time -->
     <offset>43</offset>
   </random>
+  <GISLocation>grass_location</GISLocation>
   <regions>
     <!-- Simulation may be run at different resolutions or in different regions -->
     <region id="a">

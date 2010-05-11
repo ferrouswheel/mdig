@@ -11,7 +11,7 @@ from mdig import DispersalModel
 
 class ModelRepository:
 
-    def __init__(self, grassdb=None):
+    def __init__(self,grassdb = None):
         self.log = logging.getLogger("mdig.repos")
         c = MDiGConfig.get_config()
         # Model repository is now a part of a GRASS db directory
@@ -21,27 +21,44 @@ class ModelRepository:
             self.db = c["GRASS"]["GISDBASE"]
         self.log.info("Using GRASS DB location " + self.db)
 
+    def set_location_and_mapset(self,loc,mapset):
+        g = GRASSInterface.get_g()
+        g.grass_vars["GISDBASE"] = self.db
+        g.grass_vars["LOCATION_NAME"] = loc
+        g.grass_vars["MAPSET"] = mapset
+        g.set_gis_env()
+
     def add_model(self, model_fn):
         import shutil
         if not os.path.isfile(model_fn):
             self.log.error("Model file %s is not a file."%model_fn)
             sys.exit(5)
-
-        dm = DispersalModel.DispersalModel(model_fn,setup=False)
         g = GRASSInterface.get_g()
+        dm = DispersalModel.DispersalModel(model_fn,setup=False)
+        loc = dm.get_location()
+        if dm.get_location() == None:
+            self.log.error("Model doesn't define GIS Location for simulation")
+            sys.exit(5)
+        if not os.path.isdir(os.path.join(self.db,loc,"PERMANENT")):
+            self.log.error("Model defines a GIS Location " + loc + " that " +\
+                    "doesn't exist in " + self.db)
+            sys.exit(5)
+        self.set_location_and_mapset(dm.get_location(),"PERMANENT")
         # create model mapset
         self.log.info("Create mapset for model %s."%dm.get_mapset())
         if g.check_mapset(dm.get_name()):
-            self.log.error("Couldn't create mapset %s, it already exists." % dm.get_mapset())
+            self.log.error("Couldn't create mapset %s, it already exists in location %s." \
+                % (dm.get_mapset(),g.get_mapset_full_path(dm.get_mapset()) ))
             sys.exit(5)
-        if not g.change_mapset(self.get_name(),dm.get_location(),True):
+        if not g.change_mapset(dm.get_name(),dm.get_location(),True):
             self.log.error("Couldn't create mapset %s." % dm.get_mapset())
             sys.exit(5)
         self.log.info("Created mapset for model " + dm.get_name())
 
         # create mdig dir in mapset
         try:
-            g.create_mdig_subdir(dm.get_mapset())
+            print dm.get_mapset()
+            dest_dir = g.create_mdig_subdir(dm.get_mapset())
         except OSError, e:
             g.remove_mapset(dm.get_mapset(),force=True)
             self.log.error("Error creating mdig dir in mapset. %s" % str(e))
