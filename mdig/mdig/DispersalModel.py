@@ -1015,18 +1015,24 @@ class DispersalModel(object):
         return self.strategies
 
     def init_mapset(self):
-        G = GRASSInterface.get_g()
+        g = GRASSInterface.get_g()
         loc = self.get_location()
+        if not loc:
+            loc = self.infer_location()
+            print loc
         if not g.check_location(loc):
             self.log.error("Location %s in model definition does not exist" % loc)
             return False
+        g.grass_vars['LOCATION_NAME'] = loc
+        g.set_gis_env()
         result = False
-        if G.check_mapset(self.get_name()):
-            result=G.change_mapset(self.get_name(),location=loc)
+        pdb.set_trace()
+        if g.check_mapset(self.get_name(),location=loc):
+            result=g.change_mapset(self.get_name(),location=loc)
         else:
             self.log.info("Mapset " +self.get_name() + \
                     " doesn't exist, creating it.")
-            result=G.change_mapset(self.get_name(),True)
+            result=g.change_mapset(self.get_name(),location=loc,create=True)
         return result
 
     def get_mapset(self):

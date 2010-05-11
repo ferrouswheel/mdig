@@ -111,7 +111,11 @@ class GRASSInterface:
         self.grass_vars = {}
         self.filename = None
         self.outputIsTemporary = False
+
         self.old_mapset = None
+        self.old_location = None
+        self.old_gisdbase = None
+
         self.blank_map = None
         
         if not self.check_environment():
@@ -127,7 +131,9 @@ class GRASSInterface:
                     (self.grass_vars['GISDBASE'],self.grass_vars['LOCATION_NAME'],self.grass_vars['MAPSET']))
             raise EnvironmentException()
 
-        self.old_mapset = self.get_mapset()
+        self.old_mapset = self.grass_vars['MAPSET']
+        self.old_location = self.grass_vars['LOCATION_NAME']
+        self.old_gisdbase = self.grass_vars['GISDBASE']
     
     def check_environment(self):
         okay=True
@@ -593,16 +599,20 @@ class GRASSInterface:
         """
         Get current mapset
         """
-        output = subprocess.Popen("g.mapsets -p", shell=True,
-                stdout=subprocess.PIPE).communicate()[0]
-        mapsets = output.split()
-        return mapsets[0]
+        return self.grass_vars["MAPSET"]
+        #output = subprocess.Popen("g.mapsets -p", shell=True,
+                #stdout=subprocess.PIPE).communicate()[0]
+        #mapsets = output.split()
+        #return mapsets[0]
 
-    def check_mapset(self, mapset_name):
+    def check_mapset(self, mapset_name, location=None):
         """
         Check if mapset already exists
         """
-        output = subprocess.Popen("g.mapsets -l", shell=True,
+        loc_str = ""
+        if location:
+            loc_str = " location=%s" % location
+        output = subprocess.Popen("g.mapset -l "+loc_str, shell=True,
                 stdout=subprocess.PIPE).communicate()[0]
         mapsets = output.split()
         if mapset_name in mapsets:
@@ -761,7 +771,7 @@ class GRASSInterface:
         # cleanup, and then exit
         # @todo throw exception on error instead
         if (ret is not None) and ret != 0 and not (ret in ignoreOnFail):
-            self.log.log(logging.ERROR, 'Exit status for "%s" was %d' % (commandstring,ret))
+            self.log.error('Exit status for "%s" was %d' % (commandstring,ret))
             exit_function = signal.getsignal(signal.SIGINT)
             exit_function(None, None)
         return ret
@@ -769,7 +779,10 @@ class GRASSInterface:
     def clean_up(self):
         self.log.log(logging.INFO,'Restoring region')
         
-        self.change_mapset(self.old_mapset)
+        self.grass_vars['MAPSET'] = self.old_mapset 
+        self.grass_vars['LOCATION_NAME']= self.old_location
+        self.grass_vars['GISDBASE']= self.old_gisdbase
+        self.set_gis_env()
         self.run_command('g.region region='+self.old_region,ignoreOnFail=[256])
         if self.blank_map is not None:
             self.destruct_map(self.blank_map)

@@ -17,13 +17,15 @@ class ModelRepository:
         # Model repository is now a part of a GRASS db directory
         if grassdb:
             self.db = grassdb 
+            g = GRASSInterface.get_g()
+            g.grass_vars["GISDBASE"] = self.db
+            g.set_gis_env()
         else:
             self.db = c["GRASS"]["GISDBASE"]
         self.log.info("Using GRASS DB location " + self.db)
 
     def set_location_and_mapset(self,loc,mapset):
         g = GRASSInterface.get_g()
-        g.grass_vars["GISDBASE"] = self.db
         g.grass_vars["LOCATION_NAME"] = loc
         g.grass_vars["MAPSET"] = mapset
         g.set_gis_env()
@@ -57,7 +59,6 @@ class ModelRepository:
 
         # create mdig dir in mapset
         try:
-            print dm.get_mapset()
             dest_dir = g.create_mdig_subdir(dm.get_mapset())
         except OSError, e:
             g.remove_mapset(dm.get_mapset(),force=True)
@@ -101,6 +102,8 @@ class ModelRepository:
 
         # set up model directory
         dm.set_base_dir() 
+        print "Successfully added model to mapset %s" % \
+            g.get_mapset_full_path(dm.get_mapset())
 
     def remove_model(self, model_name, force=False):
         models = self.get_models()
@@ -111,17 +114,29 @@ class ModelRepository:
         if not force:
             # TODO list ALL associated mapsets
             ans = raw_input("Are you sure you wish to remove model " + model_name + 
-                    " and it's associate mapset? [y/N] ")
+                    " and it's associate mapset? [y/n] ")
             if ans.upper() == "Y":
                 force = True
             else:
-                self.log.error("Not removing model " + model_name)
+                print "Not removing model " + model_name
 
         if force:
             import shutil
-            shutil.rmtree(model_dir)
-            # TODO  remove ALL associated mapsets
+            g = GRASSInterface.get_g()
+            dm = DispersalModel.DispersalModel(models[model_name],setup=False)
+            loc = dm.get_location()
+            if loc == None:
+                loc = dm.infer_location()
+            if not os.path.isdir(os.path.join(self.db,loc,"PERMANENT")):
+                self.log.error("Model defines a GIS Location " + loc + " that " +\
+                        "doesn't exist in " + self.db)
+                sys.exit(5)
+            self.set_location_and_mapset(dm.get_location(),"PERMANENT")
+            #shutil.rmtree(model_dir)
+            # TODO  remove ALL associated mapsets first (because we need the
+            # model file to tell us which once are associated)
             GRASSInterface.get_g().remove_mapset(model_name, force)
+            print "Model removed"
 
     def get_models(self):
         models = {}
