@@ -20,6 +20,7 @@ def migrate_repository(old_format_dir, grassdb_dir):
             if mapset in model_names:
                 model_names[mapset] = location
         
+    print "Proposed changes:"
     for m in model_names:
         if model_names[m] is not None:
             print "Will move model %s to location %s" % (m, model_names[m])
@@ -31,6 +32,7 @@ def migrate_repository(old_format_dir, grassdb_dir):
         print "Aborting..."
         sys.exit(0)
     import shutil
+    force = False
     for m in model_names:
         if model_names[m] is not None:
             # copy if mapset found
@@ -38,15 +40,18 @@ def migrate_repository(old_format_dir, grassdb_dir):
             dest_dir = os.path.join(grassdb_dir,model_names[m],m,"mdig")
             print "Copying %s to %s..." % (m, dest_dir)
             if os.path.isdir(dest_dir):
-                ans = raw_input( "Destination dir exists, overwrite? (y/n) ")
-                if ans != 'y': 
-                    continue
+                if not force:
+                    ans = raw_input( "Destination dir exists, overwrite? (y/n/a) ")
+                    if ans == 'a':
+                        force=True
+                    if ans != 'y': 
+                        continue
                 shutil.rmtree(dest_dir)
             shutil.copytree(model_dir,dest_dir)
     old_dir = old_format_dir
 
-    print "Migrate complete."
-    print "You will have to manually remove \n the" + \
-            " old repository directory (or you can keep it as a backup,\n " + \
+    print "Migrate complete.\n=============="
+    print "You will have to manually remove the" + \
+            " old repository directory (or you can keep it as a backup, " + \
             " just in case) currently stored at:\n%s" % old_dir
 
