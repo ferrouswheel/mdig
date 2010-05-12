@@ -22,9 +22,9 @@ __all__ = ["Analysis","DispersalInstance","DispersalModel","Displayer","Event",
 
 import configobj
 
-version = "0.2"
-version_name = "hoe"
-version_string = "MDiG " + version + " - " + version_name 
+version = "0.2.9"
+version_name = "Spade"
+version_string = "MDiG " + version + " - \"" + version_name + "\""
 
 mdig_exit_codes = {
     "ok" : 0,
