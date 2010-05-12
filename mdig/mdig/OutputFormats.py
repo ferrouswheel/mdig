@@ -129,8 +129,6 @@ class RasterOutput:
         self.lifestage = None
         self.log = logging.getLogger("mdig.RasterOutput")
         
-        self.log.debug("Initialised rasterOutput")
-        
         for child in node:
             if child.tag == "interval":
                 self.interval = int(child.text)

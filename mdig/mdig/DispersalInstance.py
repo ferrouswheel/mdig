@@ -78,6 +78,7 @@ class DispersalInstance:
             del self.var_keys[0]
             del self.variables[0]
 
+        self.change_mapset()
         self.replicates = self._load_replicates()
         self.activeReps = []
         
@@ -111,7 +112,6 @@ class DispersalInstance:
                         my_rep = Replicate(r,self,r_index)
                         reps.append(my_rep)
                         r_index += 1
-#print "rep " + repr(self.variables) + " st " + repr(self.strategy) + " matches c_i " + repr(c_i)
                 else:
                     variable_list=[]
                     for k in self.var_keys:
@@ -140,23 +140,31 @@ class DispersalInstance:
             # as well as for experiments with only one instance
             return self.experiment.get_mapset()
 
-    def set_mapset(self, mapset, init=False):
+    def set_mapset(self, mapset):
+        if "mapset" in self.node.attrib:
+            # TODO delete mapset self.node.attrib["mapset"].strip()
+            pass
+        self.node.attrib["mapset"] = mapset
+
+    def change_mapset(self):
+        """ Change the current mapset to the one associated with this instance
+        """
         g = GRASSInterface.get_g()
-        if not init:
-            if g.check_mapset(mapset):
-                self.node.attrib["mapset"] = mapset
-            else:
-                raise MapsetError("Invalid mapset %s" % mapset)
+        loc = self.experiment.get_location()
+        mapset = self.get_mapset()
+        # Create new mapset and link back to experiment's original mapset
+        if g.check_mapset(mapset,loc):
+            g.change_mapset(mapset,loc)
         else:
-            # Create new mapset and link back to experiment's original mapset
-            if g.check_mapset(mapset):
-                raise MapsetError("Tried to create mapset %s, but already exists" % mapset)
-            if not g.change_mapset(mapset,self.experiment.get_location(),True):
+            if not g.change_mapset(mapset,loc,True):
                 raise MapsetError("Failure to create mapset %s" % mapset)
 
             # create mdig dir in mapset
             try:
-                g.create_mdig_subdir(mapset)
+                mdig_dir = g.create_mdig_subdir(mapset)
+                f = open(os.path.join(mdig_dir,"original_model"),'w')
+                f.write("%s\n" % self.experiment.get_mapset())
+                f.close()
             except OSError, e:
                 g.remove_mapset(mapset,force=True)
                 raise e
@@ -292,7 +300,8 @@ class DispersalInstance:
         try:
             self.node.find('replicates').remove(rep.node)
         except ValueError:
-            pdb.set_trace()
+            pass
+        # TODO remove saved replicate maps
         self.replicates.remove(rep)
     
     def remove_active_rep(self, rep):
@@ -318,6 +327,10 @@ class DispersalInstance:
             self.remove_rep(self.replicates[-1])
         # reset rep times
         self.rep_times = []
+        # If mapset used to be the main model mapset, create a new mapset for
+        # the instance
+        if self.get_mapset() == self.experiment.get_mapset():
+            self.set_mapset(self.experiment.create_instance_mapset_name())
     
     def get_occupancy_envelopes(self):
         prob_env = {}
@@ -461,9 +474,14 @@ class DispersalInstance:
         a.text = filename
         
     def set_region(self):
+        """ Set up GRASS so that the instance is working in the correct region
+        (and consequently the right mapset/location too)
+        """
         current_region = self.experiment.get_region(self.r_id)
+        g = GRASSInterface.get_g()
         try:
-            GRASSInterface.get_g().set_region(current_region)
+            g.change_mapset(self.get_mapset(), self.experiment.get_location())
+            g.set_region(current_region)
         except GRASSInterface.SetRegionException, e:
             pdb.set_trace()
             return
@@ -566,6 +584,7 @@ class DispersalInstance:
         else:
             s += " active: None"
             #s+= " (complete/total [active]) "
+        s+= " mapset: %s" % self.get_mapset()
         s += "]"
         return s
 

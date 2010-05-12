@@ -96,6 +96,7 @@ class DispersalModel(object):
         self.end_time = None
         
         self.start = {}
+        self.instance_mapsets = []
         
         if self.action is not None:
             try:
@@ -157,11 +158,9 @@ class DispersalModel(object):
         - standard input ("-")
         - the actual XML document, as a string
         """
-        self.log.debug("Opening %s", model_file)
         sock = open_anything(model_file)
         
         try:
-            self.log.debug("Parsing %s", model_file)
             parser = lxml.etree.XMLParser(remove_blank_text=True)
             xmltree = lxml.etree.parse(sock,parser)
         except lxml.etree.XMLSyntaxError, e:
@@ -177,10 +176,11 @@ class DispersalModel(object):
 
     def load_xml(self, model_file):
         """load mdig model file"""
+        self.log.debug("Opening %s", model_file)
         self.xml_model = self._load(model_file) 
         
     def validate_xml(self, schema_file):
-        self.log.debug("Loading schema %s", schema_file)
+        #self.log.debug("Loading schema %s", schema_file)
         try:
             self.schema_doc = lxml.etree.parse(schema_file)
             self.xml_schema = lxml.etree.XMLSchema(self.schema_doc)
@@ -192,7 +192,8 @@ class DispersalModel(object):
             print log
             
         if not self.xml_schema.validate(self.xml_model):
-            self.log.error("%s not valid according to Schema", self.model_file)
+            self.log.error("%s not valid according to Schema %s",
+                    self.model_file,schema_file)
             
             # early versions of lxml didn't support verbose error information
             if "error_log" in dir(self.xml_schema):
@@ -202,7 +203,6 @@ class DispersalModel(object):
             raise ValidationError()
         
         self.schema_file=schema_file
-        self.log.debug("%s is valid", self.model_file)
             
     def _get_instances_by_region(self):
         instances = self.get_instances()
@@ -230,8 +230,25 @@ class DispersalModel(object):
                 max_reps = completed
             
         return min_instance
+
+    def create_instance_mapset_name(self):
+        """ To be called by Dispersal instances when they want a mapset to do
+        their simulations in """
+        base_mapset_name = self.get_mapset()
+        counter=0
+        mapset_exists = True
+        g = GRASSInterface.get_g()
+        # also check whether the mapset is in the model.xml (because an instance
+        # might not have actually created the mapset yet)
+        while mapset_exists:
+            i_mapset = base_mapset_name + "_i" + str(counter)
+            if i_mapset not in self.instance_mapsets:
+                mapset_exists = g.check_mapset(i_mapset,self.get_location())
+            counter+=1
+        self.instance_mapsets.append(i_mapset)
+        return i_mapset
     
-    def resetInstances(self):
+    def reset_instances(self):
         instances = self.get_instances()
         for i in [x for x in instances if x.enabled]:
             i.reset()
@@ -326,11 +343,9 @@ class DispersalModel(object):
                 instance.listeners.extend(self.listeners)
             
         return self.instances
-                
     
     def get_incomplete_instances(self):
         return [i for i in self.get_instances() if not i.is_complete()]
-    
                 
     def check_model(self):
         self.log.debug("Checking model maps exist")
@@ -867,6 +882,7 @@ class DispersalModel(object):
                         var_node.text = var[i]
                     else:
                         var_node.text = repr(var[i])
+        completed_node.attrib["mapset"] = self.create_instance_mapset_name()
             
         self.log.debug('Added "completed" node: ' + repr(completed_node))
     
@@ -1019,14 +1035,12 @@ class DispersalModel(object):
         loc = self.get_location()
         if not loc:
             loc = self.infer_location()
-            print loc
         if not g.check_location(loc):
             self.log.error("Location %s in model definition does not exist" % loc)
             return False
         g.grass_vars['LOCATION_NAME'] = loc
         g.set_gis_env()
         result = False
-        pdb.set_trace()
         if g.check_mapset(self.get_name(),location=loc):
             result=g.change_mapset(self.get_name(),location=loc)
         else:
@@ -1301,8 +1315,6 @@ def open_anything(source):
             return open(source)
         except (IOError, OSError):
             pass
-        
-        print("Could not open %s as a file, using as a string instead", source)
         
         # treat source as string
         import StringIO

@@ -45,7 +45,8 @@ from mdig import DispersalModel
 from mdig import Displayer
 
 def usage():
-    usage_line = "Usage: mdig.py <action> [options] [model_name|model.xml]"
+    usage_line = mdig.version_string + "\n"
+    usage_line += "Usage: mdig.py <action> [options] [model_name|model.xml]"
     
     max_length = 0
     for a in Actions.mdig_actions:
@@ -87,7 +88,7 @@ def process_options(argv):
     if the_action is not None:
         the_action.parse_options(argv)
     else:
-        if action_keyword != "--help" and \
+        if the_action and action_keyword != "--help" and \
             action_keyword != "-h" and \
             action_keyword != "help":
             print "Unknown action %s" % mdig_config.action_keyword

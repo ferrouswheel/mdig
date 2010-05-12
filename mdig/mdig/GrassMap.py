@@ -50,7 +50,7 @@ class GrassMap:
     
         if self.xml_node is not None:
             # Read xml settings if this map is based on an xml node
-            self._readXML()
+            self._read_XML()
         elif self.filename is not None:
             # If a filename was passed, check it's type and if it exists
             self.map_type = GRASSInterface.get_g().check_map(self.filename)
@@ -67,7 +67,7 @@ class GrassMap:
         if self.temporary and self.ready:
             GRASSInterface.get_g().destruct_map(self.filename)
         
-    def _readXML(self):
+    def _read_XML(self):
         """
         Parse map node XML
         """
@@ -105,12 +105,12 @@ class GrassMap:
                 if node.attrib['refresh'].lower() == "true":
                     self.refresh = True
 
-    def changeMapType(self,maptype,value):
+    def change_map_type(self,maptype,value):
         """
         Convert map between raster/vector (not implemented)
         """
         # TODO implement conversion between raster/vector
-        raise NotImplementedError, "changeMapType: Method not implemented"
+        raise NotImplementedError, "change_map_type: Method not implemented"
             
     def getMapFilename(self, map_replacements=None):
         """
@@ -123,18 +123,16 @@ class GrassMap:
         lifestage.
         """
         if self.filename is None or self.refresh:
+            g = GRASSInterface.get_g()
             # If the map needs to be refreshed and has already been initiated
             # then destroy the old map...
             if self.refresh and self.ready:
-                GRASSInterface.get_g().destruct_map(self.filename)
+                g.destruct_map(self.filename)
             
-            if map_replacements is not None:
-                self.filename, self.map_type = GRASSInterface.get_g().init_map(self,  
-                    map_replacements)
-            else:
-                self.filename, self.map_type = GRASSInterface.get_g().init_map(self)
+            self.mapset = g.get_mapset()
+            self.filename, self.map_type = g.init_map(self, map_replacements)
             self.ready = True
-        return self.filename
+        return self.filename + "@" + self.mapset
     
     def clean_up(self):
         """

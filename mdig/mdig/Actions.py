@@ -190,7 +190,7 @@ class RunAction(Action):
                 i.t_matrix.ignore_div_by_zero = True
         if self.options.rerun_instances:
             self.log.debug("Resetting model so all replicates will be rerun")
-            mdig_model.resetInstances()
+            mdig_model.reset_instances()
         elif mdig_model.is_complete():
             self.log.error("Model is up to date (use -a to force reset and rerun instances)")
             sys.exit(mdig.mdig_exit_codes['up_to_date'])
@@ -462,8 +462,9 @@ class InfoAction(Action):
         if self.options.complete_flag:
             mstr=[]
             mstr.append( "Complete: " )
-            if self.is_complete(): mstr[-1] += "Yes"
+            if mdig_model.is_complete(): mstr[-1] += "Yes"
             else: mstr[-1] += "No"
+            print mstr
         sys.exit(0)
 
 class ExportAction(Action):

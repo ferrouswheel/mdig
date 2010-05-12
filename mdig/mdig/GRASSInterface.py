@@ -330,6 +330,11 @@ class GRASSInterface:
         os.environ['GRASS_PNGFILE']=self.tempOutputFile
         os.environ['GRASS_PNG_READ']="FALSE"
 
+        # update grass variables
+        for i in self.grass_vars:
+            if os.environ.has_key(i):
+                self.grass_vars[i] = os.environ[i]
+
     def close_output(self):
         # copy self.tempOutputFile to pid_disp_filename.png (check
         # self.displays mapping between filename and temp display
@@ -422,12 +427,11 @@ class GRASSInterface:
         bmap.ready = True
         return name, map_type
     
-    def destruct_map(self,fn):
+    def destruct_map(self,fn,mapset):
         """ Remove a map
         should really only be called from GrassMap
         """
-        #if grassmap.temporary and grassmap.ready:
-        self.remove_map(fn) # grassmap.getMapFilename())
+        self.remove_map(fn,mapset)
 
     def create_coord_map(self,name,value):
         #v.in.ascii
@@ -490,6 +494,7 @@ class GRASSInterface:
         
     def set_region(self,region):
         name = region.get_name()
+        # Now set region
         if name is not None:
             self.log.debug("Setting region to %s", name)
             ret = self.run_command('g.region region=%s' % name)
@@ -554,19 +559,21 @@ class GRASSInterface:
         else:
             return False
 
-    def remove_map(self,map_name):
+    def remove_map(self,map_name,mapset=None):
         map_type = self.check_map(map_name)
-        #if map_type is None:
-        #   self.log.debug('Trying to remove non existant map')
-        #   if MDiGConfig.get_config().DEBUG:
-        #       pdb.set_trace()
-
+        # If mapset is different from the current one, then we to temporarily
+        # change because grass can only alter the current mapset.
+        if mapset and mapset != self.grass_vars['MAPSET']:
+            old_mapset = self.grass_vars['MAPSET']
+            g.change_mapset(mapset)
         if map_type: self.log.debug("Removing %s map %s", map_type, map_name)
         if map_type == 'raster':
             self.run_command('g.remove rast=%s' % map_name, logging.DEBUG);      
         elif map_type == 'vector':
             self.run_command('g.remove vect=%s' % map_name, logging.DEBUG);
-        
+        # change back to original mapset
+        if mapset:
+            g.change_mapset(old_mapset)
             
     def mapcalc(self,map_name,expression):
         map_name='"' + map_name + '"' 
@@ -595,15 +602,16 @@ class GRASSInterface:
                 return t
         return None
 
+    def update_grass_vars(self):
+        env = self.get_gis_env()
+        to_update = ["GISDBASE","LOCATION_NAME","MAPSET"]
+        self.grass_vars.update(env)
+
     def get_mapset(self):
         """
         Get current mapset
         """
         return self.grass_vars["MAPSET"]
-        #output = subprocess.Popen("g.mapsets -p", shell=True,
-                #stdout=subprocess.PIPE).communicate()[0]
-        #mapsets = output.split()
-        #return mapsets[0]
 
     def check_mapset(self, mapset_name, location=None):
         """
@@ -633,9 +641,9 @@ class GRASSInterface:
             if create:
                 result = self.run_command("g.mapset -c mapset=%s%s" % (mapset_name,location))
             else:
-                result = self.run_command("g.mapset mapset=%s%s" % (mapset_name,location))
-            if result != 0:
-                return False
+                result = self.run_command("g.mapset mapset=%s%s" % \
+                        (mapset_name,location), ignoreOnFail=[1])
+        self.update_grass_vars()
         return True
 
     def create_mdig_subdir(self,mapset):
@@ -655,7 +663,7 @@ class GRASSInterface:
         dir = os.path.join(self.grass_vars["GISDBASE"],self.grass_vars["LOCATION_NAME"],mapset)
         return dir
 
-    def remove_mapset(self, mapset_name, force=False):
+    def remove_mapset(self, mapset_name, location=None, force=False):
         """
         Remove mapset, ask for user confirmation unless force is True.
         """
@@ -669,11 +677,13 @@ class GRASSInterface:
         env = self.get_gis_env()
         gisdb = env["GISDBASE"]
         loc = env["LOCATION_NAME"]
+        if location is not None: loc = location
         mapset_dir = os.path.join(gisdb,loc,mapset_name)
         ans = "N"
         if not force and os.path.isdir(mapset_dir):
             ans = raw_input("Remove mapset at %s? [y/N] " % mapset_dir)
-        if ans.upper() == "Y" or force:
+            if ans.upper() == "Y": force = True
+        if force:
             self.run_command("rm -rf %s" % mapset_dir)
             return True 
         return False

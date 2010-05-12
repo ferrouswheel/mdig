@@ -155,11 +155,13 @@ class ModelRepository:
                             #"no model.xml for dir " + d +
                             #" - however found xml file " +
                             #os.path.basename(xml_files[0]))
-                    elif len(xml_files) == 0:
-                        self.log.warn("No xml files in mdig dir of mapset " + mapset)
+                    elif len(xml_files) == 0 and not \
+                        os.path.isfile(os.path.join(mapset_dir,"original_model")):
+                        self.log.warn("No xml files or 'original' file in mdig "
+                            + "dir of mapset " + mapset + " in location " + loc)
                         model_file = None
-                    else:
-                        self.log.warn("No model.xml and more than one xml file in " + mapset_dir)
+                    elif len(xml_files) > 1:
+                        self.log.warn("No model.xml and more than one xml file in " + mapset_dir + " in location " + loc)
                         model_file = None
                 if model_file is not None:
                     models[mapset] = model_file
