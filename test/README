@@ -1,26 +1,19 @@
-If you wish to run the unit tests for MDiG while developing code, then run grass
-on the grass_location/PERMANENT sub-directory (in GRASS terminology,
-"grass_location" is the location, and PERMANENT is the mapset). This is a simple
-XY coordinate datum and has mapsets for each individual test.
+If you wish to run the unit tests for MDiG while developing code, then install
+nosetests for python which is a testing framework:
 
-When running MDiG in test mode, it expects to be in the correct GRASS location
-mentioned above. You also have to specify the model repository with all the test
-models (test/repository).
+ easy_install nose
 
-MDiG runs through tests for the grass modules, and tests within the
-framework. Then it runs through full models and tests them for expected
-behaviour.
+Then if you go to the mdig program directory (mdig/ from the root of the source)
+and run:
 
-Example:
+ nosetests -v mdig/tests/Model.py
 
- $> grass65 ~/src/mdig/test/grass_location/PERMANENT
- GRASS 6.5.svn (grass_location):~/src/mdig/mdig> mdig.py runtests \
-                                      -r ~/src/mdig/test/repository
+You'll run a bunch of tests to check everything's working correctly.
 
-Note - currently ONLY models are run, more rigarous tests are
+Note - currently only basic tests are run, more rigarous tests are
 needed:
 * More model files that more thoroughly test the potential model types.
-* Unit tests for components within MDiG.
+* More coverage in unit tests for components within MDiG.
 * Comparison of the output maps from various models versus what the expected map
   should look like.
 
