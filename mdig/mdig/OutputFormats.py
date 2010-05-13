@@ -27,7 +27,7 @@ from DispersalInstance import DispersalInstance
 from Replicate import Replicate
 
 #TODO: move into classes
-def createFilename(rep):
+def create_filename(rep):
     if isinstance(rep,Replicate):
         i = rep.instance
         # Format of saved filename:
@@ -94,7 +94,7 @@ class PngOutput:
         
         if rep.instance.experiment.interval_modulus(self.interval,t) == 0:
             
-            fn = createFilename(rep)
+            fn = create_filename(rep)
             fn+="_"+repr(t)+".png"
             self.log.debug("Writing PNG %s" % fn)
             
@@ -144,7 +144,7 @@ class RasterOutput:
         if rep.instance.experiment.interval_modulus(self.interval,t) == 0:
             for l in rep.temp_map_names.keys():
                 if self.lifestage == l:
-                    fn = createFilename(rep)
+                    fn = create_filename(rep)
                     fn += "_ls_" + l + "_" + repr(t)
                     self.log.debug("Writing raster %s" % fn)
                     g.copy_map(rep.temp_map_names[l][0],fn,True)

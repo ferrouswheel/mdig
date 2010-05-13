@@ -71,10 +71,10 @@ class AnalysisCommand:
         tmp_fn = self.get_output_filename_base()
         #   append variable/ls/region info
         if rep:
-            tmp_fn = OutputFormats.createFilename(instance) + "_" + \
+            tmp_fn = OutputFormats.create_filename(instance) + "_" + \
                      repr(instance.replicates.index(rep)) + "_" + tmp_fn
         else:
-            tmp_fn = OutputFormats.createFilename(instance) + "_" + tmp_fn
+            tmp_fn = OutputFormats.create_filename(instance) + "_" + tmp_fn
         
         # check if file exists
         if os.path.isfile(tmp_fn):

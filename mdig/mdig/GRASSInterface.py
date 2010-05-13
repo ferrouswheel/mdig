@@ -563,6 +563,7 @@ class GRASSInterface:
         map_type = self.check_map(map_name)
         # If mapset is different from the current one, then we to temporarily
         # change because grass can only alter the current mapset.
+        old_mapset = None
         if mapset and mapset != self.grass_vars['MAPSET']:
             old_mapset = self.grass_vars['MAPSET']
             g.change_mapset(mapset)
@@ -572,8 +573,8 @@ class GRASSInterface:
         elif map_type == 'vector':
             self.run_command('g.remove vect=%s' % map_name, logging.DEBUG);
         # change back to original mapset
-        if mapset:
-            g.change_mapset(old_mapset)
+        if old_mapset:
+            self.change_mapset(old_mapset)
             
     def mapcalc(self,map_name,expression):
         map_name='"' + map_name + '"' 
@@ -585,9 +586,11 @@ class GRASSInterface:
         else:
             self.run_command('r.mask -o input=%s' % mask_name);
     
-    def check_map(self,file_name):
+    def check_map(self,file_name,mapset=None):
         # Have to check all possible types of maps
         map_types=[ "cell", "fcell", "dcell", "vector" ]
+        if mapset:
+            self.change_mapset(mapset)
         
         for t in map_types:
             #print "checking for existing map " + file_name + " of type " + t
@@ -641,8 +644,11 @@ class GRASSInterface:
             if create:
                 result = self.run_command("g.mapset -c mapset=%s%s" % (mapset_name,location))
             else:
-                result = self.run_command("g.mapset mapset=%s%s" % \
-                        (mapset_name,location), ignoreOnFail=[1])
+                self.grass_vars["LOCATION_NAME"] = loc
+                self.grass_vars["MAPSET"] = mapset
+                self.set_gis_env()
+                #result = self.run_command("g.mapset mapset=%s%s" % \
+                #        (mapset_name,location), ignoreOnFail=[1])
         self.update_grass_vars()
         return True
 

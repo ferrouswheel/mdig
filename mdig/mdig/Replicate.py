@@ -138,7 +138,7 @@ class Replicate:
                 for m in ls_maps_node[0]:
                     if m.tag == "map":
                         time_step=m.attrib["time"]
-                        if not GRASSInterface.get_g().check_map(m.text):
+                        if not GRASSInterface.get_g().check_map(m.text,self.instance.get_mapset()):
                             missing_maps.append(m.text)
                         else:
                             self.saved_maps[ls_key][time_step] = m.text
@@ -161,6 +161,26 @@ class Replicate:
         if ls_id in self.saved_maps:
             return self.saved_maps[ls_id]
         else: return None
+
+    def delete_maps(self):
+        """ Deletes all maps created by replicate, this currently
+        DOES NOT update the xml, as it's only used by the
+        DispersalInstance.remove_rep method which removes the entire replicate
+        xml node.
+        TODO: update xml 
+        """
+        g = GRASSInterface.get_g()
+        for ls_id in self.instance.experiment.get_lifestage_ids():
+            for m in self.get_saved_maps(ls_id):
+                # remove map
+                g.remove_map(m,self.instance.get_mapset())
+        
+            ls_node = self.node.xpath('lifestage[@id="%s"]' % ls_id)
+            if len(ls_node) == 0: continue
+
+            maps_node = ls_node[0].xpath('maps')
+            if len(maps_node) != 0:
+                ls_node[0].remove(maps_node[0])
         
     def null_bitmask(self, generate_null=True):
         """ Create null bitmasks for raster maps"""
@@ -184,7 +204,6 @@ class Replicate:
         """ Return map names
         
         for lifestage with id ls_id
-        
         """
         if self.previous_maps == None:
             self.previous_maps = {}

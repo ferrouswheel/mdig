@@ -64,12 +64,12 @@ class DispersalModel(object):
         control of running simulations and analysis.
     """
 
-    def __init__(self, model_file, the_action = None, setup=True):
+    def __init__(self, model_file=None, the_action = None, setup=True):
         self.action = the_action
         
         self.log = logging.getLogger("mdig.model")
         
-        self.model_filename = model_file
+        self.model_file = model_file
         self.backup_filename = None
         self.regions={}
         self.ls_ids=None
@@ -78,16 +78,18 @@ class DispersalModel(object):
         self.strategies = None
         self.activeInstances = []
         self.lifestage_transitions = None
-        
-        schema_file = os.path.join(os.path.dirname(__file__),"mdig.xsd")
-        self.load_xml(model_file)
-        self.validate_xml(schema_file)
-        
         self.listeners = []
-        outputListeners = self.get_output_listeners()
-        for l in outputListeners:
-            self.add_listener(l)
-    
+
+        schema_file = os.path.join(os.path.dirname(__file__),"mdig.xsd")
+        if model_file:
+            self.load_xml(model_file)
+            self.validate_xml(schema_file)
+            outputListeners = self.get_output_listeners()
+            for l in outputListeners:
+                self.add_listener(l)
+        else:
+            self.xml_model = lxml.etree.Element("model")
+        
         self.grass_i=GRASSInterface.get_g()
         self.random = None
         
@@ -106,14 +108,14 @@ class DispersalModel(object):
                 print e
                 
         self.base_dir = None
-        if self.action is not None:
-            self.set_base_dir(self.action.output_dir)
-            self.setup_logfile()
-        elif setup:
-            self.set_base_dir() 
-
-        if setup:
-            self.init_mapset()
+        if self.model_file:
+            if self.action is not None:
+                self.set_base_dir(self.action.output_dir)
+                self.setup_logfile()
+            elif setup:
+                self.set_base_dir() 
+            if setup:
+                self.init_mapset()
 
     def setup_logfile(self):
         self.log_file = os.path.join(self.base_dir, "model.log")
@@ -132,12 +134,14 @@ class DispersalModel(object):
 
     def set_base_dir(self, dir=None):
         # Set up base directory for output
+        self.base_dir = None
         if dir is not None:
             self.base_dir = dir
-        else:
+        elif self.model_file:
             self.base_dir = os.path.dirname(self.model_file)
-        # Initialise paths
-        self.init_paths()
+        if self.base_dir:
+            # Initialise paths
+            self.init_paths()
 
     def init_paths(self):
         c = MDiGConfig.get_config()
@@ -152,13 +156,9 @@ class DispersalModel(object):
 
     def _load(self, model_file):
         """load XML input source, return parsed XML document
-        can be:
-        - a URL of a remote XML file ("http://diveintopython.org/kant.xml")
-        - a filename of a local XML file ("~/diveintopython/common/py/kant.xml")
-        - standard input ("-")
-        - the actual XML document, as a string
+        must be a filename of a local XML file
         """
-        sock = open_anything(model_file)
+        sock = open(model_file)
         
         try:
             parser = lxml.etree.XMLParser(remove_blank_text=True)
@@ -171,7 +171,6 @@ class DispersalModel(object):
             sys.exit(3)
         
         sock.close()
-        self.model_file=model_file
         return xmltree
 
     def load_xml(self, model_file):
@@ -237,13 +236,13 @@ class DispersalModel(object):
         base_mapset_name = self.get_mapset()
         counter=0
         mapset_exists = True
-        g = GRASSInterface.get_g()
+        g = self.grass_i
         # also check whether the mapset is in the model.xml (because an instance
         # might not have actually created the mapset yet)
         while mapset_exists:
             i_mapset = base_mapset_name + "_i" + str(counter)
             if i_mapset not in self.instance_mapsets:
-                mapset_exists = g.check_mapset(i_mapset,self.get_location())
+                mapset_exists = g.check_mapset(i_mapset,self.infer_location())
             counter+=1
         self.instance_mapsets.append(i_mapset)
         return i_mapset
@@ -374,8 +373,8 @@ class DispersalModel(object):
         
         #Check that the event commands exist or are supported.
         
-        
         #self.grass_i.check_map(self.model.getBackgroundMap())
+        return True
     
     def get_user(self):
         nodes = self.xml_model.xpath('user/email')
@@ -400,14 +399,20 @@ class DispersalModel(object):
         if len(nodes) == 0:
             return None
         return nodes[0].text.strip()
+
+    def remove_location(self):
+        nodes = self.xml_model.xpath('/model/GISLocation')
+        assert len(nodes) == 1
+        model_node = self.xml_model.getroot()
+        model_node.remove(nodes[0])
         
     def infer_location(self):
         """ Older model format didn't include GIS location name.
 
         This method is to try to infer the location from the path. But obviously
-        won't work unless the model has actually been added to the repository.
+        won't work unless the model has actually been added to the in-GRASS repository.
         """
-        if not os.path.isfile(self.model_file):
+        if not self.model_file or os.path.isfile(self.model_file):
             return None
         the_dir = os.path.dirname(self.model_file)
         if not os.path.isdir(os.path.join(the_dir, "../../PERMANENT")):
@@ -744,7 +749,7 @@ class DispersalModel(object):
             else:
                 # lifestage doesn't have an initial map for this region
                 maps[id] = GrassMap( \
-                        filename=GRASSInterface.get_g().get_blank_map())
+                        filename=self.grass_i.get_blank_map())
         return maps
     
     def get_lifestage_ids(self):
@@ -1031,10 +1036,11 @@ class DispersalModel(object):
         return self.strategies
 
     def init_mapset(self):
-        g = GRASSInterface.get_g()
+        g = self.grass_i
         loc = self.get_location()
-        if not loc:
-            loc = self.infer_location()
+        if loc:
+            self.log.warning("Location %s in model definition but should have been removed on addition to the db." % loc)
+        loc = self.infer_location()
         if not g.check_location(loc):
             self.log.error("Location %s in model definition does not exist" % loc)
             return False
@@ -1057,12 +1063,21 @@ class DispersalModel(object):
         """
         return self.get_name()
 
+    def get_mapsets(self, include_root=True):
+        """ Return all the mapsets that instances refer to.
+        @param include_root defines whether to include the root model mapset or
+        whether the method only returns instance mapsets.
+        """
+        root = self.get_mapset()
+        mapsets = [i.get_mapset() for i in self.get_instances() if i != root]
+        return mapsets
+
     def move_mapset(self, new_mapset):
         """
         Moves all Grass related files to another mapset. Files that have mapset given
         using map@mapset notation are not moved, but others are.
         """
-        G = GRASSInterface.get_g()
+        G = self.grass_i
 
         if G.check_mapset(new_mapset):
             self.log.error("Mapset %s already exists, shouldn't move into an existing mapset!" % new_mapset)

@@ -34,6 +34,8 @@ class Action:
         # remove null bitmasks (saves disk space but takes time)
         # Moved to config
         #self.remove_null = False
+        # Whether this action appears in the usage information
+        self.hidden = False
         # Whether do_me expects a DispersalModel from self.model_name to be
         # loaded first
         self.preload = True
@@ -538,7 +540,7 @@ class ExportAction(Action):
                             " Have you 'run' the model first?")
                     sys.exit(mdig.mdig_exit_codes["invalid_replicate_index"])
                 r = rs[r_index]
-                rep_fn = os.path.join(base_fn, OutputFormats.createFilename(r))
+                rep_fn = os.path.join(base_fn, OutputFormats.create_filename(r))
                 map_list = []
                 for t in r.get_saved_maps(ls):
                     m = r.get_saved_maps(ls)[t]
@@ -549,7 +551,7 @@ class ExportAction(Action):
         else:
             # Run on occupancy envelopes
             base_fn = os.path.join(base_fn,
-                    OutputFormats.createFilename(i))
+                    OutputFormats.create_filename(i))
             env = i.get_occupancy_envelopes()
             if env is None:
                 self.log.error("No occupancy envelopes available.")
@@ -751,7 +753,8 @@ class AdminAction(Action):
         if self.options.generate_null:
             mdig_model.null_bitmask( True )
         if self.options.check_maps:
-            mdig_model.checkInstances()
+            if mdig_model.check_model():
+                print "Model looks okay!"
         if self.options.list_instances:
             instances = mdig_model.get_instances()
             counter = 0
@@ -840,7 +843,8 @@ class ClientAction(Action):
     def parse_options(self, argv):
         print self.get_usage()
         sys.exit(mdig.mdig_exit_codes["not_implemented"])
-    
+
+
 mdig_actions = {
     "run": RunAction,
     "analysis": AnalysisAction,

@@ -150,7 +150,7 @@ class DispersalInstance:
         """ Change the current mapset to the one associated with this instance
         """
         g = GRASSInterface.get_g()
-        loc = self.experiment.get_location()
+        loc = self.experiment.infer_location()
         mapset = self.get_mapset()
         # Create new mapset and link back to experiment's original mapset
         if g.check_mapset(mapset,loc):
@@ -297,11 +297,12 @@ class DispersalInstance:
         self.replicates = reps
     
     def remove_rep(self, rep):
+        # remove saved replicate maps
+        rep.delete_maps()
         try:
             self.node.find('replicates').remove(rep.node)
         except ValueError:
             pass
-        # TODO remove saved replicate maps
         self.replicates.remove(rep)
     
     def remove_active_rep(self, rep):
@@ -480,7 +481,7 @@ class DispersalInstance:
         current_region = self.experiment.get_region(self.r_id)
         g = GRASSInterface.get_g()
         try:
-            g.change_mapset(self.get_mapset(), self.experiment.get_location())
+            g.change_mapset(self.get_mapset(), self.experiment.infer_location())
             g.set_region(current_region)
         except GRASSInterface.SetRegionException, e:
             pdb.set_trace()
