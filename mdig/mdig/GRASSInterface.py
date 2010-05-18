@@ -272,6 +272,35 @@ class GRASSInterface:
 
         self.run_command('d.rast map=%s -x -o bg=white' % map_name, logging.DEBUG)
         os.environ['GRASS_PNG_READ']="TRUE"
+
+
+    def normalise_map_colors(self, maps):
+        min_val = None; max_val = None
+        for m in maps:
+            cmd = "r.info -r map=%s" % m
+            p=Popen(cmd, shell=True, stdout=subprocess.PIPE)
+            output=p.communicate()[0]
+            res=re.findall("(\w+)=([\d.]+)\n",output)
+            if len(res) == 0 or res[0][0] != 'min' or res[1][0] != 'max':
+                self.log.error("Failed to get raster range for %s. Output was:\n%s" % (m,output))
+                sys.exit(1)
+            if not min_val or min_val > float(res[0][1]): min_val = float(res[0][1])
+            if not max_val or max_val < float(res[1][1]): max_val = float(res[1][1])
+        one_third = (min_val - max_val) / 3.0 + min_val
+        two_third = 2 * (min_val - max_val) / 3.0 + min_val
+        # create full-scale color table for first map
+        pcolor= subprocess.Popen('r.colors map=%s rules=-' % maps[0], \
+                shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        rule_string = "%f blue\n" % (min_val)
+        rule_string += "%f cyan\n" % (one_third)
+        rule_string += "%f yellow\n" % (two_third)
+        rule_string += "%f red\n" % (max_val)
+        output = pcolor.communicate(rule_string)[0]
+        # apply first map's color table to all other maps
+        for i in range(1,len(maps)):
+            pcolor= subprocess.Popen('r.colors map=%s rast=%s' % (maps[i],maps[0]), \
+                    shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        return (min_val, max_val)
         
     def paint_grid(self, res):
         self.run_command('d.grid -b size=%d' % res,logging.DEBUG )
@@ -317,7 +346,7 @@ class GRASSInterface:
             oldd = self.displays[display]
             self.displays[display] = (self.filename, oldd[1], oldd[2])
             
-        self.tempOutputFile = repr(os.getpid()) + "_" + repr(int(random.random()*1000)) + self.filename
+        self.tempOutputFile = repr(os.getpid()) + "_" + repr(int(random.random()*1000)) + os.path.basename(self.filename)
         # TODO make getRandFilename function (or check python lib) that
         # checks for existing files.
 
@@ -636,16 +665,15 @@ class GRASSInterface:
         """
         if mapset_name is None:
             mapset_name = "PERMANENT"
-        if location is None:
-            location = ""
-        else:
-            location = " location=" + location
+        loc = ""
+        if location is not None:
+            loc = " location=" + location
         if self.get_mapset() != mapset_name: 
             if create:
-                result = self.run_command("g.mapset -c mapset=%s%s" % (mapset_name,location))
+                result = self.run_command("g.mapset -c mapset=%s%s" % (mapset_name,loc))
             else:
-                self.grass_vars["LOCATION_NAME"] = loc
-                self.grass_vars["MAPSET"] = mapset
+                self.grass_vars["LOCATION_NAME"] = location
+                self.grass_vars["MAPSET"] = mapset_name
                 self.set_gis_env()
                 #result = self.run_command("g.mapset mapset=%s%s" % \
                 #        (mapset_name,location), ignoreOnFail=[1])
@@ -659,6 +687,7 @@ class GRASSInterface:
         return dest_dir
 
     def check_location(self, location):
+        assert location
         env = self.get_gis_env()
         gisdb = env["GISDBASE"]
         if os.path.isdir(os.path.join(gisdb,location,"PERMANENT")):
@@ -769,7 +798,9 @@ class GRASSInterface:
         self.log.log(log_level, "exec: " + commandstring)
         ret = None
         
-        lvl = logging.getLogger("mdig").handlers[0].level
+        lvl = 0
+        if len(logging.getLogger("mdig").handlers) > 0:
+            lvl = logging.getLogger("mdig").handlers[0].level
         if lvl >= logging.INFO:
             p = Popen(commandstring, shell=True, stdout=subprocess.PIPE, \
                     stderr=subprocess.PIPE)

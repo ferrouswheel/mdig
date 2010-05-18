@@ -497,7 +497,7 @@ class ExportAction(Action):
                 help="Output a series of images, one for each population distribution map",
                 action="store_true",
                 dest="output_image")
-        self.parser.add_option("-r","--rep",
+        self.parser.add_option("-p","--rep",
                 help="Output maps for rep instead of for occupancy envelope",
                 action="append",
                 type="int",
@@ -507,12 +507,31 @@ class ExportAction(Action):
                 action="store",
                 dest="output_lifestage",
                 type="string")
+        self.parser.add_option("-b","--background",
+                help="Rast map to overlay pop. distributions on.",
+                action="store",
+                dest="background",
+                type="string")
+        self.parser.add_option("-x","--width",
+                help="Set width of output image.",
+                action="store",
+                type="int",
+                dest="width")
+        self.parser.add_option("-y","--height",
+                help="Set height of output image.",
+                action="store",
+                type="int",
+                dest="height")
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
         MDiGConfig.get_config().overwrite_flag = self.options.overwrite_flag
         if self.options.output_lifestage is None:
             self.options.output_lifestage = "all"
+        if self.options.width is None:
+            self.options.width = "480"
+        if self.options.height is None:
+            self.options.height = "480"
     
     def do_me(self,mdig_model):
         for i in mdig_model.get_instances():
@@ -526,15 +545,20 @@ class ExportAction(Action):
             self.log.warning("No type for output was specified...")
             sys.exit(0)
         ls = self.options.output_lifestage
+        if ls not in i.experiment.get_lifestage_ids():
+            self.log.error("No such lifestage called %s in model." + str(ls))
+            Tsys.exit(mdig.mdig_exit_codes["instance_incomplete"])
         all_maps = []
         if not i.is_complete():
             self.log.error("Instance " + repr(i) + " not complete")
             sys.exit(mdig.mdig_exit_codes["instance_incomplete"])
         base_fn = os.path.join(i.experiment.base_dir,"output")
-        if len(self.options.reps) > 0:
+        if self.options.reps:
+            self.log.info("Creating images for maps of reps: %s" % str(self.options.reps))
             # Run on replicates
             rs = i.replicates
             for r_index in self.options.reps:
+                self.log.info("Creating images for maps of rep %d" % r_index)
                 if r_index < 0 or r_index > len(rs):
                     self.log.error("Invalid replicate index." +
                             " Have you 'run' the model first?")
@@ -542,16 +566,26 @@ class ExportAction(Action):
                 r = rs[r_index]
                 rep_fn = os.path.join(base_fn, OutputFormats.create_filename(r))
                 map_list = []
-                for t in r.get_saved_maps(ls):
-                    m = r.get_saved_maps(ls)[t]
-                    map_list.append(self.create_frame(m,rep_fn + "_" + repr(t),model_name,
-                                t, ls))
-                self.create_gif(map_list,rep_fn)
+                saved_maps = r.get_saved_maps(ls)
+
+                # Normalise the color scale so that the lgend and range doesn't
+                # keep changing for map to map
+                self.log.info("Normalising colours")
+                the_range = GRASSInterface.get_g().normalise_map_colors(saved_maps.values())
+
+                for t in saved_maps:
+                    m = saved_maps[t]
+                    map_list.append(self.create_frame(m,rep_fn + "_" +
+                        str(t),model_name, t, ls, the_range))
+                if self.options.output_gif:
+                    self.create_gif(map_list,rep_fn)
                 all_maps.extend(map_list)
         else:
+            self.log.info("Creating images for occupancy envelopes")
             # Run on occupancy envelopes
             base_fn = os.path.join(base_fn,
                     OutputFormats.create_filename(i))
+            self.log.debug("Fetching occupancy envelopes")
             env = i.get_occupancy_envelopes()
             if env is None:
                 self.log.error("No occupancy envelopes available.")
@@ -561,7 +595,8 @@ class ExportAction(Action):
                 m = env[ls][t]
                 map_list.append(self.create_frame(m,base_fn + "_" + repr(t),model_name,
                         t, ls))
-            self.create_gif(map_list,base_fn)
+            if self.options.output_gif:
+                self.create_gif(map_list,base_fn)
             all_maps.extend(map_list)
         # If the user just wanted an animated gif, then clean up the images
         if not self.options.output_image:
@@ -570,28 +605,38 @@ class ExportAction(Action):
 
     def create_gif(self,maps,fn):
         gif_fn = None
-        if self.options.output_gif:
-            from subprocess import Popen, PIPE
-            gif_fn = fn + "_anim.gif"
-            output = Popen("convert -delay 100 " + " ".join(maps)
-                + " " + gif_fn, shell=True, stdout=PIPE).communicate()[0]
-            if len(output) > 0:
-                self.log.info("Convert output:" + output)
+        from subprocess import Popen, PIPE
+        gif_fn = fn + "_anim.gif"
+        maps.sort()
+        output = Popen("convert -delay 100 " + " ".join(maps)
+            + " " + gif_fn, shell=True, stdout=PIPE).communicate()[0]
+        if len(output) > 0:
+            self.log.info("Convert output:" + output)
         return gif_fn
 
-    def create_frame(self, map_name, output_name, model_name, year, ls):
+    def create_frame(self, map_name, output_name, model_name, year, ls, the_range = None):
         g = GRASSInterface.get_g()
-        g.run_command("d.mon png1", ignoreOnFail=[1])
+        g.set_output(filename = output_name + ".png", \
+                width=self.options.width, height=self.options.height, display=None)
         g.run_command("d.erase")
-        #####g.run_command("d.vect nzcoast_low type=area fcolor=black")
-        g.run_command("r.colors map=" + map_name + " color=byr")
+        import os; os.environ['GRASS_PNG_READ']="TRUE"
+        if self.options.background:
+            bg = self.options.background.split('@')
+            print bg
+            if len(bg) > 1: map_ok = g.check_map(bg[0], bg[1])
+            else: map_ok = g.check_map(bg)
+            print map_ok
+            g.run_command("r.colors color=grey map=" + self.options.background)
+            g.run_command("d.rast " + self.options.background)
         g.run_command("d.rast " + map_name + " -o")
         g.run_command("d.barscale tcolor=0:0:0 bcolor=none at=2,18 -l -t")
-        g.run_command("d.legend " + map_name + " at=5,50,85,90")
+        if the_range:
+            g.run_command("d.legend -s " + map_name + " range=%f,%f at=5,50,85,90" % the_range)
+        else:
+            g.run_command("d.legend -s " + map_name + " at=5,50,85,90")
         g.run_command("d.text at=2,90 size=3 text=" + model_name)
-        #d.text text="Land-cover model" at=2,87 size=3
         g.run_command("d.text text=" + year + " at=2,93")
-        g.run_command("d.out.png output=" + output_name + " res=2")
+        g.close_output()
         return output_name + ".png"
     
 class ROCAction(Action):

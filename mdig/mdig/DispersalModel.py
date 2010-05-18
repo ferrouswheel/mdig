@@ -412,7 +412,7 @@ class DispersalModel(object):
         This method is to try to infer the location from the path. But obviously
         won't work unless the model has actually been added to the in-GRASS repository.
         """
-        if not self.model_file or os.path.isfile(self.model_file):
+        if not self.model_file or not os.path.isfile(self.model_file):
             return None
         the_dir = os.path.dirname(self.model_file)
         if not os.path.isdir(os.path.join(the_dir, "../../PERMANENT")):
@@ -439,7 +439,7 @@ class DispersalModel(object):
             if os.path.exists(fn2):
                 return fn2
         # Check relative to model file
-        fn2 = os.path.join(os.path.dirname(self.model_filename), fn)
+        fn2 = os.path.join(os.path.dirname(self.model_file), fn)
         if os.path.exists(fn2):
             return fn2
         return None
@@ -690,8 +690,9 @@ class DispersalModel(object):
                     else:
                         p["reps"][v_index] = p["reps"][v_index] - len(c["reps"])
             else:
-                self.log.error("Completed instance doesn't match any expected instances")
-                pdb.set_trace()
+                err_str = "Completed instance doesn't match any expected instances"
+                self.log.error(err_str)
+                raise Exception(err_str)
             
         self.log.debug(permutations)
         return permutations
@@ -1248,7 +1249,7 @@ class DispersalModel(object):
             
     def save_model(self, filename=None):
         if filename is None:
-            filename = self.model_filename
+            filename = self.model_file
         
         try:
             if os.path.isfile(filename):
