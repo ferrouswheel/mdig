@@ -242,6 +242,12 @@ def show_instance(model,instance):
 
 def mdig_launcher(work_q,results_q):
     running = True
+    # Have to replace some of the environment variables, otherwise they get
+    # remembered and recreating GRASSInterface is no use!
+    g = GRASSInterface.get_g()
+    g.init_pid_specific_files()
+    g.grass_vars["MAPSET"] = "PERMANENT"
+    g.set_gis_env()
     while running:
         try:
             s = work_q.get(timeout=1)
@@ -249,11 +255,14 @@ def mdig_launcher(work_q,results_q):
             if s[0] == "SHUTDOWN": running = False
             elif s[0] == "RUN":
                 #TODO actually launch MDiG actions
-                import time
-                sleep_length = s[2]
                 s[2] = "started"
+                m_name = s[1]
+                model_file = mdig.repository.get_models()[m_name]
+                #import pdb;
+                #pdb.Pdb(stdin=open('/dev/stdin', 'r+'), stdout=open('/dev/stdout', 'r+')).set_trace()
+                dm = DispersalModel(model_file)
                 results_q.put(s)
-                time.sleep(sleep_length)
+                dm.run()
                 s[2] = "complete"
                 results_q.put(s)
             else:
@@ -279,7 +288,7 @@ class ResultMonitor(Thread):
                 m_status = s[2]
                 print models_in_queue
                 if m_status == "started":
-                    models_in_queue[m_name][m_action][m_status] = True
+                    models_in_queue[m_name][m_action][m_status] = datetime.datetime.now()
                 elif m_status == "complete":
                     models_in_queue[m_name][m_action]["complete"] = datetime.datetime.now()
                 print models_in_queue

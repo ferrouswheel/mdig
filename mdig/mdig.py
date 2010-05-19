@@ -124,18 +124,20 @@ def main(argv):
     # Otherwise start up normally
     mdig_config = MDiGConfig.get_config()
     logger = setupLogger(mdig_config["LOGGING"]["ansi"])
-    mdig.repository = ModelRepository.ModelRepository()
     the_action = process_options(argv)
     
     signal.signal(signal.SIGINT, exit_catcher)
     
-    # Check for grass environment and set up interface
-    grass_interface = GRASSInterface.get_g()
-    
     # Load model repository 
     if the_action.repository is not None:
-        mdig.repository = ModelRepository.ModelRepository(the_action.repository)
+        mdig_config["GRASS"]["GISDBASE"] = the_action.repository
+    if the_action.location is not None:
+        mdig_config["GRASS"]["LOCATION_NAME"] = the_action.location
+    mdig.repository = ModelRepository.ModelRepository()
     models = mdig.repository.get_models()
+
+    # Check for grass environment and set up interface
+    grass_interface = GRASSInterface.get_g()
         
     if the_action.preload == True:
         # Load model definition

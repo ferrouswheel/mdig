@@ -43,12 +43,12 @@ class CommandException (Exception): pass
     
 class GRASSCommandException (Exception):
     def __init__(self, cmd_string="", stderr="", exit_code=0):
-        self.cmd = cmd
+        self.cmd = cmd_string
         self.stderr = stderr
         self.exit_code = exit_code
 
     def __str__(self):
-        return "GRASSCommandException (%d, %s)" % (self.exit_code, self.std_err)
+        return "GRASSCommandException (cmd:%s)" % (self.cmd)
 
 import DispersalModel
 import MDiGConfig
@@ -215,6 +215,15 @@ class GRASSInterface:
         else: 
             raise EnvironmentException()
 
+        self.init_pid_specific_files()
+        #TODO cleanup tmp dir
+        
+        if not self.check_paths():
+            raise EnvironmentException()
+        self.set_gis_env()
+        self.log.debug("GRASS Environment is now: %s", self.grass_vars)
+
+    def init_pid_specific_files(self):
         #export GIS_LOCK=$$
         pid = str(os.getpid())
         os.environ["GIS_LOCK"]=pid
@@ -226,13 +235,6 @@ class GRASSInterface:
         os.mkdir(tmp)
         from MDiGConfig import home_dir
         shutil.copyfile(os.path.join(home_dir,"../.grassrc6"),os.environ["GISRC"])
-        
-        #TODO cleanup tmp dir
-        
-        if not self.check_paths():
-            raise EnvironmentException()
-        self.set_gis_env()
-        self.log.debug("GRASS Environment is now: %s", self.grass_vars)
 
     def check_paths(self):
         """ Check paths that should exist with the current GRASS environment,

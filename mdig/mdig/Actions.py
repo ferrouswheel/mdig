@@ -22,6 +22,8 @@ class Action:
         self.check_model = True
         # The model repository (== GRASS's GISDBASE)
         self.repository = None
+        # The model location (== GRASS's LOCATION_NAME)
+        self.location = None
         # The models directory is used for output if this isn't set
         self.output_dir = None
         # output_level is one of: quiet, normal, verbose, debug
@@ -58,10 +60,16 @@ class Action:
                 dest="output_level",
                 const="quiet")
         self.parser.add_option("-r","--repository",
-                help="Set model repository location",
+                help="Set model repository location (GISDBASE)",
                 action="store",
                 type="string",
                 dest="repository",
+                default=None)
+        self.parser.add_option("-k","--location",
+                help="Set model geo location (LOCATION_NAME)",
+                action="store",
+                type="string",
+                dest="location",
                 default=None)
     
     def act_on_options(self,options):
@@ -80,6 +88,9 @@ class Action:
         if options.repository is not None:
             self.repository = options.repository 
             self.log.debug("Repository location manually set to " + options.repository)
+        if options.location is not None:
+            self.location = options.location
+            self.log.debug("GRASS geo location manually set to " + options.location)
 
     def parse_options(self,argv):
         (self.options, args) = self.parser.parse_args(argv[1:])
