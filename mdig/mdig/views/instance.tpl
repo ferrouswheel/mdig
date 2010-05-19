@@ -4,28 +4,10 @@
     <title>MDiG - {{instance.experiment.get_name()}} - Instance {{idx}} </title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <!--<link rel="stylesheet" href="css/style.css" type="text/css" /> -->
-<style type="text/css">
-body {
-font-family:"Arial";
-}
-table, td, th
-{
-border:1px solid green;
-text-align:center;
-}
-td
-{
-padding:10px;
-}
-th
-{
-background-color:green;
-color:white;
-padding: 0px 10px;
-}
-</style>
+%include css
 </head>
 <body>
+%include status_headline task_updates=task_updates, task_order=task_order
 <h1><a href="/models/{{instance.experiment.get_name()}}">{{instance.experiment.get_name()}}</a> - Instance {{idx}}</h1>
 <div class="details">
 %if not instance.enabled:

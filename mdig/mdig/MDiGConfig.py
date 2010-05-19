@@ -113,6 +113,10 @@ class MDiGConfig(ConfigObj):
         },
         'LOGGING': {
             "ansi" :"false"
+        },
+        'WEB': {
+            "host" :"localhost",
+            "port" :1444
         }
     }
 

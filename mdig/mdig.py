@@ -182,6 +182,9 @@ def exit_cleanup():
         GRASSInterface.get_g().clean_up()
 
     MDiGConfig.get_config().write()
+
+    from mdig.WebService import shutdown_webapp
+    shutdown_webapp()
         
     logger.info("Finished at %s" % repr(datetime.now().ctime()))
 

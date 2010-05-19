@@ -4,26 +4,7 @@
     <title>{{name}}</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <!--<link rel="stylesheet" href="css/style.css" type="text/css" /> -->
-<style type="text/css">
-body {
-font-family:"Arial";
-}
-table, td, th
-{
-border:1px solid green;
-text-align:center;
-}
-td
-{
-padding:10px;
-}
-th
-{
-background-color:green;
-color:white;
-padding: 0px 10px;
-}
-</style>
+%include css
 </head>
 <body>
 <div class="description">
@@ -34,8 +15,11 @@ description.</p>
 </div>
 <div class="repository">
 <h2>Model Repository</h2>
+%include status_headline task_updates=task_updates, task_order=task_order
 <h3> Submit a model </h3>
-<form action="/models/" method="post">
+<form action="/models/" method="post" enctype="multipart/form-data" >
+<input type="file" name="new_model" size="50"><input type="submit" value="Upload">
+</form>
 <h3> Existing models </h3>
 <table>
 <thead><th>Model name</th><th>Description</th></thead>

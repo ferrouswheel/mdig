@@ -4,43 +4,11 @@
     <title>MDiG - {{model.get_name()}}</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <!--<link rel="stylesheet" href="css/style.css" type="text/css" /> -->
-<style type="text/css">
-body {
-font-family:"Arial";
-}
-table, td, th
-{
-border:1px solid green;
-text-align:center;
-}
-td
-{
-padding:10px;
-}
-th
-{
-background-color:green;
-color:white;
-padding: 0px 10px;
-}
-div.events ol {
-border: 1px solid #000;
-background-color:green;
-}
-div.events ol > li {
-color:white;
-background-color:green;
-}
-div.events ol > li a {
-color:white;
-}
-div.events ol li ul {
-color:black;
-background-color:white;
-}
-</style>
+%include css
 </head>
 <body>
+<small><a href="/models/">All models</a></small>
+%include status_headline task_updates=task_updates, task_order=task_order
 <div class="description">
 <h1>{{model.get_name()}}</h1>
 <p>{{model.get_description()}}</p>
@@ -93,6 +61,16 @@ region {{r_id}}: {{ls.getPhenologyBins(r_id)}}
 %end
 </div>
 <div class="model-list">
+<h3>Actions</h3>
+<div>
+<ul><li> <strong>Run Model</strong> - 
+<form action="/models/{{model.get_name()}}/run" method="post">
+<input type="checkbox" name="rerun" value="true"/>Rerun complete instances too.<br/>
+<input type="submit" value="Run all"/>
+</form>
+</li>
+</ul>
+</div>
 <h2>Instances</h2>
 <form action="/models/{{model.get_name()}}" method="post">
 <table style="border-collapse: collapse">

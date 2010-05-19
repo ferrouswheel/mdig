@@ -41,6 +41,15 @@ class MapNotFoundException (Exception):
 class SetRegionException (Exception): pass        
 class CommandException (Exception): pass        
     
+class GRASSCommandException (Exception):
+    def __init__(self, cmd_string="", stderr="", exit_code=0):
+        self.cmd = cmd
+        self.stderr = stderr
+        self.exit_code = exit_code
+
+    def __str__(self):
+        return "GRASSCommandException (%d, %s)" % (self.exit_code, self.std_err)
+
 import DispersalModel
 import MDiGConfig
 
@@ -117,23 +126,36 @@ class GRASSInterface:
         self.old_gisdbase = None
 
         self.blank_map = None
+        # Whether or not MDiG was started in pre-existing GRASS session
+        self.in_grass_shell = False
         
         if not self.check_environment():
             self.log.debug("GRASS environment not detected, attempting setup of GRASS from config file")
             self.init_environment()
+        else:
+            self.in_grass_shell = True
         
-        self.log.log(logging.INFO, "Saving GRASS region")
-        result=self.run_command('g.region --o save='+self.old_region, ignoreOnFail=[1,127])
+        self.backup_region()
+
+        self.old_mapset = self.grass_vars['MAPSET']
+        self.old_location = self.grass_vars['LOCATION_NAME']
+        self.old_gisdbase = self.grass_vars['GISDBASE']
+
+    def backup_region(self):
+        self.log.log(logging.INFO, "Saving existing GRASS region")
+        result=0
+        try:
+            self.run_command('g.region --o save='+self.old_region)
+        except GRASSCommandException, e:
+            result = e.exit_code
+            if e.exit_code not in [1,127]:
+                raise e
         if result != 0:
             output = subprocess.Popen("env", shell=True, stdout=subprocess.PIPE).communicate()[0]
             self.log.error("Couldn't backup region, is GRASS environment set up correctly?")
             self.log.error("GISDBASE='%s' LOCATION_NAME='%s' MAPSET='%s'" % \
                     (self.grass_vars['GISDBASE'],self.grass_vars['LOCATION_NAME'],self.grass_vars['MAPSET']))
             raise EnvironmentException()
-
-        self.old_mapset = self.grass_vars['MAPSET']
-        self.old_location = self.grass_vars['LOCATION_NAME']
-        self.old_gisdbase = self.grass_vars['GISDBASE']
     
     def check_environment(self):
         okay=True
@@ -151,7 +173,8 @@ class GRASSInterface:
                 okay=False
         
         if not okay:
-            self.log.log(logging.INFO,"GRASS Environment incomplete: %s", self.grass_vars)
+            self.log.log(logging.INFO,"GRASS Environment incomplete, missing: %s" \
+                    % str([x for x in self.grass_vars if not self.grass_vars[x]]))
         elif first_run:
             self.log.log(logging.INFO,"GRASS Environment okay: %s", self.grass_vars)
             
@@ -672,11 +695,9 @@ class GRASSInterface:
             if create:
                 result = self.run_command("g.mapset -c mapset=%s%s" % (mapset_name,loc))
             else:
-                self.grass_vars["LOCATION_NAME"] = location
+                if location: self.grass_vars["LOCATION_NAME"] = location
                 self.grass_vars["MAPSET"] = mapset_name
                 self.set_gis_env()
-                #result = self.run_command("g.mapset mapset=%s%s" % \
-                #        (mapset_name,location), ignoreOnFail=[1])
         self.update_grass_vars()
         return True
 
@@ -794,7 +815,7 @@ class GRASSInterface:
         return filename
         
     
-    def run_command(self, commandstring, log_level=logging.DEBUG, ignoreOnFail=[]):
+    def run_command(self, commandstring, log_level=logging.DEBUG):
         self.log.log(log_level, "exec: " + commandstring)
         ret = None
         
@@ -814,13 +835,8 @@ class GRASSInterface:
             self.log.debug("stderr: " + self.stderr)
         ret = p.returncode
 
-        # If the command returns an error code then print it,
-        # cleanup, and then exit
-        # @todo throw exception on error instead
-        if (ret is not None) and ret != 0 and not (ret in ignoreOnFail):
-            self.log.error('Exit status for "%s" was %d' % (commandstring,ret))
-            exit_function = signal.getsignal(signal.SIGINT)
-            exit_function(None, None)
+        if (ret is not None) and ret != 0:
+            raise GRASSCommandException(commandstring,self.stderr,ret)
         return ret
 
     def clean_up(self):
@@ -830,9 +846,11 @@ class GRASSInterface:
         self.grass_vars['LOCATION_NAME']= self.old_location
         self.grass_vars['GISDBASE']= self.old_gisdbase
         self.set_gis_env()
-        self.run_command('g.region region='+self.old_region,ignoreOnFail=[256])
+        output = subprocess.Popen("g.region " + self.old_region, shell=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         if self.blank_map is not None:
             self.destruct_map(self.blank_map)
+        # TODO remove all other temporary maps
         self.close_display()
 
     def get_blank_map(self):

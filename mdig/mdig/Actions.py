@@ -828,39 +828,6 @@ class WebAction(Action):
         
     def add_options(self):
         Action.add_options(self)
-        #self.parser.add_option("-o","--overwrite",
-        #        help="Overwrite existing files",
-        #        action="store_true",
-        #        dest="overwrite_flag")
-        #self.parser.add_option("-n","--remove-null",
-        #        help="Remove null bitmasks from raster maps",
-        #        action="store_true",
-        #        dest="remove_null")
-        #self.parser.add_option("-g","--generate",
-        #        help="Generate null bitmasks for raster maps",
-        #        action="store_true",
-        #        dest="generate_null")
-        #self.parser.add_option("-c","--check-maps",
-        #        help="Check all maps for the model are present",
-        #        action="store_true",
-        #        dest="check_maps")
-        #self.parser.add_option("-m","--move-mapset",
-        #        help="Check all maps for the model are present",
-        #        action="store",
-        #        type="string",
-        #        dest="move_mapset")
-        #self.parser.add_option("-l","--list-instances",
-        #        help="List all the instances, their index, and status",
-        #        action="store_true",
-        #        dest="list_instances")
-        #self.parser.add_option("-t","--toggle-instance",
-        #        help="Change the whether instances are enabled or not",
-        #        action="store",
-        #        dest="toggle_instances")
-
-    def parse_options(self, argv):
-        pass
-        #sys.exit(mdig.mdig_exit_codes["not_implemented"])
 
     def do_me(self,mdig_model):
         # initialise web system - needs to create new mapset

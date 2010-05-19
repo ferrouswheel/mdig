@@ -773,6 +773,20 @@ class DispersalModel(object):
             else:
                 self.log.error(
                         "Could not get unique lifestage from id '%s'" % ls_id)
+
+    def get_map_dependencies(self, just_permanent=False):
+        """ Return all maps referenced by model, and whether they exist in the
+        mapset search path.
+
+        @param just_permanent indicates that only the PERMANENT mapset should
+        be searched (which is useful before a model is in the repository)
+
+        @returns dictionary of map names with value as what they are used for.
+        """
+        # TODO implement get_map_dependencies
+        return {}
+        pass
+
         
     def get_lifestage_transitions(self):
         if self.lifestage_transitions is None:

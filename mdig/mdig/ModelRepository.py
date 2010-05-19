@@ -3,6 +3,7 @@ import sys
 import glob
 import pdb
 import logging
+import tempfile
 
 import mdig
 from mdig import MDiGConfig
