@@ -32,7 +32,7 @@ class Displayer:
     def __init__(self):
         self.listeningTo = []
         
-    def replicateUpdate(self,rep,t):
+    def replicate_update(self,rep,t):
         g = GRASSInterface.get_g()
         
         g.set_output()

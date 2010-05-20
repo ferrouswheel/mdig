@@ -89,7 +89,7 @@ def submit_model():
     # check if model name exists in repository 
     return str(models_staging[model_name])
 
-def process_completed_tasks():
+def process_tasks():
     """ go through all the tasks in models_in_queue and when they were
     completed.
     return those that have been completed since last time this method was
@@ -100,15 +100,27 @@ def process_completed_tasks():
     updates = {}
     time_index = {}
     for m_name, tasks in models_in_queue.items():
-        for task in tasks:
-            if 'complete' in tasks[task]:
-                if tasks[task]['complete'] > last_notice:
-                    if m_name not in updates: updates[m_name] = {}
-                    updates[m_name][task] = tasks[task]
-                    t = tasks[task]['complete']
-                    if new_last_notice < t:
-                        new_last_notice = t
-                    time_index[(m_name,task)]=t
+        for task_name in tasks:
+            t = tasks[task_name]
+            #if 'last_update' not in t:
+            #    continue
+            if 'complete' not in t:
+                # deal with status of incomplete tasks
+                if m_name not in updates: updates[m_name] = {}
+                updates[m_name][task_name] = t
+                time_index[(m_name,task_name)]=t['last_update']
+            elif t['last_update'] > last_notice:
+                # deal with completion events which should only display once
+                if m_name not in updates: updates[m_name] = {}
+                updates[m_name][task_name] = t
+                complete_time = t['complete']
+                if new_last_notice < complete_time:
+                    new_last_notice = complete_time
+                time_index[(m_name,task_name)]=complete_time
+            elif datetime.datetime.now() - t['last_update'] \
+                    > datetime.timedelta(days=7):
+                # remove tasks that are complete but older than a week
+                del models_in_queue[m_name][task_name]
     last_notice = new_last_notice
     k = time_index.keys()
     k.sort(key=lambda x: time_index[x])
@@ -123,16 +135,26 @@ def run_model(model):
     m_name = model.get_name()
     exists=False
     global models_in_queue
-    if m_name not in models_in_queue:
-        models_in_queue[m_name] = {}
-    if 'RUN' in models_in_queue[m_name] and 'complete' not in models_in_queue[m_name]:
-        exists = True
-    else:
-        models_in_queue[m_name]['RUN'] = {"approx_q_pos":qsize}
-        work_q.put(['RUN',model.get_name(),10])
-    task_order, task_updates = process_completed_tasks()
-    return dict(model=model, already_exists=exists,
-            started = 'started' in models_in_queue[m_name]['RUN'],
+    rerun = False
+    started = None
+    if "rerun" in request.POST:
+        if request.POST["rerun"].lower() == "true": rerun = True
+    if not model.is_complete() or rerun:
+        if m_name not in models_in_queue:
+            models_in_queue[m_name] = {}
+        else:
+            print models_in_queue
+        if 'RUN' in models_in_queue[m_name] and 'complete' not in models_in_queue[m_name]['RUN']:
+            exists = True
+        else:
+            models_in_queue[m_name]['RUN'] = {"approx_q_pos":qsize,
+                    "last_update":datetime.datetime.now()}
+            work_q.put(['RUN',model.get_name(),{"rerun": rerun}])
+        started = 'started' in models_in_queue[m_name]['RUN']
+    task_order, task_updates = process_tasks()
+    return dict(model=model, already_exists=exists, rerun = rerun,
+            complete = model.is_complete() and not rerun,
+            started = started,
             name=mdig.version_string,
             queue_size=qsize,
             task_order=task_order, task_updates = task_updates)
@@ -184,7 +206,7 @@ def index():
             print str(e)
             pass
     env = GRASSInterface.get_g().get_gis_env()
-    task_order, task_updates = process_completed_tasks()
+    task_order, task_updates = process_tasks()
     return dict(name=mdig.version_string, version=mdig.version,
             v_name=mdig.version_name, models=m_list,
             repo_location=mdig.repository.db,
@@ -211,17 +233,23 @@ def show_model(model):
                     i.enabled=True
                     i.update_xml()
                 i_index+=1
-                # TODO this isn't saving the models, instead it's creating a new model
-                # everytime I think
+            dm.save_model()
         else:
             print "unknown post"
         #event_to_remove = request.POST.getall('delEvent')]
         #elif if len(event_to_remove) > 0:
         #    ls.delEvent(
-    task_order, task_updates = process_completed_tasks()
+    active_instances=[]
+    m = dm.get_name()
+    if m in models_in_queue:
+        if 'RUN' in models_in_queue[m]:
+            if 'active' in models_in_queue[m]['RUN']:
+                active_instances = models_in_queue[m]['RUN']['active']
+    task_order, task_updates = process_tasks()
     return dict(model=dm, name=mdig.version_string,
             repo_location=mdig.repository.db,
-            task_order = task_order, task_updates= task_updates)
+            task_order = task_order, task_updates= task_updates,
+            active_instances=active_instances)
 
 @route('/models/:model/instances/:instance',method='GET')
 @route('/models/:model/instances/:instance',method='POST')
@@ -235,10 +263,24 @@ def show_instance(model,instance):
         #to_enable = [int(x) for x in request.POST.getall('enabled')]
         pass
 
-    task_order, task_updates = process_completed_tasks()
+    task_order, task_updates = process_tasks()
     return dict(idx=idx, instance=instance, name=mdig.version_string,
             repo_location=mdig.repository.db,
             task_order=task_order, task_updates = task_updates)
+
+class ml_InstanceListener():
+
+    def __init__(self, results_q):
+        self.results_q = results_q
+        
+    def replicate_complete(self,rep):
+        instance = rep.instance
+        model = instance.experiment
+        percent = len([x for x in instance.replicates if x.complete])/float(model.get_num_replicates())
+        percent = percent * 100.0
+        self.results_q.put(['RUN',model.get_name(),{"active":model.get_instances().index(instance), \
+            "percent_complete":percent}])
+
 
 def mdig_launcher(work_q,results_q):
     running = True
@@ -255,21 +297,31 @@ def mdig_launcher(work_q,results_q):
             if s[0] == "SHUTDOWN": running = False
             elif s[0] == "RUN":
                 #TODO actually launch MDiG actions
-                s[2] = "started"
+                rerun = s[2]["rerun"]
                 m_name = s[1]
                 model_file = mdig.repository.get_models()[m_name]
                 #import pdb;
                 #pdb.Pdb(stdin=open('/dev/stdin', 'r+'), stdout=open('/dev/stdout', 'r+')).set_trace()
                 dm = DispersalModel(model_file)
+                if rerun:
+                    dm.reset_instances()
+                for instance in dm.get_instances():
+                    instance.listeners.append(ml_InstanceListener(results_q))
+                s[2] = {"started": True}
                 results_q.put(s)
                 dm.run()
-                s[2] = "complete"
+                s[2] = {"complete": True}
                 results_q.put(s)
             else:
                 results_q.put(s)
             work_q.task_done()
         except q.Empty:
             pass
+        except Exception, e:
+            import traceback, logging
+            logging.getLogger('mdig.mdiglaunch').error("Unexpected exception in worker process: %s" % str(e))
+            traceback.print_exc()
+
 
 class ResultMonitor(Thread):
     def __init__ (self, result_q):
@@ -286,11 +338,16 @@ class ResultMonitor(Thread):
                 m_action = s[0]
                 m_name = s[1]
                 m_status = s[2]
-                print models_in_queue
-                if m_status == "started":
-                    models_in_queue[m_name][m_action][m_status] = datetime.datetime.now()
-                elif m_status == "complete":
+                if "started" in m_status:
+                    models_in_queue[m_name][m_action]["started"] = datetime.datetime.now()
+                    models_in_queue[m_name][m_action]["active"] = []
+                elif "complete" in m_status:
                     models_in_queue[m_name][m_action]["complete"] = datetime.datetime.now()
+                    models_in_queue[m_name][m_action]["active"] = []
+                elif "active" in m_status:
+                    models_in_queue[m_name][m_action]["active"] = [m_status["active"]]
+                    models_in_queue[m_name][m_action]["percent_complete"] = m_status["percent_complete"]
+                models_in_queue[m_name][m_action]['last_update'] = datetime.datetime.now()
                 print models_in_queue
             except q.Empty:
                 pass

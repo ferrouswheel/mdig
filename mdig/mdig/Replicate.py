@@ -448,10 +448,11 @@ class Replicate:
     def fire_time_completed(self,t):
         for l in self.instance.listeners:
             #pdb.set_trace()
-            ls_filename = l.replicateUpdate(self,t)
+            if "replicate_update" in dir(l):
+                ls_filename = l.replicate_update(self,t)
             
-            if l.__class__ == OutputFormats.RasterOutput and ls_filename[0] is not None:
-                self.add_completed_raster_map(self.current_t, ls_filename[0], ls_filename[1], l.interval)
+                if l.__class__ == OutputFormats.RasterOutput and ls_filename[0] is not None:
+                    self.add_completed_raster_map(self.current_t, ls_filename[0], ls_filename[1], l.interval)
         # set time of last change
         self.update_time_stamp()
     

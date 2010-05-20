@@ -4,12 +4,15 @@
     <title>MDiG - Running {{model.get_name()}}</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <!--<link rel="stylesheet" href="css/style.css" type="text/css" /> -->
+%if not complete:
     <meta http-equiv="refresh" content="5; url=/models/{{model.get_name()}}">
+%end
 %include css
 </head>
 <body>
 %include status_headline task_updates=task_updates, task_order=task_order
 <div class="description">
+%if not complete:
 <h1>Running model {{model.get_name()}} added to queue</h1>
 %if already_exists:
 %   if started:
@@ -24,6 +27,14 @@
 %end
 <p>You will shortly be returned to the model page which will display the active
 model. <a href="/models/{{model.get_name()}}">Or click to go there right now</a>.</p>
+%else:
+<h1>Model {{model.get_name()}} has already been completed.</h1>
+<form action="/models/{{model.get_name()}}/run" method="post">
+<input type="hidden" name="rerun" value="true"/><input
+type="submit" value="Click here to overwrite existing results and run anyway"/>
+</form>
+<p>...or <a href="/models/{{model.get_name()}}">return to the model's page</a>.</p>
+%end
 </div>
 </body>
 </html>

@@ -106,7 +106,6 @@ region {{r_id}}: {{ls.getPhenologyBins(r_id)}}
 %else:
 <input type="checkbox" name="enabled" value="{{i}}"/></td>
 %end
-% i=i+1
     <td>{{instance.r_id}}</td>
     <td> \\
 %if instance.strategy is not None:
@@ -124,13 +123,14 @@ None
 %end
     <td>{{len([x for x in instance.replicates if x.complete])}}/{{model.get_num_replicates()}}</td>
     <td> \\
-%if len(instance.activeReps) > 0:
+%if i in active_instances:
 Yes
 %else:
 No
 %end
 </td>
     </tr>
+% i=i+1
 %end
 </table>
 <input type="submit" value="Update enabled status"/>

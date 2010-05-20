@@ -87,7 +87,7 @@ class PngOutput:
         
         self.listeningTo = []
         
-    def replicateUpdate(self,rep,t):
+    def replicate_update(self,rep,t):
         g = GRASSInterface.get_g()
         
         fn = None
@@ -137,7 +137,7 @@ class RasterOutput:
         
         self.listeningTo = []
         
-    def replicateUpdate(self,rep,t):
+    def replicate_update(self,rep,t):
         g = GRASSInterface.get_g()
         fn = None
 

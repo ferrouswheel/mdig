@@ -179,6 +179,9 @@ class DispersalInstance:
             rep = Replicate(None,self)
             self.replicates.append(rep)
             self._run_replicate(rep)
+            for l in self.listeners:
+                if "replicate_complete" in dir(l):
+                    l.replicate_complete(rep)
 
     def _run_replicate(self, rep):
         """
