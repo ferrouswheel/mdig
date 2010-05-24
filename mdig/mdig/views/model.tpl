@@ -62,14 +62,11 @@ region {{r_id}}: {{ls.getPhenologyBins(r_id)}}
 </div>
 <div class="model-list">
 <h3>Actions</h3>
-<div>
-<ul><li> <strong>Run Model</strong> - 
-<form action="/models/{{model.get_name()}}/run" method="post">
-<input type="checkbox" name="rerun" value="true"/>Rerun complete instances too.<br/>
-<input type="submit" value="Run all"/>
-</form>
-</li>
-</ul>
+<div><form action="/models/{{model.get_name()}}/run" method="post">
+<ul><li> <strong>Run Model</strong> -  <input type="submit" value="Run all"/> </li>
+<!--<input type="checkbox" name="rerun" value="true"/>Rerun complete instances
+too.<br/>-->
+</ul> </form>
 </div>
 <h2>Instances</h2>
 <form action="/models/{{model.get_name()}}" method="post">

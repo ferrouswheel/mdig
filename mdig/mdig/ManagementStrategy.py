@@ -34,8 +34,8 @@ import mdig
 import GRASSInterface 
 import MDiGConfig
 import OutputFormats
-from GrassMap import GrassMap, MapMissingException
-from GRASSInterface import SetRegionException
+from GrassMap import GrassMap
+from GRASSInterface import SetRegionException, MapNotFoundException
 import DispersalModel
 from Event import Event
 
@@ -128,7 +128,7 @@ class ManagementStrategy:
         if self.treatments is None:
             try:
                 self._load_treatments()
-            except MapMissingException, e:
+            except MapNotFoundException, e:
                 raise
         return self.treatments
 

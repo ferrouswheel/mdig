@@ -536,13 +536,16 @@ class ExportAction(Action):
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
-        MDiGConfig.get_config().overwrite_flag = self.options.overwrite_flag
+        c = MDiGConfig.get_config()
+        c.overwrite_flag = self.options.overwrite_flag
         if self.options.output_lifestage is None:
             self.options.output_lifestage = "all"
         if self.options.width is None:
-            self.options.width = "480"
+            self.options.width = c["OUTPUT"]["output_width"]
         if self.options.height is None:
-            self.options.height = "480"
+            self.options.height = c["OUTPUT"]["output_height"]
+        if self.options.background is None:
+            self.options.background = c["OUTPUT"]["background"]
     
     def do_me(self,mdig_model):
         for i in mdig_model.get_instances():
@@ -558,11 +561,16 @@ class ExportAction(Action):
         ls = self.options.output_lifestage
         if ls not in i.experiment.get_lifestage_ids():
             self.log.error("No such lifestage called %s in model." + str(ls))
-            Tsys.exit(mdig.mdig_exit_codes["instance_incomplete"])
+            sys.exit(mdig.mdig_exit_codes["instance_incomplete"])
         all_maps = []
         if not i.is_complete():
             self.log.error("Instance " + repr(i) + " not complete")
             sys.exit(mdig.mdig_exit_codes["instance_incomplete"])
+        # check that background map exists
+        g = GRASSInterface.get_g()
+        if not g.check_map(self.options.background):
+            self.log.error("Couldn't find background map")
+            raise GRASSInterface.MapNotFoundException([self.filename])
         base_fn = os.path.join(i.experiment.base_dir,"output")
         if self.options.reps:
             self.log.info("Creating images for maps of reps: %s" % str(self.options.reps))

@@ -31,6 +31,7 @@ import time
 import pdb
 import string
 import datetime
+import dateutil.parser
 
 import lxml
 
@@ -82,12 +83,13 @@ class DispersalInstance:
         self.replicates = self._load_replicates()
         self.activeReps = []
         
-        self.log.debug("New instance - varkeys: %s vars: %s reps (complete/incomplete/missing): %d/%d/%d" % \
-            (self.var_keys,self.variables, \
-            len([x for x in self.replicates if x.complete]), \
-            len([x for x in self.replicates if not x.complete]), \
-            self.experiment.get_num_replicates()-len(self.replicates)) )
-        self.log.debug("Management strategy for instance is %s" % self.strategy)
+        self.log.debug(str(self))
+        #self.log.debug("Instance - mapset: %s - vars: %s reps (complete/incomplete/missing): %d/%d/%d" % \
+        #    (self.get_mapset(), zip(self.var_keys,self.variables), \
+        #    len([x for x in self.replicates if x.complete]), \
+        #    len([x for x in self.replicates if not x.complete]), \
+        #    self.experiment.get_num_replicates()-len(self.replicates)) )
+        #self.log.debug("Management strategy for instance is %s" % self.strategy)
 
     def _load_replicates(self):
         c = self.experiment.get_completed_permutations()
@@ -404,7 +406,15 @@ class DispersalInstance:
     def get_envelopes_timestamp(self):
         es = self.node.xpath('envelopes')
         if es:
-            return float(es[0].attrib['ts'])
+            # Convert from old format
+            try:
+                ts = float(es[0].attrib['ts'])
+                # convert to datetime
+                es[0].attrib['ts'] = datetime.datetime.fromtimestamp(ts).isoformat()
+            except ValueError, e:
+                pass
+            ###
+            return dateutil.parser.parse(es[0].attrib['ts'])
         return 0
 
     def add_analysis_result(self,ls_id,analysis_cmd):
@@ -541,7 +551,7 @@ class DispersalInstance:
         es = self.node.find('envelopes')
         if es is None:
             es = lxml.etree.SubElement(self.node,'envelopes')
-        es.attrib['ts'] = repr(time.time())
+        es.attrib['ts'] = datetime.datetime.now().isoformat()
             
         ls = es.xpath('lifestage[@id="%s"]' % lifestage_id)
         

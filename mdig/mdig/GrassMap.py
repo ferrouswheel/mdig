@@ -39,6 +39,7 @@ class GrassMap:
         self.xml_node = xml_node
         # Set the filename is one exists
         self.filename = filename
+        self.mapset = None
 
         # Initialise values
         self.map_type=None # type of map: raster or vector
@@ -56,7 +57,7 @@ class GrassMap:
             self.map_type = GRASSInterface.get_g().check_map(self.filename)
             if self.map_type is None:
                 # ... raise an exception if it doesn't
-                raise MapMissingException([self.filename])
+                raise GRASSInterface.MapNotFoundException(self.filename)
         
         if self.xml_map_type in ["map",None]:
             # Only maps specified in xml that are not existing maps
@@ -132,7 +133,8 @@ class GrassMap:
             self.mapset = g.get_mapset()
             self.filename, self.map_type = g.init_map(self, map_replacements)
             self.ready = True
-        return self.filename + "@" + self.mapset
+        if self.mapset: return self.filename + "@" + self.mapset
+        else: return self.filename
     
     def clean_up(self):
         """
@@ -141,8 +143,5 @@ class GrassMap:
         if self.temporary and self.ready:
             GRASSInterface.get_g().destruct_map(self.filename)
 
-class MapMissingException(Exception):
-    def __init__(self,maps):
-        self.missing_maps = maps
 
     

@@ -36,8 +36,7 @@ import mdig
 import GRASSInterface 
 import MDiGConfig
 import OutputFormats
-from GrassMap import MapMissingException
-from GRASSInterface import SetRegionException
+from GRASSInterface import MapNotFoundException, SetRegionException
 import DispersalModel
 
 class Replicate:
@@ -97,7 +96,7 @@ class Replicate:
         for ls_key in ls_keys:
             try:
                 self.get_saved_maps(ls_key)
-            except MapMissingException, e:
+            except MapNotFoundException, e:
                 missing_maps[ls_key]=e.missing_maps
                 complete=False
                 self.log.warning("Maps missing from replicate, marked as " + \
@@ -146,7 +145,7 @@ class Replicate:
                 raise DispersalModel.InvalidXMLException, "More than one maps node"
 
         if missing_maps:
-            raise MapMissingException(missing_maps)
+            raise MapNotFoundException(missing_maps)
     
     def get_saved_maps(self, ls_id):
         """
@@ -155,7 +154,7 @@ class Replicate:
         if self.saved_maps is None:
             try:
                 self._load_saved_maps()
-            except MapMissingException, e:
+            except MapNotFoundException, e:
                 raise
         
         if ls_id in self.saved_maps:
@@ -461,10 +460,18 @@ class Replicate:
         Update the time stamp for when the last map
         was completed.
         """
-        self.node.attrib['ts'] = repr(time.time())
+        self.node.attrib['ts'] = datetime.datetime.now().isoformat()
 
     def get_time_stamp(self):
-        return float(self.node.attrib['ts'])
+        import dateutil.parser
+        # First check for old style timestamp
+        try:
+            ts = float(self.node.attrib['ts'])
+            self.node.attrib['ts'] = datetime.datetime.fromtimestamp(ts).isoformat()
+        except ValueError, e:
+            pass
+        ###
+        return dateutil.parser.parse(self.node.attrib['ts'])
     
     def add_completed_raster_map(self,t,ls,file_name,interval=1):
         mdig_config = MDiGConfig.get_config()

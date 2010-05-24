@@ -117,6 +117,11 @@ class MDiGConfig(ConfigObj):
         'WEB': {
             "host" :"localhost",
             "port" :1444
+        },
+        'OUTPUT': {
+            'background_map': "nz_DEM_jacques",
+            'output_width': 480,
+            'output_height': 640
         }
     }
 

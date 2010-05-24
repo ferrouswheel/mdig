@@ -84,7 +84,9 @@ class ModelRepository:
 
         # remove explicit location and rely on implicit location finding
         dm.remove_location()
-        # write dispersal model to new dir 
+        # write dispersal model to new dir (original copy)
+        dm.save_model(os.path.join(dest_dir,"model_original.xml"))
+        # write dispersal model to new dir (working copy)
         dm.save_model(os.path.join(dest_dir,"model.xml"))
 
         # TODO: check whether referenced maps exist or not...

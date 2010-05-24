@@ -554,7 +554,7 @@
                             </xsd:complexType>
                         </xsd:element>
                     </xsd:sequence>
-                    <xsd:attribute name="ts" type="xsd:float"/>
+                    <xsd:attribute name="ts" type="xsd:string"/>
                 </xsd:complexType>
             </xsd:element>
         </xsd:sequence>
@@ -609,7 +609,7 @@
             </xsd:element>
             
         </xsd:sequence>
-        <xsd:attribute name="ts" type="xsd:float"/>
+        <xsd:attribute name="ts" type="xsd:string"/>
     </xsd:complexType>
     
     <!--<xsd:complexType name="test">

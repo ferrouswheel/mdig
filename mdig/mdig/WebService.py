@@ -65,9 +65,13 @@ def validate_model_name(mname):
     if mname not in models.keys():
         raise ValueError()
     try:
-        dm = DispersalModel(models[mname],setup=False)
+        dm = DispersalModel(models[mname]) #,setup=False)
     except mdig.DispersalModel.ValidationError, e:
         return "Model %s is badly formed" % mname
+    # Hack to get instances to initialise mapsets if they need to
+    # and then save them
+    dm.get_instances()
+    dm.save_model()
     return dm 
 
 @route('/models/',method="POST")
@@ -291,6 +295,7 @@ def mdig_launcher(work_q,results_q):
     g.grass_vars["MAPSET"] = "PERMANENT"
     g.set_gis_env()
     while running:
+        s = None
         try:
             s = work_q.get(timeout=1)
             print s
@@ -321,7 +326,8 @@ def mdig_launcher(work_q,results_q):
             import traceback, logging
             logging.getLogger('mdig.mdiglaunch').error("Unexpected exception in worker process: %s" % str(e))
             traceback.print_exc()
-
+            s[2] = {"error": str(e)}
+            results_q.put(s)
 
 class ResultMonitor(Thread):
     def __init__ (self, result_q):
@@ -347,6 +353,9 @@ class ResultMonitor(Thread):
                 elif "active" in m_status:
                     models_in_queue[m_name][m_action]["active"] = [m_status["active"]]
                     models_in_queue[m_name][m_action]["percent_complete"] = m_status["percent_complete"]
+                elif "error" in m_status:
+                    models_in_queue[m_name][m_action]["active"] = []
+                    models_in_queue[m_name][m_action].update(m_status)
                 models_in_queue[m_name][m_action]['last_update'] = datetime.datetime.now()
                 print models_in_queue
             except q.Empty:

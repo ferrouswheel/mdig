@@ -481,7 +481,7 @@ class GRASSInterface:
         bmap.ready = True
         return name, map_type
     
-    def destruct_map(self,fn,mapset):
+    def destruct_map(self,fn,mapset=None):
         """ Remove a map
         should really only be called from GrassMap
         """

@@ -1268,24 +1268,34 @@ class DispersalModel(object):
         try:
             if os.path.isfile(filename):
                 if self.backup_filename is None:
-                    fn = filename
                     count = 0
-                    # If model filename exists then try and back it up first:
-                    while os.path.isfile(fn):
-                        fn = filename + ".bak"
-                        if count > 0:
-                            fn += repr(count)
+                    fn = filename + "." + repr(count)
+                    # If model filename exists then try rotate the backups
+                    # (keeps 4 backups by default, but original is preserved 
+                    # from the initial add to repository) 
+                    while os.path.isfile(fn) and count < 5:
+                        # count files
                         count += 1
-                    self.backup_filename = fn
-                shutil.copyfile(filename, self.backup_filename)
-                os.remove(filename)
+                        fn = filename + "." + repr(count)
+                    count -= 1
+                    if count == 4:
+                        fn = filename + "." + repr(count)
+                        os.remove(fn)
+                    while count > 0:
+                        # rotate files
+                        fn = filename + "." + repr(count)
+                        os.remove(fn)
+                        count -= 1
+                        shutil.move(filename + "." + repr(count), fn)
+                    self.backup_filename = filename + ".0"
+                shutil.move(filename, self.backup_filename)
         
             fo = open(filename,'w')
 #print >>fo, self._indent_xml(self.xml_model)
             print >>fo, lxml.etree.tostring(self.xml_model,pretty_print=True)
             fo.close()
         except OSError, e:
-            self.log.error("Could save updated version of model file")
+            self.log.error("Couldn't save updated version of model file")
             self.log.error(e)
             
     def __repr__(self):

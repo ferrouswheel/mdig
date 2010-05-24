@@ -62,8 +62,9 @@ class Lifestage:
         # Load name
         if "name" in self.xml_node.attrib.keys():
             self.name = self.xml_node.attrib["name"]
+            self.log = logging.getLogger("mdig.lifestage."+self.name)
         else:
-            self.log.warning("Can't find name of lifestage")
+            raise Exception("Can't find name of lifestage")
 
         # Load whether population based or not
         if "populationBased" in self.xml_node.attrib.keys():
@@ -157,7 +158,7 @@ class Lifestage:
                         else:
                             current_bins[bin_range]=None
         # end for nodes in p_nodes
-        self.log.debug("Phenology bins are: %s" % repr(self.bins))
+        self.log.debug("Phenology bins are: %s" % (repr(self.bins)))
         
     def getPhenologyBins(self,region_id):
         if region_id in self.bins.keys():
