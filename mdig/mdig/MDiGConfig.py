@@ -193,11 +193,12 @@ class MDiGConfig(ConfigObj):
         """ This function does a variety of things to try to gracefully
         update config files.
         """
+        import mdig
         if "version" not in self:
             # before we started tracking the config file version
             if "ansi" in self:
-                self['LOGGING'] = self["ansi"]
-                del self['LOGGING']
+                self['LOGGING']["ansi"] = self["ansi"]
+                del self['ansi']
             if self.has_key("repository"):
                 # repository was an old way of storing models and output, now we keep them as
                 # part of GRASS mapsets. This copies to the grassdb
