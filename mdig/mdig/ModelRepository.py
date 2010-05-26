@@ -16,15 +16,13 @@ class RepositoryException(Exception):
 
 class ModelRepository:
 
-    def __init__(self,grassdb = None):
+    def __init__(self):
         self.log = logging.getLogger("mdig.repos")
         c = MDiGConfig.get_config()
         # Model repository is now a part of a GRASS db directory
-        if grassdb:
-            self.db = grassdb 
-            g = GRASSInterface.get_g()
-            g.grass_vars["GISDBASE"] = self.db
-            g.set_gis_env()
+        g = GRASSInterface.get_g()
+        if g.in_grass_shell:
+            self.db = g.grass_vars["GISDBASE"]
         else:
             self.db = c["GRASS"]["GISDBASE"]
         self.log.info("Using GRASS DB location " + self.db)

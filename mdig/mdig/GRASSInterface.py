@@ -109,6 +109,8 @@ class GRASSInterface:
             "GRASS_TRUECOLOR",
             "GRASS_TRANSPARENT",
             "GRASS_PNG_AUTO_WRITE" ]
+    # subset of grass vars that indicate we are in GRASS
+    grass_indicators = [ "GISRC", "GISBASE", "GRASS_GNUPLOT", "GRASS_HTML_BROWSER" ]
     old_region="mdig_temp_region"
     
     def __init__(self):
@@ -132,14 +134,9 @@ class GRASSInterface:
         if not self.check_environment():
             self.log.debug("GRASS environment not detected, attempting setup of GRASS from config file")
             self.init_environment()
-        else:
-            self.in_grass_shell = True
         
         self.backup_region()
 
-        self.old_mapset = self.grass_vars['MAPSET']
-        self.old_location = self.grass_vars['LOCATION_NAME']
-        self.old_gisdbase = self.grass_vars['GISDBASE']
 
     def backup_region(self):
         self.log.log(logging.INFO, "Saving existing GRASS region")
@@ -159,11 +156,8 @@ class GRASSInterface:
     
     def check_environment(self):
         okay=True
-        first_run=True
-        for var in self.grass_var_names:
-            # If this is NOT the first time the grass environment was checked
-            if var in self.grass_vars: first_run=False
-                
+        # Check the indicators for whether we're in a GRASS shell already
+        for var in self.grass_indicators:
             if os.environ.has_key(var):
                 # if the env variable exists
                 self.grass_vars[var]=os.environ[var]
@@ -171,13 +165,23 @@ class GRASSInterface:
                 # else make it None
                 self.grass_vars[var]=None
                 okay=False
+        for var in self.grass_var_names:
+            if var not in self.grass_vars:
+                if os.environ.has_key(var):
+                    self.grass_vars[var]=os.environ[var]
+                else:
+                    # else make it None
+                    self.grass_vars[var]=None
         
-        if not okay:
+        if okay:
+            self.in_grass_shell = True
+            self.get_gis_env()
+            self.old_mapset = self.grass_vars['MAPSET']
+            self.old_location = self.grass_vars['LOCATION_NAME']
+            self.old_gisdbase = self.grass_vars['GISDBASE']
+        else:
             self.log.log(logging.INFO,"GRASS Environment incomplete, missing: %s" \
                     % str([x for x in self.grass_vars if not self.grass_vars[x]]))
-        elif first_run:
-            self.log.log(logging.INFO,"GRASS Environment okay: %s", self.grass_vars)
-            
         return okay
 
     def insert_environ_path(self, var, path):
@@ -222,6 +226,10 @@ class GRASSInterface:
             raise EnvironmentException()
         self.set_gis_env()
         self.log.debug("GRASS Environment is now: %s", self.grass_vars)
+
+        self.old_mapset = self.grass_vars['MAPSET']
+        self.old_location = self.grass_vars['LOCATION_NAME']
+        self.old_gisdbase = self.grass_vars['GISDBASE']
 
     def init_pid_specific_files(self):
         #export GIS_LOCK=$$
@@ -274,6 +282,9 @@ class GRASSInterface:
         for line in pre_range_data:
             fields = line.strip().split('=')
             ret[fields[0]] = fields[1]
+        var_list = [ "GISDBASE", "LOCATION_NAME", "MAPSET" ]
+        for v in var_list:
+            self.grass_vars[v] = ret[v]
         return ret
     
     def clear_monitor(self):
@@ -526,19 +537,15 @@ class GRASSInterface:
         self.run_command('g.copy rast=%s,%s' % (src, dest), logging.DEBUG)
     
     def get_current_resolution(self):
-        if self.check_environment():
-            output=Popen("g.region -p", shell=True, stdout=subprocess.PIPE).communicate()[0]
-            res=re.search("nsres:\s+(\d+)\newres:\s+(\d+)",output)
-            if res is None:
-                # @todo replace with exception
-                self.log.error("Failed to get resolution, perhaps this is a latlong location? Output was:\n%s" % output)
-                sys.exit(1)
-            
-            # @todo return tuple of (nsres, ewres)
-            return (float(res.groups()[0]) + float(res.groups()[1])) / 2
-        else:
-            self.log.warning("Using default resolution (1)")
-            return 1
+        output=Popen("g.region -p", shell=True, stdout=subprocess.PIPE).communicate()[0]
+        res=re.search("nsres:\s+(\d+)\newres:\s+(\d+)",output)
+        if res is None:
+            # @todo replace with exception
+            self.log.error("Failed to get resolution, perhaps this is a latlong location? Output was:\n%s" % output)
+            sys.exit(1)
+        
+        # @todo return tuple of (nsres, ewres)
+        return (float(res.groups()[0]) + float(res.groups()[1])) / 2
 
     def raster_value_freq(self,mapname):
         cmd = "r.stats --q -c input=%s" % mapname

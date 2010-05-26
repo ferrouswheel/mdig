@@ -37,6 +37,7 @@ import lxml
 
 from Replicate import Replicate
 from AnalysisCommand import AnalysisCommand
+import OutputFormats
 import GRASSInterface
 import MDiGConfig
 
@@ -262,6 +263,22 @@ class DispersalInstance:
                 # add the analysis result to xml filename
                 # under instance...
                 self.add_analysis_result(ls_id, ac) #TODO(cmd_string, tmp_fn))
+
+    def get_occ_envelope_img_filenames(self, ls="all", gif=False):
+        output_dir = os.path.join(self.experiment.base_dir,"output")
+        fn = OutputFormats.create_filename(instance)
+        if gif:
+            result = [fn + "_ls_" + ls + "_anim.gif"]
+        else: 
+            result = []
+            env = self.get_occupancy_envelopes()
+            # If there are no occupancy envelopes return None
+            if env is None: return None
+            times = env.keys()
+            times.sort(key=lambda x: float(x))
+            for t in times:
+                result.append(output_dir + fn + "_ls_" + ls + "_" + str(t) + '.png')
+        return result
         
     def null_bitmask(self, generate=True):
         for r in self.replicates:
