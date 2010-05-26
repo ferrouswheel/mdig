@@ -389,7 +389,7 @@ class GRASSInterface:
             if os.environ.has_key(i):
                 self.grass_vars[i] = os.environ[i]
 
-    def close_output(self):
+    def close_output(self,dest_dir=None):
         # copy self.tempOutputFile to pid_disp_filename.png (check
         # self.displays mapping between filename and temp display
         # filename) and to filename 
@@ -397,12 +397,18 @@ class GRASSInterface:
         # copy from tempfilanem to filename
         if self.filename and self.filename.find(".png") != -1 and not self.outputIsTemporary:
             c = MDiGConfig.get_config()
-            # TODO: make a temp directory in the home dir for these sorts of things
-            if MDiGConfig.home_dir:
-                dest_dir = os.path.join(MDiGConfig.home_dir)
+            if not dest_dir and os.path.isdir(os.path.dirname(self.filename)):
+                # use path in filename
+                dest_dir = os.path.dirname(self.filename)
+                file_name = os.path.basename(self.filename)
             else:
-                dest_dir = "." #c.output_dir
-            shutil.copy(self.tempOutputFile, os.path.join(dest_dir,self.filename))
+                # use current dir if none specified
+                if not dest_dir: dest_dir = "."
+                # check if dir in filename exists relative to .
+                if not os.path.isdir(os.path.dirname(os.path.join(dest_dir,self.filename))):
+                    raise OSError("Can't find output dir")
+                file_name = self.filename
+            shutil.copy(self.tempOutputFile, os.path.join(dest_dir,file_name))
 
         for d_name in self.displays:
             d = self.displays[d_name]

@@ -595,7 +595,7 @@ class ExportAction(Action):
 
                 for t in saved_maps:
                     m = saved_maps[t]
-                    map_list.append(self.create_frame(m,rep_fn + "_" +
+                    map_list.append(self.create_frame(i.experiment.base_dir, m,rep_fn + "_" +
                         str(t),model_name, t, ls, the_range))
                 if self.options.output_gif:
                     self.create_gif(map_list,rep_fn)
@@ -613,7 +613,7 @@ class ExportAction(Action):
             map_list = []
             for t in env[ls]:
                 m = env[ls][t]
-                map_list.append(self.create_frame(m,base_fn + "_" + str(t),model_name,
+                map_list.append(self.create_frame(i.experiment.base_dir, m,base_fn + "_" + str(t),model_name,
                         t, ls))
             if self.options.output_gif:
                 self.create_gif(map_list,base_fn)
@@ -634,7 +634,7 @@ class ExportAction(Action):
             self.log.info("Convert output:" + output)
         return gif_fn
 
-    def create_frame(self, map_name, output_name, model_name, year, ls, the_range = None):
+    def create_frame(self, dest_dir, map_name, output_name, model_name, year, ls, the_range = None):
         g = GRASSInterface.get_g()
         g.set_output(filename = output_name + ".png", \
                 width=self.options.width, height=self.options.height, display=None)
@@ -656,6 +656,8 @@ class ExportAction(Action):
             g.run_command("d.legend -s " + map_name + " at=5,50,85,90")
         g.run_command("d.text at=2,90 size=3 text=" + model_name)
         g.run_command("d.text text=" + year + " at=2,93")
+        # Save frame to model's output dir.
+        dest_dir = os.path.join(dest_dir,"output")
         g.close_output()
         return output_name + ".png"
     
