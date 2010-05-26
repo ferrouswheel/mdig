@@ -113,7 +113,7 @@ def process_tasks():
                 if m_name not in updates: updates[m_name] = {}
                 updates[m_name][task_name] = t
                 time_index[(m_name,task_name)]=t['last_update']
-            elif t['last_update'] > last_notice:
+            elif t['complete'] > last_notice:
                 # deal with completion events which should only display once
                 if m_name not in updates: updates[m_name] = {}
                 updates[m_name][task_name] = t
@@ -263,14 +263,52 @@ def show_instance(model,instance):
     dm=model
     idx = int(instance)
     instance = dm.get_instances()[idx]
+    envelope = None
+    error = None
+    m_name = dm.get_name()
     if request.method=="POST":
-        #to_enable = [int(x) for x in request.POST.getall('enabled')]
+        if "envelope" not in request.POST:
+            # we only know about post request to create an envelope at the
+            # moment
+            print "poo"
+            pass
+        # submit a job to generate the occupancy envelope
+        elif dm.is_complete():
+            if m_name not in models_in_queue:
+                models_in_queue[m_name] = {}
+            else:
+                print models_in_queue
+            if 'OCCUPANCY' in models_in_queue[m_name] and \
+                    'complete' not in models_in_queue[m_name]['OCCUPANCY']:
+                exists = True
+            else:
+                qsize=work_q.qsize()
+                models_in_queue[m_name]['OCCUPANCY'] = {"approx_q_pos":qsize,
+                        "last_update":datetime.datetime.now()}
+                work_q.put(['OCCUPANCY',dm.get_name(),idx])
+            started = 'started' in models_in_queue[m_name]['OCCUPANCY']
+        else:
+            # if instance isn't complete, then we can't create an
+            # occupancy envelope
+            error="The model isn't complete, please run the model first"
+    else:
+        # if there is an envelope generated then display it
         pass
 
     task_order, task_updates = process_tasks()
     return dict(idx=idx, instance=instance, name=mdig.version_string,
-            repo_location=mdig.repository.db,
-            task_order=task_order, task_updates = task_updates)
+            envelope_gif = envelope, repo_location=mdig.repository.db,
+            task_order=task_order, task_updates = task_updates, error=error)
+
+from bottle import send_file
+
+@route('/models/:model/instances/:instance/envelope.gif')
+@validate(instance=int, model=validate_model_name)
+def occ_envelope(model, instance):
+    dm=model
+    idx = int(instance)
+    instance = dm.get_instances()[idx]
+    send_file(output,root="dir")
 
 class ml_InstanceListener():
 
@@ -315,6 +353,17 @@ def mdig_launcher(work_q,results_q):
                 s[2] = {"started": True}
                 results_q.put(s)
                 dm.run()
+                s[2] = {"complete": True}
+                results_q.put(s)
+            elif s[0] == "OCCUPANCY":
+                m_name = s[1]
+                model_file = mdig.repository.get_models()[m_name]
+                dm = DispersalModel(model_file)
+                instance = dm.get_instances()[s[2]]
+                s[2] = {"started": True}
+                results_q.put(s)
+                instance.update_occupancy_envelope()
+                #TODO also convert occupancy envelopes into 
                 s[2] = {"complete": True}
                 results_q.put(s)
             else:

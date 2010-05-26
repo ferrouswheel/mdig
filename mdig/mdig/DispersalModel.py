@@ -809,7 +809,7 @@ class DispersalModel(object):
         instances = self.get_instances()
         
         if ls is None:
-            ls = self.get_lifestage_ids().keys()
+            ls = self.get_lifestage_ids()
         
         for i in [x for x in instances if x.enabled]:
             self.log.debug( "Updating prob. envelope for instance %s" % repr(i) )

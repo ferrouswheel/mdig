@@ -399,7 +399,8 @@ class DispersalInstance:
 
     def are_envelopes_newer_than_reps(self):
         for i in self.replicates:
-            if i.get_time_stamp() > self.get_envelopes_timestamp():
+            e_timestamp = self.get_envelopes_timestamp()
+            if e_timestamp and i.get_time_stamp() > e_timestamp:
                 return False
         return True
 
@@ -415,7 +416,7 @@ class DispersalInstance:
                 pass
             ###
             return dateutil.parser.parse(es[0].attrib['ts'])
-        return 0
+        return None
 
     def add_analysis_result(self,ls_id,analysis_cmd):
         """
@@ -497,12 +498,18 @@ class DispersalInstance:
             g.change_mapset(self.get_mapset(), self.experiment.infer_location())
             g.set_region(current_region)
         except GRASSInterface.SetRegionException, e:
-            pdb.set_trace()
-            return
+            raise e
     
-    def update_occupancy_envelope(self, ls, start, end, force=False):
+    def update_occupancy_envelope(self, ls = None, start = None, end = None, force=False):
         # Set the region in case it hasn't been yet
         self.set_region()
+
+        if ls == None:
+            ls = self.experiment.get_lifestage_ids()
+        if start == None:
+            start = self.experiment.get_period()[0]
+        if end == None:
+            start = self.experiment.get_period()[1]
                 
         self.log.debug("Checking whether envelopes are fresh...")
         missing_envelopes = self.are_envelopes_fresh(ls, start, end,

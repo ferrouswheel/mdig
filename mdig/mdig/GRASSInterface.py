@@ -701,6 +701,7 @@ class GRASSInterface:
                 self.grass_vars["MAPSET"] = mapset_name
                 self.set_gis_env()
         self.update_grass_vars()
+        self.log.debug("Change to mapset %s" % (mapset_name))
         return True
 
     def create_mdig_subdir(self,mapset):
@@ -773,7 +774,7 @@ class GRASSInterface:
             # We have to replace population number or population age with
             # a one, since we are interested in the percentage of occupancy.
             reclass_to_occupancy_maps = []
-            for i in range(index,index+max_maps):
+            for i in range(index,index+min(num_maps,max_maps)):
                 reclass_map = self.generate_map_name();
                 # check the map name isn't already being used
                 while reclass_map in reclass_to_occupancy_maps:

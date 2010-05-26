@@ -44,7 +44,7 @@ from mdig import GRASSInterface
 from mdig import DispersalModel
 from mdig import Displayer
 
-def usage():
+def usage(db):
     usage_line = mdig.version_string + "\n"
     usage_line += "Usage: mdig.py <action> [options] [model_name|model.xml]"
     
@@ -68,7 +68,7 @@ def usage():
 model_name is the name of a model within the repository.
 model.xml is the file containing the simulation details.
 """
-    print "MDiG repository @ " + mdig.repository.db
+    print "MDiG repository @ " + db
 
 def process_options(argv):
     global logger
@@ -92,7 +92,7 @@ def process_options(argv):
             action_keyword != "-h" and \
             action_keyword != "help":
             print "Unknown action %s" % mdig_config.action_keyword
-        usage()
+        usage(mdig_config["GRASS"]["GISDBASE"])
         sys.exit(mdig.mdig_exit_codes["ok"])
     return the_action
 

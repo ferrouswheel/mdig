@@ -14,12 +14,20 @@
 <div style="color:#ef0022"><strong>DISABLED</strong></div>
 %end
 <div class="region"><strong>Region:</strong> {{instance.r_id}}</div>
-<div class="strategy"><strong>Strategy:</strong> \\
 %if instance.strategy is not None:
-{{instance.strategy}} </div>
-%else:
-None </div>
+<div class="strategy"><strong>Strategy:</strong> {{instance.strategy}} </div>
 %end
+<div class="envelopes">
+<h2>Occupancy Envelope</h2>
+%if envelope_gif: # show animation!
+<img src="envelope.gif"/>
+% else:
+<form action="" method="post">
+<input type="hidden" name="envelope" value="true"/></td>
+<p>No occupancy envelope animation has been generated. <input type="submit"
+value="Generate envelope"/></form></p>
+%end
+</div>
 %if instance.var_keys is not None:
 <div class="variables">
 <strong>Variables:</strong><ul>

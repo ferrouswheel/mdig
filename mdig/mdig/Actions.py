@@ -545,7 +545,7 @@ class ExportAction(Action):
         if self.options.height is None:
             self.options.height = c["OUTPUT"]["output_height"]
         if self.options.background is None:
-            self.options.background = c["OUTPUT"]["background"]
+            self.options.background = c["OUTPUT"]["background_map"]
     
     def do_me(self,mdig_model):
         for i in mdig_model.get_instances():
@@ -560,7 +560,7 @@ class ExportAction(Action):
             sys.exit(0)
         ls = self.options.output_lifestage
         if ls not in i.experiment.get_lifestage_ids():
-            self.log.error("No such lifestage called %s in model." + str(ls))
+            self.log.error("No such lifestage called %s in model." % str(ls))
             sys.exit(mdig.mdig_exit_codes["instance_incomplete"])
         all_maps = []
         if not i.is_complete():
@@ -569,8 +569,9 @@ class ExportAction(Action):
         # check that background map exists
         g = GRASSInterface.get_g()
         if not g.check_map(self.options.background):
-            self.log.error("Couldn't find background map")
-            raise GRASSInterface.MapNotFoundException([self.filename])
+            self.log.error("Couldn't find background map %s" % self.options.background)
+            self.options.background = None
+            #raise GRASSInterface.MapNotFoundException(self.options.background)
         base_fn = os.path.join(i.experiment.base_dir,"output")
         if self.options.reps:
             self.log.info("Creating images for maps of reps: %s" % str(self.options.reps))
@@ -612,7 +613,7 @@ class ExportAction(Action):
             map_list = []
             for t in env[ls]:
                 m = env[ls][t]
-                map_list.append(self.create_frame(m,base_fn + "_" + repr(t),model_name,
+                map_list.append(self.create_frame(m,base_fn + "_" + str(t),model_name,
                         t, ls))
             if self.options.output_gif:
                 self.create_gif(map_list,base_fn)
