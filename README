@@ -17,11 +17,11 @@ GIS requirements:
 
     http://trac.osgeo.org/gdal/wiki/DownloadingGdalBinaries
 
-MDiG controller requirements. The following python packages (with Ubuntu
+MDiG controller requirements. The following packages (with Ubuntu
 package name in brackets) are needed:
 
-* configobj (python-configobj)
-* lxml (python-lxml)
+* configobj python library (python-configobj)
+* lxml python library (python-lxml)
 * ImageMagick's convert utility (imagemagick)
 
 For grass modules:

@@ -597,7 +597,9 @@ class ExportAction(Action):
                 self.log.info("Normalising colours")
                 the_range = GRASSInterface.get_g().normalise_map_colors(saved_maps.values())
 
-                for t in saved_maps:
+                times = saved_maps.keys()
+                times.sort(key=lambda x: float(x))
+                for t in times:
                     m = saved_maps[t]
                     map_list.append(self.create_frame(i.experiment.base_dir, m,rep_fn + "_" +
                         str(t),model_name, t, ls, the_range))
@@ -615,7 +617,9 @@ class ExportAction(Action):
                 self.log.error("No occupancy envelopes available.")
                 sys.exit(mdig.mdig_exit_codes["missing_envelopes"])
             map_list = []
-            for t in env[ls]:
+            times = env[ls].keys()
+            times.sort(key=lambda x: float(x))
+            for t in times:
                 m = env[ls][t]
                 map_list.append(self.create_frame(i.experiment.base_dir, m,base_fn + "_" + str(t),model_name,
                         t, ls))
@@ -631,7 +635,7 @@ class ExportAction(Action):
         gif_fn = None
         from subprocess import Popen, PIPE
         gif_fn = fn + "_anim.gif"
-        maps.sort()
+        self.log.info("Creating animated gif with ImageMagick's convert utility.")
         output = Popen("convert -delay 100 " + " ".join(maps)
             + " " + gif_fn, shell=True, stdout=PIPE).communicate()[0]
         if len(output) > 0:

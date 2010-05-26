@@ -20,7 +20,7 @@
 <div class="envelopes">
 <h2>Occupancy Envelope</h2>
 %if envelope_gif: # show animation!
-<img src="envelope.gif"/>
+<img src="{{idx}}/envelope.gif"/>
 % else:
 <form action="" method="post">
 <input type="hidden" name="envelope" value="true"/></td>

@@ -295,12 +295,14 @@ def show_instance(model,instance):
         # if there is an envelope generated then display it
         pass
 
+    envelope = 1
     task_order, task_updates = process_tasks()
     return dict(idx=idx, instance=instance, name=mdig.version_string,
             envelope_gif = envelope, repo_location=mdig.repository.db,
             task_order=task_order, task_updates = task_updates, error=error)
 
 from bottle import send_file
+from mdig import OutputFormats
 
 @route('/models/:model/instances/:instance/envelope.gif')
 @validate(instance=int, model=validate_model_name)
@@ -308,7 +310,11 @@ def occ_envelope(model, instance):
     dm=model
     idx = int(instance)
     instance = dm.get_instances()[idx]
-    send_file(output,root="dir")
+    output_dir = os.path.join(dm.base_dir,"output")
+    fn = OutputFormats.create_filename(instance) + "_anim.gif"
+    print fn
+    print output_dir
+    send_file(fn,root=output_dir)
 
 class ml_InstanceListener():
 
