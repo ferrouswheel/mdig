@@ -579,9 +579,13 @@ class ExportAction(Action):
             rs = i.replicates
             for r_index in self.options.reps:
                 self.log.info("Creating images for maps of rep %d" % r_index)
-                if r_index < 0 or r_index > len(rs):
+                if len(rs) == 0:
+                    self.log.error("No replicates. Have you run the model first?")
+                if r_index < 0 or r_index >= len(rs):
                     self.log.error("Invalid replicate index." +
-                            " Have you 'run' the model first?")
+                            " Have you 'run' the model first or are you "
+                            "specifying an invalid replicate index?")
+                    self.log.error("Valid replicate range is 0-%d." % (len(rs)-1))
                     sys.exit(mdig.mdig_exit_codes["invalid_replicate_index"])
                 r = rs[r_index]
                 rep_fn = os.path.join(base_fn, OutputFormats.create_filename(r))

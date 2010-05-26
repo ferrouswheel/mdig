@@ -305,7 +305,7 @@ class GRASSInterface:
             cmd = "r.info -r map=%s" % m
             p=Popen(cmd, shell=True, stdout=subprocess.PIPE)
             output=p.communicate()[0]
-            res=re.findall("(\w+)=([\d.]+)\n",output)
+            res=re.findall("(\w+)=([\d.]+(e-?[\d]+)?)\n",output)
             if len(res) == 0 or res[0][0] != 'min' or res[1][0] != 'max':
                 self.log.error("Failed to get raster range for %s. Output was:\n%s" % (m,output))
                 sys.exit(1)
