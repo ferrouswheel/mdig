@@ -19,11 +19,17 @@
 %end
 <div class="envelopes">
 <h2>Occupancy Envelope</h2>
-%if envelope_gif: # show animation!
-<img src="{{idx}}/envelope.gif"/>
+%for ls_id, gif_exists in envelopes_present:
+<h3> Lifestage "{{ls_id}}" </h3>
+%if gif_exists: # show animation!
+<img src="{{idx}}/{{ls_id}}/envelope.gif"/>
+<form action="" method="post">
+<input type="hidden" name="envelope" value="{{ls_id}}"/></td>
+<p>If you believe this image doesn't reflect the latest simulations: <input type="submit"
+value="Regenerate envelope"/></form></p>
 % else:
 <form action="" method="post">
-<input type="hidden" name="envelope" value="true"/></td>
+<input type="hidden" name="envelope" value="{{ls_id}}"/></td>
 <p>No occupancy envelope animation has been generated. <input type="submit"
 value="Generate envelope"/></form></p>
 %end

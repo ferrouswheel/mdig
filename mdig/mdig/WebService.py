@@ -12,6 +12,7 @@ import re
 import tempfile
 import shutil
 import datetime
+import logging
 
 import pdb
 
@@ -286,7 +287,7 @@ def show_instance(model,instance):
                 models_in_queue[m_name]['OCCUPANCY'] = {"approx_q_pos":qsize,
                         "last_update":datetime.datetime.now()}
                 work_q.put(['OCCUPANCY',dm.get_name(),idx])
-            started = 'started' in models_in_queue[m_name]['OCCUPANCY']
+            #started = 'started' in models_in_queue[m_name]['OCCUPANCY']
         else:
             # if instance isn't complete, then we can't create an
             # occupancy envelope
@@ -295,28 +296,33 @@ def show_instance(model,instance):
         # if there is an envelope generated then display it
         pass
 
-    envelope = 1
+    envelopes_present=[]
+    for ls_id in instance.experiment.get_lifestage_ids():
+        if os.path.isfile(instance.get_occ_envelope_img_filenames(ls=ls_id,gif=True)):
+            envelopes_present.append((ls_id, True))
+        else:
+            envelopes_present.append((ls_id, False))
     task_order, task_updates = process_tasks()
     return dict(idx=idx, instance=instance, name=mdig.version_string,
-            envelope_gif = envelope, repo_location=mdig.repository.db,
+            envelopes_present = envelopes_present, repo_location=mdig.repository.db,
             task_order=task_order, task_updates = task_updates, error=error)
 
 from bottle import send_file
 from mdig import OutputFormats
 
-@route('/models/:model/instances/:instance/envelope.gif')
+@route('/models/:model/instances/:instance/:ls_id/envelope.gif')
 @validate(instance=int, model=validate_model_name)
-def occ_envelope(model, instance):
+def occ_envelope(model, instance, ls_id):
     dm=model
     idx = int(instance)
     instance = dm.get_instances()[idx]
-    output_dir = os.path.join(dm.base_dir,"output")
-    fn = OutputFormats.create_filename(instance) + "_anim.gif"
+    # do per lifestage!
+    fn = instance.get_occ_envelope_img_filenames(ls=ls_id, gif=True)
     print fn
-    print output_dir
-    send_file(fn,root=output_dir)
+    root_dir = os.path.dirname(fn)
+    send_file(os.path.basename(fn),root=root_dir)
 
-class ml_InstanceListener():
+class Worker_InstanceListener():
 
     def __init__(self, results_q):
         self.results_q = results_q
@@ -326,63 +332,103 @@ class ml_InstanceListener():
         model = instance.experiment
         percent = len([x for x in instance.replicates if x.complete])/float(model.get_num_replicates())
         percent = percent * 100.0
-        self.results_q.put(['RUN',model.get_name(),{"active":model.get_instances().index(instance), \
-            "percent_complete":percent}])
+        msg = ['RUN',model.get_name(), {
+                    "active": model.get_instances().index(instance),
+                    "percent_complete":percent} ]
+        self.results_q.put(msg)
 
+class MDiGWorker():
 
-def mdig_launcher(work_q,results_q):
-    running = True
+    def __init__(self, work_q, results_q):
+        self.work_q = work_q
+        self.results_q = results_q
+        self.running = True
+        self.log = logging.getLogger('mdig.worker')
+
+    def run_model(self, m_name, rerun=False):
+        model_file = mdig.repository.get_models()[m_name]
+        dm = DispersalModel(model_file)
+        if rerun:
+            dm.reset_instances()
+        for instance in dm.get_instances():
+            instance.listeners.append(Worker_InstanceListener(self.results_q))
+        msg = [action,m_name,{"started": True}]
+        self.results_q.put(msg)
+        dm.run()
+        msg = [action,m_name,{"complete": True}]
+        self.results_q.put(msg)
+
+    def create_occupancy(self, m_name, instance=None, ls=None):
+        # TODO generate maps/envelopes/images for all lifestages
+        action = action
+        m_name = s[1]
+        model_file = mdig.repository.get_models()[m_name]
+        dm = DispersalModel(model_file)
+        instance = dm.get_instances()[s[2]]
+        s = [action,m_name,{"started": True}]
+        self.results_q.put(s)
+        self.log.debug("Checking/creating envelopes")
+        s = [action,m_name,{"status": "Creating occupancy envelopes"}]
+        self.results_q.put(s)
+        #instance.update_occupancy_envelope()
+        s = [action,m_name,{"percent_complete": 50}]
+        self.results_q.put(s)
+        # also convert occupancy envelopes into images
+        # setup ExportAction
+        from Actions import ExportAction
+        ea=ExportAction()
+        ea.parse_options([])
+        ea.options.output_gif = True
+        self.log.debug("Generating images")
+        s = [action,m_name,{"status": "Generating images"}]
+        self.results_q.put(s)
+        ea.do_instance(instance)
+        s = [action,m_name,{"complete": True}]
+        self.results_q.put(s)
+
+    def run(self):
+        # NOTE: To add a pdb statement to this process you need to use:
+        #import pdb;
+        #pdb.Pdb(stdin=open('/dev/stdin', 'r+'), stdout=open('/dev/stdout', 'r+')).set_trace()
+        while self.running:
+            s = None
+            try:
+                s = self.work_q.get(timeout=1)
+                action = s[0] # the action to perform
+                m_name = s[1] # the model it applies to
+                if action == "SHUTDOWN":
+                    running = False
+                elif action == "RUN":
+                    rerun = s[2]["rerun"]
+                    self.run(m_name, rerun=rerun)
+                elif action == "OCCUPANCY":
+                    instance_idx = s[2]["instance"]
+                    ls_id = None
+                    if "ls" in s[2]: ls_id = s[2]["ls"]
+                    self.create_occupancy(m_name,instance_idx,ls_id)
+                else:
+                    self.log.error("Unknown task: %s" % str(s))
+                self.work_q.task_done()
+            except q.Empty:
+                pass
+            except Exception, e:
+                import traceback
+                log.error("Unexpected exception in worker process: %s" % str(e))
+                traceback.print_exc()
+                # Send error notice back to web interface
+                s = [s[0],s[1],{"error": str(e)}]
+                self.results_q.put(s)
+
+def mdig_worker_start(work_q,results_q):
     # Have to replace some of the environment variables, otherwise they get
-    # remembered and recreating GRASSInterface is no use!
+    # remembered and will confuse original Web server process
     g = GRASSInterface.get_g()
     g.init_pid_specific_files()
     g.grass_vars["MAPSET"] = "PERMANENT"
     g.set_gis_env()
-    while running:
-        s = None
-        try:
-            s = work_q.get(timeout=1)
-            print s
-            if s[0] == "SHUTDOWN": running = False
-            elif s[0] == "RUN":
-                #TODO actually launch MDiG actions
-                rerun = s[2]["rerun"]
-                m_name = s[1]
-                model_file = mdig.repository.get_models()[m_name]
-                #import pdb;
-                #pdb.Pdb(stdin=open('/dev/stdin', 'r+'), stdout=open('/dev/stdout', 'r+')).set_trace()
-                dm = DispersalModel(model_file)
-                if rerun:
-                    dm.reset_instances()
-                for instance in dm.get_instances():
-                    instance.listeners.append(ml_InstanceListener(results_q))
-                s[2] = {"started": True}
-                results_q.put(s)
-                dm.run()
-                s[2] = {"complete": True}
-                results_q.put(s)
-            elif s[0] == "OCCUPANCY":
-                m_name = s[1]
-                model_file = mdig.repository.get_models()[m_name]
-                dm = DispersalModel(model_file)
-                instance = dm.get_instances()[s[2]]
-                s[2] = {"started": True}
-                results_q.put(s)
-                instance.update_occupancy_envelope()
-                #TODO also convert occupancy envelopes into 
-                s[2] = {"complete": True}
-                results_q.put(s)
-            else:
-                results_q.put(s)
-            work_q.task_done()
-        except q.Empty:
-            pass
-        except Exception, e:
-            import traceback, logging
-            logging.getLogger('mdig.mdiglaunch').error("Unexpected exception in worker process: %s" % str(e))
-            traceback.print_exc()
-            s[2] = {"error": str(e)}
-            results_q.put(s)
+
+    worker = MDiGWorker(work_q,results_q)
+    worker.run()
 
 class ResultMonitor(Thread):
     def __init__ (self, result_q):
@@ -396,6 +442,8 @@ class ResultMonitor(Thread):
         while self.running:
             try:
                 s = self.result_q.get(timeout=1)
+                print "resultmonitor received" + str(s)
+                print "before: " + str(models_in_queue)
                 m_action = s[0]
                 m_name = s[1]
                 m_status = s[2]
@@ -411,6 +459,11 @@ class ResultMonitor(Thread):
                 elif "error" in m_status:
                     models_in_queue[m_name][m_action]["active"] = []
                     models_in_queue[m_name][m_action].update(m_status)
+                elif "status" in m_status:
+                    models_in_queue[m_name][m_action].update(m_status)
+                else:
+                    print "Unknown status update received from worker process:" \
+                        + str(m_status)
                 models_in_queue[m_name][m_action]['last_update'] = datetime.datetime.now()
                 print models_in_queue
             except q.Empty:
@@ -421,12 +474,12 @@ class ResultMonitor(Thread):
 # this would potentially lead to slow responsiveness).
 rt = ResultMonitor(results_q)
 # spawn a thread with mdig.py and use a multiprocessing queue
-mdig_launcher = Process(target=mdig_launcher, args=(work_q,results_q))
+mdig_worker_process = Process(target=mdig_worker_start, args=(work_q,results_q))
 
 def start_web_service():
     change_to_web_mapset()
     rt.start()
-    mdig_launcher.start()
+    mdig_worker_process.start()
 
     # setup and run webapp
     global app; app = bottle.app()
@@ -448,9 +501,8 @@ def change_to_web_mapset():
 
 def shutdown_webapp():
     if app is None: return
-    print "TODO: delete temporary webservice files, " + \
-            "stop result monitor and join mdig child process"
     rt.running = False
     work_q.put(["SHUTDOWN","now please"])
-    mdig_launcher.join()
+    mdig_worker_process.join()
+    print "TODO: delete temporary webservice files"
 
