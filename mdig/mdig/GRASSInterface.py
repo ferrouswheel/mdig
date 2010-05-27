@@ -706,15 +706,16 @@ class GRASSInterface:
         loc = ""
         if location is not None:
             loc = " location=" + location
-        if self.get_mapset() != mapset_name: 
+        if (self.get_mapset() != mapset_name and location is None) or \
+                (location and self.grass_vars["LOCATION_NAME"] != location):
             if create:
                 result = self.run_command("g.mapset -c mapset=%s%s" % (mapset_name,loc))
             else:
                 if location: self.grass_vars["LOCATION_NAME"] = location
                 self.grass_vars["MAPSET"] = mapset_name
                 self.set_gis_env()
-        self.update_grass_vars()
-        self.log.debug("Change to mapset %s" % (mapset_name))
+            self.update_grass_vars()
+            self.log.debug("Change to mapset %s@%s" % (mapset_name, self.grass_vars["LOCATION_NAME"] ))
         return True
 
     def create_mdig_subdir(self,mapset):
