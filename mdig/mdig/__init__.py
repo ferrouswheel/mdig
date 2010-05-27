@@ -38,6 +38,7 @@ mdig_exit_codes = {
     "missing_popmod": 15,
     "no_initial_maps": 16,
     "popmod": 17,
+    "invalid_lifestage": 18,
     "management": 39,
     "strategy": 40,
     "treatment": 41,
@@ -49,7 +50,7 @@ mdig_exit_codes = {
     "migrate": 80, # migration of repostory required
     "config": 85, # bad config
     "grass_setup": 90, # grass setup error
-
+    "unknown":101 # who knows?
 }
 repository = None
 

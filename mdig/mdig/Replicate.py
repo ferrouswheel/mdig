@@ -189,6 +189,26 @@ class Replicate:
             for m in maps.values():
                 GRASSInterface.get_g().null_bitmask(m,generate=generate_null)
     
+    def get_img_filenames(self, ls="all", gif=False):
+        """ Get a dict of time:image_filename pairs for outputting maps to.
+        Warning, this doesn't check that ls is an actual lifestage.
+        If gif is true, then returns a single string
+        """
+        output_dir = os.path.join(self.instance.experiment.base_dir,"output")
+        fn = OutputFormats.create_filename(self)
+        if gif:
+            result = os.path.join(output_dir,fn + "_ls_" + ls + "_anim.gif")
+        else: 
+            result = {}
+            env = self.get_saved_maps(ls)
+            # If there are no occupancy envelopes return None
+            if env is None: return None
+            times = env.keys()
+            times.sort(key=lambda x: float(x))
+            for t in times:
+                result[t] = os.path.join(output_dir, fn + "_ls_" + ls + "_" + str(t) + '.png')
+        return result
+        
     def set_seed(self,s):
         seed_node=lxml.etree.SubElement(self.node,'seed')
         seed_node.text = repr(s)

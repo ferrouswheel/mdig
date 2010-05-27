@@ -41,6 +41,11 @@ import OutputFormats
 import GRASSInterface
 import MDiGConfig
 
+class InvalidLifestageException(Exception): pass
+class InstanceIncompleteException(Exception): pass
+class InvalidReplicateException(Exception): pass
+class NoOccupancyEnvelopesException(Exception): pass
+
 class DispersalInstance:
     """ A DispersalInstance is a realisation of a combination of variables
         for a particular region, time period, and initial conditions.
@@ -266,18 +271,18 @@ class DispersalInstance:
 
     def get_occ_envelope_img_filenames(self, ls="all", gif=False):
         output_dir = os.path.join(self.experiment.base_dir,"output")
-        fn = OutputFormats.create_filename(instance)
+        fn = OutputFormats.create_filename(self)
         if gif:
-            result = [fn + "_ls_" + ls + "_anim.gif"]
+            result = os.path.join(output_dir, fn + "_ls_" + ls + "_anim.gif")
         else: 
-            result = []
+            result = {}
             env = self.get_occupancy_envelopes()
             # If there are no occupancy envelopes return None
             if env is None: return None
-            times = env.keys()
+            times = env[ls].keys()
             times.sort(key=lambda x: float(x))
             for t in times:
-                result.append(output_dir + fn + "_ls_" + ls + "_" + str(t) + '.png')
+                result[t] = os.path.join(output_dir, fn + "_ls_" + ls + "_" + str(t) + '.png')
         return result
         
     def null_bitmask(self, generate=True):
@@ -410,8 +415,12 @@ class DispersalInstance:
                     missing_years[l].append(t)
                 else:
                     # yes... then check if map exists
+                    self.log.debug("Checking for envelope %s" % previous_envelopes[l][str(t)])
                     if GRASSInterface.get_g().check_map(previous_envelopes[l][str(t)]) is None:
                         missing_years[l].append(t)
+                        self.log.debug("Missing envelope %s" % previous_envelopes[l][str(t)])
+                    else:
+                        self.log.debug("Found envelope %s" % previous_envelopes[l][str(t)])
         return missing_years
 
     def are_envelopes_newer_than_reps(self):
@@ -535,7 +544,9 @@ class DispersalInstance:
         
         for l in ls:
             maps = []
-            for r in self.replicates:
+            for r_idx in range(0,len(self.replicates)):
+                r = self.replicates[r_idx]
+                self.log.debug("Getting saved maps for replicate %d", r_idx)
                 saved_maps = r.get_saved_maps(l)
                 if saved_maps:
                     maps.append(saved_maps)

@@ -11,6 +11,9 @@ from mdig import ROCAnalysis
 from mdig import Displayer
 from mdig.DispersalModel import DispersalModel
 
+from mdig.DispersalInstance import InvalidLifestageException, \
+        InstanceIncompleteException, InvalidReplicateException, NoOccupancyEnvelopesException
+
 from datetime import datetime, timedelta
 
 class Action:
@@ -548,31 +551,43 @@ class ExportAction(Action):
             self.options.background = c["OUTPUT"]["background_map"]
     
     def do_me(self,mdig_model):
-        for i in mdig_model.get_instances():
-            self.do_instance(i,mdig_model.get_name())
-
-    def do_instance(self,i,model_name):
-        # TODO: only overwrite files if -o flag is set
-        import OutputFormats
         if not self.options.output_gif and \
             not self.options.output_image:
             self.log.warning("No type for output was specified...")
             sys.exit(0)
+        for i in mdig_model.get_instances():
+            try:
+                self.do_instance(i)
+            except InvalidLifestageException, e:
+                sys.exit(mdig.mdig_exit_codes["invalid_lifestage"])
+            except InstanceIncompleteException, e:
+                sys.exit(mdig.mdig_exit_codes["instance_incomplete"])
+            except InvalidReplicateException, e:
+                sys.exit(mdig.mdig_exit_codes["invalid_replicate_index"])
+            except NoOccupancyEnvelopesException, e:
+                sys.exit(mdig.mdig_exit_codes["missing_envelopes"])
+            except Exception, e:
+                print str(e)
+                sys.exit(mdig.mdig_exit_codes["unknown"])
+
+    def do_instance(self,i):
+        # TODO: only overwrite files if -o flag is set
+        import OutputFormats
+        model_name = i.experiment.get_name()
         ls = self.options.output_lifestage
         if ls not in i.experiment.get_lifestage_ids():
             self.log.error("No such lifestage called %s in model." % str(ls))
-            sys.exit(mdig.mdig_exit_codes["instance_incomplete"])
+            raise InvalidLifestageException()
         all_maps = []
         if not i.is_complete():
             self.log.error("Instance " + repr(i) + " not complete")
-            sys.exit(mdig.mdig_exit_codes["instance_incomplete"])
+            raise InstanceIncompleteException()
         # check that background map exists
         g = GRASSInterface.get_g()
         if not g.check_map(self.options.background):
             self.log.error("Couldn't find background map %s" % self.options.background)
             self.options.background = None
-            #raise GRASSInterface.MapNotFoundException(self.options.background)
-        base_fn = os.path.join(i.experiment.base_dir,"output")
+            raise GRASSInterface.MapNotFoundException(self.options.background)
         if self.options.reps:
             self.log.info("Creating images for maps of reps: %s" % str(self.options.reps))
             # Run on replicates
@@ -586,9 +601,8 @@ class ExportAction(Action):
                             " Have you 'run' the model first or are you "
                             "specifying an invalid replicate index?")
                     self.log.error("Valid replicate range is 0-%d." % (len(rs)-1))
-                    sys.exit(mdig.mdig_exit_codes["invalid_replicate_index"])
+                    raise InvalidReplicateException(r_index)
                 r = rs[r_index]
-                rep_fn = os.path.join(base_fn, OutputFormats.create_filename(r))
                 map_list = []
                 saved_maps = r.get_saved_maps(ls)
 
@@ -599,32 +613,30 @@ class ExportAction(Action):
 
                 times = saved_maps.keys()
                 times.sort(key=lambda x: float(x))
+                rep_filenames = r.get_img_filenames(ls) 
                 for t in times:
                     m = saved_maps[t]
-                    map_list.append(self.create_frame(i.experiment.base_dir, m,rep_fn + "_" +
-                        str(t),model_name, t, ls, the_range))
+                    map_list.append(self.create_frame(m,rep_filenames[t],model_name, t, ls, the_range))
                 if self.options.output_gif:
-                    self.create_gif(map_list,rep_fn)
+                    self.create_gif(map_list,r.get_img_filenames(ls,gif=True))
                 all_maps.extend(map_list)
         else:
-            self.log.info("Creating images for occupancy envelopes")
             # Run on occupancy envelopes
-            base_fn = os.path.join(base_fn,
-                    OutputFormats.create_filename(i))
+            self.log.info("Creating images for occupancy envelopes")
             self.log.debug("Fetching occupancy envelopes")
             env = i.get_occupancy_envelopes()
             if env is None:
                 self.log.error("No occupancy envelopes available.")
-                sys.exit(mdig.mdig_exit_codes["missing_envelopes"])
+                raise NoOccupancyEnvelopesException("No occupancy envelopes available.")
             map_list = []
             times = env[ls].keys()
             times.sort(key=lambda x: float(x))
+            img_filenames = i.get_occ_envelope_img_filenames(ls) 
             for t in times:
                 m = env[ls][t]
-                map_list.append(self.create_frame(i.experiment.base_dir, m,base_fn + "_" + str(t),model_name,
-                        t, ls))
+                map_list.append(self.create_frame(m,img_filenames[t],model_name, t, ls))
             if self.options.output_gif:
-                self.create_gif(map_list,base_fn)
+                self.create_gif(map_list,i.get_occ_envelope_img_filenames(ls,gif=True) )
             all_maps.extend(map_list)
         # If the user just wanted an animated gif, then clean up the images
         if not self.options.output_image:
@@ -632,42 +644,59 @@ class ExportAction(Action):
                 os.remove(m)
 
     def create_gif(self,maps,fn):
-        gif_fn = None
         from subprocess import Popen, PIPE
-        gif_fn = fn + "_anim.gif"
+        gif_fn = fn
         self.log.info("Creating animated gif with ImageMagick's convert utility.")
         output = Popen("convert -delay 100 " + " ".join(maps)
             + " " + gif_fn, shell=True, stdout=PIPE).communicate()[0]
         if len(output) > 0:
             self.log.info("Convert output:" + output)
+        self.log.debug("Saved animated gif to " + gif_fn)
         return gif_fn
 
-    def create_frame(self, dest_dir, map_name, output_name, model_name, year, ls, the_range = None):
+    def create_frame(self, map_name, output_name, model_name, year, ls, the_range = None):
         g = GRASSInterface.get_g()
-        g.set_output(filename = output_name + ".png", \
+        g.set_output(filename = output_name, \
                 width=self.options.width, height=self.options.height, display=None)
         g.run_command("d.erase")
         import os; os.environ['GRASS_PNG_READ']="TRUE"
         if self.options.background:
             bg = self.options.background.split('@')
-            print bg
             if len(bg) > 1: map_ok = g.check_map(bg[0], bg[1])
             else: map_ok = g.check_map(bg)
-            print map_ok
             g.run_command("r.colors color=grey map=" + self.options.background)
             g.run_command("d.rast " + self.options.background)
+        # This is code for setting the color table of each map manually
+        # hasn't been easily integrated into interface, but easy for hacking
+        # custom map output
+        custom_color = False
+        if custom_color:
+            from subprocess import Popen, PIPE
+            pcolor= Popen('r.colors map=%s rules=-' % map_name, \
+                    shell=True, stdout=PIPE, stdin=PIPE)
+            rule_string = "0%% %d:%d:%d\n" % (255,255,0)
+            rule_string += "100%% %d:%d:%d\n" %  (255,255,0)
+            rule_string += 'end'
+            output = pcolor.communicate(rule_string)[0]
+        ###
+        # Draw the map
         g.run_command("d.rast " + map_name + " -o")
+        # Draw the scale
         g.run_command("d.barscale tcolor=0:0:0 bcolor=none at=2,18 -l -t")
-        if the_range:
-            g.run_command("d.legend -s " + map_name + " range=%f,%f at=5,50,85,90" % the_range)
-        else:
-            g.run_command("d.legend -s " + map_name + " at=5,50,85,90")
+        # Code to enable/disable the legend
+        do_legend = True
+        if do_legend:
+            if the_range:
+                g.run_command("d.legend -s " + map_name + " range=%f,%f at=5,50,85,90" % the_range)
+            else:
+                g.run_command("d.legend -s " + map_name + " at=5,50,85,90")
+        ###
+        # Show the model name and year
         g.run_command("d.text at=2,90 size=3 text=" + model_name)
         g.run_command("d.text text=" + year + " at=2,93")
-        # Save frame to model's output dir.
-        dest_dir = os.path.join(dest_dir,"output")
+        # Save frame
         g.close_output()
-        return output_name + ".png"
+        return output_name
     
 class ROCAction(Action):
     description = "Create Receiver Operating Characteristic curves for " + \
