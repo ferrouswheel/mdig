@@ -1,12 +1,18 @@
 If you wish to run the unit tests for MDiG while developing code, then install
-nosetests for python which is a testing framework:
+nosetests for python which is a testing framework, and optionally "coverage"
+which is to measure the code coverage of tests:
 
  easy_install nose
+ easy_install coverage
 
 Then if you go to the mdig program directory (mdig/ from the root of the source)
 and run:
 
  nosetests -v mdig/tests/Model.py
+
+Or to run with code coverage analysis:
+
+ nosetests -v --with-coverage mdig/tests/Model.py
 
 You'll run a bunch of tests to check everything's working correctly.
 
