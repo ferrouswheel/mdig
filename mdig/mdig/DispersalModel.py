@@ -109,6 +109,7 @@ class DispersalModel(object):
                 
         self.base_dir = None
         if self.model_file:
+            self.log_file = None
             if self.action is not None:
                 self.set_base_dir(self.action.output_dir)
                 self.setup_logfile()
@@ -116,8 +117,10 @@ class DispersalModel(object):
                 self.set_base_dir() 
             if setup:
                 self.init_mapset()
+                self.setup_logfile()
 
     def setup_logfile(self):
+        if self.log_file: return 
         self.log_file = os.path.join(self.base_dir, "model.log")
         logformat = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s",
             datefmt='%Y%m%d %H:%M:%S')

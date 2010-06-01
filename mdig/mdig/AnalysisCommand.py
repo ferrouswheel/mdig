@@ -30,28 +30,29 @@ class AnalysisCommand:
         """
         self.cmd_string = cmd_string
         self.start_time = 0
-        self.earliest_map = None
+        self.earliest_time = None
+        self.times = None
         self.output_fn = None
         self.output_fn_base = None
         self.log = logging.getLogger("mdig.AnalysisCommand")
 
     def get_earliest_time(self):
-        if self.earliest_map is None:
+        if self.earliest_time is None:
             # Find earliest map in cmd_string (represented by %\d)
             # Allow escaping of % with double... e.g. %%1 doesn't match
-            map_matches = re.findall('(?<!%)%\d',self.cmd_string)
+            map_matches = re.findall('(?<!%)%\d+',self.cmd_string)
             if len(map_matches) == 0:
-                self.earliest_map = 0
+                self.earliest_time = 0
                 self.log.warn(
                     "No map references in command, will run command for " +
                     "every map, but it won't be specific to the map.")
             for map_d in map_matches:
                 map_index = int(map_d[1:])
-                if map_index > self.earliest_map:
-                    self.earliest_map = map_index
+                if map_index > self.earliest_time:
+                    self.earliest_time = map_index
             self.log.info(
-                    "Earliest map in cmd_string is %d before present" % self.earliest_map)
-        return self.earliest_map
+                    "Earliest map in cmd_string is %d before present" % self.earliest_time)
+        return self.earliest_time
 
     def get_output_filename_base(self):
         if self.output_fn_base is None:
@@ -83,20 +84,23 @@ class AnalysisCommand:
                 os.remove(tmp_fn)
             else:
                 self.log.error("Analysis output file exists")
-                raise mdig.OutputFileExistsException(tmpfn)
+                raise mdig.OutputFileExistsException(tmp_fn)
         self.log.info("Analysis output file set to " + tmp_fn + " (path " +
                 os.getcwd() + ")")
         self.output_fn = tmp_fn
         return tmp_fn
 
     def insert_output_into_cmd(self):
-        # replace %f with analysis_filename_base (or generated name)
-        # if it exists in cmd_string
+        """
+        replace %f with analysis_filename_base (or generated name)
+        if it exists in cmd_string, otherwise add output redirection
+        to command string
+        """
         if self.output_fn is None:
             raise OutputFileNotSetException()
         tmp_cmd_string = self.cmd_string
         tmp_fn = self.output_fn
-        if re.search("%f",tmp_cmd_string) is not None:
+        if re.search("(?<!%)%f",tmp_cmd_string) is not None:
             # do reg ex replace
             tmp_cmd_string = re.sub("%f", tmp_fn, tmp_cmd_string)
         else:
@@ -111,7 +115,7 @@ class AnalysisCommand:
         tmp_cmd_string = self.insert_output_into_cmd()
         # Skip ahead to the first time that has enough past maps to
         # satisfy the command line.
-        for t in self.times[self.earliest_map:]:
+        for t in self.times[self.get_earliest_time():]:
             ret = self.run_command_once(t,maps,tmp_cmd_string)
             if ret is not None:
                 self.log.error("Analysis command did not return 0")
@@ -126,9 +130,10 @@ class AnalysisCommand:
         for map_d in map_matches:
             map_index = int(map_d[1:])
             t_index = self.times.index(t)
+            if t_index - map_index < 0:
+                raise IndexError("at time index %d but command as reference to map %s time steps earlier than current" % (t_index,map_index) )
             tmp_cmd_string = re.sub("%" + repr(map_index),
-                    maps[repr(self.times[t_index - map_index])],
-                    tmp_cmd_string)
+                    maps[repr(self.times[t_index - map_index])], tmp_cmd_string)
         
         # Add time to the output file if option is enabled.
         mdig_config = MDiGConfig.get_config()
@@ -144,45 +149,43 @@ class AnalysisCommand:
         ret = cmd_stdout.close()
         return ret
 
-    def set_times(self, period, times, o_times):
+    def set_times(self, period, o_times, times=None):
         """ Check a list of the times against the actual stored timesteps and
             also set the time the command will run on.
 
         @param period that times need to remain in to be valid
+        @param o_times the original list of stored/saved map times.
         @param times a list of times to run command on, -ve values are interpreted
         as indices from the end of the array e.g. -1 == last map.
-        @param o_times the original list of stored/saved map times.
         @return times with -ve indices replaced and all times checked that they
         exist
         """
+        # sort just in case
+        o_times = list(o_times)
         o_times.sort()
         if times is None:
             # if no time is user-specified, use all existing times,
-            # and sort because the return from keys() isn't guaranteed to be in order
             times = o_times
         else:
             #check times
             for t in times:
                 if t < 0:
+                    # If negative value, then use as index
                     times[times.index(t)] = o_times[t]
                 elif t < period[0] or t > period[1]:
-                    raise Exception("Time outside simulation range: %d" % t)
+                    raise ValueError("Time outside simulation range: %d" % t)
                 elif t not in o_times:
-                    raise Exception("Time not in saved maps: %d" % t)
+                    raise ValueError("Time not in saved maps: %d" % t)
             times.sort()
         # check that there are enough maps to satisfy the command line
         # at least once.
         if (len(times) - 1) < self.get_earliest_time():
             self.log.error("Not enough past maps to fulfill "
                     "command line with earliest map %d maps "
-                    "before present" % self.get_earliest_map())
+                    "before present" % self.get_earliest_time())
             raise mdig.NotEnoughHistoryException()
         self.times = times
         return times
 
 class OutputFileNotSetException(Exception): pass
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
 

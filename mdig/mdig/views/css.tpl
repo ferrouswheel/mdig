@@ -38,4 +38,8 @@ div.status {
 background-color:#FFF380;
 border:1px dashed #EAC117;
 }
+
+.gifanimation {
+border:1px dashed green;
+}
 </style>

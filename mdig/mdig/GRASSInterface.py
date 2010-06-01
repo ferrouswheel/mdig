@@ -36,7 +36,7 @@ class MapNotFoundException (Exception):
         self.map_name = _map_name
 
     def __str__(self):
-        return "MapNotFoundException (map_name=" + self.map_name + ")"
+        return "MapNotFoundException (map_name=" + str(self.map_name) + ")"
 
 class SetRegionException (Exception): pass        
 class CommandException (Exception): pass        
@@ -319,7 +319,7 @@ class GRASSInterface:
             res=re.findall("(\w+)=([\d.]+(e-?[\d]+)?)\n",output)
             if len(res) == 0 or res[0][0] != 'min' or res[1][0] != 'max':
                 self.log.error("Failed to get raster range for %s. Output was:\n%s" % (m,output))
-                sys.exit(1)
+                return None
             if not min_val or min_val > float(res[0][1]): min_val = float(res[0][1])
             if not max_val or max_val < float(res[1][1]): max_val = float(res[1][1])
         one_third = (min_val - max_val) / 3.0 + min_val
@@ -706,7 +706,7 @@ class GRASSInterface:
         loc = ""
         if location is not None:
             loc = " location=" + location
-        if (self.get_mapset() != mapset_name and location is None) or \
+        if (self.get_mapset() != mapset_name) or \
                 (location and self.grass_vars["LOCATION_NAME"] != location):
             if create:
                 result = self.run_command("g.mapset -c mapset=%s%s" % (mapset_name,loc))

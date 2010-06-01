@@ -1,4 +1,4 @@
-from bottle import route, validate, run, request, redirect
+from bottle import route, validate, run, request, redirect, abort
 from bottle import view
 import bottle
 
@@ -34,6 +34,7 @@ if True:
 bottle.TEMPLATE_PATH = ['./mdig/views/', './mdig/' ]
 # needed for error template to find bottle
 
+@route('/models')
 @route('/models/')
 def redirect_index():
     redirect('/')
@@ -52,6 +53,27 @@ work_q = JoinableQueue()
 # When the mdig process(es) have completed (either totally or partly) a job
 # from the work_q, it will put the results here
 results_q = Queue()
+
+# Template for the messages that get passed in the queues
+msg_template = {
+        "model": "model_name",
+        "action": "RUN|OCCUPANCY_GIF|REPLICATE_GIF",
+        "status": {
+            "description": "status message to be displayed", 
+            "complete": "true|false",
+            "percent_done": "percentage of work done",
+            "active_instance": "currently running instance",
+            "active_replicate": "current index of rep",
+            "error": "error message - implies task failed"
+        },
+        "parameters": {
+            "instance_idx": "for instance specific tasks",
+            "lifestage": "for lifestage specific tasks",
+            "rerun": "for rerunning",
+            "etc": None
+        }
+}
+
 
 # dictionary of models that are being uploaded but have yet to have supporting
 # files uploaded
@@ -74,6 +96,16 @@ def validate_model_name(mname):
     dm.get_instances()
     dm.save_model()
     return dm 
+
+def validate_instance(dm,instance_idx):
+    if instance_idx < 0 or instance_idx >= len(dm.get_instances()):
+        return False
+    return True
+
+def validate_replicate(instance, rep_num):
+    if rep_num < 0 or rep_num >= len(instance.replicates):
+        return False
+    return True
 
 @route('/models/',method="POST")
 def submit_model():
@@ -154,7 +186,7 @@ def run_model(model):
         else:
             models_in_queue[m_name]['RUN'] = {"approx_q_pos":qsize,
                     "last_update":datetime.datetime.now()}
-            work_q.put(['RUN',model.get_name(),{"rerun": rerun}])
+            work_q.put({'action':'RUN','model':model.get_name(),'parameters':{"rerun": rerun}})
         started = 'started' in models_in_queue[m_name]['RUN']
     task_order, task_updates = process_tasks()
     return dict(model=model, already_exists=exists, rerun = rerun,
@@ -263,6 +295,8 @@ def show_model(model):
 def show_instance(model,instance):
     dm=model
     idx = int(instance)
+    if not validate_instance(dm, idx):
+        abort(404, "No such instance")
     instance = dm.get_instances()[idx]
     envelope = None
     error = None
@@ -271,40 +305,103 @@ def show_instance(model,instance):
         if "envelope" not in request.POST:
             # we only know about post request to create an envelope at the
             # moment
-            print "poo"
-            pass
+            error = "Unknown post request"
         # submit a job to generate the occupancy envelope
         elif dm.is_complete():
+            ls_id=request.POST['envelope']
             if m_name not in models_in_queue:
                 models_in_queue[m_name] = {}
             else:
                 print models_in_queue
-            if 'OCCUPANCY' in models_in_queue[m_name] and \
-                    'complete' not in models_in_queue[m_name]['OCCUPANCY']:
+            if 'OCCUPANCY_GIF' in models_in_queue[m_name] and \
+                    'complete' not in models_in_queue[m_name]['OCCUPANCY_GIF']:
                 exists = True
+            elif ls_id not in dm.get_lifestage_ids():
+                # Invalid lifestage ID
+                error="Invalid lifestage ID"
             else:
                 qsize=work_q.qsize()
-                models_in_queue[m_name]['OCCUPANCY'] = {"approx_q_pos":qsize,
+                models_in_queue[m_name]['OCCUPANCY_GIF'] = {"approx_q_pos":qsize,
                         "last_update":datetime.datetime.now()}
-                work_q.put(['OCCUPANCY',dm.get_name(),idx])
-            #started = 'started' in models_in_queue[m_name]['OCCUPANCY']
+                job_details = { "instance_idx": idx, "lifestage": ls_id }
+                work_q.put({'action':'OCCUPANCY_GIF','model':dm.get_name(),'parameters':job_details})
+            #started = 'started' in models_in_queue[m_name]['OCCUPANCY_GIF']
         else:
             # if instance isn't complete, then we can't create an
             # occupancy envelope
             error="The model isn't complete, please run the model first"
-    else:
-        # if there is an envelope generated then display it
-        pass
 
     envelopes_present=[]
     for ls_id in instance.experiment.get_lifestage_ids():
+        # if there is an envelope generated then collect it
         if os.path.isfile(instance.get_occ_envelope_img_filenames(ls=ls_id,gif=True)):
             envelopes_present.append((ls_id, True))
         else:
             envelopes_present.append((ls_id, False))
     task_order, task_updates = process_tasks()
+    #TODO update template to display error message
     return dict(idx=idx, instance=instance, name=mdig.version_string,
             envelopes_present = envelopes_present, repo_location=mdig.repository.db,
+            task_order=task_order, task_updates = task_updates, error=error)
+
+@route('/models/:model/instances/:instance/replicates/:replicate',method='GET')
+@route('/models/:model/instances/:instance/replicates/:replicate',method='POST')
+@view('replicate.tpl')
+@validate(replicate=int, instance=int, model=validate_model_name)
+def show_replicate(model,instance,replicate):
+    dm=model
+    idx = int(instance)
+    if not validate_instance(dm, idx):
+        abort(404, "No such instance")
+    instance = dm.get_instances()[idx]
+    rep_num = int(replicate)
+    if not validate_replicate(instance, rep_num):
+        abort(404, "No such replicate, or replicate doesn't exist yet")
+    rep = instance.replicates[rep_num]
+    error = None
+    m_name = dm.get_name()
+    if request.method=="POST":
+        if "gif" not in request.POST:
+            # we only know about post request to create an gif at the
+            # moment
+            error = "Unknown post request"
+        # submit a job to generate the occupancy gif 
+        elif rep.complete:
+            ls_id=request.POST['gif']
+            if m_name not in models_in_queue:
+                models_in_queue[m_name] = {}
+            else:
+                print models_in_queue
+            if 'REPLICATE_GIF' in models_in_queue[m_name] and \
+                    'complete' not in models_in_queue[m_name]['REPLICATE_GIF']:
+                exists = True
+            elif ls_id not in dm.get_lifestage_ids():
+                # Invalid lifestage ID
+                error="Invalid lifestage ID"
+            else:
+                qsize=work_q.qsize()
+                models_in_queue[m_name]['REPLICATE_GIF'] = {"approx_q_pos":qsize,
+                        "last_update":datetime.datetime.now()}
+                job_details = { "instance_idx": idx, "lifestage": ls_id,
+                        "replicate": rep_num }
+                work_q.put({'action':'REPLICATE_GIF','model':dm.get_name(),'parameters':job_details})
+            #started = 'started' in models_in_queue[m_name]['OCCUPANCY_GIF']
+        else:
+            # if instance isn't complete, then we can't create an
+            # occupancy gif
+            error="The replicate isn't complete, please run the instance first"
+
+    gifs_present=[]
+    for ls_id in instance.experiment.get_lifestage_ids():
+        # if there is an envelope generated then collect it
+        if os.path.isfile(rep.get_img_filenames(ls=ls_id,gif=True)):
+            gifs_present.append((ls_id, True))
+        else:
+            gifs_present.append((ls_id, False))
+    task_order, task_updates = process_tasks()
+    #TODO update template to display error message
+    return dict(idx=idx, instance=instance, replicate=rep, name=mdig.version_string,
+            gifs_present = gifs_present, repo_location=mdig.repository.db,
             task_order=task_order, task_updates = task_updates, error=error)
 
 from bottle import send_file
@@ -312,13 +409,31 @@ from mdig import OutputFormats
 
 @route('/models/:model/instances/:instance/:ls_id/envelope.gif')
 @validate(instance=int, model=validate_model_name)
-def occ_envelope(model, instance, ls_id):
+def instance_occ_envelope_gif(model, instance, ls_id):
     dm=model
     idx = int(instance)
+    if not validate_instance(dm, idx):
+        abort(404, "No such instance")
     instance = dm.get_instances()[idx]
     # do per lifestage!
     fn = instance.get_occ_envelope_img_filenames(ls=ls_id, gif=True)
-    print fn
+    root_dir = os.path.dirname(fn)
+    send_file(os.path.basename(fn),root=root_dir)
+
+@route('/models/:model/instances/:instance/replicates/:replicate/:ls_id/spread.gif')
+@validate(replicate=int, instance=int, model=validate_model_name)
+def replicate_spread_gif(model, instance, replicate, ls_id):
+    dm=model
+    idx = int(instance)
+    if not validate_instance(dm, idx):
+        abort(404, "No such instance")
+    instance = dm.get_instances()[idx]
+    replicate = int(replicate)
+    if not validate_replicate(instance, replicate):
+        abort(404, "No such replicate, or replicate doesn't exist yet")
+    r = instance.replicates[replicate]
+    # do per lifestage!
+    fn = r.get_img_filenames(ls=ls_id, gif=True)
     root_dir = os.path.dirname(fn)
     send_file(os.path.basename(fn),root=root_dir)
 
@@ -332,9 +447,38 @@ class Worker_InstanceListener():
         model = instance.experiment
         percent = len([x for x in instance.replicates if x.complete])/float(model.get_num_replicates())
         percent = percent * 100.0
-        msg = ['RUN',model.get_name(), {
-                    "active": model.get_instances().index(instance),
-                    "percent_complete":percent} ]
+        msg = {'action': 'RUN', 'model':model.get_name(), 'status': {
+                    "active_instance": model.get_instances().index(instance),
+                    "percent_done":percent} }
+        self.results_q.put(msg)
+
+    def occupancy_envelope_complete(self,instance,ls,t):
+        model = instance.experiment
+        start, end = model.get_period()
+        percent = float(int(t) - start) / (end - start)
+        msg = {'action': 'OCCUPANCY_GIF', 'model':model.get_name(), 'status': {
+                    "active_instance": model.get_instances().index(instance),
+                    "percent_done":percent} }
+        self.results_q.put(msg)
+
+    def export_image_complete(self,instance,replicate,ls,t):
+        if replicate:
+            instance=replicate.instance
+        model = instance.experiment
+        start, end = model.get_period()
+        # bad bad t is a string, this should be fixed
+        percent = float(int(t) - start) / (end - start)
+        if replicate:
+            msg = {'action': 'REPLICATE_GIF', 'model':model.get_name(),
+                    'status': {
+                        "active_instance": model.get_instances().index(instance),
+                        "active_replicate": instance.replicates.index(replicate),
+                        "percent_done":percent} }
+        else:
+            msg = {'action': 'OCCUPANCY_GIF', 'model':model.get_name(),
+                    'status': {
+                        "active_instance": model.get_instances().index(instance),
+                        "percent_done":percent} }
         self.results_q.put(msg)
 
 class MDiGWorker():
@@ -344,6 +488,7 @@ class MDiGWorker():
         self.results_q = results_q
         self.running = True
         self.log = logging.getLogger('mdig.worker')
+        self.listener = Worker_InstanceListener(self.results_q)
 
     def run_model(self, m_name, rerun=False):
         model_file = mdig.repository.get_models()[m_name]
@@ -351,40 +496,85 @@ class MDiGWorker():
         if rerun:
             dm.reset_instances()
         for instance in dm.get_instances():
-            instance.listeners.append(Worker_InstanceListener(self.results_q))
-        msg = [action,m_name,{"started": True}]
+            instance.listeners.append(self.listener)
+        msg = {'model': m_name,'action': "RUN",
+                'status':{ 'started': datetime.datetime.now() } }
         self.results_q.put(msg)
         dm.run()
-        msg = [action,m_name,{"complete": True}]
+        msg = {'model': m_name,'action': "RUN",
+                'status':{ 'complete': datetime.datetime.now() } }
         self.results_q.put(msg)
 
-    def create_occupancy(self, m_name, instance=None, ls=None):
-        # TODO generate maps/envelopes/images for all lifestages
-        action = action
-        m_name = s[1]
+    def create_occupancy_gif(self, m_name, instance_idx=None, ls=None):
+        action = "OCCUPANCY_GIF"
         model_file = mdig.repository.get_models()[m_name]
         dm = DispersalModel(model_file)
-        instance = dm.get_instances()[s[2]]
-        s = [action,m_name,{"started": True}]
-        self.results_q.put(s)
+        instance = dm.get_instances()[instance_idx]
+        # Tell web interface we've started
+        msg = {'model': m_name,'action': action,
+                'status':{ 'started': datetime.datetime.now() } }
+        self.results_q.put(msg)
         self.log.debug("Checking/creating envelopes")
-        s = [action,m_name,{"status": "Creating occupancy envelopes"}]
-        self.results_q.put(s)
-        #instance.update_occupancy_envelope()
-        s = [action,m_name,{"percent_complete": 50}]
-        self.results_q.put(s)
+        # Tell web interface what we're doing
+        msg = {'model': m_name,'action': action,
+                'status':{ 'active_instance': instance_idx, 'description':"Creating occupancy envelopes"} }
+        self.results_q.put(msg)
+        # Add listener so that we have progress updates
+        instance.listeners.append(self.listener)
+        # Now actually create the envelopes if necessary
+        instance.update_occupancy_envelope(ls_list=[ls])
         # also convert occupancy envelopes into images
-        # setup ExportAction
+        # via ExportAction
         from Actions import ExportAction
         ea=ExportAction()
         ea.parse_options([])
         ea.options.output_gif = True
+        ea.options.output_image = True
+        ea.options.output_lifestage = ls
+        ea.listeners.append(self.listener)
         self.log.debug("Generating images")
-        s = [action,m_name,{"status": "Generating images"}]
-        self.results_q.put(s)
-        ea.do_instance(instance)
-        s = [action,m_name,{"complete": True}]
-        self.results_q.put(s)
+        msg = {'model': m_name,'action': action,
+                'status':{ 'active_instance': instance_idx,
+                    'description':"Generating images"} }
+        self.results_q.put(msg)
+        try: ea.do_instance(instance)
+        except: raise
+        msg = {'model': m_name,'action': action, 'status':{
+            'complete':datetime.datetime.now() } }
+        self.results_q.put(msg)
+
+    def create_replicate_gif(self, m_name, instance_idx, replicate, ls):
+        action = "REPLICATE_GIF"
+        model_file = mdig.repository.get_models()[m_name]
+        dm = DispersalModel(model_file)
+        instance = dm.get_instances()[instance_idx]
+        # Tell web interface we've started
+        msg = {'model': m_name,'action': action,
+                'status':{ 'started': datetime.datetime.now(),
+                'active_instance': instance_idx,
+                'description':"Generating images",
+                'active_replicate': replicate} }
+        self.results_q.put(msg)
+        # Add listener so that we have progress updates
+        instance.listeners.append(self.listener)
+        # also convert replicate maps into images
+        # via ExportAction
+        from Actions import ExportAction
+        ea=ExportAction()
+        ea.parse_options([])
+        ea.options.output_gif = True
+        ea.options.output_image = True
+        ea.options.output_lifestage = ls
+        ea.options.reps = [ replicate ]
+        try: ea.do_instance(instance)
+        except: raise
+        msg = {'model': m_name,'action': action,
+                'status':{ 'started': datetime.datetime.now(),
+                'active_instance': instance_idx,
+                'description':"Generating images",
+                'active_replicate': replicate,
+                'complete':datetime.datetime.now() } }
+        self.results_q.put(msg)
 
     def run(self):
         # NOTE: To add a pdb statement to this process you need to use:
@@ -394,18 +584,24 @@ class MDiGWorker():
             s = None
             try:
                 s = self.work_q.get(timeout=1)
-                action = s[0] # the action to perform
-                m_name = s[1] # the model it applies to
+                action = s['action'] # the action to perform
+                m_name = s['model'] # the model it applies to
                 if action == "SHUTDOWN":
                     running = False
                 elif action == "RUN":
-                    rerun = s[2]["rerun"]
-                    self.run(m_name, rerun=rerun)
-                elif action == "OCCUPANCY":
-                    instance_idx = s[2]["instance"]
-                    ls_id = None
-                    if "ls" in s[2]: ls_id = s[2]["ls"]
-                    self.create_occupancy(m_name,instance_idx,ls_id)
+                    rerun = s['parameters']['rerun']
+                    self.run_model(m_name, rerun=rerun)
+                elif action == "OCCUPANCY_GIF":
+                    # format of s[2]:
+                    # { "instance_idx": idx, "lifestage": ls_id }
+                    ls_id = s['parameters']['lifestage']
+                    instance_idx = s['parameters']['instance_idx']
+                    self.create_occupancy_gif(m_name,instance_idx,ls_id)
+                elif action == "REPLICATE_GIF":
+                    ls_id = s['parameters']['lifestage']
+                    instance_idx = s['parameters']['instance_idx']
+                    rep = s['parameters']['replicate']
+                    self.create_replicate_gif(m_name,instance_idx,rep,ls_id)
                 else:
                     self.log.error("Unknown task: %s" % str(s))
                 self.work_q.task_done()
@@ -413,10 +609,12 @@ class MDiGWorker():
                 pass
             except Exception, e:
                 import traceback
-                log.error("Unexpected exception in worker process: %s" % str(e))
+                self.log.error("Unexpected exception in worker process: %s" % str(e))
                 traceback.print_exc()
                 # Send error notice back to web interface
-                s = [s[0],s[1],{"error": str(e)}]
+                s = s.copy()
+                if 'status' not in s: s['status'] = {}
+                s['status']['error'] = str(e)
                 self.results_q.put(s)
 
 def mdig_worker_start(work_q,results_q):
@@ -444,26 +642,26 @@ class ResultMonitor(Thread):
                 s = self.result_q.get(timeout=1)
                 print "resultmonitor received" + str(s)
                 print "before: " + str(models_in_queue)
-                m_action = s[0]
-                m_name = s[1]
-                m_status = s[2]
-                if "started" in m_status:
-                    models_in_queue[m_name][m_action]["started"] = datetime.datetime.now()
-                    models_in_queue[m_name][m_action]["active"] = []
-                elif "complete" in m_status:
-                    models_in_queue[m_name][m_action]["complete"] = datetime.datetime.now()
-                    models_in_queue[m_name][m_action]["active"] = []
-                elif "active" in m_status:
-                    models_in_queue[m_name][m_action]["active"] = [m_status["active"]]
-                    models_in_queue[m_name][m_action]["percent_complete"] = m_status["percent_complete"]
-                elif "error" in m_status:
-                    models_in_queue[m_name][m_action]["active"] = []
-                    models_in_queue[m_name][m_action].update(m_status)
-                elif "status" in m_status:
-                    models_in_queue[m_name][m_action].update(m_status)
-                else:
-                    print "Unknown status update received from worker process:" \
-                        + str(m_status)
+                m_action = s['action']
+                m_name = s['model']
+                models_in_queue[m_name][m_action].update(s['status'])
+                #if "started" in s['status']:
+                #    models_in_queue[m_name][m_action]["started"] = datetime.datetime.now()
+                #elif "complete" in s['status']:
+                #    models_in_queue[m_name][m_action]["complete"] = datetime.datetime.now()
+                #elif "error" in s['status']:
+                #    models_in_queue[m_name][m_action].update(m_status)
+                #if "active_instance" in s['status']:
+                #    # Any status/progress update should be related to an
+                #    # instance
+                #    models_in_queue[m_name][m_action]["instance"] =
+                #    m_status["acinstance"]
+                #    models_in_queue[m_name][m_action]["percent_done"] = m_status["percent_done"]
+                #    if "description" in m_status:
+                #        models_in_queue[m_name][m_action].update(m_status)
+                #else:
+                #    print "Unknown status update received from worker process:" \
+                #        + str(m_status)
                 models_in_queue[m_name][m_action]['last_update'] = datetime.datetime.now()
                 print models_in_queue
             except q.Empty:
@@ -502,7 +700,7 @@ def change_to_web_mapset():
 def shutdown_webapp():
     if app is None: return
     rt.running = False
-    work_q.put(["SHUTDOWN","now please"])
+    work_q.put({'action':"SHUTDOWN"})
     mdig_worker_process.join()
     print "TODO: delete temporary webservice files"
 

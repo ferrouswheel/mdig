@@ -227,7 +227,7 @@ class DispersalInstance:
                 saved_maps = r.get_saved_maps(ls_id)
                 r_times = [ int(t) for t in saved_maps.keys() ]
                 ac.init_output_file(self, r)
-                ac.set_times(self.experiment.get_period(),times,r_times)
+                ac.set_times(self.experiment.get_period(),r_times,times)
                 ac.run_command(saved_maps)
                 
                 if MDiGConfig.get_config().analysis_add_to_xml:
@@ -261,7 +261,7 @@ class DispersalInstance:
         for ls_id in ls:
             e_times = [ int(t) for t in envelopes[ls_id].keys() ]
             ac.init_output_file(self)
-            ac.set_times(self.experiment.get_period(),times,e_times)
+            ac.set_times(self.experiment.get_period(),e_times,times)
             ac.run_command(envelopes[ls_id])
 
             if mdig_config.analysis_add_to_xml:
@@ -526,16 +526,20 @@ class DispersalInstance:
         except GRASSInterface.SetRegionException, e:
             raise e
     
-    def update_occupancy_envelope(self, ls = None, start = None, end = None, force=False):
+    def update_occupancy_envelope(self, ls_list = None, start = None, end = None, force=False):
+        """ Go through and update the occupancy envelopes if necessary
+        Note: ls_list has to be a list or None
+        """
         # Set the region in case it hasn't been yet
         self.set_region()
 
-        if ls == None:
-            ls = self.experiment.get_lifestage_ids()
+        if ls_list == None:
+            ls_list = self.experiment.get_lifestage_ids()
         if start == None:
             start = self.experiment.get_period()[0]
         if end == None:
             start = self.experiment.get_period()[1]
+        ls = ls_list
                 
         self.log.debug("Checking whether envelopes are fresh...")
         missing_envelopes = self.are_envelopes_fresh(ls, start, end,
@@ -580,6 +584,10 @@ class DispersalInstance:
                 prob_env = GRASSInterface.get_g().occupancy_envelope(maps_to_combine,filename)
                 if prob_env is not None:
                     self._add_envelope(prob_env,l,t)
+                for li in self.listeners:
+                    if "occupancy_envelope_complete" in dir(li):
+                        li.occupancy_envelope_complete(self,l,t)
+
                     
     def _add_envelope(self, env_name, lifestage_id, t):
         # Add envelope to completed/envelopes/lifestage[id=l]/envelope[t=t]

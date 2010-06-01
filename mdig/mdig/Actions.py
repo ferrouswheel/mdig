@@ -492,6 +492,7 @@ class ExportAction(Action):
                 description = ExportAction.description,
                 usage = "%prog export [options] <model_name>")
         self.add_options()
+        self.listeners = []
         
     def add_options(self):
         Action.add_options(self)
@@ -584,10 +585,10 @@ class ExportAction(Action):
             raise InstanceIncompleteException()
         # check that background map exists
         g = GRASSInterface.get_g()
-        if not g.check_map(self.options.background):
+        if self.options.background and not g.check_map(self.options.background):
             self.log.error("Couldn't find background map %s" % self.options.background)
             self.options.background = None
-            raise GRASSInterface.MapNotFoundException(self.options.background)
+            #raise GRASSInterface.MapNotFoundException(self.options.background)
         if self.options.reps:
             self.log.info("Creating images for maps of reps: %s" % str(self.options.reps))
             # Run on replicates
@@ -617,6 +618,7 @@ class ExportAction(Action):
                 for t in times:
                     m = saved_maps[t]
                     map_list.append(self.create_frame(m,rep_filenames[t],model_name, t, ls, the_range))
+                    self.update_listeners(None, r, ls, t)
                 if self.options.output_gif:
                     self.create_gif(map_list,r.get_img_filenames(ls,gif=True))
                 all_maps.extend(map_list)
@@ -635,6 +637,7 @@ class ExportAction(Action):
             for t in times:
                 m = env[ls][t]
                 map_list.append(self.create_frame(m,img_filenames[t],model_name, t, ls))
+                self.update_listeners(i, None, ls, t)
             if self.options.output_gif:
                 self.create_gif(map_list,i.get_occ_envelope_img_filenames(ls,gif=True) )
             all_maps.extend(map_list)
@@ -642,6 +645,16 @@ class ExportAction(Action):
         if not self.options.output_image:
             for m in all_maps:
                 os.remove(m)
+
+    def update_listeners(self,instance,replicate,ls,t):
+        if instance:
+            for l in self.listeners:
+                if "export_image_complete" in dir(l):
+                    l.export_image_complete(instance, None, ls,t)
+        elif replicate:
+            for l in self.listeners:
+                if "export_image_complete" in dir(l):
+                    l.export_image_complete(None, replicate, ls,t)
 
     def create_gif(self,maps,fn):
         from subprocess import Popen, PIPE
