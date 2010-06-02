@@ -34,6 +34,7 @@ class ModelRepository:
 
     def add_model(self, model_fn):
         import shutil
+        import pdb; pdb.set_trace()
         if not os.path.isfile(model_fn):
             raise RepositoryException("Model file %s is not a file."%model_fn)
         g = GRASSInterface.get_g()
@@ -43,7 +44,7 @@ class ModelRepository:
             raise RepositoryException("Model doesn't define GIS Location for simulation")
         if not os.path.isdir(os.path.join(self.db,loc,"PERMANENT")):
             raise RepositoryException("Model defines a GIS Location " + loc + " that " + "doesn't exist in " + self.db)
-        g.change_mapset(dm.get_location(),"PERMANENT")
+        g.change_mapset("PERMANENT",dm.get_location())
         # create model mapset
         self.log.info("Creating mapset for model %s"%dm.get_mapset())
         if g.check_mapset(dm.get_name()):
