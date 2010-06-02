@@ -18,7 +18,7 @@
 #
 __all__ = ["Analysis","DispersalInstance","DispersalModel","Displayer","Event",
         "GRASSInterface","GrassMap","ImageShow","Lifestage","MDiGConfig",
-        "OutputFormats","Region.py","Replicate.py","ManagementStratey"]
+        "OutputFormats","Region.py","Replicate.py","ManagementStratey","WebService"]
 
 import configobj
 

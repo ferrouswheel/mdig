@@ -257,6 +257,104 @@ class AnalysisCommandTest(unittest.TestCase):
         mdig_config.analysis_filename_base = old_base
 
 
+from mdig import WebService
+from mdig.bottle import app, HTTPError, HTTPResponse, run
+import mdig.bottle
+class AnalysisCommandTest(unittest.TestCase):
+
+    def setUp(self):
+        mdig.repository = self.repo = ModelRepository()
+        self.bottle = app()
+        self.catchall=False
+
+    def call_url(self, url, method='GET'):
+        # Wrap the bottle handle method and turn result into a string instead of
+        # weird array of unicode characters
+        result=self.bottle.handle(url,method=method)
+        if isinstance(result,Exception):
+            raise result
+        return str("".join(result))
+
+    def test_404(self):
+        self.assertRaises(HTTPError, self.call_url, 'flergul')
+
+    def test_handle_index(self):
+        r = self.call_url('/')
+
+    def test_handle_models(self):
+        try:
+            self.call_url('/models/')
+            self.assertTrue(False)
+        except HTTPResponse, e:
+            self.assertEqual(e.status,303)
+
+    def test_handle_model_w_lifestages(self):
+        r = self.call_url('/models/lifestage_test')
+
+    def test_handle_bad_model(self):
+        self.assertRaises(HTTPError, self.call_url, '/models/flergul')
+
+    def test_handle_model_instance(self):
+        r = self.call_url('/models/lifestage_test/instances/0')
+
+    def test_handle_model_bad_instance(self):
+        self.assertRaises(HTTPError, self.call_url, '/models/lifestage_test/instances/asdas')
+        self.assertRaises(HTTPError, self.call_url, '/models/lifestage_test/instances/111')
+        self.assertRaises(HTTPError, self.call_url, '/models/lifestage_test/instances/-11')
+
+    def test_handle_model_replicate(self):
+        r = self.call_url('/models/lifestage_test/instances/0/replicates/0')
+
+    def test_handle_model_bad_replicate(self):
+        self.assertRaises(HTTPError, self.call_url,
+                '/models/lifestage_test/instances/0/replicates/asdasd')
+        self.assertRaises(HTTPError, self.call_url,
+                '/models/lifestage_test/instances/0/replicates/10101')
+        self.assertRaises(HTTPError, self.call_url,
+                '/models/lifestage_test/instances/0/replicates/-111')
+
+    def test_process_tasks(self):
+        import datetime
+        now = datetime.datetime.now() 
+        WebService.models_in_queue = {
+            "lifestage_test": {
+                "RUN" : { 
+                    'last_update': now - datetime.timedelta(seconds=100)
+                    },
+                "OCCUPANCY_GIF": {
+                    'last_update': now - datetime.timedelta(seconds=500)
+                    }
+                }
+            }
+        before_complete = WebService.last_notice
+        updates=WebService.process_tasks()
+        self.assertEqual(WebService.last_notice, before_complete)
+        before_complete = WebService.last_notice
+        WebService.models_in_queue['lifestage_test']['RUN']['complete']= \
+                datetime.datetime.now()
+        updates=WebService.process_tasks()
+        self.assertTrue(WebService.last_notice > before_complete)
+
+        # test to ensure old completed actions are removed:
+        WebService.models_in_queue['lifestage_test']['RUN']['last_update']= \
+                datetime.datetime.now() - datetime.timedelta(days=8)
+        updates=WebService.process_tasks()
+        self.assertTrue('RUN' not in \
+                WebService.models_in_queue['lifestage_test']) 
+
+    def test_shutdown_webapp(self):
+        WebService.shutdown_webapp()
+        WebService.app = self.bottle
+        WebService.shutdown_webapp()
+
+    @patch('mdig.bottle.run')
+    def test_start_webapp(self,m_run):
+        WebService.start_web_service()
+        WebService.shutdown_webapp()
+
+    def test_change_to_mapset(self):
+        WebService.change_to_web_mapset()
+
 
 
 

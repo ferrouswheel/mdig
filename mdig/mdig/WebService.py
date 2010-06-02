@@ -1,4 +1,4 @@
-from bottle import route, validate, run, request, redirect, abort
+from bottle import route, validate, request, redirect, abort
 from bottle import view
 import bottle
 
@@ -136,6 +136,7 @@ def process_tasks():
     new_last_notice = last_notice
     updates = {}
     time_index = {}
+    to_remove = []
     for m_name, tasks in models_in_queue.items():
         for task_name in tasks:
             t = tasks[task_name]
@@ -157,7 +158,11 @@ def process_tasks():
             elif datetime.datetime.now() - t['last_update'] \
                     > datetime.timedelta(days=7):
                 # remove tasks that are complete but older than a week
-                del models_in_queue[m_name][task_name]
+                to_remove.append((m_name,task_name))
+    for m_name, task in to_remove:
+        del models_in_queue[m_name][task]
+        print "models in queue"
+        print models_in_queue[m_name]
     last_notice = new_last_notice
     k = time_index.keys()
     k.sort(key=lambda x: time_index[x])
@@ -537,7 +542,44 @@ class MDiGWorker():
                 'status':{ 'active_instance': instance_idx,
                     'description':"Generating images"} }
         self.results_q.put(msg)
-        try: ea.do_instance(instance)
+        try: ea.do_instance_images(instance)
+        except: raise
+        msg = {'model': m_name,'action': action, 'status':{
+            'complete':datetime.datetime.now() } }
+        self.results_q.put(msg)
+
+    def create_occupancy_map_pack(self, m_name, instance_idx=None, ls=None):
+        action = "OCCUPANCY_MAP_PACK"
+        model_file = mdig.repository.get_models()[m_name]
+        dm = DispersalModel(model_file)
+        instance = dm.get_instances()[instance_idx]
+        # Tell web interface we've started
+        msg = {'model': m_name,'action': action,
+                'status':{ 'started': datetime.datetime.now() } }
+        self.results_q.put(msg)
+        self.log.debug("Checking/creating envelopes")
+        # Tell web interface what we're doing
+        msg = {'model': m_name,'action': action,
+                'status':{ 'active_instance': instance_idx, 'description':"Creating occupancy envelopes"} }
+        self.results_q.put(msg)
+        # Add listener so that we have progress updates
+        instance.listeners.append(self.listener)
+        # Now actually create the envelopes if necessary
+        instance.update_occupancy_envelope(ls_list=[ls])
+        # also convert occupancy envelopes into images
+        # via ExportAction
+        from Actions import ExportAction
+        ea=ExportAction()
+        ea.parse_options([])
+        ea.options.output_map_pack = True
+        ea.options.output_lifestage = ls
+        ea.listeners.append(self.listener)
+        self.log.debug("Exporting maps")
+        msg = {'model': m_name,'action': action,
+                'status':{ 'active_instance': instance_idx,
+                    'description':"Exporting maps"} }
+        self.results_q.put(msg)
+        try: ea.do_instance_map_pack(instance)
         except: raise
         msg = {'model': m_name,'action': action, 'status':{
             'complete':datetime.datetime.now() } }
@@ -566,7 +608,7 @@ class MDiGWorker():
         ea.options.output_image = True
         ea.options.output_lifestage = ls
         ea.options.reps = [ replicate ]
-        try: ea.do_instance(instance)
+        try: ea.do_instance_images(instance)
         except: raise
         msg = {'model': m_name,'action': action,
                 'status':{ 'started': datetime.datetime.now(),
@@ -585,9 +627,9 @@ class MDiGWorker():
             try:
                 s = self.work_q.get(timeout=1)
                 action = s['action'] # the action to perform
-                m_name = s['model'] # the model it applies to
+                if 'model' in s: m_name = s['model'] # the model it applies to
                 if action == "SHUTDOWN":
-                    running = False
+                    self.running = False
                 elif action == "RUN":
                     rerun = s['parameters']['rerun']
                     self.run_model(m_name, rerun=rerun)
@@ -602,6 +644,15 @@ class MDiGWorker():
                     instance_idx = s['parameters']['instance_idx']
                     rep = s['parameters']['replicate']
                     self.create_replicate_gif(m_name,instance_idx,rep,ls_id)
+                elif action == "OCCUPANCY_MAP_PACK":
+                    ls_id = s['parameters']['lifestage']
+                    instance_idx = s['parameters']['instance_idx']
+                    self.create_occupancy_map_pack(m_name,instance_idx,ls_id)
+                elif action == "REPLICATE_MAP_PACK":
+                    ls_id = s['parameters']['lifestage']
+                    instance_idx = s['parameters']['instance_idx']
+                    rep = s['parameters']['replicate']
+                    self.create_replicate_map_pack(m_name,instance_idx,rep,ls_id)
                 else:
                     self.log.error("Unknown task: %s" % str(s))
                 self.work_q.task_done()
@@ -643,27 +694,11 @@ class ResultMonitor(Thread):
                 print "resultmonitor received" + str(s)
                 print "before: " + str(models_in_queue)
                 m_action = s['action']
-                m_name = s['model']
-                models_in_queue[m_name][m_action].update(s['status'])
-                #if "started" in s['status']:
-                #    models_in_queue[m_name][m_action]["started"] = datetime.datetime.now()
-                #elif "complete" in s['status']:
-                #    models_in_queue[m_name][m_action]["complete"] = datetime.datetime.now()
-                #elif "error" in s['status']:
-                #    models_in_queue[m_name][m_action].update(m_status)
-                #if "active_instance" in s['status']:
-                #    # Any status/progress update should be related to an
-                #    # instance
-                #    models_in_queue[m_name][m_action]["instance"] =
-                #    m_status["acinstance"]
-                #    models_in_queue[m_name][m_action]["percent_done"] = m_status["percent_done"]
-                #    if "description" in m_status:
-                #        models_in_queue[m_name][m_action].update(m_status)
-                #else:
-                #    print "Unknown status update received from worker process:" \
-                #        + str(m_status)
-                models_in_queue[m_name][m_action]['last_update'] = datetime.datetime.now()
-                print models_in_queue
+                if 'model' in s:
+                    m_name = s['model']
+                    models_in_queue[m_name][m_action].update(s['status'])
+                    models_in_queue[m_name][m_action]['last_update'] = datetime.datetime.now()
+                    print models_in_queue
             except q.Empty:
                 pass
         
@@ -685,7 +720,7 @@ def start_web_service():
     import paste.evalexception
     myapp = paste.evalexception.middleware.EvalException(app)
     c = MDiGConfig.get_config()
-    run(app=myapp, host=c["WEB"]["host"], port=c["WEB"]["port"], reloader=reloader)
+    bottle.run(app=myapp, host=c["WEB"]["host"], port=c["WEB"]["port"], reloader=reloader)
 
 # Store the web mapsets that have been created so that we can tidy up afterwards
 mapsets = {} # indexed by location
@@ -701,6 +736,6 @@ def shutdown_webapp():
     if app is None: return
     rt.running = False
     work_q.put({'action':"SHUTDOWN"})
-    mdig_worker_process.join()
+    if mdig_worker_process.pid: mdig_worker_process.join()
     print "TODO: delete temporary webservice files"
 

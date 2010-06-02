@@ -39,7 +39,8 @@ from configobj import ConfigObj
 
 import mdig
 
-if sys.platform == "win32":                # on a Windows port
+if sys.platform == "win32": #pragma: no cover
+    # on a Windows port
     try:
         from win32com.shell import shellcon, shell
         home_dir = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0);

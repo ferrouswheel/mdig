@@ -512,6 +512,10 @@ class ExportAction(Action):
                 help="Output a series of images, one for each population distribution map",
                 action="store_true",
                 dest="output_image")
+        self.parser.add_option("-m","--mappack",
+                help="Output a zip file with exported maps",
+                action="store_true",
+                dest="output_map_pack")
         self.parser.add_option("-p","--rep",
                 help="Output maps for rep instead of for occupancy envelope",
                 action="append",
@@ -552,13 +556,16 @@ class ExportAction(Action):
             self.options.background = c["OUTPUT"]["background_map"]
     
     def do_me(self,mdig_model):
-        if not self.options.output_gif and \
-            not self.options.output_image:
+        output_images = self.options.output_gif or self.options.output_image 
+        if not (output_images or self.options.output_map_pack):
             self.log.warning("No type for output was specified...")
             sys.exit(0)
         for i in mdig_model.get_instances():
             try:
-                self.do_instance(i)
+                if self.options.output_map_pack:
+                    self.do_instance_map_pack(i)
+                if output_images:
+                    self.do_instance_images(i)
             except InvalidLifestageException, e:
                 sys.exit(mdig.mdig_exit_codes["invalid_lifestage"])
             except InstanceIncompleteException, e:
@@ -566,12 +573,13 @@ class ExportAction(Action):
             except InvalidReplicateException, e:
                 sys.exit(mdig.mdig_exit_codes["invalid_replicate_index"])
             except NoOccupancyEnvelopesException, e:
+                self.log.error(str(e))
                 sys.exit(mdig.mdig_exit_codes["missing_envelopes"])
             except Exception, e:
                 print str(e)
                 sys.exit(mdig.mdig_exit_codes["unknown"])
 
-    def do_instance(self,i):
+    def do_instance_map_pack(self,i):
         # TODO: only overwrite files if -o flag is set
         import OutputFormats
         model_name = i.experiment.get_name()
@@ -583,6 +591,77 @@ class ExportAction(Action):
         if not i.is_complete():
             self.log.error("Instance " + repr(i) + " not complete")
             raise InstanceIncompleteException()
+        # check that background map exists
+        g = GRASSInterface.get_g()
+        if self.options.reps:
+            if len(self.options.reps) > 1:
+                self.log.info("Exporting maps of reps: %s" % str(self.options.reps))
+            # Run on replicates
+            rs = i.replicates
+            if len(rs) == 0:
+                self.log.error("No replicates. Have you run the model first?")
+            for r_index in self.options.reps:
+                self.log.info("Exporting maps of rep %d" % r_index)
+                if r_index < 0 or r_index >= len(rs):
+                    self.log.error("Invalid replicate index." +
+                            " Have you 'run' the model first or are you "
+                            "specifying an invalid replicate index?")
+                    self.log.error("Valid replicate range is 0-%d." % (len(rs)-1))
+                    raise InvalidReplicateException(r_index)
+                r = rs[r_index]
+                map_list = []
+                saved_maps = r.get_saved_maps(ls)
+
+                # Normalise the color scale so that the lgend and range doesn't
+                # keep changing for map to map
+                self.log.info("Normalising colours")
+                the_range = GRASSInterface.get_g().normalise_map_colors(saved_maps.values())
+
+                times = saved_maps.keys()
+                times.sort(key=lambda x: float(x))
+                rep_filenames = r.get_img_filenames(ls) 
+                for t in times:
+                    m = saved_maps[t]
+                    map_list.append(self.export_map(m,rep_filenames[t],model_name, t, ls))
+                    self.update_listeners(None, r, ls, t)
+                self.zip_maps(map_list,r.get_img_filenames(ls,gif=True))
+                all_maps.extend(map_list)
+        else:
+            # Run on occupancy envelopes
+            self.log.info("Exporting occupancy envelope maps")
+            self.log.debug("Fetching occupancy envelopes")
+            env = i.get_occupancy_envelopes()
+            if env is None:
+                raise NoOccupancyEnvelopesException("No occupancy envelopes available.")
+            map_list = []
+            times = env[ls].keys()
+            times.sort(key=lambda x: float(x))
+            img_filenames = i.get_occ_envelope_img_filenames(ls) 
+            for t in times:
+                m = env[ls][t]
+                map_list.append(self.export_map(m,img_filenames[t]))
+                self.update_listeners(i, None, ls, t)
+            self.zip_maps(map_list,i.get_occ_envelope_img_filenames(ls,gif=True) )
+            all_maps.extend(map_list)
+        # Remove the non-zipped maps
+        for m in all_maps:
+            os.remove(m)
+
+    def export_map(self,map,out_fn):
+        pass
+
+    def zip_maps(self,maps,zip_fn):
+        pass
+
+    def do_instance_images(self,i):
+        # TODO: only overwrite files if -o flag is set
+        import OutputFormats
+        model_name = i.experiment.get_name()
+        ls = self.options.output_lifestage
+        if ls not in i.experiment.get_lifestage_ids():
+            self.log.error("No such lifestage called %s in model." % str(ls))
+            raise InvalidLifestageException()
+        all_maps = []
         # check that background map exists
         g = GRASSInterface.get_g()
         if self.options.background and not g.check_map(self.options.background):
@@ -623,6 +702,9 @@ class ExportAction(Action):
                     self.create_gif(map_list,r.get_img_filenames(ls,gif=True))
                 all_maps.extend(map_list)
         else:
+            if not i.is_complete():
+                self.log.error("Instance " + repr(i) + " not complete")
+                raise InstanceIncompleteException()
             # Run on occupancy envelopes
             self.log.info("Creating images for occupancy envelopes")
             self.log.debug("Fetching occupancy envelopes")
