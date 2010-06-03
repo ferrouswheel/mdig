@@ -9,6 +9,12 @@
 <body>
 %include status_headline task_updates=task_updates, task_order=task_order
 <h1><a href="/models/{{instance.experiment.get_name()}}">{{instance.experiment.get_name()}}</a> - Instance {{idx}}</h1>
+%if error:
+<div class="error">
+Sorry, there's been an error :-(<br/>
+{{error}}
+</a>
+%end
 <div class="details">
 %if not instance.enabled:
 <div style="color:#ef0022"><strong>DISABLED</strong></div>
@@ -19,6 +25,7 @@
 %end
 <div class="envelopes">
 <h2>Occupancy Envelope</h2>
+%count=0
 %for ls_id, gif_exists in envelopes_present:
 <h3> Lifestage "{{ls_id}}" </h3>
 %if gif_exists: # show animation!
@@ -32,6 +39,19 @@ value="Regenerate envelope"/></form></p>
 <input type="hidden" name="envelope" value="{{ls_id}}"/></td>
 <p>No occupancy envelope animation has been generated. <input type="submit"
 value="Generate envelope"/></form></p>
+%end
+%map_pack_exists = map_packs_present[count][1]; count += 1
+%if map_pack_exists:
+<a href="{{idx}}/{{ls_id}}/map_pack.zip">Download zip of these maps as a zip file of GeoTIFFs</a>
+<form action="" method="post">
+<input type="hidden" name="map_pack" value="{{ls_id}}"/></td>
+<p>If you believe this map pack doesn't reflect the latest simulations: <input type="submit"
+value="Regenerate map pack"/></form></p>
+% else:
+<form action="" method="post">
+<input type="hidden" name="map_pack" value="{{ls_id}}"/></td>
+<p>No map pack has been generated. <input type="submit"
+value="Generate"/></form></p>
 %end
 %end
 </div>

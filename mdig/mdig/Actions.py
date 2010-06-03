@@ -623,7 +623,7 @@ class ExportAction(Action):
                 for t in times:
                     m = saved_maps[t]
                     map_list.append(self.export_map(m,rep_filenames[t]))
-                    self.update_listeners(None, r, ls, t)
+                    self.update_listeners_map_pack(None, r, ls, t)
                 self.zip_maps(map_list,r.get_img_filenames(ls, extension=False, gif=True))
                 all_maps.extend(map_list)
         else:
@@ -643,7 +643,7 @@ class ExportAction(Action):
             for t in times:
                 m = env[ls][t]
                 map_list.append(self.export_map(m,img_filenames[t]))
-                self.update_listeners(i, None, ls, t)
+                self.update_listeners_map_pack(i, None, ls, t)
             self.zip_maps(map_list,i.get_occ_envelope_img_filenames(ls, extension=False, gif=True) )
             all_maps.extend(map_list)
         # Remove the non-zipped maps
@@ -762,6 +762,16 @@ class ExportAction(Action):
             for l in self.listeners:
                 if "export_image_complete" in dir(l):
                     l.export_image_complete(None, replicate, ls,t)
+
+    def update_listeners_map_pack(self,instance,replicate,ls,t):
+        if instance:
+            for l in self.listeners:
+                if "export_map_pack_complete" in dir(l):
+                    l.export_map_pack_complete(instance, None, ls,t)
+        elif replicate:
+            for l in self.listeners:
+                if "export_map_pack_complete" in dir(l):
+                    l.export_map_pack_complete(None, replicate, ls,t)
 
     def create_gif(self,maps,fn):
         from subprocess import Popen, PIPE

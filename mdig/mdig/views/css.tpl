@@ -42,4 +42,8 @@ border:1px dashed #EAC117;
 .gifanimation {
 border:1px dashed green;
 }
+
+.error {
+background-color:#FF2020;
+}
 </style>

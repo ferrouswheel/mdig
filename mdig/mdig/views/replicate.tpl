@@ -11,6 +11,12 @@
 <body>
 %include status_headline task_updates=task_updates, task_order=task_order
 <h1><a href="/models/{{instance.experiment.get_name()}}">{{instance.experiment.get_name()}}</a> - <a href="/models/{{instance.experiment.get_name()}}/instances/{{idx}}">Instance {{idx}}</a> - Replicate {{rep_num}}</h1>
+%if error:
+<div class="error">
+Sorry, there's been an error :-(<br/>
+{{error}}
+</a>
+%end
 <div class="details">
 <div class="region"><strong>Region:</strong> {{instance.r_id}}</div>
 %if instance.strategy is not None:
@@ -18,6 +24,7 @@
 %end
 <div class="Maps">
 <h2>Maps</h2>
+%count=0
 %for ls_id, gif_exists in gifs_present:
 <h3> Lifestage "{{ls_id}}" </h3>
 %if gif_exists: # show animation!
@@ -31,6 +38,19 @@ value="Regenerate animation"/></form></p>
 <input type="hidden" name="gif" value="{{ls_id}}"/></td>
 <p>No animation has been generated. <input type="submit"
 value="Generate animation"/></form></p>
+%end
+%map_pack_exists = map_packs_present[count][1]; count += 1
+%if map_pack_exists:
+<a href="{{rep_num}}/{{ls_id}}/map_pack.zip">Download zip of these maps as a zip file of GeoTIFFs</a>
+<form action="" method="post">
+<input type="hidden" name="map_pack" value="{{ls_id}}"/></td>
+<p>If you believe this map pack doesn't reflect the latest simulations: <input type="submit"
+value="Regenerate map pack"/></form></p>
+% else:
+<form action="" method="post">
+<input type="hidden" name="map_pack" value="{{ls_id}}"/></td>
+<p>No map pack has been generated. <input type="submit"
+value="Generate"/></form></p>
 %end
 %end
 </div>
