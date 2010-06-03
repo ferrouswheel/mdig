@@ -269,11 +269,12 @@ class DispersalInstance:
                 # under instance...
                 self.add_analysis_result(ls_id, ac) #TODO(cmd_string, tmp_fn))
 
-    def get_occ_envelope_img_filenames(self, ls="all", gif=False):
+    def get_occ_envelope_img_filenames(self, ls="all", extension=True, gif=False):
         output_dir = os.path.join(self.experiment.base_dir,"output")
         fn = OutputFormats.create_filename(self)
         if gif:
-            result = os.path.join(output_dir, fn + "_ls_" + ls + "_anim.gif")
+            result = os.path.join(output_dir, fn + "_ls_" + ls + "_anim")
+            if extension: result += '.gif'
         else: 
             result = {}
             env = self.get_occupancy_envelopes()
@@ -282,7 +283,8 @@ class DispersalInstance:
             times = env[ls].keys()
             times.sort(key=lambda x: float(x))
             for t in times:
-                result[t] = os.path.join(output_dir, fn + "_ls_" + ls + "_" + str(t) + '.png')
+                result[t] = os.path.join(output_dir, fn + "_ls_" + ls + "_" + str(t))
+                if extension: result[t] += '.png'
         return result
         
     def null_bitmask(self, generate=True):

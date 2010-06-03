@@ -189,7 +189,7 @@ class Replicate:
             for m in maps.values():
                 GRASSInterface.get_g().null_bitmask(m,generate=generate_null)
     
-    def get_img_filenames(self, ls="all", gif=False):
+    def get_img_filenames(self, ls="all", extension=True, gif=False):
         """ Get a dict of time:image_filename pairs for outputting maps to.
         Warning, this doesn't check that ls is an actual lifestage.
         If gif is true, then returns a single string
@@ -197,7 +197,8 @@ class Replicate:
         output_dir = os.path.join(self.instance.experiment.base_dir,"output")
         fn = OutputFormats.create_filename(self)
         if gif:
-            result = os.path.join(output_dir,fn + "_ls_" + ls + "_anim.gif")
+            result = os.path.join(output_dir,fn + "_ls_" + ls + "_anim")
+            if extension: result += '.gif'
         else: 
             result = {}
             env = self.get_saved_maps(ls)
@@ -206,7 +207,8 @@ class Replicate:
             times = env.keys()
             times.sort(key=lambda x: float(x))
             for t in times:
-                result[t] = os.path.join(output_dir, fn + "_ls_" + ls + "_" + str(t) + '.png')
+                result[t] = os.path.join(output_dir, fn + "_ls_" + ls + "_" + str(t))
+                if extension: result[t] += '.png'
         return result
         
     def set_seed(self,s):

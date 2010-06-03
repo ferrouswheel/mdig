@@ -576,7 +576,9 @@ class ExportAction(Action):
                 self.log.error(str(e))
                 sys.exit(mdig.mdig_exit_codes["missing_envelopes"])
             except Exception, e:
+                import traceback
                 print str(e)
+                traceback.print_exc()
                 sys.exit(mdig.mdig_exit_codes["unknown"])
 
     def do_instance_map_pack(self,i):
@@ -588,9 +590,6 @@ class ExportAction(Action):
             self.log.error("No such lifestage called %s in model." % str(ls))
             raise InvalidLifestageException()
         all_maps = []
-        if not i.is_complete():
-            self.log.error("Instance " + repr(i) + " not complete")
-            raise InstanceIncompleteException()
         # check that background map exists
         g = GRASSInterface.get_g()
         if self.options.reps:
@@ -599,7 +598,8 @@ class ExportAction(Action):
             # Run on replicates
             rs = i.replicates
             if len(rs) == 0:
-                self.log.error("No replicates. Have you run the model first?")
+                self.log.error("No replicates for instance %d. Have you run the model first?" % i.experiment.get_instances().index(i))
+                return
             for r_index in self.options.reps:
                 self.log.info("Exporting maps of rep %d" % r_index)
                 if r_index < 0 or r_index >= len(rs):
@@ -619,14 +619,17 @@ class ExportAction(Action):
 
                 times = saved_maps.keys()
                 times.sort(key=lambda x: float(x))
-                rep_filenames = r.get_img_filenames(ls) 
+                rep_filenames = r.get_img_filenames(ls, extension=False) 
                 for t in times:
                     m = saved_maps[t]
-                    map_list.append(self.export_map(m,rep_filenames[t],model_name, t, ls))
+                    map_list.append(self.export_map(m,rep_filenames[t]))
                     self.update_listeners(None, r, ls, t)
-                self.zip_maps(map_list,r.get_img_filenames(ls,gif=True))
+                self.zip_maps(map_list,r.get_img_filenames(ls, extension=False, gif=True))
                 all_maps.extend(map_list)
         else:
+            if not i.is_complete():
+                self.log.error("Instance " + repr(i) + " not complete")
+                raise InstanceIncompleteException()
             # Run on occupancy envelopes
             self.log.info("Exporting occupancy envelope maps")
             self.log.debug("Fetching occupancy envelopes")
@@ -636,22 +639,44 @@ class ExportAction(Action):
             map_list = []
             times = env[ls].keys()
             times.sort(key=lambda x: float(x))
-            img_filenames = i.get_occ_envelope_img_filenames(ls) 
+            img_filenames = i.get_occ_envelope_img_filenames(ls, extension=False) 
             for t in times:
                 m = env[ls][t]
                 map_list.append(self.export_map(m,img_filenames[t]))
                 self.update_listeners(i, None, ls, t)
-            self.zip_maps(map_list,i.get_occ_envelope_img_filenames(ls,gif=True) )
+            self.zip_maps(map_list,i.get_occ_envelope_img_filenames(ls, extension=False, gif=True) )
             all_maps.extend(map_list)
         # Remove the non-zipped maps
         for m in all_maps:
             os.remove(m)
 
-    def export_map(self,map,out_fn):
-        pass
+    def export_map(self,map,out_fn,envelope=False):
+        old_region = "ExportActionBackupRegion"
+        g = GRASSInterface.get_g()
+        g.run_command('g.region --o save='+old_region)
+        g.set_region(raster=map) 
+        cmd = 'r.out.gdal input=%s output=%s.tif format=GTiff type=%s createopt="COMPRESS=PACKBITS,INTERLEAVE=PIXEL"'
+        if envelope:
+            cmd = cmd % (map, out_fn, 'Float32')
+        else:
+            cmd = cmd % (map, out_fn, 'UInt16')
+
+        g.run_command(cmd)
+        g.set_region(old_region) 
+        return out_fn + ".tif"
 
     def zip_maps(self,maps,zip_fn):
-        pass
+        import zipfile
+        import os.path
+        zip_fn += ".zip"
+        try: 
+            z = zipfile.ZipFile(zip_fn,mode='w',compression=zipfile.ZIP_DEFLATED)
+        except RuntimeError:
+            self.log.warning("No zlib available for compressing zip, " + \
+                    "defaulting to plain storage")
+            z = zipfile.ZipFile(zip_fn,mode='w')
+        for m in maps: z.write(m, os.path.basename(m))
+        z.close()
 
     def do_instance_images(self,i):
         # TODO: only overwrite files if -o flag is set

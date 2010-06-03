@@ -117,7 +117,6 @@ def submit_model():
     try:
         model_name = add_model_to_staging(data)
     except Exception, e:
-        pdb.set_trace()
         if "Model exists" in str(e):
             # TODO provide a force parameter in query string which asks user
             # whether to overwrite model (or just to overwrite the model xml

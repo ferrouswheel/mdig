@@ -34,7 +34,6 @@ class ModelRepository:
 
     def add_model(self, model_fn):
         import shutil
-        import pdb; pdb.set_trace()
         if not os.path.isfile(model_fn):
             raise RepositoryException("Model file %s is not a file."%model_fn)
         g = GRASSInterface.get_g()

@@ -1057,7 +1057,7 @@ class DispersalModel(object):
         g = self.grass_i
         loc = self.get_location()
         if loc:
-            self.log.warning("Location %s in model definition but should have been removed on addition to the db." % loc)
+            self.log.warning("Location %s in model definition for '%s' but should have been removed on addition to the db." % (loc,self.get_name()))
         loc = self.infer_location()
         if not g.check_location(loc):
             self.log.error("Location %s in model definition does not exist" % loc)

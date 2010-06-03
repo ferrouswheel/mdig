@@ -559,12 +559,19 @@ class GRASSInterface:
             
         return res
         
-    def set_region(self,region):
-        name = region.get_name()
+    def set_region(self,region=None,raster=None):
+        name = None
+        if region:
+            import mdig.Region
+            if isinstance(region,mdig.Region.Region): name = region.get_name()
+            else: name = region
         # Now set region
-        if name is not None:
+        if name:
             self.log.debug("Setting region to %s", name)
             ret = self.run_command('g.region region=%s' % name)
+        elif raster:
+            self.log.debug("Setting region to match raster %s", raster)
+            ret = self.run_command('g.region rast=%s' % raster)
         else:
             extents = region.getExtents()
             command_string = 'g.region '
