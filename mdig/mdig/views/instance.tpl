@@ -11,9 +11,8 @@
 <h1><a href="/models/{{instance.experiment.get_name()}}">{{instance.experiment.get_name()}}</a> - Instance {{idx}}</h1>
 %if error:
 <div class="error">
-Sorry, there's been an error :-(<br/>
-{{error}}
-</a>
+Error: {{error}}
+</div>
 %end
 <div class="details">
 %if not instance.enabled:

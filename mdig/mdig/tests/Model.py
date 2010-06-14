@@ -3,6 +3,7 @@ from mock import *
 
 import os
 import tempfile
+import shutil
 
 import mdig
 from mdig import MDiGConfig
@@ -14,9 +15,9 @@ from mdig.ModelRepository import ModelRepository,RepositoryException
 class RepositoryTest(unittest.TestCase):
 
     def setUp(self):
-        self.temp_dir = tempfile.mkdtemp("mdig_test_")
+        self.temp_dir = tempfile.mkdtemp(prefix="mdig_test_")
 
-    def teardown(self):
+    def tearDown(self):
         shutil.rmtree(self.temp_dir)
 
     def normal_repository_test(self):
@@ -29,6 +30,7 @@ class RepositoryTest(unittest.TestCase):
         self.assertTrue("management_delay" in models)
         self.assertTrue("management_event" in models)
         self.assertTrue("management_alter_variable" in models)
+
 
     def make_grass_mock(self,g):
         g.grass_vars = {}
@@ -60,6 +62,27 @@ class RepositoryTest(unittest.TestCase):
         shutil.rmtree(os.path.join(db_path,'grass_location'))
 
     @patch('mdig.GRASSInterface.get_g')
+    def remove_model_test(self,get_g):
+        self.make_grass_mock(get_g.return_value)
+        # Assume no appropriate files in tmp
+        c = MDiGConfig.get_config()
+        m = ModelRepository(self.temp_dir)
+        self.assertEqual(len(m.get_models()), 0)
+
+        # Try to add a model from one repository to the empty one
+        try: self.remove_mock_location(self.temp_dir)
+        except OSError, e:
+            if 'No such file' not in str(e): raise e
+        m2 = ModelRepository()
+        a_file = m2.get_models()['variables']
+        self.create_mock_location(self.temp_dir)
+        m.add_model(a_file)
+        self.assertEqual(len(m.get_models()), 1)
+        m.remove_model('variables',force=True)
+        self.assertEqual(get_g.return_value.remove_mapset.call_args[0][0], 'variables')
+        self.remove_mock_location(self.temp_dir)
+
+    @patch('mdig.GRASSInterface.get_g')
     def empty_repository_test(self,get_g):
         self.make_grass_mock(get_g.return_value)
         # Assume no appropriate files in tmp
@@ -74,7 +97,12 @@ class RepositoryTest(unittest.TestCase):
         g.in_grass_shell = True
         m_in_grass = ModelRepository(self.temp_dir)
         self.assertEqual(m_in_grass.db, self.temp_dir)
+        # Test with no specified dir
+        m_in_grass = ModelRepository()
+        self.assertEqual(m_in_grass.db, self.temp_dir)
         g.in_grass_shell = False
+        # Test with dir missing
+        self.assertRaises(OSError,ModelRepository,'invalid/dir')
 
         # Try to add a model from one repository to the empty one
         try: self.remove_mock_location(self.temp_dir)
@@ -88,7 +116,43 @@ class RepositoryTest(unittest.TestCase):
         self.create_mock_location(self.temp_dir)
         m.add_model(a_file)
         self.assertEqual(len(m.get_models()), 1)
+        self.assertRaises(RepositoryException,m.add_model,"invalid_file.xml")
         self.remove_mock_location(self.temp_dir)
+
+        # test trying to model with missing location
+        dm = DispersalModel(a_file)
+        nodes = dm.xml_model.xpath('/model/GISLocation')
+        nodes[0].getparent().remove(nodes[0])
+        temp_model_fn = "no_location_model.xml"
+        dm.save_model(filename=temp_model_fn)
+        self.assertRaises(RepositoryException,m.add_model,temp_model_fn) 
+        os.remove(temp_model_fn)
+
+        # test when mapset already exists with the name of model
+        get_g.return_value.check_mapset.return_value = True
+        self.create_mock_location(self.temp_dir)
+        e = ""
+        try:
+            m.add_model(a_file)
+        except RepositoryException, e:
+            pass
+        self.assertTrue("it already exists" in str(e))
+        self.remove_mock_location(self.temp_dir)
+        get_g.return_value.check_mapset.return_value = False
+
+        # test what happens if we can't create new mapset
+        get_g.return_value.change_mapset.return_value = False
+        self.create_mock_location(self.temp_dir)
+        e = ""
+        try:
+            m.add_model(a_file)
+        except RepositoryException, e:
+            pass
+        self.assertTrue("Couldn't create mapset" in str(e))
+        self.remove_mock_location(self.temp_dir)
+        get_g.return_value.change_mapset.return_value = True
+
+
 
 class DispersalModelTest(unittest.TestCase):
 
@@ -435,7 +499,8 @@ class GrassMapTest(unittest.TestCase):
         gmap.clean_up()
         self.assertEqual(get_g.return_value.destruct_map.call_count,2)
 
-    def test_change_map_type(self):
+    @patch('mdig.GRASSInterface.get_g')
+    def test_change_map_type(self,get_g):
         gmap = GrassMap(filename="test")
         self.assertRaises(NotImplementedError, gmap.change_map_type, "raster", "1") 
 

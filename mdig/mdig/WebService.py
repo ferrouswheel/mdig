@@ -247,6 +247,7 @@ def index():
         except mdig.DispersalModel.ValidationError, e:
             print str(e)
             pass
+
     env = GRASSInterface.get_g().get_gis_env()
     task_order, task_updates = process_tasks()
     return dict(name=mdig.version_string, version=mdig.version,
@@ -769,6 +770,9 @@ class MDiGWorker():
                 if 'status' not in s: s['status'] = {}
                 s['status']['error'] = str(e)
                 self.results_q.put(s)
+        g = GRASSInterface.get_g()
+        g.clean_up()
+
 
 def mdig_worker_start(work_q,results_q):
     # Have to replace some of the environment variables, otherwise they get

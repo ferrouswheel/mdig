@@ -122,6 +122,7 @@ class GRASSInterface:
         self.grass_vars = {}
         self.filename = None
         self.outputIsTemporary = False
+        self.pid_dir = None
 
         self.old_mapset = None
         self.old_location = None
@@ -136,7 +137,6 @@ class GRASSInterface:
             self.init_environment()
         
         self.backup_region()
-
 
     def backup_region(self):
         self.log.log(logging.INFO, "Saving existing GRASS region")
@@ -239,6 +239,7 @@ class GRASSInterface:
         os.environ["GIS_VERSION"]="6.4.svn"
         #setup GISRC file
         tmp="/tmp/grass6-mdig-" + pid
+        self.pid_dir = tmp
         os.environ["GISRC"]=tmp + "/gisrc"
         os.mkdir(tmp)
         from MDiGConfig import home_dir
@@ -876,6 +877,9 @@ class GRASSInterface:
             self.destruct_map(self.blank_map)
         # TODO remove all other temporary maps
         self.close_display()
+        # remove PID dir
+        #if self.pid_dir and os.path.isdir(self.pid_dir):
+        #    shutil.rmtree(self.pid_dir)
 
     def get_blank_map(self):
         blank_map_name = "_____mdig_blank_map"

@@ -76,7 +76,6 @@ class Replicate:
             if "replicate" not in c or \
                 "check_complete" not in c["replicate"] or \
                 c["replicate"]["check_complete"] != "false":
-                import pdb; pdb.set_trace()
                 self.complete = self.check_complete()
             else:
                 # If the mdig.conf file has turned off check
@@ -97,7 +96,7 @@ class Replicate:
             try:
                 self.get_saved_maps(ls_key)
             except MapNotFoundException, e:
-                missing_maps[ls_key]=e.missing_maps
+                missing_maps[ls_key]=e.map_name
                 complete=False
                 self.log.warning("Maps missing from replicate, marked as " + \
                         "incomplete: %s", repr(missing_maps[ls_key]))
