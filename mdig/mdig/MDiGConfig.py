@@ -91,12 +91,48 @@ def get_config():
                 #if not valid(homeDir) :
                     #homeDir = 'C:\\'
     #return homeDir
+
+def find_grass_base_dir():
+    # TODO find from GRASS environment if it exists
+    # find from guessing /usr/local/grass*
+    import glob
+    return glob.glob('/usr/local/grass-*')[0]
+
+def find_grassdb_dir():
+    # TODO find from GRASS environment if it exists
+    # find from guessing /home/user/src/mdig/test
+    my_path = os.path.normpath(os.path.join(home_dir, '..', 'src/mdig/test'))
+    if os.path.isdir(my_path):
+        return my_path
+    return None
+
+def find_location_dir():
+    # TODO find from GRASS environment if it exists
+    # find from guessing /home/user/src/mdig/test/grass_location
+    my_path = find_grassdb_dir() 
+    if my_path:
+        to_check = os.listdir(my_path)
+        for d in to_check:
+            # find a path with a PERMANENT sub dir
+            d = os.path.join(my_path,d)
+            if os.path.isdir(d) and \
+                    os.path.isdir(os.path.join(d,'PERMANENT')):
+                return os.path.basename(d)
+    return None
  
 class MDiGConfig(ConfigObj):
     
+    # These options are required and the user will be prompted for them
+    required = {
+        'GRASS': {
+            "GISBASE": find_grass_base_dir,
+            "GISDBASE": find_grassdb_dir,
+            "LOCATION_NAME": find_location_dir,
+        }
+    }
     defaults = {
         'GRASS': {
-            "GISBASE":'/usr/local/grass-6.4.svn',
+            "GISBASE":'/usr/local/grass-6.4.0RC6',
             "GRASS_GNUPLOT":'gnuplot -persist',
             "GRASS_WIDTH":'640',
             "GRASS_HEIGHT":'480',
@@ -108,19 +144,19 @@ class MDiGConfig(ConfigObj):
             "GRASS_TRUECOLOR":'TRUE',
             "GRASS_TRANSPARENT":'TRUE',
             "GRASS_PNG_AUTO_WRITE":'TRUE',
-            "GISDBASE":'',
-            "LOCATION_NAME":'',
+            "GISDBASE": '/home/user/src/mdig/test',
+            "LOCATION_NAME": 'grass_location',
             "MAPSET":'PERMANENT'
         },
         'LOGGING': {
-            "ansi" :"false"
+            "ansi" :"true"
         },
         'WEB': {
             "host" :"localhost",
             "port" :1444
         },
         'OUTPUT': {
-            'background_map': "nz_DEM_jacques",
+            'background_map': 'nz_DEM',
             'output_width': 480,
             'output_height': 640
         }
@@ -179,6 +215,8 @@ class MDiGConfig(ConfigObj):
         else:
             self.config_path=home_dir
         self.cf_full_path = os.path.join(self.config_path,self.config_file)
+        self.prompt_user = False
+        if not os.path.isfile(self.cf_full_path): self.prompt_user = True
         # Initialise parent, and create the config file if it doesn't exist
         ConfigObj.__init__(self,self.cf_full_path, create_empty=True)
         self.updates()
@@ -220,15 +258,53 @@ class MDiGConfig(ConfigObj):
             self.write()
 
     def add_missing_defaults(self):
+        if self.prompt_user:
+            print \
+"""Can't find an MDiG config file. MDiG will assume this is the first
+time you've run MDiG and we'll now run you through the required
+values. Push any key to continue, or CTRL-C to abort. """
+            raw_input()
         for section in MDiGConfig.defaults:
+            # create section if missing
             if not self.has_key(section):
-                self[section] = MDiGConfig.defaults[section]
-            else:
-                for k in MDiGConfig.defaults[section]:
-                    if not self[section].has_key(k):
+                self[section] = {}
+            if self.prompt_user:
+                print "Setting up config file section [%s]" % section
+            for k in MDiGConfig.defaults[section]:
+                if not self[section].has_key(k):
+                    # If config file doesn't exist...
+                    # we should prompt for some values
+                    required = section in MDiGConfig.required \
+                            and k in MDiGConfig.required[section]
+                    if required:
+                        self[section][k] = self.prompt_for_config(section,k,self.prompt_user)
+                    else:
                         self[section][k] = MDiGConfig.defaults[section][k]
         self.write()
 
+    def prompt_for_config(self,section,k,fresh):
+        guess = None
+        if section in MDiGConfig.required \
+                and k in MDiGConfig.required[section]:
+            guess = MDiGConfig.required[section][k]
+        if guess: guess = guess() # guess should be a callable
+        if not fresh:
+            print "While setting up config, required parameter %s:%s was missing" % (section,k)
+        is_done = False
+        while not is_done:
+            if guess:
+                val = raw_input("Enter value for config parameter %s [%s]: " % (k,guess))
+            else:
+                val = raw_input("Enter value for config parameter %s: " % (k))
+            if len(val) == 0:
+                if guess:
+                    val = guess
+                    is_done = True
+                else:
+                    print "Please enter a value, no default available!"
+            else:
+                is_done = True
+        return val
     
 def makepath(path):
     """ creates missing directories for the given path and
