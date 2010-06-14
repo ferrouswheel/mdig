@@ -55,6 +55,7 @@ class GrassMap:
         elif self.filename is not None:
             # If a filename was passed, check it's type and if it exists
             self.map_type = GRASSInterface.get_g().check_map(self.filename)
+            self.temporary = False
             if self.map_type is None:
                 # ... raise an exception if it doesn't
                 raise GRASSInterface.MapNotFoundException(self.filename)
