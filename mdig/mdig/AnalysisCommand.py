@@ -179,7 +179,7 @@ class AnalysisCommand:
             times.sort()
         # check that there are enough maps to satisfy the command line
         # at least once.
-        if (len(times) - 1) < self.get_earliest_time():
+        if times[0] - self.get_earliest_time() < o_times[0]:
             self.log.error("Not enough past maps to fulfill "
                     "command line with earliest map %d maps "
                     "before present" % self.get_earliest_time())

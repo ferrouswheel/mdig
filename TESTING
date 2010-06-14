@@ -1,10 +1,27 @@
-Testing plan
+If you wish to run the unit tests for MDiG while developing code, then install
+nosetests for python which is a testing framework, and optionally "coverage"
+which is to measure the code coverage of tests:
 
-Create separate tests for framework and modules
+ easy_install nose
+ easy_install coverage
+ easy_install paste
 
-For modules, create before and after maps and make sure they have no difference,implement as a shell script to be run within GRASS.
+Then if you go to the mdig program directory (mdig/ from the root of the source)
+and run:
 
-For the framework, implement a GRASSInterface stub that behaves similarly, but
-doesn't actually run commands or require GRASS. Implement as Python. Will need
-to store a repository of maps that exist. Then use unittest module.
+ nosetests -v mdig/tests/Model.py
+
+Or to run with code coverage analysis:
+
+ nosetests -v --with-coverage mdig/tests/Model.py
+
+You'll run a bunch of tests to check everything's working correctly.
+
+Note - currently only basic tests are run, more rigarous tests are
+needed:
+* More model files that more thoroughly test the potential model types.
+* More coverage in unit tests for components within MDiG.
+* Comparison of the output maps from various models versus what the expected map
+  should look like. For modules, create before and after maps and make sure they
+  have no difference,implement as a shell script to be run within GRASS.
 

@@ -104,6 +104,7 @@ class DispersalModelTest(unittest.TestCase):
         dm = DispersalModel(the_action = RunAction(), setup=False)
 
 from mdig.AnalysisCommand import AnalysisCommand, OutputFileNotSetException
+from mdig import NotEnoughHistoryException
 class AnalysisCommandTest(unittest.TestCase):
 
     def setUp(self):
@@ -228,7 +229,9 @@ class AnalysisCommandTest(unittest.TestCase):
         # Test with time not in original times
         del o_times[2] # delete 1992
         self.assertRaises(ValueError,ac.set_times,(1990,1999),o_times,[1992])
-
+        # Test earliest time and not enough past maps to fulfill command line
+        ac = AnalysisCommand("test %19")
+        self.assertRaises(NotEnoughHistoryException,ac.set_times,(1990,1999),o_times,[-1])
 
     def test_get_earliest_time(self):
         # Test that normal use works
@@ -260,7 +263,7 @@ class AnalysisCommandTest(unittest.TestCase):
 from mdig import WebService
 from mdig.bottle import app, HTTPError, HTTPResponse, run
 import mdig.bottle
-class AnalysisCommandTest(unittest.TestCase):
+class WebServiceTest(unittest.TestCase):
 
     def setUp(self):
         mdig.repository = self.repo = ModelRepository()
