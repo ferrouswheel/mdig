@@ -29,25 +29,25 @@ Sorry, there's been an error :-(<br/>
 <h3> Lifestage "{{ls_id}}" </h3>
 %if gif_exists: # show animation!
 <img class="gifanimation" src="{{rep_num}}/{{ls_id}}/spread.gif"/>
-<form action="" method="post">
+<form action="{{rep_num}}/{{ls_id}}/spread.gif" method="post">
 <input type="hidden" name="gif" value="{{ls_id}}"/></td>
 <p>If you believe this animation doesn't reflect the latest simulations: <input type="submit"
 value="Regenerate animation"/></form></p>
 % else:
-<form action="" method="post">
+<form action="{{rep_num}}/{{ls_id}}/spread.gif" method="post">
 <input type="hidden" name="gif" value="{{ls_id}}"/></td>
 <p>No animation has been generated. <input type="submit"
 value="Generate animation"/></form></p>
 %end
 %map_pack_exists = map_packs_present[count][1]; count += 1
 %if map_pack_exists:
-<a href="{{rep_num}}/{{ls_id}}/map_pack.zip">Download zip of these maps as a zip file of GeoTIFFs</a>
-<form action="" method="post">
+<a href="{{rep_num}}/{{ls_id}}/map_pack.zip">Download these maps as a zip file of GeoTIFFs</a>
+<form action="{{rep_num}}/{{ls_id}}/map_pack.zip" method="post">
 <input type="hidden" name="map_pack" value="{{ls_id}}"/></td>
 <p>If you believe this map pack doesn't reflect the latest simulations: <input type="submit"
 value="Regenerate map pack"/></form></p>
 % else:
-<form action="" method="post">
+<form action="{{rep_num}}/{{ls_id}}/map_pack.zip" method="post">
 <input type="hidden" name="map_pack" value="{{ls_id}}"/></td>
 <p>No map pack has been generated. <input type="submit"
 value="Generate"/></form></p>

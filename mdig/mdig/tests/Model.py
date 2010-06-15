@@ -4,6 +4,7 @@ from mock import *
 import os
 import tempfile
 import shutil
+import datetime
 
 import mdig
 from mdig import MDiGConfig
@@ -381,7 +382,6 @@ class WebServiceTest(unittest.TestCase):
                 '/models/lifestage_test/instances/0/replicates/-111')
 
     def test_process_tasks(self):
-        import datetime
         now = datetime.datetime.now() 
         WebService.models_in_queue = {
             "lifestage_test": {
@@ -421,6 +421,93 @@ class WebServiceTest(unittest.TestCase):
 
     def test_change_to_mapset(self):
         WebService.change_to_web_mapset()
+
+    @patch('os.remove')
+    @patch('mdig.WebService.get_map_pack_usage')
+    def test_purge_oldest_map_packs(self,m_usage,m_rm):
+        m_usage.return_value = 0.0
+        # check that empty lfu does nothing
+        WebService.map_pack_lfu = []
+        WebService.purge_oldest_map_packs()
+        self.assertEqual(len(WebService.map_pack_lfu),0)
+        self.assertEqual(m_rm.call_count,0)
+
+        m_usage.return_value = 2000.0
+        WebService.map_pack_lfu = [('test1',None),
+                ('test2',datetime.datetime.now())]
+        WebService.purge_oldest_map_packs()
+        self.assertEqual(m_rm.call_count,1)
+        self.assertEqual(len(WebService.map_pack_lfu),1)
+
+        # Test when removal throws a no such file error with date
+        WebService.map_pack_lfu = [('test2',datetime.datetime.now()),('test1',None)]
+        m_rm.side_effect = OSError("No such file")
+        WebService.purge_oldest_map_packs()
+        self.assertEqual(len(WebService.map_pack_lfu),1)
+
+        # Test when removal throws a no such file error on a None date
+        WebService.map_pack_lfu = [('test1',None),
+                ('test2',datetime.datetime.now())]
+        m_rm.side_effect = OSError("No such file")
+        WebService.purge_oldest_map_packs()
+        self.assertEqual(len(WebService.map_pack_lfu),1)
+
+        # Test what happens when the OSError isn't to do with a invalid file
+        WebService.map_pack_lfu = [('test2',datetime.datetime.now()),('test1',None)]
+        m_rm.side_effect = OSError("Another OS error")
+        self.assertRaises(OSError,WebService.purge_oldest_map_packs)
+
+    @patch('os.path.getsize')
+    def test_get_map_pack_usage(self,m_sz):
+        five_megs = 1024*1024*5
+        m_sz.return_value = five_megs
+        WebService.map_pack_lfu = [('test1',None),
+                ('test2',datetime.datetime.now())]
+        usage = WebService.get_map_pack_usage()
+        self.assertEqual(usage, five_megs * 2 / (1024*1024))
+
+        m_sz.side_effect = OSError()
+        WebService.map_pack_lfu = [('test1',None),
+                ('test2',datetime.datetime.now())]
+        usage = WebService.get_map_pack_usage()
+        self.assertEqual(usage, 0.0)
+        self.assertEqual(len(WebService.map_pack_lfu),1)
+
+    def test_add_to_map_pack(self):
+        WebService.map_pack_lfu = []
+        # test empty
+        WebService.add_to_map_pack_lfu('test1')
+        self.assertEqual(WebService.map_pack_lfu[0][0],'test1')
+
+        # test not in lfu
+        WebService.add_to_map_pack_lfu('test2',nodate=True)
+        self.assertEqual(WebService.map_pack_lfu[1][0],'test2')
+        self.assertEqual(WebService.map_pack_lfu[1][1],None)
+
+        # test replace none with date
+        WebService.add_to_map_pack_lfu('test2')
+        self.assertNotEqual(WebService.map_pack_lfu[1][1],None)
+        print WebService.map_pack_lfu
+
+        # test replace with none 
+        WebService.add_to_map_pack_lfu('test1',nodate=True)
+        print WebService.map_pack_lfu
+        self.assertEqual(WebService.map_pack_lfu[1][1],None)
+
+        # test update date
+        old_date = WebService.map_pack_lfu[0][1]
+        WebService.add_to_map_pack_lfu('test2')
+        self.assertTrue(WebService.map_pack_lfu[1][1]>old_date)
+
+
+    #def test_run_model(self):
+    #    WebService.start_web_service()
+    #    WebService.mdig_worker_process = Mock()
+    #    r = self.call_url('/models/lifestage_test/run',method='POST')
+    #    self.assertTrue('RUN' in \
+    #            WebService.models_in_queue['lifestage_test']) 
+    #    WebService.shutdown_webapp()
+
 
 from mdig.GrassMap import GrassMap
 from StringIO import StringIO

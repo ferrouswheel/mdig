@@ -153,7 +153,8 @@ class MDiGConfig(ConfigObj):
         },
         'WEB': {
             "host" :"localhost",
-            "port" :1444
+            "port" :1444,
+            "map_pack_storage" : 1024 # In megabytes
         },
         'OUTPUT': {
             'background_map': 'nz_DEM',

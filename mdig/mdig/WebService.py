@@ -74,6 +74,10 @@ msg_template = {
         }
 }
 
+# dictionary which tracks the last access of map_packs so that we can delete
+# the least frequently used
+# values are (fn,date) and sorted so that oldest at position 0
+map_pack_lfu = []
 
 # dictionary of models that are being uploaded but have yet to have supporting
 # files uploaded
@@ -124,6 +128,44 @@ def submit_model():
             return "Model already exists in staging area"
     # check if model name exists in repository 
     return str(models_staging[model_name])
+
+def get_map_pack_usage():
+    # sum storage to check if we actually need to delete anything
+    sum_storage_mb = 0.0
+    to_remove = []
+    for i in range(0,len(map_pack_lfu)):
+        fn, date = map_pack_lfu[i]
+        try:
+            sum_storage_mb += float(os.path.getsize(fn)) / (1024*1024)
+        except OSError, e:
+            if date is not None: to_remove.append(i)
+    for i in to_remove: del map_pack_lfu[i]
+    return sum_storage_mb
+
+def purge_oldest_map_packs():
+    while get_map_pack_usage() > float(MDiGConfig.get_config()['WEB']['map_pack_storage']) \
+            and len(map_pack_lfu) > 1: 
+        # If there is only one don't delete, even if it is very big
+        # Delete oldest at position 0
+        fn,date = map_pack_lfu[0]
+        del map_pack_lfu[0]
+        try:
+            os.remove(fn)
+        except OSError, e:
+            if "No such file" in str(e): pass
+            else: raise e
+
+def add_to_map_pack_lfu(fn,nodate=False):
+    index=None
+    for i in range(0,len(map_pack_lfu)):
+        xfn, xdate = map_pack_lfu[i]
+        if fn == xfn:
+            index = i
+            break
+    if index is not None:
+        del map_pack_lfu[index]
+    if nodate: map_pack_lfu.append((fn,None))
+    else: map_pack_lfu.append((fn,datetime.datetime.now()))
 
 def process_tasks():
     """ go through all the tasks in models_in_queue and when they were
@@ -308,51 +350,6 @@ def show_instance(model,instance):
     envelope = None
     error = None
     m_name = dm.get_name()
-    if request.method=="POST":
-        # submit a job to generate map pack zip
-        if 'map_pack' in request.POST:
-            action = 'OCCUPANCY_MAP_PACK'
-            ls_id=request.POST['map_pack']
-            if m_name not in models_in_queue:
-                models_in_queue[m_name] = {}
-            if action in models_in_queue[m_name] and \
-                    'complete' not in models_in_queue[m_name][action]:
-                exists = True
-            elif ls_id not in dm.get_lifestage_ids():
-                # Invalid lifestage ID
-                error="Invalid lifestage ID"
-            else:
-                qsize=work_q.qsize()
-                models_in_queue[m_name][action] = {"approx_q_pos":qsize,
-                        "last_update":datetime.datetime.now()}
-                job_details = { "instance_idx": idx, "lifestage": ls_id }
-                work_q.put({'action':action,'model':dm.get_name(),'parameters':job_details})
-        # submit a job to generate the occupancy envelope
-        elif 'envelope' in request.POST and dm.is_complete():
-            ls_id=request.POST['envelope']
-            if m_name not in models_in_queue:
-                models_in_queue[m_name] = {}
-            else:
-                print models_in_queue
-            if 'OCCUPANCY_GIF' in models_in_queue[m_name] and \
-                    'complete' not in models_in_queue[m_name]['OCCUPANCY_GIF']:
-                exists = True
-            elif ls_id not in dm.get_lifestage_ids():
-                # Invalid lifestage ID
-                error="Invalid lifestage ID"
-            else:
-                qsize=work_q.qsize()
-                models_in_queue[m_name]['OCCUPANCY_GIF'] = {"approx_q_pos":qsize,
-                        "last_update":datetime.datetime.now()}
-                job_details = { "instance_idx": idx, "lifestage": ls_id }
-                work_q.put({'action':'OCCUPANCY_GIF','model':dm.get_name(),'parameters':job_details})
-            #started = 'started' in models_in_queue[m_name]['OCCUPANCY_GIF']
-        elif dm.is_complete():
-            error = "Unknown POST request" + str(request.POST.keys())
-        else:
-            # if instance isn't complete, then we can't create an
-            # occupancy envelope
-            error="The model isn't complete, please run the model first"
 
     # Scan output dir to see if gifs have been generated for this instance
     envelopes_present=[]
@@ -394,49 +391,6 @@ def show_replicate(model,instance,replicate):
     rep = instance.replicates[rep_num]
     error = None
     m_name = dm.get_name()
-    if request.method=="POST":
-        if 'map_pack' in request.POST:
-            action = 'REPLICATE_MAP_PACK'
-            ls_id=request.POST['map_pack']
-            if m_name not in models_in_queue:
-                models_in_queue[m_name] = {}
-            if action in models_in_queue[m_name] and \
-                    'complete' not in models_in_queue[m_name][action]:
-                exists = True
-            elif ls_id not in dm.get_lifestage_ids():
-                # Invalid lifestage ID
-                error="Invalid lifestage ID"
-            else:
-                qsize=work_q.qsize()
-                models_in_queue[m_name][action] = {"approx_q_pos":qsize,
-                        "last_update":datetime.datetime.now()}
-                job_details = { "instance_idx": idx, "lifestage": ls_id,
-                        "replicate": rep_num }
-                work_q.put({'action':action,'model':dm.get_name(),'parameters':job_details})
-        # submit a job to generate the occupancy gif 
-        if 'gif' in request.POST and rep.complete:
-            ls_id=request.POST['gif']
-            if m_name not in models_in_queue:
-                models_in_queue[m_name] = {}
-            if 'REPLICATE_GIF' in models_in_queue[m_name] and \
-                    'complete' not in models_in_queue[m_name]['REPLICATE_GIF']:
-                exists = True
-            elif ls_id not in dm.get_lifestage_ids():
-                # Invalid lifestage ID
-                error="Invalid lifestage ID"
-            else:
-                qsize=work_q.qsize()
-                models_in_queue[m_name]['REPLICATE_GIF'] = {"approx_q_pos":qsize,
-                        "last_update":datetime.datetime.now()}
-                job_details = { "instance_idx": idx, "lifestage": ls_id,
-                        "replicate": rep_num }
-                work_q.put({'action':'REPLICATE_GIF','model':dm.get_name(),'parameters':job_details})
-        elif rep.complete:
-            error = "Unknown POST request"
-        else:
-            # if instance isn't complete, then we can't create an
-            # occupancy gif
-            error="The replicate isn't complete, please run the instance first"
 
     # Scan output dir to see if gifs have been generated for this replicate
     gifs_present=[]
@@ -461,10 +415,62 @@ def show_replicate(model,instance,replicate):
 
 from bottle import send_file
 from mdig import OutputFormats
+from mdig.DispersalInstance import InstanceIncompleteException
+
+# Following methods are for getting and creating occupancy envelopes 
+
+def submit_occupancy_envelope_job(dm,idx,ls_id,action):
+    instance = dm.get_instances()[idx]
+    added = False
+    m_name = dm.get_name()
+    if dm.is_complete():
+        if m_name not in models_in_queue:
+            models_in_queue[m_name] = {}
+        else:
+            print "Model name already in queue"
+            print models_in_queue
+        if action in models_in_queue[m_name] and \
+                'complete' not in models_in_queue[m_name][action]:
+            # job already exists
+            exists = True
+        elif ls_id not in dm.get_lifestage_ids():
+            # Invalid lifestage ID
+            error="Invalid lifestage ID"
+        else:
+            qsize=work_q.qsize()
+            models_in_queue[m_name][action] = {"approx_q_pos":qsize,
+                    "last_update":datetime.datetime.now()}
+            job_details = { "instance_idx": idx, "lifestage": ls_id }
+            work_q.put({'action':action,'model':dm.get_name(),'parameters':job_details})
+            added=True
+    else:
+        # if instance isn't complete, then we can't create an
+        # occupancy envelope
+        raise InstanceIncompleteException(
+                "The instance isn't complete, can't create envelope")
+    return added
+
+@route('/models/:model/instances/:instance/:ls_id/envelope.gif',method='POST')
+@validate(instance=int, model=validate_model_name)
+def create_instance_occ_envelope_gif(model, instance, ls_id):
+    """ Create a job to generate the occupancy envelope for an instance and
+    convert to a gif """
+    dm=model
+    idx = int(instance)
+    if not validate_instance(dm, idx):
+        abort(404, "No such instance")
+    # submit a job to generate the occupancy envelope
+    ls_id=request.POST['envelope']
+    try:
+        submit_occupancy_envelope_job(dm,idx,ls_id,'OCCUPANCY_GIF')
+    except InstanceIncompleteException, e:
+        redirect('/models/%s/instances/%s' % (model.get_name(),idx))
+    redirect('/models/%s/instances/%s' % (model.get_name(),idx))
 
 @route('/models/:model/instances/:instance/:ls_id/envelope.gif')
 @validate(instance=int, model=validate_model_name)
 def instance_occ_envelope_gif(model, instance, ls_id):
+    """ Return the occupancy envelope for an instance as a gif """
     dm=model
     idx = int(instance)
     if not validate_instance(dm, idx):
@@ -475,9 +481,32 @@ def instance_occ_envelope_gif(model, instance, ls_id):
     root_dir = os.path.dirname(fn)
     send_file(os.path.basename(fn),root=root_dir)
 
+@route('/models/:model/instances/:instance/:ls_id/map_pack.zip',method='POST')
+@validate(instance=int, model=validate_model_name)
+def create_instance_occ_envelope_map_pack(model, instance, ls_id):
+    """ Create the occupancy envelopes for an instance and export to a map pack
+    of GeoTIFFs """
+    dm=model
+    idx = int(instance)
+    if not validate_instance(dm, idx):
+        abort(404, "No such instance")
+    instance = dm.get_instances()[idx]
+    # submit a job to generate the occupancy envelope
+    ls_id=request.POST['map_pack']
+    action = 'OCCUPANCY_MAP_PACK'
+    try:
+        submit_occupancy_envelope_job(dm,idx,ls_id,action)
+    except InstanceIncompleteException, e:
+        redirect('/models/%s/instances/%s' % (model.get_name(),idx))
+    purge_oldest_map_packs()
+    fn = instance.get_occ_envelope_img_filenames(ls=ls_id, extension=False, gif=True)
+    fn += '.zip'
+    add_to_map_pack_lfu(fn,nodate=True)
+    redirect('/models/%s/instances/%s' % (model.get_name(),idx))
+
 @route('/models/:model/instances/:instance/:ls_id/map_pack.zip')
 @validate(instance=int, model=validate_model_name)
-def instance_occ_envelope_gif(model, instance, ls_id):
+def instance_occ_envelope_map_pack(model, instance, ls_id):
     dm=model
     idx = int(instance)
     if not validate_instance(dm, idx):
@@ -486,8 +515,59 @@ def instance_occ_envelope_gif(model, instance, ls_id):
     # do per lifestage!
     fn = instance.get_occ_envelope_img_filenames(ls=ls_id, extension=False, gif=True)
     fn += '.zip'
-    root_dir = os.path.dirname(fn)
-    send_file(os.path.basename(fn),root=root_dir)
+    if os.path.isfile(fn):
+        add_to_map_pack_lfu(fn)
+        root_dir = os.path.dirname(fn)
+        send_file(os.path.basename(fn),root=root_dir)
+    abort(404, "No map pack generated")
+
+####################
+### Following methods are for getting and creating replicate maps
+#redirect('/models/%s/instances/%s/replicates/%s' % (model.get_name(),idx,replicate))
+
+def submit_replicate_job(dm,idx,rep_num,ls_id,action):
+    instance = dm.get_instances()[idx]
+    rep = instance.replicates[rep_num]
+    m_name = dm.get_name()
+    added = False
+    if rep.complete:
+        if m_name not in models_in_queue:
+            models_in_queue[m_name] = {}
+        if action in models_in_queue[m_name] and \
+                'complete' not in models_in_queue[m_name][action]:
+            exists = True
+        elif ls_id not in dm.get_lifestage_ids():
+            # Invalid lifestage ID
+            error="Invalid lifestage ID"
+        else:
+            qsize=work_q.qsize()
+            models_in_queue[m_name][action] = {"approx_q_pos":qsize,
+                    "last_update":datetime.datetime.now()}
+            job_details = { "instance_idx": idx, "lifestage": ls_id,
+                    "replicate": rep_num }
+            work_q.put({'action':action,'model':dm.get_name(),'parameters':job_details})
+            added=True
+    else:
+        error="The replicate isn't complete, please run the instance first"
+    return added
+
+@route('/models/:model/instances/:instance/replicates/:replicate/:ls_id/spread.gif',method='POST')
+@validate(replicate=int, instance=int, model=validate_model_name)
+def create_replicate_gif(model, instance, replicate, ls_id):
+    """ Create animated gif of replicate """
+    dm=model
+    idx = int(instance)
+    if not validate_instance(dm, idx):
+        abort(404, "No such instance")
+    instance = dm.get_instances()[idx]
+    if not validate_replicate(instance, replicate):
+        abort(404, "No such replicate, or replicate doesn't exist yet")
+    # submit a job to generate the occupancy envelope
+    ls_id=request.POST['gif']
+    action = 'REPLICATE_GIF'
+    submit_replicate_job(dm,idx,replicate,ls_id,action)
+    redirect('/models/%s/instances/%d/replicates/%d' %
+            (model.get_name(),idx,replicate))
 
 @route('/models/:model/instances/:instance/replicates/:replicate/:ls_id/spread.gif')
 @validate(replicate=int, instance=int, model=validate_model_name)
@@ -506,9 +586,32 @@ def replicate_spread_gif(model, instance, replicate, ls_id):
     root_dir = os.path.dirname(fn)
     send_file(os.path.basename(fn),root=root_dir)
 
+@route('/models/:model/instances/:instance/replicates/:replicate/:ls_id/map_pack.zip',method='POST')
+@validate(replicate=int, instance=int, model=validate_model_name)
+def create_replicate_map_pack(model, instance, replicate, ls_id):
+    """ Export the maps of a replicate to a map pack of GeoTIFFs """
+    dm=model
+    idx = int(instance)
+    if not validate_instance(dm, idx):
+        abort(404, "No such instance")
+    instance = dm.get_instances()[idx]
+    if not validate_replicate(instance, replicate):
+        abort(404, "No such replicate, or replicate doesn't exist yet")
+    # submit a job to generate the occupancy envelope
+    ls_id=request.POST['map_pack']
+    action = 'REPLICATE_MAP_PACK'
+    submit_replicate_job(dm,idx,replicate,ls_id,action)
+    purge_oldest_map_packs()
+    r = instance.replicates[replicate]
+    fn = r.get_img_filenames(ls=ls_id, extension=False, gif=True)
+    fn += '.zip'
+    add_to_map_pack_lfu(fn,nodate=True)
+    redirect('/models/%s/instances/%d/replicates/%d' %
+            (model.get_name(),idx,replicate))
+
 @route('/models/:model/instances/:instance/replicates/:replicate/:ls_id/map_pack.zip')
 @validate(replicate=int, instance=int, model=validate_model_name)
-def replicate_spread_gif(model, instance, replicate, ls_id):
+def replicate_map_pack(model, instance, replicate, ls_id):
     dm=model
     idx = int(instance)
     if not validate_instance(dm, idx):
@@ -521,8 +624,11 @@ def replicate_spread_gif(model, instance, replicate, ls_id):
     # do per lifestage!
     fn = r.get_img_filenames(ls=ls_id, extension=False, gif=True)
     fn += '.zip'
-    root_dir = os.path.dirname(fn)
-    send_file(os.path.basename(fn),root=root_dir)
+    if os.path.isfile(fn):
+        add_to_map_pack_lfu(fn)
+        root_dir = os.path.dirname(fn)
+        send_file(os.path.basename(fn),root=root_dir)
+    abort(404, "No map pack generated")
 
 class Worker_InstanceListener():
 
@@ -772,7 +878,6 @@ class MDiGWorker():
                 self.results_q.put(s)
         g = GRASSInterface.get_g()
         g.clean_up()
-
 
 def mdig_worker_start(work_q,results_q):
     # Have to replace some of the environment variables, otherwise they get
