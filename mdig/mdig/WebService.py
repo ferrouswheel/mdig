@@ -90,11 +90,11 @@ def validate_model_name(mname):
     # Get existing models in repository
     models = mdig.repository.get_models()
     if mname not in models.keys():
-        raise ValueError()
+        abort(404,"No such model")
     try:
         dm = DispersalModel(models[mname]) #,setup=False)
     except mdig.DispersalModel.ValidationError, e:
-        return "Model %s is badly formed" % mname
+        abort(500,"Model %s is badly formed" % mname)
     # Hack to get instances to initialise mapsets if they need to
     # and then save them
     dm.get_instances()

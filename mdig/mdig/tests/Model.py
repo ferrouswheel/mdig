@@ -325,61 +325,54 @@ class AnalysisCommandTest(unittest.TestCase):
         mdig_config.analysis_filename_base = old_base
 
 
-from mdig import WebService
 from mdig.bottle import app, HTTPError, HTTPResponse, run
 import mdig.bottle
-class WebServiceTest(unittest.TestCase):
+import mdig.tests.tools as tools
+from mdig import WebService
+class WebServiceTest(tools.ServerTestBase):
 
     def setUp(self):
+        self.port = 8080
+        self.host = 'localhost'
+        self.app = mdig.bottle.app()
+        import wsgiref.validate
+        self.wsgiapp = wsgiref.validate.validator(self.app)
         mdig.repository = self.repo = ModelRepository()
-        self.bottle = app()
-        self.catchall=False
 
-    def call_url(self, url, method='GET'):
-        # Wrap the bottle handle method and turn result into a string instead of
-        # weird array of unicode characters
-        result=self.bottle.handle(url,method=method)
-        if isinstance(result,Exception):
-            raise result
-        return str("".join(result))
+    def tearDown(self):
+        pass
 
     def test_404(self):
-        self.assertRaises(HTTPError, self.call_url, 'flergul')
+        self.assertStatus(404,'/felgrul')
+
+    def test_models_redirect(self):
+        self.assertStatus(303,'/models')
+        self.assertStatus(303,'/models/')
 
     def test_handle_index(self):
-        r = self.call_url('/')
-
-    def test_handle_models(self):
-        try:
-            self.call_url('/models/')
-            self.assertTrue(False)
-        except HTTPResponse, e:
-            self.assertEqual(e.status,303)
+        r = self.urlopen('/')
 
     def test_handle_model_w_lifestages(self):
-        r = self.call_url('/models/lifestage_test')
+        r = self.urlopen('/models/lifestage_test')
 
     def test_handle_bad_model(self):
-        self.assertRaises(HTTPError, self.call_url, '/models/flergul')
+        self.assertStatus(404,'/models/flergul')
 
     def test_handle_model_instance(self):
-        r = self.call_url('/models/lifestage_test/instances/0')
+        r = self.urlopen('/models/lifestage_test/instances/0')
 
     def test_handle_model_bad_instance(self):
-        self.assertRaises(HTTPError, self.call_url, '/models/lifestage_test/instances/asdas')
-        self.assertRaises(HTTPError, self.call_url, '/models/lifestage_test/instances/111')
-        self.assertRaises(HTTPError, self.call_url, '/models/lifestage_test/instances/-11')
+        self.assertStatus(403,'/models/lifestage_test/instances/asdas')
+        self.assertStatus(404,'/models/lifestage_test/instances/111')
+        self.assertStatus(404,'/models/lifestage_test/instances/-11')
 
     def test_handle_model_replicate(self):
-        r = self.call_url('/models/lifestage_test/instances/0/replicates/0')
+        r = self.urlopen('/models/lifestage_test/instances/0/replicates/0')
 
     def test_handle_model_bad_replicate(self):
-        self.assertRaises(HTTPError, self.call_url,
-                '/models/lifestage_test/instances/0/replicates/asdasd')
-        self.assertRaises(HTTPError, self.call_url,
-                '/models/lifestage_test/instances/0/replicates/10101')
-        self.assertRaises(HTTPError, self.call_url,
-                '/models/lifestage_test/instances/0/replicates/-111')
+        self.assertStatus(403,'/models/lifestage_test/instances/0/replicates/asdasd')
+        self.assertStatus(404,'/models/lifestage_test/instances/0/replicates/10101')
+        self.assertStatus(404,'/models/lifestage_test/instances/0/replicates/-111')
 
     def test_process_tasks(self):
         now = datetime.datetime.now() 
@@ -411,7 +404,7 @@ class WebServiceTest(unittest.TestCase):
 
     def test_shutdown_webapp(self):
         WebService.shutdown_webapp()
-        WebService.app = self.bottle
+        WebService.app = self.app
         WebService.shutdown_webapp()
 
     @patch('mdig.bottle.run')
@@ -499,14 +492,24 @@ class WebServiceTest(unittest.TestCase):
         WebService.add_to_map_pack_lfu('test2')
         self.assertTrue(WebService.map_pack_lfu[1][1]>old_date)
 
+    def test_run_model(self):
+        WebService.mdig_worker_process = Mock()
+        #import pdb; pdb.set_trace()
 
-    #def test_run_model(self):
-    #    WebService.start_web_service()
-    #    WebService.mdig_worker_process = Mock()
-    #    r = self.call_url('/models/lifestage_test/run',method='POST')
-    #    self.assertTrue('RUN' in \
-    #            WebService.models_in_queue['lifestage_test']) 
-    #    WebService.shutdown_webapp()
+        WebService.models_in_queue = {}
+        r = self.urlopen('/models/lifestage_test/run',method='POST',post='rerun=true')
+        self.assertTrue('RUN' in WebService.models_in_queue['lifestage_test']) 
+
+        WebService.models_in_queue = {'lifestage_test':
+                {'OCCUPANCY_GIF': {
+                    'last_update': datetime.datetime(2010, 6, 15, 16, 24, 36, 171171)
+                    }
+                }
+            }
+        r = self.urlopen('/models/lifestage_test/run',method='POST',post='rerun=true')
+        self.assertTrue('RUN' in WebService.models_in_queue['lifestage_test']) 
+        r = self.urlopen('/models/lifestage_test/run',method='POST',post='rerun=true')
+        self.assertTrue('RUN' in WebService.models_in_queue['lifestage_test']) 
 
 
 from mdig.GrassMap import GrassMap
