@@ -28,13 +28,19 @@ Error: {{error}}
 %count=0
 %for ls_id, gif_exists in envelopes_present:
 <h3> Lifestage "{{ls_id}}" </h3>
-%if gif_exists: # show animation!
+%if gif_exists is not None: # show animation!
 <img class="gifanimation" src="{{idx}}/{{ls_id}}/envelope.gif"/>
 %if instance.is_complete(): # Only show generate button if instance is complete
 <form action="{{idx}}/{{ls_id}}/envelope.gif" method="post">
 <input type="hidden" name="envelope" value="{{ls_id}}"/></td>
+%ts = instance.get_envelopes_timestamp() 
+%if ts is not None and gif_exists < ts or not instance.are_envelopes_newer_than_reps():
+<p>This envelope animation appears to be out of date: <input type="submit"
+value="Regenerate envelope"/></form></p>
+%else:
 <p>If you believe this image doesn't reflect the latest simulations: <input type="submit"
 value="Regenerate envelope"/></form></p>
+%end # out of date
 %else:
 <p>To regenerate the occupancy envelope, all replicates in instance must be run.
 Currently {{instance.get_num_remaining_reps()}} replicates are incomplete, or
@@ -53,13 +59,19 @@ haven't been run.</p>
 %end # is instance complete
 %end # gif exists
 %map_pack_exists = map_packs_present[count][1]; count += 1
-%if map_pack_exists:
+%if map_pack_exists is not None:
 <a href="{{idx}}/{{ls_id}}/map_pack.zip">Download these envelopes as a zip file of GeoTIFFs</a>
 %if instance.is_complete(): # Only show generate button if instance is complete
 <form action="{{idx}}/{{ls_id}}/map_pack.zip" method="post">
 <input type="hidden" name="map_pack" value="{{ls_id}}"/></td>
+%ts = instance.get_envelopes_timestamp() 
+%if ts is not None and map_pack_exists < ts or not instance.are_envelopes_newer_than_reps():
+<p>The available map pack appears to be out of date: <input type="submit"
+value="Regenerate map pack"/></form></p>
+%else:
 <p>If you believe this map pack doesn't reflect the latest simulations: <input type="submit"
 value="Regenerate map pack"/></form></p>
+%end # out of date
 %else: # not complete
 <p>To regenerate the map pack, all replicates in instance must be run.
 Currently {{instance.get_num_remaining_reps()}} replicates are incomplete, or

@@ -28,7 +28,7 @@ Sorry, there's been an error :-(<br/>
 %count=0
 %for ls_id, gif_exists in gifs_present:
 <h3> Lifestage "{{ls_id}}" </h3>
-%if gif_exists: # show animation!
+%if gif_exists is not None: # show animation!
 <img class="gifanimation" src="{{rep_num}}/{{ls_id}}/spread.gif"/>
 <form action="{{rep_num}}/{{ls_id}}/spread.gif" method="post">
 <input type="hidden" name="gif" value="{{ls_id}}"/></td>
@@ -41,7 +41,7 @@ value="Regenerate animation"/></form></p>
 value="Generate animation"/></form></p>
 %end
 %map_pack_exists = map_packs_present[count][1]; count += 1
-%if map_pack_exists:
+%if map_pack_exists is not None:
 <a href="{{rep_num}}/{{ls_id}}/map_pack.zip">Download these maps as a zip file of GeoTIFFs</a>
 <form action="{{rep_num}}/{{ls_id}}/map_pack.zip" method="post">
 <input type="hidden" name="map_pack" value="{{ls_id}}"/></td>

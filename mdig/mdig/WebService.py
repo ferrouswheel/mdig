@@ -355,17 +355,24 @@ def show_instance(model,instance):
     envelopes_present=[]
     for ls_id in instance.experiment.get_lifestage_ids():
         # if there is an envelope generated then collect it
-        if os.path.isfile(instance.get_occ_envelope_img_filenames(ls=ls_id,gif=True)):
-            envelopes_present.append((ls_id, True))
+        fn = instance.get_occ_envelope_img_filenames(ls=ls_id,gif=True)
+        if os.path.isfile(fn):
+            # get creation time
+            ctime = datetime.datetime.fromtimestamp(os.stat(fn).st_ctime)
+            envelopes_present.append((ls_id, ctime))
         else:
-            envelopes_present.append((ls_id, False))
+            envelopes_present.append((ls_id, None))
 
     # Scan output dir to see if map_packs have been generated for this instance
     map_packs_present=[]
     for ls_id in instance.experiment.get_lifestage_ids():
-        if os.path.isfile(instance.get_occ_envelope_img_filenames(ls=ls_id,extension=False,gif=True) + '.zip'):
-            map_packs_present.append((ls_id, True))
-        else: map_packs_present.append((ls_id, False))
+        fn = instance.get_occ_envelope_img_filenames(ls=ls_id,extension=False,gif=True) + '.zip'
+        if os.path.isfile(fn):
+            # get creation time
+            ctime = datetime.datetime.fromtimestamp(os.stat(fn).st_ctime)
+            # add to list
+            map_packs_present.append((ls_id, ctime))
+        else: map_packs_present.append((ls_id, None))
 
     task_order, task_updates = process_tasks()
     #TODO update template to display error message
@@ -753,6 +760,7 @@ class MDiGWorker():
         self.results_q.put(msg)
         try: ea.do_instance_images(instance)
         except: raise
+        dm.save()
         msg = {'model': m_name,'action': action, 'status':{
             'complete':datetime.datetime.now() } }
         self.results_q.put(msg)
@@ -815,6 +823,38 @@ class MDiGWorker():
         ea.parse_options([])
         ea.options.output_gif = True
         ea.options.output_image = True
+        ea.options.output_lifestage = ls
+        ea.options.reps = [ replicate ]
+        try: ea.do_instance_images(instance)
+        except: raise
+        msg = {'model': m_name,'action': action,
+                'status':{ 'started': datetime.datetime.now(),
+                'active_instance': instance_idx,
+                'description':"Generating images",
+                'active_replicate': replicate,
+                'complete':datetime.datetime.now() } }
+        self.results_q.put(msg)
+
+    def create_replicate_map_pack(self, m_name, instance_idx, replicate, ls):
+        action = "REPLICATE_MAP_PACK"
+        model_file = mdig.repository.get_models()[m_name]
+        dm = DispersalModel(model_file)
+        instance = dm.get_instances()[instance_idx]
+        # Tell web interface we've started
+        msg = {'model': m_name,'action': action,
+                'status':{ 'started': datetime.datetime.now(),
+                'active_instance': instance_idx,
+                'description':"Generating images",
+                'active_replicate': replicate} }
+        self.results_q.put(msg)
+        # Add listener so that we have progress updates
+        instance.listeners.append(self.listener)
+        # also convert replicate maps into images
+        # via ExportAction
+        from Actions import ExportAction
+        ea=ExportAction()
+        ea.parse_options([])
+        ea.options.output_map_pack = True
         ea.options.output_lifestage = ls
         ea.options.reps = [ replicate ]
         try: ea.do_instance_images(instance)
@@ -895,6 +935,7 @@ class ResultMonitor(Thread):
         Thread.__init__(self)
         self.result_q = result_q
         self.running = False
+        self.log = logging.getLogger('mdig.rm')
 
     def run(self):
         self.running = True
@@ -902,21 +943,20 @@ class ResultMonitor(Thread):
         while self.running:
             try:
                 s = self.result_q.get(timeout=1)
-                print "resultmonitor received" + str(s)
-                print "before: " + str(models_in_queue)
+                self.log.debug("Received" + str(s))
+                self.log.debug("Before: " + str(models_in_queue))
                 m_action = s['action']
                 if 'model' in s:
                     m_name = s['model']
                     models_in_queue[m_name][m_action].update(s['status'])
                     models_in_queue[m_name][m_action]['last_update'] = datetime.datetime.now()
-                    print models_in_queue
+                    self.log.debug("After: " + str(models_in_queue))
             except q.Empty:
                 pass
             except Exception, e:
                 import traceback
                 self.log.error("Unexpected exception in result monitor process: %s" % str(e))
                 traceback.print_exc()
-
         
 # This thread monitors the results_q and updates the local process status (since
 # there is no easy other way except processing the queues on HTTP requests, and
