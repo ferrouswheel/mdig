@@ -154,7 +154,6 @@ class RepositoryTest(unittest.TestCase):
         get_g.return_value.change_mapset.return_value = True
 
 
-
 class DispersalModelTest(unittest.TestCase):
 
     def empty_model_test(self):
@@ -168,12 +167,77 @@ class DispersalModelTest(unittest.TestCase):
         dm = DispersalModel(the_action = RunAction())
         dm = DispersalModel(the_action = RunAction(), setup=False)
 
+class DispersalInstanceTest(unittest.TestCase):
+
+    def setUp(self):
+        mdig.repository = self.repo = ModelRepository()
+        fn = mdig.repository.get_models()['lifestage_test']
+        self.m_lifestage = DispersalModel(fn)
+
+        # Model initialise with management strategy
+        fn = mdig.repository.get_models()['management_alter_variable']
+        self.m_strategy = DispersalModel(fn)
+        
+        # Model initialise with variables
+        fn = mdig.repository.get_models()['variables']
+        self.m_variables = DispersalModel(fn)
+
+    def testDown(self):
+        pass
+
+    def test_load_replicates(self):
+        # replicates loaded on init
+        self.m_lifestage.get_instances()
+        self.m_strategy.get_instances()
+        self.m_variables.get_instances()
+
+    def test_get_mapset(self):
+        i = self.m_lifestage.get_instances()[0]
+        self.assertEqual(i.get_mapset().find('lifestage_test_i'), 0)
+        del i.node.attrib['mapset']
+        self.assertEqual(i.get_mapset(),'lifestage_test')
+
+    def test_set_mapset(self):
+        i = self.m_lifestage.get_instances()[0]
+        i.set_mapset('blah')
+        self.assertEqual(i.node.attrib['mapset'], 'blah')
+
+    def test_add_envelope(self):
+        i = self.m_variables.get_instances()[0]
+        i._add_envelope('test_envelope','all',1)
+        e = i.node.find('envelopes')
+        self.assertEqual(len(e),1)
+        # second add doesn't have to init xml structure
+        i._add_envelope('test_envelope','all',1)
+        self.assertEqual(len(e),1)
+
+    def test_update_xml(self):
+        i = self.m_variables.get_instances()[0]
+        i.enabled = False
+        i.update_xml()
+        self.assertEqual(i.node.attrib['enabled'],'false')
+        i.enabled = True
+        i.update_xml()
+        self.assertEqual(i.node.attrib['enabled'],'true')
+
+    @patch('mdig.GRASSInterface.get_g')
+    def test_update_occupancy_envelope(self,m_get_g):
+        m_get_g.return_value.occupancy_envelope.return_value = "test_env"
+        i = self.m_variables.get_instances()[0]
+        i.update_occupancy_envelope()
+
+        # test without rep maps
+        i.saved_maps = {}
+        m_get_g.return_value.occupancy_envelope.return_value = "test_env"
+        i = self.m_variables.get_instances()[0]
+        i.update_occupancy_envelope(force=True)
+
 from mdig.AnalysisCommand import AnalysisCommand, OutputFileNotSetException
 from mdig import NotEnoughHistoryException
 class AnalysisCommandTest(unittest.TestCase):
 
     def setUp(self):
-        self.repo = ModelRepository()
+        mdig.repository = self.repo = ModelRepository()
 
     def test_constructor(self):
         #TODO ensure that cmd_string is actually a string or streamable
@@ -325,10 +389,34 @@ class AnalysisCommandTest(unittest.TestCase):
         mdig_config.analysis_filename_base = old_base
 
 
+from mdig import WebService
+
+class ResultsMonitorTest(unittest.TestCase):
+
+    def run_counter(self,timeout=None):
+        self.rm.running = False
+        return self.result
+
+    def test_run(self):
+        self.rm=WebService.ResultMonitor(Mock())
+        self.rm.running = True
+        self.result = {'action':'sss'}
+        self.rm.result_q.get.side_effect = self.run_counter
+        self.rm.run()
+
+class MDiGWorkTest(unittest.TestCase):
+
+    @patch('mdig.WebService.MDiGWorker')
+    @patch('mdig.GRASSInterface.get_g')
+    def test_worker_start(self,m_g,m_worker):
+        m_g.return_value.grass_vars = {}
+        WebService.mdig_worker_start('a','b')
+        self.assertEqual(m_g.return_value.grass_vars['MAPSET'],"PERMANENT")
+        self.assertEqual(m_worker.call_args[0],('a','b'))
+
 from mdig.bottle import app, HTTPError, HTTPResponse, run
 import mdig.bottle
 import mdig.tests.tools as tools
-from mdig import WebService
 class WebServiceTest(tools.ServerTestBase):
 
     def setUp(self):
