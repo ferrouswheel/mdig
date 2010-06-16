@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# from http://github.com/defnull/bottle/blob/master/test/tools.py 
 import mdig.bottle
 import threading
 import urllib

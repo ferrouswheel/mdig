@@ -526,6 +526,11 @@ class ExportAction(Action):
                 action="store",
                 dest="output_lifestage",
                 type="string")
+        self.parser.add_option("-j","--instance",
+                help="Export only instances specified (export all by default)",
+                action="append",
+                type="int",
+                dest="instances")
         self.parser.add_option("-b","--background",
                 help="Rast map to overlay pop. distributions on.",
                 action="store",
@@ -558,9 +563,27 @@ class ExportAction(Action):
     def do_me(self,mdig_model):
         output_images = self.options.output_gif or self.options.output_image 
         if not (output_images or self.options.output_map_pack):
-            self.log.warning("No type for output was specified...")
-            sys.exit(0)
-        for i in mdig_model.get_instances():
+            self.log.error("No type for output was specified...")
+            sys.exit("No type for output was specified...")
+        # Get the instance objects that we are exporting
+        if self.options.instances is None:
+            # either all instances
+            instances = mdig_model.get_instances()
+        else:
+            # or we convert instance indices to instance objects
+            instances = []
+            all_instances = mdig_model.get_instances()
+            for i in self.options.instances:
+                try:
+                    instances.append(all_instances[i])
+                except IndexError,e:
+                    self.log.error("Bad instance index specified")
+                    sys.exit("Bad instance index specified")
+                except TypeError,e:
+                    self.log.error("Bad instance index specified")
+                    sys.exit("Bad instance index specified")
+
+        for i in instances:
             try:
                 if self.options.output_map_pack:
                     self.do_instance_map_pack(i)
@@ -598,7 +621,8 @@ class ExportAction(Action):
             # Run on replicates
             rs = i.replicates
             if len(rs) == 0:
-                self.log.error("No replicates for instance %d. Have you run the model first?" % i.experiment.get_instances().index(i))
+                self.log.error("No replicates for instance %d. Have you run the model first?" \
+                                % i.experiment.get_instances().index(i))
                 return
             for r_index in self.options.reps:
                 self.log.info("Exporting maps of rep %d" % r_index)
