@@ -429,9 +429,9 @@ class DispersalInstance:
         return missing_years
 
     def are_envelopes_newer_than_reps(self):
-        for i in self.replicates:
+        for r in self.replicates:
             e_timestamp = self.get_envelopes_timestamp()
-            if e_timestamp and i.get_time_stamp() > e_timestamp:
+            if e_timestamp and r.get_time_stamp() > e_timestamp:
                 return False
         return True
 
@@ -549,7 +549,10 @@ class DispersalInstance:
         self.log.debug("Checking whether envelopes are fresh...")
         missing_envelopes = self.are_envelopes_fresh(ls, start, end,
                 force=force)
-        if not missing_envelopes or not self.is_complete(): return
+        if not missing_envelopes:
+            return
+        if not self.is_complete():
+            InstanceIncompleteException("Replicate %d has no maps available"%r_idx)
         
         for l in ls:
             maps = []
@@ -559,14 +562,8 @@ class DispersalInstance:
                 saved_maps = r.get_saved_maps(l)
                 if saved_maps:
                     maps.append(saved_maps)
-                else:
-                    self.log.warning("Replicate has no maps available")
-                #pdb.set_trace()
             
-            for t in missing_envelopes[l]: #range(start,end):
-                #print("making envelope for time %d" % t)
-                #pdb.set_trace()
-
+            for t in missing_envelopes[l]:
                 maps_to_combine = []
                 for r in maps:
                     if str(t) in r:
