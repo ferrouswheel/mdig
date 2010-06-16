@@ -694,7 +694,6 @@ class ExportAction(Action):
             self.options.background = None
             #raise GRASSInterface.MapNotFoundException(self.options.background)
         if self.options.reps:
-            self.log.info("Creating images for maps of reps: %s" % str(self.options.reps))
             # Run on replicates
             rs = i.replicates
             for r_index in self.options.reps:
@@ -709,6 +708,7 @@ class ExportAction(Action):
                     raise InvalidReplicateException(r_index)
                 r = rs[r_index]
                 map_list = []
+                i.set_region()
                 saved_maps = r.get_saved_maps(ls)
 
                 # Normalise the color scale so that the lgend and range doesn't

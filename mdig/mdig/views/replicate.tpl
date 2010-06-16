@@ -9,6 +9,7 @@
 %include css
 </head>
 <body>
+<small><a href="/models/">All models</a></small>
 %include status_headline task_updates=task_updates, task_order=task_order
 <h1><a href="/models/{{instance.experiment.get_name()}}">{{instance.experiment.get_name()}}</a> - <a href="/models/{{instance.experiment.get_name()}}/instances/{{idx}}">Instance {{idx}}</a> - Replicate {{rep_num}}</h1>
 %if error:

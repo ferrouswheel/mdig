@@ -317,6 +317,9 @@ class DispersalInstance:
     def pre_run(self):
         pass
     
+    def get_num_remaining_reps(self):
+        return self.experiment.get_num_replicates() - len([x for x in self.replicates if x.complete])
+
     def is_complete(self):
         a = len([x for x in self.replicates if x.complete]) >= self.experiment.get_num_replicates() \
             and len(self.activeReps) == 0

@@ -7,6 +7,7 @@
 %include css
 </head>
 <body>
+<small><a href="/models/">All models</a></small>
 %include status_headline task_updates=task_updates, task_order=task_order
 <h1><a href="/models/{{instance.experiment.get_name()}}">{{instance.experiment.get_name()}}</a> - Instance {{idx}}</h1>
 %if error:
@@ -23,34 +24,58 @@ Error: {{error}}
 <div class="strategy"><strong>Strategy:</strong> {{instance.strategy}} </div>
 %end
 <div class="envelopes">
-<h2>Occupancy Envelope</h2>
+<h2>Occupancy Envelopes</h2>
 %count=0
 %for ls_id, gif_exists in envelopes_present:
 <h3> Lifestage "{{ls_id}}" </h3>
 %if gif_exists: # show animation!
 <img class="gifanimation" src="{{idx}}/{{ls_id}}/envelope.gif"/>
+%if instance.is_complete(): # Only show generate button if instance is complete
 <form action="{{idx}}/{{ls_id}}/envelope.gif" method="post">
 <input type="hidden" name="envelope" value="{{ls_id}}"/></td>
 <p>If you believe this image doesn't reflect the latest simulations: <input type="submit"
 value="Regenerate envelope"/></form></p>
-% else:
+%else:
+<p>To regenerate the occupancy envelope, all replicates in instance must be run.
+Currently {{instance.get_num_remaining_reps()}} replicates are incomplete, or
+haven't been run.</p>
+%end # is instance complete
+%else: # gif does not exist
+%if instance.is_complete(): # Only show generate button if instance is complete
 <form action="{{idx}}/{{ls_id}}/envelope.gif" method="post">
 <input type="hidden" name="envelope" value="{{ls_id}}"/></td>
 <p>No occupancy envelope animation has been generated. <input type="submit"
 value="Generate envelope"/></form></p>
-%end
+%else:
+<p>To generate the occupancy envelope, all replicates in instance must be run.
+Currently {{instance.get_num_remaining_reps()}} replicates are incomplete, or
+haven't been run.</p>
+%end # is instance complete
+%end # gif exists
 %map_pack_exists = map_packs_present[count][1]; count += 1
 %if map_pack_exists:
 <a href="{{idx}}/{{ls_id}}/map_pack.zip">Download these envelopes as a zip file of GeoTIFFs</a>
+%if instance.is_complete(): # Only show generate button if instance is complete
 <form action="{{idx}}/{{ls_id}}/map_pack.zip" method="post">
 <input type="hidden" name="map_pack" value="{{ls_id}}"/></td>
 <p>If you believe this map pack doesn't reflect the latest simulations: <input type="submit"
 value="Regenerate map pack"/></form></p>
+%else: # not complete
+<p>To regenerate the map pack, all replicates in instance must be run.
+Currently {{instance.get_num_remaining_reps()}} replicates are incomplete, or
+haven't been run.</p>
+%end # is instance complete
 % else:
+%if instance.is_complete(): # Only show generate button if instance is complete
 <form action="{{idx}}/{{ls_id}}/map_pack.zip" method="post">
 <input type="hidden" name="map_pack" value="{{ls_id}}"/></td>
 <p>No map pack has been generated. <input type="submit"
 value="Generate"/></form></p>
+%else: # not complete
+<p>To generate a map pack, all replicates in instance must be run.
+Currently {{instance.get_num_remaining_reps()}} replicates are incomplete, or
+haven't been run.</p>
+%end # is instance complete
 %end
 %end
 </div>
