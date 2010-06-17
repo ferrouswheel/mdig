@@ -552,7 +552,7 @@ class DispersalInstance:
         if not missing_envelopes:
             return
         if not self.is_complete():
-            InstanceIncompleteException("Replicate %d has no maps available"%r_idx)
+            raise InstanceIncompleteException("Instance isn't complete, can't create occupancy envelope")
         
         for l in ls:
             maps = []

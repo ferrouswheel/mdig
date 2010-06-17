@@ -12,6 +12,8 @@ from mdig import GRASSInterface
 from mdig.DispersalModel import DispersalModel
 from mdig.Actions import RunAction
 from mdig.ModelRepository import ModelRepository,RepositoryException
+from mdig.DispersalInstance import InvalidLifestageException, \
+        InstanceIncompleteException, InvalidReplicateException, NoOccupancyEnvelopesException
 
 class RepositoryTest(unittest.TestCase):
 
@@ -224,13 +226,16 @@ class DispersalInstanceTest(unittest.TestCase):
     def test_update_occupancy_envelope(self,m_get_g):
         m_get_g.return_value.occupancy_envelope.return_value = "test_env"
         i = self.m_variables.get_instances()[0]
-        i.update_occupancy_envelope()
+        self.assertRaises(InstanceIncompleteException,i.update_occupancy_envelope)
+        #i.is_complete = True
+        # TODO need a instance that actually has some replicates
+        #i.update_occupancy_envelope()
 
         # test without rep maps
-        i.saved_maps = {}
-        m_get_g.return_value.occupancy_envelope.return_value = "test_env"
-        i = self.m_variables.get_instances()[0]
-        i.update_occupancy_envelope(force=True)
+        #i.saved_maps = {}
+        #m_get_g.return_value.occupancy_envelope.return_value = "test_env"
+        #i = self.m_variables.get_instances()[0]
+        #i.update_occupancy_envelope(force=True)
 
 from mdig.AnalysisCommand import AnalysisCommand, OutputFileNotSetException
 from mdig import NotEnoughHistoryException
@@ -445,7 +450,11 @@ class ExportActionTest(unittest.TestCase):
         ea.zip_maps = Mock()
         instances = m.get_instances()
         ea.options.reps=[0]
-        ea.do_instance_map_pack(instances[0])
+        # No replicates in a fresh model
+        self.assertRaises(InvalidReplicateException,ea.do_instance_map_pack,instances[0])
+
+        # TODO create replicates
+        #ea.do_instance_map_pack(instances[0])
 
     @patch('mdig.GRASSInterface.get_g')
     @patch('os.remove')
@@ -459,6 +468,12 @@ class ExportActionTest(unittest.TestCase):
         ea.create_gif = Mock()
         instances = m.get_instances()
         ea.options.reps=[0]
+        # No replicates in a fresh model
+        self.assertRaises(InvalidReplicateException,ea.do_instance_images,instances[0])
+        # create mock replicate
+        instances[0].replicates = [Mock()]
+        instances[0].replicates[0].get_saved_maps.return_value = {'1':'xx','2':'yy'}
+        instances[0].replicates[0].get_img_filenames.return_value = {'1':'xx','2':'yy'}
         ea.do_instance_images(instances[0])
 
 from mdig import WebService
@@ -561,6 +576,32 @@ class WebServiceTest(tools.ServerTestBase):
         updates=WebService.process_tasks()
         self.assertTrue('RUN' not in \
                 WebService.models_in_queue['lifestage_test']) 
+
+    def test_process_tasks_errors(self):
+        # test errors
+        now = datetime.datetime.now() 
+        WebService.models_in_queue = {
+            "lifestage_test": {
+                "RUN" : { 
+                    'last_update': now,
+                    'error': "test error"
+                    },
+                "OCCUPANCY_GIF": {
+                    'last_update': now - datetime.timedelta(seconds=1)
+                    }
+                }
+            }
+        before_complete = WebService.last_notice
+        updates=WebService.process_tasks()
+        self.assertEqual(updates[0][0][0], 'lifestage_test')
+        self.assertEqual(updates[0][0][1], 'OCCUPANCY_GIF')
+        self.assertEqual(updates[0][1][1], 'RUN')
+        before_complete = WebService.last_notice
+
+        # ensure error message disappears
+        updates=WebService.process_tasks()
+        self.assertEqual(WebService.last_notice, before_complete)
+        self.assertEqual(len(updates[0]), 1)
 
     def test_shutdown_webapp(self):
         WebService.shutdown_webapp()

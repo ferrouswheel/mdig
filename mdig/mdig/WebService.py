@@ -181,25 +181,33 @@ def process_tasks():
     for m_name, tasks in models_in_queue.items():
         for task_name in tasks:
             t = tasks[task_name]
-            #if 'last_update' not in t:
-            #    continue
-            if 'complete' not in t:
+            print t
+            if 'complete' in t:
+                # deal with completion events which should only display once
+                if datetime.datetime.now() - t['last_update'] \
+                    > datetime.timedelta(days=7):
+                    # remove tasks that are complete but older than a week
+                    to_remove.append((m_name,task_name))
+                if t['complete'] <= last_notice: continue
+                if m_name not in updates: updates[m_name] = {}
+                updates[m_name][task_name] = t
+                complete_time = t['complete']
+                if new_last_notice < complete_time: new_last_notice = complete_time
+                time_index[(m_name,task_name)]=complete_time
+            elif 'error' in t:
+                # deal with error events which should only display once
+                if t['last_update'] <= last_notice: continue
+                if m_name not in updates: updates[m_name] = {}
+                updates[m_name][task_name] = t
+                err_time = t['last_update']
+                if new_last_notice < err_time: new_last_notice = err_time
+                time_index[(m_name,task_name)]=err_time
+            elif 'complete' not in t:
                 # deal with status of incomplete tasks
                 if m_name not in updates: updates[m_name] = {}
                 updates[m_name][task_name] = t
                 time_index[(m_name,task_name)]=t['last_update']
-            elif t['complete'] > last_notice:
-                # deal with completion events which should only display once
-                if m_name not in updates: updates[m_name] = {}
-                updates[m_name][task_name] = t
-                complete_time = t['complete']
-                if new_last_notice < complete_time:
-                    new_last_notice = complete_time
-                time_index[(m_name,task_name)]=complete_time
-            elif datetime.datetime.now() - t['last_update'] \
-                    > datetime.timedelta(days=7):
-                # remove tasks that are complete but older than a week
-                to_remove.append((m_name,task_name))
+                print "SASDSADASDA"
     for m_name, task in to_remove:
         del models_in_queue[m_name][task]
         print "models in queue"
@@ -876,6 +884,7 @@ class MDiGWorker():
             try:
                 s = self.work_q.get(timeout=1)
                 action = s['action'] # the action to perform
+                raise Exception("testing error")
                 if 'model' in s: m_name = s['model'] # the model it applies to
                 if action == "SHUTDOWN":
                     self.running = False
@@ -948,7 +957,7 @@ class ResultMonitor(Thread):
                 m_action = s['action']
                 if 'model' in s:
                     m_name = s['model']
-                    models_in_queue[m_name][m_action].update(s['status'])
+                    models_in_queue[m_name][m_action] = s['status']
                     models_in_queue[m_name][m_action]['last_update'] = datetime.datetime.now()
                     self.log.debug("After: " + str(models_in_queue))
             except q.Empty:

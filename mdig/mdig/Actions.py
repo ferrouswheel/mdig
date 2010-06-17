@@ -623,14 +623,15 @@ class ExportAction(Action):
             if len(rs) == 0:
                 self.log.error("No replicates for instance %d. Have you run the model first?" \
                                 % i.experiment.get_instances().index(i))
-                return
+                raise InvalidReplicateException("No replicates available")
             for r_index in self.options.reps:
                 self.log.info("Exporting maps of rep %d" % r_index)
                 if r_index < 0 or r_index >= len(rs):
                     self.log.error("Invalid replicate index." +
                             " Have you 'run' the model first or are you "
                             "specifying an invalid replicate index?")
-                    self.log.error("Valid replicate range is 0-%d." % (len(rs)-1))
+                    if len(rs) > 0:
+                        self.log.error("Valid replicate range is 0-%d." % (len(rs)-1))
                     raise InvalidReplicateException(r_index)
                 r = rs[r_index]
                 map_list = []
@@ -728,7 +729,8 @@ class ExportAction(Action):
                     self.log.error("Invalid replicate index." +
                             " Have you 'run' the model first or are you "
                             "specifying an invalid replicate index?")
-                    self.log.error("Valid replicate range is 0-%d." % (len(rs)-1))
+                    if len(rs) > 0:
+                        self.log.error("Valid replicate range is 0-%d." % (len(rs)-1))
                     raise InvalidReplicateException(r_index)
                 r = rs[r_index]
                 map_list = []
