@@ -768,7 +768,7 @@ class MDiGWorker():
         self.results_q.put(msg)
         try: ea.do_instance_images(instance)
         except: raise
-        dm.save()
+        dm.save_model()
         msg = {'model': m_name,'action': action, 'status':{
             'complete':datetime.datetime.now() } }
         self.results_q.put(msg)
@@ -836,7 +836,7 @@ class MDiGWorker():
         try: ea.do_instance_images(instance)
         except: raise
         msg = {'model': m_name,'action': action,
-                'status':{ 'started': datetime.datetime.now(),
+                'status':{ 
                 'active_instance': instance_idx,
                 'description':"Generating images",
                 'active_replicate': replicate,
@@ -868,7 +868,7 @@ class MDiGWorker():
         try: ea.do_instance_images(instance)
         except: raise
         msg = {'model': m_name,'action': action,
-                'status':{ 'started': datetime.datetime.now(),
+                'status':{ 
                 'active_instance': instance_idx,
                 'description':"Generating images",
                 'active_replicate': replicate,
@@ -884,7 +884,6 @@ class MDiGWorker():
             try:
                 s = self.work_q.get(timeout=1)
                 action = s['action'] # the action to perform
-                raise Exception("testing error")
                 if 'model' in s: m_name = s['model'] # the model it applies to
                 if action == "SHUTDOWN":
                     self.running = False
@@ -957,7 +956,12 @@ class ResultMonitor(Thread):
                 m_action = s['action']
                 if 'model' in s:
                     m_name = s['model']
-                    models_in_queue[m_name][m_action] = s['status']
+                    if 'started' in s['status']:
+                        # if just started then nuke existing status
+                        models_in_queue[m_name][m_action] = s['status']
+                    else:
+                        # otherwise we should just update the status object
+                        models_in_queue[m_name][m_action].update(s['status'])
                     models_in_queue[m_name][m_action]['last_update'] = datetime.datetime.now()
                     self.log.debug("After: " + str(models_in_queue))
             except q.Empty:

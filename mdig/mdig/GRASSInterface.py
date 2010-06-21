@@ -641,7 +641,7 @@ class GRASSInterface:
         old_mapset = None
         if mapset and mapset != self.grass_vars['MAPSET']:
             old_mapset = self.grass_vars['MAPSET']
-            g.change_mapset(mapset)
+            self.change_mapset(mapset)
         if map_type: self.log.debug("Removing %s map %s", map_type, map_name)
         if map_type == 'raster':
             self.run_command('g.remove rast=%s' % map_name, logging.DEBUG);      
