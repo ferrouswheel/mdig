@@ -5,7 +5,11 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <!--<link rel="stylesheet" href="css/style.css" type="text/css" /> -->
 %if not complete:
+%if instance_idx is not None:
     <meta http-equiv="refresh" content="5; url=/models/{{model.get_name()}}">
+%else:
+    <meta http-equiv="refresh" content="5; url=/models/{{model.get_name()}}">
+%end
 %end
 %include css
 </head>
@@ -13,7 +17,7 @@
 %include status_headline task_updates=task_updates, task_order=task_order
 <div class="description">
 %if not complete:
-<h1>Running model {{model.get_name()}} added to queue</h1>
+<h1>Running model</h1>
 %if already_exists:
 %   if started:
 <p>The model is already running.</p>
@@ -24,6 +28,11 @@
 %   if queue_size > 0:
 <p>The model has been added to the work queue. The queue has {{queue_size}} earlier tasks to complete first.</p>
 %   end
+%end
+%if instance_idx is not None:
+<p>Instances {{instance_idx}} added to queue.</p>
+%else:
+<p>All instances of {{model.get_name()}} added to queue.</p>
 %end
 <p>You will shortly be returned to the model page which will display the active
 model. <a href="/models/{{model.get_name()}}">Or click to go there right now</a>.</p>

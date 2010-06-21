@@ -9,7 +9,8 @@
 <body>
 <small><a href="/models/">All models</a></small>
 %include status_headline task_updates=task_updates, task_order=task_order
-<h1><a href="/models/{{instance.experiment.get_name()}}">{{instance.experiment.get_name()}}</a> - Instance {{idx}}</h1>
+% m_name = instance.experiment.get_name()
+<h1><a href="/models/{{m_name}}">{{m_name}}</a> - Instance {{idx}}</h1>
 %if error:
 <div class="error">
 Error: {{error}}
@@ -23,6 +24,14 @@ Error: {{error}}
 %if instance.strategy is not None:
 <div class="strategy"><strong>Strategy:</strong> {{instance.strategy}} </div>
 %end
+<div><form action="/models/{{m_name}}/run" method="post">
+<input type="hidden" name="instance" value="{{idx}}"/>
+%if not instance.is_complete():
+<strong>Run Instance</strong>: <input type="submit" value="Run"/>
+%else:
+<input type="hidden" name="rerun" value="true"/><strong>Run Instance</strong>: [ALREADY COMPLETE] <input type="submit" value="Re-run"/>
+%end
+</ul> </form>
 <div class="envelopes">
 <h2>Occupancy Envelopes</h2>
 %count=0
@@ -107,13 +116,13 @@ haven't been run.</p>
 <h3> Active </h3>
 <p> \\
 % for r in range(0,len(instance.activeReps)):
-<a href="/models/{{instance.experiment.get_name()}}/instances/{{idx}}/replicates/{{r}}">{{str(r)}}</a>
+<a href="/models/{{m_name}}/instances/{{idx}}/replicates/{{r}}">{{r}}</a>
 % end
 </p>
 %end
 <div class="replicate-list">
 % for r in range(0,len(instance.replicates)):
-<a href="/models/{{instance.experiment.get_name()}}/instances/{{idx}}/replicates/{{r}}">{{str(r)}}</a>
+<a href="/models/{{m_name}}/instances/{{idx}}/replicates/{{r}}">{{r}}</a>
 % end
 </div>
 </div>

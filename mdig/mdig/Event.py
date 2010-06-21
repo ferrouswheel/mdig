@@ -71,7 +71,7 @@ class Event:
         else:
             return False
 
-    def get_params(self, is_pop, start_node):
+    def get_params(self, is_pop=False, start_node=None):
         """
         Get the parameters as a dictionary. This function is recursively called
         when <if(Not)PopulationBased> nodes are encountered.
@@ -98,6 +98,8 @@ class Event:
                     for v in node:
                         if v.tag == "value":
                             a=("VALUE",string.strip(v.text))
+                        if v.tag == "map":
+                            a=("MAP",string.strip(v.text))
                         elif v.tag == "variable":
                             a=("VAR",v.attrib["id"])
                         elif v.tag == "seed":
@@ -157,6 +159,8 @@ class Event:
             elif value[0] == "SEED":
                 p[p_name]=rep.random.randint(-2.14748e+09,2.14748e+09)
             elif value[0] == "VALUE":
+                p[p_name]=value[1]
+            elif value[0] == "MAP":
                 p[p_name]=value[1]
             elif value[0] == "FLAG":
                 p[p_name]="FLAG"

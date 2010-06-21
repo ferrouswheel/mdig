@@ -60,7 +60,7 @@ class GrassMap:
                 # ... raise an exception if it doesn't
                 raise GRASSInterface.MapNotFoundException(self.filename)
         
-        if self.xml_map_type in ["map",None]:
+        if self.xml_map_type in ["name",None]:
             # Only maps specified in xml that are not existing maps
             # are temporary by default
             self.temporary = False

@@ -106,6 +106,10 @@ class ManagementStrategy:
             delay_node = lxml.etree.SubElement(self.node,'delay')
         desc_node[0].text = repr(desc)
 
+    def get_map_resources(self):
+        #TODO: get the resources that this strategy uses
+        return []
+
     def _load_treatments(self):
         """
         Initialise treatments list

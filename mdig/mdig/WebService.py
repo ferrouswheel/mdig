@@ -207,7 +207,6 @@ def process_tasks():
                 if m_name not in updates: updates[m_name] = {}
                 updates[m_name][task_name] = t
                 time_index[(m_name,task_name)]=t['last_update']
-                print "SASDSADASDA"
     for m_name, task in to_remove:
         del models_in_queue[m_name][task]
         print "models in queue"
@@ -229,9 +228,16 @@ def run_model(model):
     global models_in_queue
     rerun = False
     started = None
+    i_specified = None
     if "rerun" in request.POST:
         if request.POST["rerun"].lower() == "true": rerun = True
     if not model.is_complete() or rerun:
+        instance_idxs = None
+        if "instance" in request.POST:
+            instance_idxs = [int(request.POST["instance"])]
+            i_specified = instance_idxs
+        else:
+            instance_idxs = [x for x in range(0,len(model.get_instances()))]
         if m_name not in models_in_queue:
             models_in_queue[m_name] = {}
         else:
@@ -240,15 +246,16 @@ def run_model(model):
             exists = True
         else:
             models_in_queue[m_name]['RUN'] = {"approx_q_pos":qsize,
-                    "last_update":datetime.datetime.now()}
-            work_q.put({'action':'RUN','model':model.get_name(),'parameters':{"rerun": rerun}})
+                "last_update":datetime.datetime.now()}
+            work_q.put({'action':'RUN','model':m_name,
+                'parameters':{"rerun": rerun, "instances": instance_idxs}})
         started = 'started' in models_in_queue[m_name]['RUN']
     task_order, task_updates = process_tasks()
     return dict(model=model, already_exists=exists, rerun = rerun,
             complete = model.is_complete() and not rerun,
             started = started,
             name=mdig.version_string,
-            queue_size=qsize,
+            queue_size=qsize, instance_idx = i_specified,
             task_order=task_order, task_updates = task_updates)
 
 def add_model_to_staging(data):
@@ -407,19 +414,28 @@ def show_replicate(model,instance,replicate):
     error = None
     m_name = dm.get_name()
 
-    # Scan output dir to see if gifs have been generated for this replicate
+    # Scan output dir to see if gifs have been generated for this instance
     gifs_present=[]
     for ls_id in instance.experiment.get_lifestage_ids():
-        if os.path.isfile(rep.get_img_filenames(ls=ls_id,gif=True)):
-            gifs_present.append((ls_id, True))
-        else: gifs_present.append((ls_id, False))
+        # if there is an envelope generated then collect it
+        fn = rep.get_img_filenames(ls=ls_id,gif=True)
+        if os.path.isfile(fn):
+            # get creation time
+            ctime = datetime.datetime.fromtimestamp(os.stat(fn).st_ctime)
+            gifs_present.append((ls_id, ctime))
+        else:
+            gifs_present.append((ls_id, None))
 
-    # Scan output dir to see if map_packs have been generated for this replicate
+    # Scan output dir to see if map_packs have been generated for this instance
     map_packs_present=[]
     for ls_id in instance.experiment.get_lifestage_ids():
-        if os.path.isfile(rep.get_img_filenames(ls=ls_id,extension=False,gif=True) + '.zip'):
-            map_packs_present.append((ls_id, True))
-        else: map_packs_present.append((ls_id, False))
+        fn = rep.get_img_filenames(ls=ls_id,extension=False,gif=True) + '.zip'
+        if os.path.isfile(fn):
+            # get creation time
+            ctime = datetime.datetime.fromtimestamp(os.stat(fn).st_ctime)
+            # add to list
+            map_packs_present.append((ls_id, ctime))
+        else: map_packs_present.append((ls_id, None))
 
     task_order, task_updates = process_tasks()
     #TODO update template to display error message
@@ -719,17 +735,21 @@ class MDiGWorker():
         self.log = logging.getLogger('mdig.worker')
         self.listener = Worker_InstanceListener(self.results_q)
 
-    def run_model(self, m_name, rerun=False):
+    def run_model(self, m_name, instances, rerun=False):
         model_file = mdig.repository.get_models()[m_name]
         dm = DispersalModel(model_file)
         if rerun:
             dm.reset_instances()
-        for instance in dm.get_instances():
-            instance.listeners.append(self.listener)
         msg = {'model': m_name,'action': "RUN",
                 'status':{ 'started': datetime.datetime.now() } }
         self.results_q.put(msg)
-        dm.run()
+        i_objs = dm.get_instances()
+        for instance in instances:
+            i = i_objs[instance]
+            i.listeners.append(self.listener)
+            msg = {'model': m_name,'action': "RUN",
+                'status':{ 'active_instance': instance } }
+            i.run()
         msg = {'model': m_name,'action': "RUN",
                 'status':{ 'complete': datetime.datetime.now() } }
         self.results_q.put(msg)
@@ -889,7 +909,8 @@ class MDiGWorker():
                     self.running = False
                 elif action == "RUN":
                     rerun = s['parameters']['rerun']
-                    self.run_model(m_name, rerun=rerun)
+                    instances = s['parameters']['instances']
+                    self.run_model(m_name, instances, rerun=rerun)
                 elif action == "OCCUPANCY_GIF":
                     # format of s[2]:
                     # { "instance_idx": idx, "lifestage": ls_id }

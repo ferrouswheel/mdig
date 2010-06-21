@@ -213,6 +213,19 @@ class Lifestage:
                 return grassmap_mask
         
         self.log.debug("No appropriate interval range found for interval %d" % interval )
+
+    def get_map_resources(self):
+        maps = []
+        # get initial_maps
+        for r_id in self.initial_maps:
+            im = self.initial_maps[r_id]
+            if not im.temporary: maps.append(im.filename)
+        # get maps in events
+        for e in self.events:
+            params = e.get_params()
+            for p in params:
+                if p[0] == "MAP": maps.append(p[1])
+        return maps
         
     def run(self, interval, rep, temp_map_names, strategy = None):
         grass_i = GRASSInterface.get_g()

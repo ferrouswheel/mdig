@@ -254,6 +254,70 @@ class DispersalModel(object):
         instances = self.get_instances()
         for i in [x for x in instances if x.enabled]:
             i.reset()
+
+    def get_resources(self):
+        """ Aggregate all the files the simulation depends on.
+        returns a list of 3-tuples:
+        (type,name,location) ...
+        type is one of 'map','region','popmod','coda'
+        name is the name of resource
+        location is None if resource is missing, otherwise it's a filename or
+        mapset
+        """
+        # get maps
+        maps = self.get_map_resources()
+        # get saved regions
+        regions = [r.get_name() for r in self.get_regions().values() if r.get_name() is not None]
+        # get popmod files
+        popmod_files = self.get_popmod_files()
+        all_coda_files = []
+        for lt in self.get_lifestage_transitions():
+            all_coda_files.extend(lt.get_coda_files_in_xml())
+        # join them all together
+        resources = []
+        if maps is not None:
+            for m,mapset in maps:
+                resources.append(('map',m,mapset))
+        g = GRASSInterface.get_g()
+        for r in regions:
+            # check where regions exist
+            r_mapset = None
+            try:
+                import StringIO
+                # -u avoids changing region
+                ret = g.run_command('g.findfile element=windows file=%s' % r)
+                out_lines = StringIO.StringIO(g.stdout).readlines()
+                r_mapset = out_lines[1].split('=')[1].strip("\n'")
+            except GRASSInterface.GRASSCommandException, e:
+                # none
+                pass
+            resources.append(('region',r,r_mapset))
+        for pf in popmod_files:
+            fn = None
+            if os.path.exists(pf): fn = pf
+            resources.append(('popmod',pf,fn))
+        for cf in all_coda_files:
+            fn = None
+            if os.path.exists(cf): fn = cf
+            resources.append(('coda',cf,fn))
+        return resources
+
+    def get_map_resources(self):
+        """ Aggregate all the maps that this model depends on.
+        Returns a list of 2-tuples, the first part being the name
+        of the map as specified in the model definition, and the second
+        containing the mapset it exists in (or None if the map can't be found)
+        """
+        maps_to_find = []
+        # get parameters that are maps
+        # in lifestages
+        ls_ids = self.get_lifestage_ids()
+        for ls_id in ls_ids:
+            ls = self.get_lifestage(ls_id)
+            maps_to_find.extend(ls.get_map_resources())
+        # in management strategies
+        for ms in self.get_management_strategies():
+            maps_to_find.extend(ms.get_map_resources())
     
     def add_listener(self,l):
         self.listeners.append(l)
@@ -348,6 +412,13 @@ class DispersalModel(object):
     
     def get_incomplete_instances(self):
         return [i for i in self.get_instances() if not i.is_complete()]
+
+    def get_initial_maps(self):
+        initial_maps = {}
+        for ls_key in self.get_lifestage_ids():
+            ls = self.get_lifestage(ls_key)
+            initial_maps[ls_id] = ls.initial_maps
+        return initial_maps
                 
     def check_model(self):
         self.log.debug("Checking model maps exist")
@@ -359,8 +430,7 @@ class DispersalModel(object):
         empty_region = False
         #check background map
         for r_id, region in self.get_regions().items():
-            region.getBackgroundMap()
-        #check initial map for each lifestage exists
+            #check initial map for each lifestage exists
             total_initial_maps = 0
             for ls_key in self.get_lifestage_ids():
                 ls = self.get_lifestage(ls_key)

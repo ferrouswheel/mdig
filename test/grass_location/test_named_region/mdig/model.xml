@@ -2,18 +2,15 @@
   <user>
     <email>joel@fruitionnz.com</email>
   </user>
-  <name> variables </name>
-  <description> Test variable definitions </description>
+  <name> test_named_region </name>
+  <description> Test using a named region as well as having maps as event parameters.</description>
   <random>
     <initialSeed> 1 </initialSeed>
     <replicates> 2 </replicates>
     <offset>227</offset>
   </random>
   <regions>
-    <region id="a">
-      <resolution>1</resolution>
-      <extents north="10" south="-10" west="-10" east="10"/>
-    </region>
+      <region id="a" name='test_region'/>
   </regions>
   <period>
     <startTime> 0 </startTime>
@@ -28,14 +25,7 @@
   <lifestages>
     <lifestage name="all" populationBased="false">
       <initialDistribution region="a">
-        <sites>
-          <s x="1" y="0" count="100"/>
-          <s x="2" y="0"/>
-          <s x="3" y="0"/>
-          <s x="4" y="0"/>
-          <s x="5" y="0"/>
-          <s x="0" y="-5"/>
-        </sites>
+        <map>initial_map</map>
       </initialDistribution>
       <phenology region="a">
         <value> 1 </value>
@@ -45,9 +35,9 @@
       <event name="r.mdig.localspread">
         <param name="spread">
           <variable id="d1">
-            <value>3</value>
             <value>2</value>
-            <range start="3" end="5" step="2"/>
+            <map>spread_map</map> <!-- spread map is in main model mapset -->
+            <map>spread_map2</map> <!-- spread map 2 is in PERMANENT -->
           </variable>
         </param>
         <param name="agem">

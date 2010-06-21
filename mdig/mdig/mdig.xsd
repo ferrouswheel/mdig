@@ -339,6 +339,7 @@
     <xsd:group name="valueOrVariableGroup">
         <xsd:choice>
             <xsd:element name="value" type="xsd:string"/>
+            <xsd:element name="map" type="xsd:string"/>
             <xsd:element name="variable" type="variableType"/>
         </xsd:choice>
     </xsd:group>
@@ -380,6 +381,7 @@
     <xsd:complexType name="variableType">
         <xsd:sequence>
             <xsd:element name="value" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="map" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element name="novalue" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element name="range" minOccurs="0" maxOccurs="unbounded">
                 <xsd:complexType>
