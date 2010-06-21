@@ -31,7 +31,10 @@
         <value> 1 </value>
       </phenology>
       <event name="r.mdig.agepop">
-            </event>
+        <param name="agem">
+            <map>spread_map2</map> <!-- spread map 2 is in PERMANENT - test dupes -->
+        </param>
+      </event>
       <event name="r.mdig.localspread">
         <param name="spread">
           <variable id="d1">
@@ -41,13 +44,7 @@
           </variable>
         </param>
         <param name="agem">
-          <variable id="agem">
-            <value>2</value>
-            <!-- Although this tests novalue successfully, the maps
-            won't expand. Without agem, localspread thinks that the map is a
-            population map. -->
-            <novalue/>
-          </variable>
+            <map>spread_map3</map> <!-- spread map 3 doesn't exist, test missing -->
         </param>
       </event>
     </lifestage>

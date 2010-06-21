@@ -660,6 +660,18 @@ class GRASSInterface:
             self.run_command('r.mask -r');
         else:
             self.run_command('r.mask -o input=%s' % mask_name);
+
+    def find_mapset(self,name,resource=None):
+        if resource is None:
+            resource=[ "cell", "fcell", "dcell", "vector" ]
+        else: resource = [resource]
+        for t in resource:
+            p=os.popen("g.findfile element=%s file=%s" % (t,name), 'r')
+            output = p.read()
+            res=re.search("mapset='(.+)'",output)
+            if res is not None:
+                return res.groups()[0]
+        return None
     
     def check_map(self,file_name,mapset=None):
         # Have to check all possible types of maps
@@ -671,7 +683,7 @@ class GRASSInterface:
             #print "checking for existing map " + file_name + " of type " + t
             p=os.popen("g.findfile element=%s file=%s" % (t,file_name), 'r')
             output = p.read()
-            res=re.search("name='.+'",output)
+            res=re.search("name='(.+)'",output)
             #pdb.set_trace()
             if res is not None:
                 if t in ["cell","fcell","dcell"]:

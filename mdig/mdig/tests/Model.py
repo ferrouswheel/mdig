@@ -183,10 +183,23 @@ class DispersalModelTest(unittest.TestCase):
         self.assertEqual(len([i[0] for i in res if i[0] =='coda']),6)
         del models['lifestage_test']
 
+        fn = models['test_named_region']
+        m = DispersalModel(fn)
+        res = m.get_resources()
+        self.assertEqual(len(res),5)
+        self.assertEqual(len([i[0] for i in res if i[0] =='region']),1)
+        self.assertEqual(len([i[0] for i in res if i[0] =='map']),4)
+        self.assertEqual(len([i[0] for i in res if i[2] =='PERMANENT']),2)
+        self.assertEqual(len([i[0] for i in res if i[2] =='test_named_region']),2)
+        self.assertEqual(len([i[0] for i in res if i[2] is None]),1)
+        del models['test_named_region']
+
+        # check the others don't erroneously report resources
         for k in models:
             fn = models[k]
             m = DispersalModel(fn)
-            print m.get_resources()
+            res = m.get_resources()
+            self.assertEqual(len(res),0)
 
 class DispersalInstanceTest(unittest.TestCase):
 

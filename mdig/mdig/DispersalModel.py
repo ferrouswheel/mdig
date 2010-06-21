@@ -268,11 +268,14 @@ class DispersalModel(object):
         maps = self.get_map_resources()
         # get saved regions
         regions = [r.get_name() for r in self.get_regions().values() if r.get_name() is not None]
+        regions = set(regions)
         # get popmod files
         popmod_files = self.get_popmod_files()
+        popmod_files = set(popmod_files)
         all_coda_files = []
         for lt in self.get_lifestage_transitions():
             all_coda_files.extend(lt.get_coda_files_in_xml())
+        all_coda_files = set(all_coda_files)
         # join them all together
         resources = []
         if maps is not None:
@@ -308,16 +311,20 @@ class DispersalModel(object):
         of the map as specified in the model definition, and the second
         containing the mapset it exists in (or None if the map can't be found)
         """
-        maps_to_find = []
+        maps = []
+        # get background maps for each region (...now in config file)
+        #regions = [r.get_name() for r in self.get_regions().values() if r.get_name() is not None]
         # get parameters that are maps
+
         # in lifestages
         ls_ids = self.get_lifestage_ids()
         for ls_id in ls_ids:
             ls = self.get_lifestage(ls_id)
-            maps_to_find.extend(ls.get_map_resources())
+            maps.extend(ls.get_map_resources(self))
         # in management strategies
         for ms in self.get_management_strategies():
-            maps_to_find.extend(ms.get_map_resources())
+            maps.extend(ms.get_map_resources())
+        return list(set(maps)) # get rid of any duplicates
     
     def add_listener(self,l):
         self.listeners.append(l)
@@ -803,7 +810,20 @@ class DispersalModel(object):
                     k=int(node.attrib['end'])
                     step=int(node.attrib['step'])
                     var_values[i].extend([str(x) for x in range(j,k+1,step)])
+                elif node.tag=='map':
+                    var_values[i].append(node.text.strip())
         return var_values
+
+    def get_variable_maps(self):
+        var_maps={}
+        param_variables=self.xml_model.xpath("//lifestage/event/param/variable")
+        for variable in param_variables:
+            i = variable.attrib['id']
+            var_maps[i]=[]
+            for node in variable:
+                if node.tag=='map':
+                    var_maps[i].append(node.text.strip())
+        return var_maps
                     
     def get_description(self):
         desc=self.xml_model.xpath("/model/description")
