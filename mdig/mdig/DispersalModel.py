@@ -264,6 +264,9 @@ class DispersalModel(object):
         location is None if resource is missing, otherwise it's a filename or
         mapset
         """
+        # change into appropriate mapset
+        g = GRASSInterface.get_g()
+        g.change_mapset(self.get_mapset())
         # get maps
         maps = self.get_map_resources()
         # get saved regions
@@ -281,7 +284,6 @@ class DispersalModel(object):
         if maps is not None:
             for m,mapset in maps:
                 resources.append(('map',m,mapset))
-        g = GRASSInterface.get_g()
         for r in regions:
             # check where regions exist
             r_mapset = None
