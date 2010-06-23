@@ -194,12 +194,22 @@ class DispersalModelTest(unittest.TestCase):
         self.assertEqual(len([i[0] for i in res if i[2] is None]),1)
         del models['test_named_region']
 
+        fn = models['management_use_maps']
+        m = DispersalModel(fn)
+        res = m.get_resources()
+        self.assertEqual(len(res),3)
+        self.assertEqual(len([i[0] for i in res if i[0] =='map']),3)
+        self.assertEqual(len([i[0] for i in res if i[2] =='PERMANENT']),1)
+        self.assertEqual(len([i[0] for i in res if i[2] is None]),2)
+        del models['management_use_maps']
+
         # check the others don't erroneously report resources
         for k in models:
             fn = models[k]
             m = DispersalModel(fn)
             res = m.get_resources()
             self.assertEqual(len(res),0)
+
 
 class DispersalInstanceTest(unittest.TestCase):
 

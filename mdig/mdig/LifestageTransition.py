@@ -154,8 +154,15 @@ class ParamGenerator():
         self.data = [0]
         self.source = source
         self.coda = None
+        self.index = index
+        self.dist = dist
+        self.vals = vals
+        self.model_dir = model_dir
+        self.ready = False # haven't yet loaded coda or maps
         self.log = logging.getLogger("mdig.paramgen")
         #print '%s   %s   %s   %s is parameter value source' %(source, index, dist, vals)
+
+    def _load_parameter(self):
         try:
             if source == 'map':
                 # TODO create a GRASSInterface command to load map to an array
@@ -196,15 +203,18 @@ class ParamGenerator():
 #break
             elif source == 'static':
                 self.static = vals[0]
-        except IOError:
+            self.ready = True
+        except IOError, e:
             errstr = '%s   %s   %s   %s parameter value source coding not valid' % (source, index, dist, vals)
             self.log.error(errstr + "\nAre your CODA files okay?")
-            sys.exit(mdig.mdig_exit_codes['coda_file'])
+            raise e
 
     def gen_val(self, index_value, coords):
         """Draws a random CODA iteration from the range specified in index for
            the corresponding parameter level
         """
+        if not self.ready:
+            self._load_parameter()
         if self.source == 'CODA':
             if index_value in self.coda:
                 return self.coda[index_value][random.random_integers(0,len(self.coda[index_value])-1)]
@@ -473,15 +483,13 @@ class LifestageTransition:
             value_list = []
             values = i.getElementsByTagName('d')
             for v in values:
-                try:
-                    if source == 'CODA':
-                        value_list.append(str(v.childNodes[0].data).strip())
-                    if source == 'map':
-                        value_list.append(str(v.childNodes[0].data).strip())
-                    else:
-                        value_list.append(float(v.childNodes[0].data.strip()))
-                except:
-                    pass
+                if len(v.childNodes) == 0: continue
+                if source in ['CODA','map']:
+                    value_list.append(str(v.childNodes[0].data).strip())
+                else:
+                    value_list.append(float(v.childNodes[0].data.strip()))
+                #except Exception,e:
+                #    self.log.error("Exception in xml_to_param %s" % str(e))
             if source == 'CODA':
                 # Not actually None, but CODA deals with index within gen_val
                 param_dict[parameter]["None"] = ParamGenerator(source, index, dist,

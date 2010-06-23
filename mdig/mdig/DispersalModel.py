@@ -300,8 +300,7 @@ class DispersalModel(object):
             if os.path.exists(pf): fn = pf
             resources.append(('popmod',pf,fn))
         for cf in all_coda_files:
-            fn = None
-            if os.path.exists(cf): fn = cf
+            fn = self.find_file(cf)
             resources.append(('coda',cf,fn))
         return resources
 
@@ -521,7 +520,7 @@ class DispersalModel(object):
         # Check relative to model file
         fn2 = os.path.join(os.path.dirname(self.model_file), fn)
         if os.path.exists(fn2):
-            return fn2
+            return os.path.normpath(fn2)
         return None
         
     def get_popmod_files(self):
@@ -1139,7 +1138,7 @@ class DispersalModel(object):
                 return self.strategies
             for s_node in s_nodes:
                 # Create strategy unassigned to any instance
-                m = ManagementStrategy(s_node,None)
+                m = ManagementStrategy(s_node,self)
                 self.strategies.append(m)
         return self.strategies
 

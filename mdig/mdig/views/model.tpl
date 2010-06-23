@@ -13,6 +13,15 @@
 <h1>{{model.get_name()}}</h1>
 <p>{{model.get_description()}}</p>
 </div>
+%if len(missing_resources) > 0:
+<div> <span class="error">Warning:</span> This model is missing resources:
+<ul>
+%for i in missing_resources:
+<li>{{i[1]}} [{{i[0]}}]</li>
+%end
+</ul>
+</div>
+%end
 <div class="lifestages">
 <h2>Lifestages</h2>
 %for ls_id in model.get_lifestage_ids():

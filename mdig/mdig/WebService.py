@@ -347,10 +347,12 @@ def show_model(model):
                 if 'active_instance' in models_in_queue[m]['RUN']['status']:
                     active_instances.append(models_in_queue[m]['RUN']['status']['active_instances'])
     task_order, task_updates = process_tasks()
+    missing_resources = [i for i in dm.get_resources() if i[2] is None]
     return dict(model=dm, name=mdig.version_string,
             repo_location=mdig.repository.db,
             task_order = task_order, task_updates= task_updates,
-            active_instances=active_instances)
+            active_instances=active_instances,
+            missing_resources=missing_resources)
 
 @route('/models/:model/instances/:instance',method='GET')
 @route('/models/:model/instances/:instance',method='POST')

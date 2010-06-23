@@ -171,6 +171,19 @@ class Event:
         GRASSInterface.get_g().run_command(cmd)
         #self.log.debug(cmd)
 
+    def get_map_resources(self,model):
+        var_maps = model.get_variable_maps()
+        params = self.get_params()
+        maps = []
+        for p_key in params:
+            p = params[p_key]
+            if p[0] == "MAP":
+                maps.append(p[1])
+            elif p[0] == "VAR":
+                maps.extend(var_maps[p[1]])
+        maps_w_mapset = GRASSInterface.get_g().find_mapsets(maps)
+        return maps_w_mapset
+
     def create_cmd_string(self,params):
         """
         Create an actual command line string to run in GRASS

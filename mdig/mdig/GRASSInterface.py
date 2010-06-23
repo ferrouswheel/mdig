@@ -672,6 +672,11 @@ class GRASSInterface:
             if res is not None:
                 return res.groups()[0]
         return None
+
+    def find_mapsets(self,maps,resource=None):
+        maps_w_mapset = []
+        for m in maps: maps_w_mapset.append((m,self.find_mapset(m,resource)))
+        return maps_w_mapset
     
     def check_map(self,file_name,mapset=None):
         # Have to check all possible types of maps

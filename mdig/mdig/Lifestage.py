@@ -221,21 +221,11 @@ class Lifestage:
         for r_id in self.initial_maps:
             im = self.initial_maps[r_id]
             if not im.temporary: maps.append(im.filename)
+        maps_w_mapset = GRASSInterface.get_g().find_mapsets(maps)
         # get maps in events
-        var_maps = model.get_variable_maps()
         for e in self.events:
-            params = e.get_params()
-            for p_key in params:
-                p = params[p_key]
-                if p[0] == "MAP":
-                    maps.append(p[1])
-                elif p[0] == "VAR":
-                    maps.extend(var_maps[p[1]])
-        maps = set(maps) # remove duplicate maps
-        maps_w_mapset = []
-        for m in maps:
-            mapset = GRASSInterface.get_g().find_mapset(m)
-            maps_w_mapset.append((m,mapset))
+            maps_w_mapset.extend(e.get_map_resources(model))
+        maps_w_mapset = set(maps_w_mapset) # remove duplicate maps
         return maps_w_mapset
         
     def run(self, interval, rep, temp_map_names, strategy = None):

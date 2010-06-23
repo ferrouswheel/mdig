@@ -48,7 +48,7 @@ class ManagementStrategy:
     DispersalModel creates a ManagementStrategy class.
     """
 
-    def __init__(self,node,instance):
+    def __init__(self,node,experiment,instance=None):
         self.log = logging.getLogger("mdig.strategy")
         
         self.grass_i = GRASSInterface.get_g()
@@ -56,12 +56,14 @@ class ManagementStrategy:
         self.temp_map_names={}
         self.active = False
         self.treatments = None
+        # We save the experiment instead of the instance
+        # because instances are only temporarily associated with strategies
+        self.experiment = experiment
         self.instance = instance 
 
         if node is None:
-            self.node = self.init_strategy(instance.experiment)
-        else:
-            self.node = node
+            self.node = self.init_strategy(experiment)
+        else: self.node = node
 
     def set_instance(self, instance):
         self.instance = instance
@@ -107,8 +109,11 @@ class ManagementStrategy:
         desc_node[0].text = repr(desc)
 
     def get_map_resources(self):
-        #TODO: get the resources that this strategy uses
-        return []
+        maps = []
+        ts = self.get_treatments()
+        for t in ts:
+            maps.extend(t.get_map_resources())
+        return maps
 
     def _load_treatments(self):
         """
@@ -225,23 +230,27 @@ class Treatment:
             return ls_node[0].attrib["ls"]
         return None
 
+    def load_areas(self):
+        if self.areas is None:
+            self.areas = []
+            self.area_node = self.node.xpath("area")
+            if len(self.area_node) == 0: return self.areas
+            assert(len(self.area_node) == 1)
+            self.area_node = self.area_node[0]
+            self.area_ls = self.area_node.attrib['ls']
+            for a in self.area_node:
+                if isinstance(a.tag, basestring):
+                    # Ignore comment nodes
+                    self.areas.append(TreatmentArea(a,self,len(self.areas)))
+        return self.areas
+
     def get_treatment_area_map(self, replicate):
         """ Ensure all TreatmentAreas are initialised and then return
             a freshly merged version.
             Returns none if there is no area specified (which means the
             treatment is for the whole region)
         """
-        if self.areas is None:
-            self.area_node = self.node.xpath("area")
-            if len(self.area_node) == 0: return None
-            assert(len(self.area_node) == 1)
-            self.area_node = self.area_node[0]
-            self.areas = []
-            self.area_ls = self.area_node.attrib['ls']
-            for a in self.area_node:
-                if isinstance(a.tag, basestring):
-                    # Ignore comment nodes
-                    self.areas.append(TreatmentArea(a,self,len(self.areas)))
+        self.load_areas()
         return self._merge_areas(replicate)
 
     def _merge_areas(self, replicate):
@@ -296,6 +305,18 @@ class Treatment:
             self.treatment_type = "event"
             self.event = Event(e_node[0])
         return self.event
+
+    def get_map_resources(self):
+        # get maps from within treatment event
+        m = self.strategy.experiment
+        e = self.get_event()
+        maps = []
+        if e: maps.extend(e.get_map_resources(m))
+        # get maps from within area specification
+        if self.areas is None: self.load_areas()
+        for a in self.areas:
+            maps.extend(a.get_map_resources())
+        return maps
 
     def get_variable_map(self, var_key, var_val, replicate):
         """
@@ -374,9 +395,9 @@ class Treatment:
 class TreatmentArea:
 
     def __init__(self, node, treatment, a_index):
-        """ Node is the xml node defining the TreatmentArea
-            treatment is the parent Treatment this area is for
-            a_index is the area index for creating the temp map name
+        """ Node is the xml node defining the TreatmentArea.
+            treatment is the parent Treatment this area is for.
+            a_index is the area index used to create the temp map name.
         """
         self.treatment = treatment
         self.node = node
@@ -403,10 +424,20 @@ class TreatmentArea:
         """ Return whether this Area changes each timestep or not
             (Due to using a filter or mapcalc)
         """
+        if isinstance(self.area, Event): return True
+        elif isinstance(self.area, GrassMap): return self.area.refresh
+        else: raise Exception("Unknown area type")
+
+    def get_map_resources(self):
+        maps = []
         if isinstance(self.area, Event):
-            return True
-        else:
-            return self.area.refresh
+            m = self.treatment.strategy.experiment
+            maps.extend(self.area.get_map_resources(m))
+        elif isinstance(self.area, GrassMap):
+            if self.area.xml_map_type=="name":
+                g = GRASSInterface.get_g()
+                maps.append((self.area.filename,g.find_mapset(self.area.filename)))
+        return maps
 
     def get_treatment_area(self,replicate):
         """
@@ -421,7 +452,7 @@ class TreatmentArea:
                     self.area_temp, replicate, False)
             self.area_filter_output = self.area_temp
             return self.area_filter_output
-        if isinstance(self.area, GrassMap):
+        elif isinstance(self.area, GrassMap):
             replacements = {
                 "POP_MAP": replicate.temp_map_names[self.treatment.area_ls][0],
                 "START_MAP": replicate.initial_maps[self.treatment.area_ls].getMapFilename()
