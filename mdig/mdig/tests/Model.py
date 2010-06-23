@@ -27,14 +27,14 @@ class RepositoryTest(unittest.TestCase):
     def normal_repository_test(self):
         m = ModelRepository()
         models = m.get_models()
-        self.assertEqual(len(models),6)
+        self.assertEqual(len(models),8)
         self.assertTrue("lifestage_test" in models)
         self.assertTrue("variables" in models)
         self.assertTrue("management_area_combine" in models)
         self.assertTrue("management_delay" in models)
         self.assertTrue("management_event" in models)
         self.assertTrue("management_alter_variable" in models)
-
+        # ... also others that are not explicitly checked
 
     def make_grass_mock(self,g):
         g.grass_vars = {}
@@ -80,10 +80,18 @@ class RepositoryTest(unittest.TestCase):
         m2 = ModelRepository()
         a_file = m2.get_models()['variables']
         self.create_mock_location(self.temp_dir)
-        m.add_model(a_file)
+
+        # Add location to model
+        dm = DispersalModel(a_file)
+        dm.set_location('grass_location')
+        temp_model_fn = "with_location_model.xml"
+        dm.save_model(filename=temp_model_fn)
+
+        m.add_model(temp_model_fn)
         self.assertEqual(len(m.get_models()), 1)
         m.remove_model('variables',force=True)
         self.assertEqual(get_g.return_value.remove_mapset.call_args[0][0], 'variables')
+        os.remove(temp_model_fn)
         self.remove_mock_location(self.temp_dir)
 
     @patch('mdig.GRASSInterface.get_g')
@@ -117,27 +125,31 @@ class RepositoryTest(unittest.TestCase):
         self.assertRaises(RepositoryException,m.add_model,a_file)
         self.assertEqual(len(m.get_models()), 0)
 
-        self.create_mock_location(self.temp_dir)
-        m.add_model(a_file)
-        self.assertEqual(len(m.get_models()), 1)
-        self.assertRaises(RepositoryException,m.add_model,"invalid_file.xml")
-        self.remove_mock_location(self.temp_dir)
-
         # test trying to model with missing location
+        self.create_mock_location(self.temp_dir)
+        self.assertRaises(RepositoryException,m.add_model,a_file)
+        self.assertEqual(len(m.get_models()), 0)
+        # try invalid file
+        self.assertRaises(RepositoryException,m.add_model,"invalid_file.xml")
+        self.assertEqual(len(m.get_models()), 0)
+
+        # add location to model, save as new
         dm = DispersalModel(a_file)
-        nodes = dm.xml_model.xpath('/model/GISLocation')
-        nodes[0].getparent().remove(nodes[0])
-        temp_model_fn = "no_location_model.xml"
+        dm.set_location('grass_location')
+        temp_model_fn = "with_location_model.xml"
         dm.save_model(filename=temp_model_fn)
-        self.assertRaises(RepositoryException,m.add_model,temp_model_fn) 
-        os.remove(temp_model_fn)
+
+        # and then try to add
+        m.add_model(temp_model_fn) 
+        self.assertEqual(len(m.get_models()), 1)
+        self.remove_mock_location(self.temp_dir)
 
         # test when mapset already exists with the name of model
         get_g.return_value.check_mapset.return_value = True
         self.create_mock_location(self.temp_dir)
         e = ""
         try:
-            m.add_model(a_file)
+            m.add_model(temp_model_fn)
         except RepositoryException, e:
             pass
         self.assertTrue("it already exists" in str(e))
@@ -149,12 +161,13 @@ class RepositoryTest(unittest.TestCase):
         self.create_mock_location(self.temp_dir)
         e = ""
         try:
-            m.add_model(a_file)
+            m.add_model(temp_model_fn)
         except RepositoryException, e:
             pass
         self.assertTrue("Couldn't create mapset" in str(e))
         self.remove_mock_location(self.temp_dir)
         get_g.return_value.change_mapset.return_value = True
+        os.remove(temp_model_fn)
 
 
 class DispersalModelTest(unittest.TestCase):
@@ -778,8 +791,8 @@ class GrassMapTest(unittest.TestCase):
 
         get_g.return_value.init_map.return_value = ("test","a_map_type")
         get_g.return_value.get_mapset.return_value = "a_mapset"
-        a = gmap.getMapFilename()
-        b = gmap.getMapFilename()
+        a = gmap.get_map_filename()
+        b = gmap.get_map_filename()
         self.assertEqual(get_g.return_value.init_map.call_count,1)
         self.assertEqual(gmap.ready, True)
         self.assertEqual(gmap.mapset, "a_mapset")
@@ -794,6 +807,7 @@ class GrassMapTest(unittest.TestCase):
         self.assertEqual(gmap.value, "nz_DEM")
         self.assertEqual(gmap.filename, "nz_DEM")
         self.assertEqual(gmap.xml_map_type, "name")
+        self.assertEqual(gmap.get_map_filename(), "nz_DEM")
 
     @patch('mdig.GRASSInterface.get_g')
     def test_create_value_map(self,get_g):
@@ -824,8 +838,8 @@ class GrassMapTest(unittest.TestCase):
 
         get_g.return_value.init_map.return_value = ("test","a_map_type")
         get_g.return_value.get_mapset.return_value = "a_mapset"
-        a = gmap.getMapFilename()
-        b = gmap.getMapFilename()
+        a = gmap.get_map_filename()
+        b = gmap.get_map_filename()
         self.assertEqual(get_g.return_value.init_map.call_count,2)
         self.assertEqual(get_g.return_value.destruct_map.call_count,1)
         self.assertEqual(gmap.ready, True)
@@ -848,6 +862,135 @@ class GrassMapTest(unittest.TestCase):
         # test when we can't find the map
         get_g.return_value.check_map.return_value = None
         self.assertRaises(GRASSInterface.MapNotFoundException,GrassMap,filename=fn)
+
+from mdig.ManagementStrategy import ManagementStrategy, Treatment, TreatmentArea
+from StringIO import StringIO
+import GRASSInterface
+class ManagementStrategyTest(unittest.TestCase):
+    
+    @patch('mdig.GRASSInterface.get_g')
+    def test_create_strategy(self,get_g):
+        from lxml import etree
+        xml = """
+        <strategy name="decrease" region="a">
+            <description>Test to check variable management works</description>
+            <treatments>
+            <t>
+              <affectVariable var="dist">
+                <decrease>1</decrease>
+              </affectVariable>
+            </t>
+            </treatments>
+        </strategy>
+        """
+        tree = etree.parse(StringIO(xml))
+        strategy_node = tree.getroot()
+        mock_model= Mock()
+        s = ManagementStrategy(strategy_node,mock_model)
+        self.assertEqual(s.grass_i, get_g.return_value)
+
+        a= Mock()
+        s.set_instance(a)
+        self.assertEqual(s.instance, a)
+        self.assertRaises(NotImplementedError,s.init_strategy, mock_model)
+        self.assertRaises(NotImplementedError,ManagementStrategy,None,mock_model)
+
+        mock_model.get_regions.return_value = ['r1','r2']
+        s.set_region('r2')
+        self.assertEqual(s.node.attrib['region'],'r2')
+
+        s.set_description("test description")
+        self.assertEqual(s.get_description(),"test description")
+        s.set_name("meatball")
+        self.assertEqual(s.get_name(),"meatball")
+
+        mock_model.get_period.return_value = (0,10)
+        self.assertEqual(len(s.get_treatments_for_param("dist",0)),1)
+        self.assertEqual(len(s.get_treatments_for_param("meatball",0)),0)
+
+    @patch('mdig.GRASSInterface.get_g')
+    def test_s_with_delay(self,get_g):
+        from lxml import etree
+        xml = """
+        <strategy name="decrease" region="a">
+            <delay>10</delay>
+            <description>Test to check variable management works</description>
+            <treatments>
+            <t>
+              <affectVariable var="dist">
+                <decrease>1</decrease>
+              </affectVariable>
+            </t>
+            </treatments>
+        </strategy>
+        """
+        tree = etree.parse(StringIO(xml))
+        strategy_node = tree.getroot()
+        mock_model= Mock()
+        s = ManagementStrategy(strategy_node,mock_model)
+        self.assertEqual(s.get_delay(), 10)
+        s.set_delay(200)
+        self.assertEqual(s.get_delay(), 200)
+        desc_node = s.node.xpath("delay")
+        desc_node[0].text = "string_test"
+        self.assertRaises(ValueError,s.get_delay)
+
+        # test 0 delay with no element
+        s.node.remove(desc_node[0])
+        self.assertEqual(s.get_delay(), 0)
+
+        # test adding a delay node
+        s.set_delay(2)
+        self.assertEqual(s.get_delay(), 2)
+
+        mock_model.get_period.return_value = (0,10)
+        self.assertEqual(len(s.get_treatments_for_param("dist",0)),0)
+        self.assertEqual(len(s.get_treatments_for_param("dist",3)),1)
+
+    @patch('mdig.GRASSInterface.get_g')
+    def test_s_with_ls(self,get_g):
+        from lxml import etree
+        xml = """
+    <strategy name="area_or" region="a">
+      <description>Test to check map area combined with OR works.</description>
+      <treatments>
+        <t>
+          <area ls="all" combine="or">
+            <mapcalc>if(!isnull(START_MAP),1,null())</mapcalc>
+            <mapcalc>if(x()&gt;3,1,null())</mapcalc>
+          </area>
+          <event ls="all" name="r.mdig.survival">
+            <param name="survival">
+              <value>80</value>
+            </param>
+            <!-- Survival needs seed parameter, otherwise it inits from time
+                     and just removes the same cells -->
+            <param name="seed">
+              <seed/>
+            </param>
+          </event>
+        </t>
+      </treatments>
+    </strategy>
+    """
+        tree = etree.parse(StringIO(xml))
+        strategy_node = tree.getroot()
+        mock_model= Mock()
+        s = ManagementStrategy(strategy_node,mock_model)
+
+        mock_model.get_period.return_value = (0,10)
+        self.assertEqual(len(s.get_treatments_for_ls("all",0)),1)
+        self.assertEqual(len(s.get_treatments_for_ls("kibble",0)),0)
+        s.set_delay(2)
+        self.assertEqual(len(s.get_treatments_for_ls("all",0)),0)
+        self.assertEqual(len(s.get_treatments_for_ls("all",3)),1)
+
+        
+
+
+        
+
+
 
         
 

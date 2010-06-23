@@ -114,7 +114,7 @@ class GrassMap:
         # TODO implement conversion between raster/vector
         raise NotImplementedError, "change_map_type: Method not implemented"
             
-    def getMapFilename(self, map_replacements=None):
+    def get_map_filename(self, map_replacements=None):
         """
         Retrieve filename for the map. If this is the first time retrieving the
         map filename, or if the map is set to refresh itself every time it is

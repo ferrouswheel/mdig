@@ -504,8 +504,10 @@ class DispersalModel(object):
     def set_location(self, loc):
         nodes = self.xml_model.xpath('/model/GISLocation')
         if len(nodes) == 0:
-            nodes = self.xml_model.xpath('/model')
-            node = lxml.etree.SubElement(nodes[0],'GISLocation')
+            n = lxml.etree.Element('GISLocation')
+            n.text = loc
+            nodes = self.xml_model.xpath('/model/random')
+            nodes[0].addnext(n)
         else:
             nodes[0].text = loc
         

@@ -36,6 +36,7 @@ import MDiGConfig
 import OutputFormats
 from GrassMap import GrassMap
 from GRASSInterface import SetRegionException, MapNotFoundException
+import GRASSInterface
 import DispersalModel
 from Event import Event
 
@@ -72,8 +73,7 @@ class ManagementStrategy:
         """ Initialise the xml structure that represents a
             ManagementStrategy.
         """
-        # TODO implement me
-        pass
+        raise NotImplementedError()
 
     def get_name(self):
         return self.node.attrib["name"]
@@ -85,7 +85,9 @@ class ManagementStrategy:
         return self.node.attrib["region"]
 
     def set_region(self, r_id):
-        # TODO check that region is valid
+        rs = self.experiment.get_regions()
+        if r_id not in rs:
+            raise GRASSInterface.SetRegionException("Invalid region ID %s" % r_id)
         self.node.attrib["region"] = r_id
 
     def get_description(self):
@@ -102,11 +104,11 @@ class ManagementStrategy:
             return 0
         return int(desc_node[0].text)
 
-    def set_delay(self, desc):
-        desc_node=self.node.xpath("delay")
-        if len(desc_node) == 0:
-            delay_node = lxml.etree.SubElement(self.node,'delay')
-        desc_node[0].text = repr(desc)
+    def set_delay(self, delay):
+        delay_node=self.node.xpath("delay")
+        if len(delay_node) == 0:
+            delay_node = [lxml.etree.SubElement(self.node,'delay')]
+        delay_node[0].text = repr(int(delay)) # ensure it's an int
 
     def get_map_resources(self):
         maps = []
@@ -135,10 +137,7 @@ class ManagementStrategy:
         Get all treatments
         """
         if self.treatments is None:
-            try:
-                self._load_treatments()
-            except MapNotFoundException, e:
-                raise
+            self._load_treatments()
         return self.treatments
 
     def get_treatments_for_param(self,var_key,timestep):
@@ -146,7 +145,9 @@ class ManagementStrategy:
         Get any treatments that affect the parameter specified by var_key
         """
         result = []
-        if timestep < self.instance.experiment.get_period()[0] + self.get_delay():
+        if self.instance is None:
+            self.log.error("No instance assigned to ManagementStrategy")
+        if timestep < self.experiment.get_period()[0] + self.get_delay():
             return result
         for t in self.get_treatments():
             if t.affects_var(var_key):
@@ -158,7 +159,7 @@ class ManagementStrategy:
         Get any treatments that affect the lifestage specified by ls_id
         """
         result = []
-        if timestep < self.instance.experiment.get_period()[0] + self.get_delay():
+        if timestep < self.experiment.get_period()[0] + self.get_delay():
             return result
         for t in self.get_treatments():
             if t.affects_ls(ls_id):
@@ -455,9 +456,9 @@ class TreatmentArea:
         elif isinstance(self.area, GrassMap):
             replacements = {
                 "POP_MAP": replicate.temp_map_names[self.treatment.area_ls][0],
-                "START_MAP": replicate.initial_maps[self.treatment.area_ls].getMapFilename()
+                "START_MAP": replicate.initial_maps[self.treatment.area_ls].get_map_filename()
             }
-            return self.area.getMapFilename(replacements)
+            return self.area.get_map_filename(replacements)
         
 
 

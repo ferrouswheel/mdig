@@ -260,7 +260,7 @@ class Replicate:
         for ls_id in self.instance.experiment.get_lifestage_ids():
             self.push_previous_map(ls_id,GRASSInterface.get_g().generate_map_name(ls_id))
             #if first_year:
-                #self.grass_i.copy_map(self.initial_maps[ls_id].getMapFilename(),self.get_previous_map(ls_id),True)
+                #self.grass_i.copy_map(self.initial_maps[ls_id].get_map_filename(),self.get_previous_map(ls_id),True)
             #else:
             self.grass_i.copy_map(self.temp_map_names[ls_id][0],self.get_previous_map(ls_id),True)
             if remove_null:
@@ -304,7 +304,7 @@ class Replicate:
             
             # copy initial map to temporary source map, overwrite if necessary
             self.grass_i.copy_map( \
-                    initial_maps[ls_key].getMapFilename(), \
+                    initial_maps[ls_key].get_map_filename(), \
                     self.temp_map_names[ls_key][0],True)
             
             # Set up phenology maps (LS initialises them on init)
@@ -317,7 +317,7 @@ class Replicate:
         if self.log.getEffectiveLevel() <= logging.DEBUG:
             str_maps=''
             for m in initial_maps.values():
-                str_maps += ' ' + m.getMapFilename()
+                str_maps += ' ' + m.get_map_filename()
             self.log.debug("Initial maps: " + str_maps)
         
         period = exp.get_period()

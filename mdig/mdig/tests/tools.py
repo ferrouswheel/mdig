@@ -82,9 +82,10 @@ class ServerTestBase(unittest.TestCase):
         self.assertEqual(tob(body), self.urlopen(route, **kargs)['body'])
 
     def assertInBody(self, body, route='/', **kargs):
-        body = self.urlopen(route, **kargs)['body']
+        resbody = self.urlopen(route, **kargs)['body']
         if tob(body) not in body:
-            self.fail('The search pattern "%s" is not included in body:\n%s' % (body, body))
+            self.fail('The search pattern "%s" is not included in body:\n%s' % \
+                    (body, resbody))
 
     def assertHeader(self, name, value, route='/', **kargs):
         self.assertEqual(value, self.urlopen(route, **kargs)['header'].get(name))

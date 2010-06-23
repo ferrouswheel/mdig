@@ -104,7 +104,7 @@ class PngOutput:
             current_region = rep.instance.experiment.get_region(rep.instance.r_id)
             
             if current_region.getBackgroundMap():
-                g.paint_map(current_region.getBackgroundMap().getMapFilename())
+                g.paint_map(current_region.getBackgroundMap().get_map_filename())
             
             for l in rep.temp_map_names.keys():
                 g.paint_map(rep.temp_map_names[l][0])

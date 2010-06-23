@@ -40,7 +40,7 @@ class Displayer:
         
         bm=rep.instance.experiment.get_region(rep.instance.r_id).getBackgroundMap()
         if bm is not None:      
-            g.paint_map(bm.getMapFilename())
+            g.paint_map(bm.get_map_filename())
         
         layer_index = 0
         for l in rep.temp_map_names.keys():
