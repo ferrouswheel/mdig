@@ -25,7 +25,7 @@
 // Probability Distributions
 double inv_cauchy_cdf(double p, double a, double b);
 double inv_exponential_cdf(double p, double a, double b);
-
+double inv_exponential_cdf2(double p, double a, double b);
 double clark(double p, double d, double shape);
 double gamma_ln(double xx);
 

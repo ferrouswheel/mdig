@@ -69,7 +69,7 @@ void *inrast;
 char *out_mapset;
 void *outrast;
 
-enum { GENERAL, CAUCHY, EXPONENTIAL, LOG } distribution;
+enum { GENERAL, CAUCHY, EXPONENTIAL, EXPONENTIAL2, LOG } distribution;
 double dist_a, dist_b, freq;
 double (*dist_function)(double, double, double)=NULL;
 long seed;
@@ -377,6 +377,9 @@ main(int argc, char *argv[]) {
     case EXPONENTIAL:
         dist_function = inv_exponential_cdf;
         break;
+    case EXPONENTIAL2:
+        dist_function = inv_exponential_cdf2;
+        break;
     }
 
     // Open output map
@@ -629,7 +632,7 @@ void parse_options(int argc, char* argv[]) {
     o_dist->type       = TYPE_STRING;
     o_dist->required   = NO;
     o_dist->answer     = "cauchy";
-    o_dist->options    = "cauchy,exponential,log,general";
+    o_dist->options    = "cauchy,exponential,exponential2,log,general";
     o_dist->description= "Distribution representing size of jump events";
 
     o_dist_a = G_define_option() ;
@@ -774,6 +777,8 @@ void parse_options(int argc, char* argv[]) {
             distribution = CAUCHY;
         } else if (G_strcasecmp(o_dist->answer, "exponential") == 0) {
             distribution = EXPONENTIAL;
+        } else if (G_strcasecmp(o_dist->answer, "exponential2") == 0) {
+            distribution = EXPONENTIAL2;
         } else if (G_strcasecmp(o_dist->answer, "log") == 0) {
             distribution = LOG;
         } else if (G_strcasecmp(o_dist->answer, "general") == 0) {

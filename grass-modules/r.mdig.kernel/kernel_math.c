@@ -42,6 +42,13 @@ double inv_exponential_cdf(double p, double a, double b)
 	return r;
 }
 
+double inv_exponential_cdf2(double p, double a, double b)
+{
+	double r;
+	r = (log(1-a)-log(p))/b;
+	return r;
+}
+
 double int_clark(double x, double s, double d)
 {
 	double result;
