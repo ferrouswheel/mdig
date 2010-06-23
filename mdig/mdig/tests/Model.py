@@ -162,12 +162,62 @@ class RepositoryTest(unittest.TestCase):
         e = ""
         try:
             m.add_model(temp_model_fn)
-        except RepositoryException, e:
-            pass
+            os.remove(temp_model_fn)
+            self.fail("RepositoryException not generated")
+        except RepositoryException, e: pass
         self.assertTrue("Couldn't create mapset" in str(e))
         self.remove_mock_location(self.temp_dir)
         get_g.return_value.change_mapset.return_value = True
+        
+        # test response when failure to create mdig dir 
+        get_g.return_value.create_mdig_subdir.side_effect = OSError('test')
+        self.create_mock_location(self.temp_dir)
+        self.assertRaises(RepositoryException,m.add_model,temp_model_fn) 
+        self.assertEqual(len(m.get_models()), 0)
+        self.remove_mock_location(self.temp_dir)
+
         os.remove(temp_model_fn)
+
+        # add invalid location to model, and test add
+        dm = DispersalModel(a_file)
+        dm.set_location('grass_location')
+        temp_model_fn = "with_bad_location_model.xml"
+        dm.save_model(filename=temp_model_fn)
+        try:
+            m.add_model(temp_model_fn)
+            os.remove(temp_model_fn)
+            self.fail("RepositoryException not generated")
+        except RepositoryException, e: pass
+        self.assertTrue("doesn't exist in" in str(e))
+        os.remove(temp_model_fn)
+
+    @patch('mdig.LifestageTransition.LifestageTransition.xml_to_param')
+    @patch('mdig.GRASSInterface.get_g')
+    def test_add_lifestage_model(self,get_g,m_ls):
+        self.make_grass_mock(get_g.return_value)
+        # Assume no appropriate files in tmp
+        c = MDiGConfig.get_config()
+        m = ModelRepository(self.temp_dir)
+        m2 = ModelRepository()
+        a_file = m2.get_models()['lifestage_test']
+
+        self.create_mock_location(self.temp_dir)
+        self.assertEqual(len(m.get_models()), 0)
+        # add location to model, save as new
+        dm = DispersalModel(a_file)
+        dm.set_location('grass_location')
+        temp_model_fn = os.path.join(os.path.dirname(a_file),"with_location_model.xml")
+        dm.save_model(filename=temp_model_fn)
+
+        get_g.return_value.get_range.return_value = [ 'xxxxxx10' ] * 10
+        get_g.return_value.raster_value_freq.return_value = [ [1],[2],[3] ]
+        m_ls.return_value = {}
+
+        # and then try to add
+        m.add_model(temp_model_fn) 
+        self.assertEqual(len(m.get_models()), 1)
+        # more tests about lifestage resources?
+        self.remove_mock_location(self.temp_dir)
 
 
 class DispersalModelTest(unittest.TestCase):

@@ -59,6 +59,8 @@ from ManagementStrategy import ManagementStrategy
 
 _debug=0
 
+class MissingFileException(Exception): pass
+
 class DispersalModel(object):
     """ DispersalModel keeps track of general model data and allows high level
         control of running simulations and analysis.
@@ -530,13 +532,17 @@ class DispersalModel(object):
     def get_popmod_files(self):
         nodes = self.xml_model.xpath('/model/lifestages/transition/popMod')
         files = []
+        missing = []
         for i in nodes:
             fn = i.attrib['file']
             fn2 = self.find_file(fn)
             if fn2 is None:
-                self.log.error("Can't find file %s" % fn)
-                sys.exit(44)
+                missing.append(fn)
             files.append(fn2)
+        if len(missing) > 0:
+            errstr = "Can't find files %s" % str(missing)
+            self.log.error(errstr)
+            raise MissingFileException(errstr)
         return files
 
     def get_initial_random_seed(self):
