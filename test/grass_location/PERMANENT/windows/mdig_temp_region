@@ -1,17 +1,17 @@
 proj:       0
 zone:       0
-north:      10
-south:      -10
-east:       10
-west:       -10
+north:      20
+south:      -20
+east:       20
+west:       -20
 cols:       20
 rows:       20
-e-w resol:  1
-n-s resol:  1
+e-w resol:  2
+n-s resol:  2
 top:        1
 bottom:     0
-cols3:      20
-rows3:      20
+cols3:      40
+rows3:      40
 depths:     1
 e-w resol3: 1
 n-s resol3: 1

@@ -17,9 +17,10 @@ import logging
 import pdb
 
 import mdig
-from DispersalModel import DispersalModel
+from DispersalModel import DispersalModel, ValidationError
 import MDiGConfig
 import GRASSInterface
+import ModelRepository
 
 app = None
 
@@ -79,13 +80,6 @@ msg_template = {
 # values are (fn,date) and sorted so that oldest at position 0
 map_pack_lfu = []
 
-# dictionary of models that are being uploaded but have yet to have supporting
-# files uploaded
-# key: model_name, value:
-# { dir: tempdir, "maps": [survival], "CODA": [filename], ...
-# }
-models_staging = {}
-
 def validate_model_name(mname):
     # Get existing models in repository
     models = mdig.repository.get_models()
@@ -112,22 +106,24 @@ def validate_replicate(instance, rep_num):
     return True
 
 @route('/models/',method="POST")
+@view('staging_model.tpl')
 def submit_model():
     model_file = request.POST.get('new_model')
     data = model_file.file.read()
     # use ModelRepository to add model, but we'll need to implement a method
     # that accepts a string and uses a temp file as a proxy.
-    model_name = ""
     try:
-        model_name = add_model_to_staging(data)
+        model_name = add_model_to_repo(data)
+    except ValidationError, e:
+        return {"error":"Error parsing model xml. Validation said: %s" % str(e)}
+    except ModelRepository.RepositoryException, e:
+        return {"error":"Error adding model to repository: %s" % str(e)}
     except Exception, e:
         if "Model exists" in str(e):
-            # TODO provide a force parameter in query string which asks user
-            # whether to overwrite model (or just to overwrite the model xml
-            # file, and leave the uploaded maps)
-            return "Model already exists in staging area"
-    # check if model name exists in repository 
-    return str(models_staging[model_name])
+            return {"error":"Model already exists in staging area"}
+        raise e
+    dm = mdig.repository.get_models()[model_name]
+    redirect('/')
 
 def get_map_pack_usage():
     # sum storage to check if we actually need to delete anything
@@ -258,10 +254,11 @@ def run_model(model):
             queue_size=qsize, instance_idx = i_specified,
             task_order=task_order, task_updates = task_updates)
 
-def add_model_to_staging(data):
+def add_model_to_repo(data):
     """ Create a temporary directory to store a model file and extract required
     files.
     """
+    #import lxml
     # make temp dir
     temp_model_dir = tempfile.mkdtemp(prefix="mdig_web")
     # write data to actual file
@@ -269,22 +266,10 @@ def add_model_to_staging(data):
     f = open(model_fn,'w')
     f.write(data)
     f.close()
-    # open temp dir to extract info like name and dependencies
-    dm = DispersalModel(model_fn,setup=False)
-    name = dm.get_name()
-    if name in models_staging:
-        shutil.rmtree(temp_model_dir)
-        raise Exception("Model exists")
-    models_staging[name] = {}
-    models_staging[name]["dir"] = temp_model_dir
-    maps = dm.get_map_dependencies()
-    if len(maps) > 0:
-        models_staging[name]["maps"] = maps
-    transition_files = dm.get_popmod_files()
-    #maps = dm.get_coda_files()
-    if len(transition_files) > 0:
-        models_staging[name]["ls_transition"] = transition_files
-    return name
+    model_name = mdig.repository.add_model(model_fn)
+    # remove temp dir/file
+    shutil.rmtree(temp_model_dir)
+    return model_name 
 
 @route('/')
 @view('index.tpl')

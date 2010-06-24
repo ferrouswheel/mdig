@@ -3,6 +3,7 @@
 <head>
     <title>{{name}}</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="content-script-type" content="text/javascript">
     <!--<link rel="stylesheet" href="css/style.css" type="text/css" /> -->
 %include css
 </head>
@@ -22,11 +23,26 @@ description.</p>
 </form>
 <h3> Existing models </h3>
 <table>
-<thead><th>Model name</th><th>Description</th></thead>
+<thead><th>Model name</th><th>Description</th><th>Delete</th></thead>
 <tbody>
+<FORM ACTION="/models/" METHOD="POST" NAME="del">
+<INPUT TYPE="HIDDEN" NAME="confirm" VALUE="false">
+</FORM>
+<script type="text/javascript">
+function delete_model(model_name) {
+var answer = confirm ("Are you sure you wish to delete the model " + model_name
+        + " and ALL simulation results? There is NO undo..." );
+if (answer)
+    document.del.action = "/models/" + model_name +"/del";
+    document.del.elements['confirm'].value='true';
+    document.del.submit();
+return false
+}
+</script>
 %for m in models:
 <tr>
     <td><a href="models/{{m[0]}}"><strong>{{m[0]}}</strong></a></td><td>{{m[1]}}</td>
+    <td><A HREF="models/{{m[0]}}" onClick="delete_model({{m[0]}})">x<a></td>
 </tr>
 %end
 </tbody>

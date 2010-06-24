@@ -190,10 +190,12 @@ class DispersalModel(object):
             self.xml_schema = lxml.etree.XMLSchema(self.schema_doc)
         except lxml.etree.XMLSyntaxError, e:
             log = e.error_log
-            print log
+            self.log.error(log)
+            raise e
         except lxml.etree.XMLSchemaParseError, e:
             log = e.error_log
-            print log
+            self.log.error(log)
+            raise e
             
         if not self.xml_schema.validate(self.xml_model):
             self.log.error("%s not valid according to Schema %s",
@@ -1396,6 +1398,7 @@ class DispersalModel(object):
 #print >>fo, self._indent_xml(self.xml_model)
             print >>fo, lxml.etree.tostring(self.xml_model,pretty_print=True)
             fo.close()
+            self.model_file = filename
         except OSError, e:
             self.log.error("Couldn't save updated version of model file")
             self.log.error(e)

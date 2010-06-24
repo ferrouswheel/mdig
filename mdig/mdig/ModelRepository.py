@@ -92,13 +92,10 @@ class ModelRepository:
         # write dispersal model to new dir (working copy)
         dm.save_model(os.path.join(dest_dir,"model.xml"))
 
-        # TODO: check whether referenced maps exist or not...
-        # TODO: create dispersal model method to scan for these
-
         # set up model directory
         dm.set_base_dir() 
-        print "Successfully added model to mapset %s" % \
-            g.get_mapset_full_path(dm.get_mapset())
+        print "Successfully added model to mapset %s" % g.get_mapset_full_path(dm.get_mapset())
+        return dm.get_name()
 
     def remove_model(self, model_name, force=False):
         models = self.get_models()
