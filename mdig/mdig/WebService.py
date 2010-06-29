@@ -214,6 +214,15 @@ def process_tasks():
     print "updates:" + str(updates)
     return k, updates
 
+from mdig.ModelRepository import RepositoryException
+@route('/models/:model/del',method='POST')
+def del_model(model):
+    try:
+        mdig.repository.remove_model(model, force=True)
+    except RepositoryException:
+        pass
+    redirect('/')
+
 @route('/models/:model/run',method='POST')
 @view('run.tpl')
 @validate(model=validate_model_name)

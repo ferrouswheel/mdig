@@ -17,7 +17,16 @@
 <div> <span class="error">Warning:</span> This model is missing resources:
 <ul>
 %for i in missing_resources:
-<li>{{i[1]}} [{{i[0]}}]</li>
+<li>{{i[1]}} [{{i[0]}}
+%if i[0] == 'map':
+<a href="http://fruitionnz.com/mdig/index.php?title=Importing_maps">?</a>]</li>
+%elif i[0] == 'region':
+<a href="http://fruitionnz.com/mdig/index.php?title=Adding_Regions">?</a>]</li>
+%elif i[0] == 'popmod':
+<a href="http://fruitionnz.com/mdig/index.php?title=Adding_lifestage_files">?</a>]</li>
+%elif i[0] == 'coda':
+<a href="http://fruitionnz.com/mdig/index.php?title=Adding_lifestage_files">?</a>]</li>
+%end
 %end
 </ul>
 </div>
@@ -38,23 +47,20 @@ region {{r_id}}: {{ls.getPhenologyBins(r_id)}}
 </p>
 <div class="events"><h4>Events</h4>
     <ol>
-<FORM ACTION="ls/{{ls_id}}/events" METHOD="POST" NAME="delE">
-<INPUT TYPE="HIDDEN" NAME="delEvent" VALUE="-1">
-</FORM>
-    
 %for e in ls.events:
-        <li>
-% e_url = "ls/%s/events/%d" % (ls_id,ls.events.index(e))
-        <a href="{{e_url}}">{{e.get_command()}}</a> [<A HREF="ls/{{ls_id}}/events" onClick="document.delE.elements['delEvent'].value='{{ls.events.index(e)}}';document.delE.submit();return false">delete</A>]
+        <li> {{e.get_command()}}
             <ul>
 % params = e.get_params(True,None)
+% vars = model.get_variable_values() 
 %for p in params:
                 <li> {{p}}: \\
 %if params[p][1] != None:
 %if params[p][0] == 'VALUE':
 {{params[p][1]}}
+%elif params[p][0] == 'VAR':
+variable <i>{{params[p][1]}}</i> has values {{vars[params[p][1]]}}
 %else:
-{{params[p][1]}} ({{params[p][0]}})
+{{params[p][1]}} [<i>{{params[p][0]}}</i>]
 %end
 %else:
 {{params[p][0]}}
@@ -71,11 +77,14 @@ region {{r_id}}: {{ls.getPhenologyBins(r_id)}}
 </div>
 <div class="model-list">
 <h3>Actions</h3>
-<div><form action="/models/{{model.get_name()}}/run" method="post">
-<ul><li> <strong>Run Model</strong> -  <input type="submit" value="Run all"/> </li>
-<!--<input type="checkbox" name="rerun" value="true"/>Rerun complete instances
-too.<br/>-->
-</ul> </form>
+<div>
+%if len(missing_resources) > 0:
+<strong>Run Model</strong> - <i>please resolve missing resources in order to run model</i>
+%else:
+<form action="/models/{{model.get_name()}}/run" method="post">
+<strong>Run Model</strong> -  <input type="submit" value="Run all"/>
+</form>
+%end
 </div>
 <h2>Instances</h2>
 <form action="/models/{{model.get_name()}}" method="post">

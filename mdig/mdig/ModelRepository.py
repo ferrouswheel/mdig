@@ -39,17 +39,17 @@ class ModelRepository:
         g = GRASSInterface.get_g()
         dm = DispersalModel.DispersalModel(model_fn,setup=False)
         loc = dm.get_location()
-        if dm.get_location() == None:
+        if loc == None:
             raise RepositoryException("Model doesn't define GIS Location for simulation")
         if not os.path.isdir(os.path.join(self.db,loc,"PERMANENT")):
             raise RepositoryException("Model defines a GIS Location " + loc + " that " + "doesn't exist in " + self.db)
-        g.change_mapset("PERMANENT",dm.get_location())
+        g.change_mapset("PERMANENT",loc)
         # create model mapset
         self.log.info("Creating mapset for model %s"%dm.get_mapset())
         if g.check_mapset(dm.get_name()):
             raise RepositoryException("Couldn't create mapset %s, it already exists in location %s." \
                     % (dm.get_mapset(),g.get_mapset_full_path(dm.get_mapset()) ))
-        if not g.change_mapset(dm.get_name(),dm.get_location(),True):
+        if not g.change_mapset(dm.get_name(),loc,True):
             raise RepositoryException("Couldn't create mapset %s." % dm.get_mapset())
         self.log.info("Created mapset for model " + dm.get_name())
 
@@ -116,15 +116,17 @@ class ModelRepository:
             g = GRASSInterface.get_g()
             dm = DispersalModel.DispersalModel(models[model_name],setup=False)
             loc = dm.get_location()
-            if loc == None:
-                loc = dm.infer_location()
+            if loc == None: loc = dm.infer_location()
             if not os.path.isdir(os.path.join(self.db,loc,"PERMANENT")):
                 raise RepositoryException("Model defines a GIS Location " + loc + " that doesn't exist in " + self.db)
-            g.change_mapset(dm.get_location(),"PERMANENT")
-            #shutil.rmtree(model_dir)
-            # TODO  remove ALL associated mapsets first (because we need the
+            g.change_mapset("PERMANENT",loc)
+            # remove ALL associated instance mapsets first (because we need the
             # model file to tell us which once are associated)
-            GRASSInterface.get_g().remove_mapset(model_name, force)
+            for i in dm.get_instances():
+                i_mapset = i.get_mapset()
+                if i_mapset != model_name:
+                    GRASSInterface.get_g().remove_mapset(i_mapset, loc, force)
+            GRASSInterface.get_g().remove_mapset(model_name, loc, force)
             print "Model removed"
 
     def get_models(self):

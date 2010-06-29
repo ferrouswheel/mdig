@@ -42,7 +42,7 @@ if (answer)
 %for m in models:
 <tr>
     <td><a href="models/{{m[0]}}"><strong>{{m[0]}}</strong></a></td><td>{{m[1]}}</td>
-    <td><a href="models/{{m[0]}}" onClick="delete_model({{m[0]}}); return false;">x<a></td>
+    <td><a href="models/{{m[0]}}" onClick="delete_model('{{m[0]}}'); return false;">x<a></td>
 </tr>
 %end
 </tbody>
