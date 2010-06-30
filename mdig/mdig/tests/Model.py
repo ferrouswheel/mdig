@@ -1010,6 +1010,11 @@ class ManagementStrategyTest(unittest.TestCase):
         self.assertEqual(len(s.get_treatments_for_param("dist",0)),1)
         self.assertEqual(len(s.get_treatments_for_param("meatball",0)),0)
 
+        t = s.get_treatments()[0]
+        self.assertEqual(t.get_treatment_area_map(None), None)
+        self.assertEqual(t.get_ls(), None)
+        
+
     @patch('mdig.GRASSInterface.get_g')
     def test_s_with_delay(self,get_g):
         from lxml import etree
@@ -1086,6 +1091,17 @@ class ManagementStrategyTest(unittest.TestCase):
         s.set_delay(2)
         self.assertEqual(len(s.get_treatments_for_ls("all",0)),0)
         self.assertEqual(len(s.get_treatments_for_ls("all",3)),1)
+
+    @patch('mdig.GRASSInterface.get_g')
+    def test_treatment_no_node(self,get_g):
+        self.assertRaises(NotImplementedError,Treatment,None,None,None)
+
+        s = Mock()
+        s.get_name.return_value = 'test'
+        def test_del():
+            t = Treatment(s,Mock(),0)
+        test_del()
+        self.assertEqual(get_g.return_value.remove_map.call_count, 2)
 
 from mdig.Region import Region
 class RegionTest(unittest.TestCase):

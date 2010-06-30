@@ -179,7 +179,7 @@ class Treatment:
         self.event = None
 
         if node is None:
-            self.node = self.init_treatment(self.strategy)
+            self.node = self.init_treatment()
         else:
             # if node is provided then create treatment from xml
             self.node = node
@@ -190,13 +190,15 @@ class Treatment:
         self.var_temp = "x_t___strategy_" + self.strategy.get_name() + "_var_t_" + str(self.index)
 
     def __del__(self):
-        GRASSInterface.get_g().remove_map(self.area_temp)
-        GRASSInterface.get_g().remove_map(self.var_temp)
+        if 'area_temp' in dir(self):
+            GRASSInterface.get_g().remove_map(self.area_temp)
+        if 'var_temp' in dir(self):
+            GRASSInterface.get_g().remove_map(self.var_temp)
 
     def init_treatment(self):
         # TODO create the required elements with a default global area
         # and a dummy action
-        raise NotImplementError
+        raise NotImplementedError()
 
     def affects_var(self, var_key):
         """
@@ -251,7 +253,8 @@ class Treatment:
             Returns none if there is no area specified (which means the
             treatment is for the whole region)
         """
-        self.load_areas()
+        areas = self.load_areas()
+        if len(areas) == 0: return None
         return self._merge_areas(replicate)
 
     def _merge_areas(self, replicate):
