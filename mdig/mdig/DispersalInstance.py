@@ -90,12 +90,6 @@ class DispersalInstance:
         self.activeReps = []
         
         self.log.debug(str(self))
-        #self.log.debug("Instance - mapset: %s - vars: %s reps (complete/incomplete/missing): %d/%d/%d" % \
-        #    (self.get_mapset(), zip(self.var_keys,self.variables), \
-        #    len([x for x in self.replicates if x.complete]), \
-        #    len([x for x in self.replicates if not x.complete]), \
-        #    self.experiment.get_num_replicates()-len(self.replicates)) )
-        #self.log.debug("Management strategy for instance is %s" % self.strategy)
 
     def _load_replicates(self):
         c = self.experiment.get_completed_permutations()
@@ -178,12 +172,31 @@ class DispersalInstance:
                 raise e
 
     def run(self):
+        num_reps = self.experiment.get_num_replicates()
+        # Catch when somebody has decreased the reps and there
+        # are more reps saved than the new number expected
+        if num_reps < len(self.replicates):
+            self.log.info("More replicates stored than expected." + \
+                    " Extra replicates will be discarded.")
+            # There are more reps recorded than we need
+            new_reps = []; to_remove = []
+            for i in range(0, len(self.replicates)):
+                if i < num_reps:
+                    new_reps.append(self.replicates[i])
+                else:
+                    to_remove.append(self.replicates[i])
+            # Remove those unneeded
+            for r in to_remove: self.remove_rep(r)
+            # Keep enough to satisfy replicates wanted
+            # (these may get rerun if they are incomplete)
+            self.replicates = new_reps
+
         # Process replicates that exist but are incomplete
         for rep in [x for x in self.replicates if not x.complete]:
             self._run_replicate(rep)
     
         # Create and process replicates that are missing
-        while len(self.replicates) < self.experiment.get_num_replicates():
+        while len(self.replicates) < num_reps:
             rep = Replicate(None,self)
             self.replicates.append(rep)
             self._run_replicate(rep)

@@ -23,6 +23,7 @@ import GRASSInterface
 import ModelRepository
 
 app = None
+log = logging.getLogger('mdig.web')
 
 reloader = False
 if True:
@@ -177,7 +178,6 @@ def process_tasks():
     for m_name, tasks in models_in_queue.items():
         for task_name in tasks:
             t = tasks[task_name]
-            print t
             if 'complete' in t:
                 # deal with completion events which should only display once
                 if datetime.datetime.now() - t['last_update'] \
@@ -205,13 +205,9 @@ def process_tasks():
                 time_index[(m_name,task_name)]=t['last_update']
     for m_name, task in to_remove:
         del models_in_queue[m_name][task]
-        print "models in queue"
-        print models_in_queue[m_name]
     last_notice = new_last_notice
     k = time_index.keys()
     k.sort(key=lambda x: time_index[x])
-    print "update order:" + str(k)
-    print "updates:" + str(updates)
     return k, updates
 
 from mdig.ModelRepository import RepositoryException
@@ -245,8 +241,6 @@ def run_model(model):
             instance_idxs = [x for x in range(0,len(model.get_instances()))]
         if m_name not in models_in_queue:
             models_in_queue[m_name] = {}
-        else:
-            print models_in_queue
         if 'RUN' in models_in_queue[m_name] and 'complete' not in models_in_queue[m_name]['RUN']:
             exists = True
         else:
@@ -296,8 +290,7 @@ def index():
             desc = re.sub("[\\s\\t]+"," ",desc)
             m_list.append((m,desc))
         except mdig.DispersalModel.ValidationError, e:
-            print str(e)
-            pass
+            log.error(str(e))
 
     env = GRASSInterface.get_g().get_gis_env()
     task_order, task_updates = process_tasks()
@@ -319,17 +312,13 @@ def show_model(model):
             i_index=0
             for i in dm.get_instances():
                 if i.enabled and i_index not in to_enable:
-                    print "changing to false"
                     i.enabled=False
                     i.update_xml()
                 if not i.enabled and i_index in to_enable:
-                    print "changing to true"
                     i.enabled=True
                     i.update_xml()
                 i_index+=1
             dm.save_model()
-        else:
-            print "unknown post"
         #event_to_remove = request.POST.getall('delEvent')]
         #elif if len(event_to_remove) > 0:
         #    ls.delEvent(
@@ -454,8 +443,7 @@ def submit_occupancy_envelope_job(dm,idx,ls_id,action):
         if m_name not in models_in_queue:
             models_in_queue[m_name] = {}
         else:
-            print "Model name already in queue"
-            print models_in_queue
+            log.info("Model name already in queue")
         if action in models_in_queue[m_name] and \
                 'complete' not in models_in_queue[m_name][action]:
             # job already exists
@@ -995,6 +983,20 @@ rt = ResultMonitor(results_q)
 # spawn a thread with mdig.py and use a multiprocessing queue
 mdig_worker_process = Process(target=mdig_worker_start, args=(work_q,results_q))
 
+# Wrapper middleware to ensure the WebService returns to mdig_webservice
+class RestoreMapset:
+
+    def __init__(self, application):
+        self.application = application
+
+    def __call__(self, environ, start_response):
+        # The awesomest cleanup code care of:
+        # http://code.google.com/p/modwsgi/wiki/RegisteringCleanupCode
+        try:
+            return self.application(environ, start_response)
+        finally:
+            change_to_web_mapset()
+
 def start_web_service():
     change_to_web_mapset()
     rt.start()
@@ -1005,12 +1007,19 @@ def start_web_service():
     app.catchall = False
     import paste.evalexception
     myapp = paste.evalexception.middleware.EvalException(app)
+    myapp = RestoreMapset(myapp)
     c = MDiGConfig.get_config()
+    # Don't check replicates are complete, since this will make the web service
+    # too slow if there are lots of replicates
+    if "replicate" not in c: c["replicate"] = {}
+    c["replicate"]["check_complete"] = "false"
     bottle.run(app=myapp, host=c["WEB"]["host"], port=c["WEB"]["port"], reloader=reloader)
 
 # Store the web mapsets that have been created so that we can tidy up afterwards
-mapsets = {} # indexed by location
+# indexed by location, since webservice can potentially move around locations
+mapsets = {}
 def change_to_web_mapset():
+    log.debug("Changing the web service mapset")
     g = GRASSInterface.get_g(create=False)
     ms = "mdig_webservice"
     if not g.check_mapset(ms):
@@ -1020,8 +1029,14 @@ def change_to_web_mapset():
 
 def shutdown_webapp():
     if app is None: return
+    log.info("Shutting down the web service...")
     rt.running = False
     work_q.put({'action':"SHUTDOWN"})
     if mdig_worker_process.pid: mdig_worker_process.join()
-    print "TODO: delete temporary webservice files"
+    g = GRASSInterface.get_g(create=False)
+    # Remove webservice mapsets
+    log.debug("Removing temporary mapsets")
+    global mapsets
+    for loc in mapsets: g.remove_mapset(mapsets[loc],loc,force=True)
+    log.warning("TODO: delete temporary webservice files")
 

@@ -59,7 +59,15 @@ from ManagementStrategy import ManagementStrategy
 
 _debug=0
 
-class MissingFileException(Exception): pass
+class MissingFileException(Exception):
+    def __init__(self,desc,files=[]):
+        Exception(desc)
+        self.desc = desc
+        self.files = files
+
+    def __str__(self):
+        return "RepositoryException: " + self.desc + str(self.files)
+
 
 class DispersalModel(object):
     """ DispersalModel keeps track of general model data and allows high level
@@ -542,9 +550,9 @@ class DispersalModel(object):
                 missing.append(fn)
             files.append(fn2)
         if len(missing) > 0:
-            errstr = "Can't find files %s" % str(missing)
+            errstr = "Can't find files" + str(missing)
             self.log.error(errstr)
-            raise MissingFileException(errstr)
+            raise MissingFileException("Can't find popmod files",files=missing)
         return files
 
     def get_initial_random_seed(self):

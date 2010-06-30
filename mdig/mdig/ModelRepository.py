@@ -12,7 +12,13 @@ from mdig import DispersalModel
 
 
 class RepositoryException(Exception):
-    pass
+    def __init__(self,desc,missing=[]):
+        Exception(desc)
+        self.desc = desc
+        self.missing = missing
+
+    def __str__(self):
+        return "RepositoryException: " + self.desc
 
 class ModelRepository:
 
@@ -61,14 +67,16 @@ class ModelRepository:
             raise RepositoryException("Error creating mdig dir in mapset. %s" % str(e))
 
         # copy lifestage transition model file if it exists
-        for pm in dm.get_popmod_files():
+        missing_files = []
+        files_to_copy = []
+        popmod_files = []
+        try:
+            popmod_files = dm.get_popmod_files()
+        except DispersalModel.MissingFileException,e:
+            missing_files.extend(e.files)
+        for pm in popmod_files:
             src_file = pm
-            # check if this exists, directly and then relative to model file
-            if not os.path.exists(src_file):
-                src_file = os.path.join(os.path.dirname(model_fn), src_file)
-                if not os.path.exists(src_file):
-                    g.remove_mapset(dm.get_mapset(),force=True)
-                    raise RepositoryException("Can't find internally specified popmod lifestage transition file!")
+            files_to_copy.append(src_file)
             
             for lt in dm.get_lifestage_transitions():
                 coda_files = lt.get_coda_files_in_xml()
@@ -77,13 +85,16 @@ class ModelRepository:
                     # check if this exists, directly and then relative to transition file
                     if not os.path.exists(cf):
                         cf = os.path.join(os.path.dirname(src_file), cf)
-                        if not os.path.exists(cf):
-                            g.remove_mapset(dm.get_mapset(),force=True)
-                            raise RepositoryException("Can't find internally specified lifestage transition CODA file!")
-                    shutil.copyfile(cf,os.path.join(dest_dir,os.path.basename(cf)))
+                        if not os.path.exists(cf): missing_files.append(cf)
+                    files_to_copy.append(cf)
                     new_coda_files.append(os.path.basename(cf))
                 lt.set_coda_files_in_xml(new_coda_files)
-            shutil.copyfile(src_file,os.path.join(dest_dir,os.path.basename(src_file)))
+        if len(missing_files) > 0:
+            g.remove_mapset(dm.get_mapset(),force=True)
+            raise RepositoryException("Can't find lifestage transition files",
+                    missing_files)
+        for x in files_to_copy:
+            shutil.copyfile(x,os.path.join(dest_dir,os.path.basename(x)))
 
         # remove explicit location and rely on implicit location finding
         dm.remove_location()

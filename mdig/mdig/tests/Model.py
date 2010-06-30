@@ -92,6 +92,40 @@ class RepositoryTest(unittest.TestCase):
         m.remove_model('variables',force=True)
         self.assertEqual(get_g.return_value.remove_mapset.call_args[0][0], 'variables')
         os.remove(temp_model_fn)
+
+        self.assertRaises(mdig.ModelRepository.RepositoryException,m.remove_model,'non_existant')
+        self.remove_mock_location(self.temp_dir)
+
+    @patch('mdig.GRASSInterface.get_g')
+    @patch('__builtin__.raw_input')
+    def remove_other_test(self,m_in,get_g):
+        self.make_grass_mock(get_g.return_value)
+        # Assume no appropriate files in tmp
+        c = MDiGConfig.get_config()
+        m = ModelRepository(self.temp_dir)
+
+        # Try to add a model from one repository to the empty one
+        try: self.remove_mock_location(self.temp_dir)
+        except OSError, e:
+            if 'No such file' not in str(e): raise e
+        m2 = ModelRepository()
+        a_file = m2.get_models()['variables']
+        self.create_mock_location(self.temp_dir)
+
+        # Add location to model
+        dm = DispersalModel(a_file)
+        dm.set_location('grass_location')
+        temp_model_fn = "with_location_model.xml"
+        dm.save_model(filename=temp_model_fn)
+
+        m.add_model(temp_model_fn)
+        m.remove_model('variables')
+
+        m.add_model(temp_model_fn)
+        m_in.return_value.upper.return_value = 'Y'
+        m.remove_model('variables')
+
+        os.remove(temp_model_fn)
         self.remove_mock_location(self.temp_dir)
 
     @patch('mdig.GRASSInterface.get_g')
@@ -147,25 +181,20 @@ class RepositoryTest(unittest.TestCase):
         # test when mapset already exists with the name of model
         get_g.return_value.check_mapset.return_value = True
         self.create_mock_location(self.temp_dir)
-        e = ""
-        try:
-            m.add_model(temp_model_fn)
-        except RepositoryException, e:
-            pass
-        self.assertTrue("it already exists" in str(e))
+        self.assertRaises(mdig.ModelRepository.RepositoryException,m.add_model,temp_model_fn)
+        #self.assertTrue("it already exists" in str(e))
         self.remove_mock_location(self.temp_dir)
         get_g.return_value.check_mapset.return_value = False
 
         # test what happens if we can't create new mapset
         get_g.return_value.change_mapset.return_value = False
         self.create_mock_location(self.temp_dir)
-        e = ""
         try:
             m.add_model(temp_model_fn)
             os.remove(temp_model_fn)
             self.fail("RepositoryException not generated")
-        except RepositoryException, e: pass
-        self.assertTrue("Couldn't create mapset" in str(e))
+        except RepositoryException, e:
+            self.assertTrue("Couldn't create mapset" in str(e))
         self.remove_mock_location(self.temp_dir)
         get_g.return_value.change_mapset.return_value = True
         
@@ -216,6 +245,29 @@ class RepositoryTest(unittest.TestCase):
         # and then try to add
         m.add_model(temp_model_fn) 
         self.assertEqual(len(m.get_models()), 1)
+        # more tests about lifestage resources?
+        self.remove_mock_location(self.temp_dir)
+
+    @patch('mdig.GRASSInterface.get_g')
+    def test_lifestage_model_missing_files(self,get_g):
+        self.make_grass_mock(get_g.return_value)
+        # Assume no appropriate files in tmp
+        c = MDiGConfig.get_config()
+        m = ModelRepository(self.temp_dir)
+        m2 = ModelRepository()
+        a_file = m2.get_models()['lifestage_test']
+
+        self.create_mock_location(self.temp_dir)
+        self.assertEqual(len(m.get_models()), 0)
+        # add location to model, save as new
+        dm = DispersalModel(a_file)
+        dm.set_location('grass_location')
+        temp_model_fn = os.path.join(self.temp_dir,"with_location_model.xml")
+        dm.save_model(filename=temp_model_fn)
+
+        # and then try to add
+        self.assertRaises(mdig.ModelRepository.RepositoryException,m.add_model,temp_model_fn) 
+        self.assertEqual(len(m.get_models()), 0)
         # more tests about lifestage resources?
         self.remove_mock_location(self.temp_dir)
 
@@ -911,7 +963,7 @@ class GrassMapTest(unittest.TestCase):
 
         # test when we can't find the map
         get_g.return_value.check_map.return_value = None
-        self.assertRaises(GRASSInterface.MapNotFoundException,GrassMap,filename=fn)
+        self.assertRaises(mdig.GRASSInterface.MapNotFoundException,GrassMap,filename=fn)
 
 from mdig.ManagementStrategy import ManagementStrategy, Treatment, TreatmentArea
 from StringIO import StringIO
@@ -1034,6 +1086,87 @@ class ManagementStrategyTest(unittest.TestCase):
         s.set_delay(2)
         self.assertEqual(len(s.get_treatments_for_ls("all",0)),0)
         self.assertEqual(len(s.get_treatments_for_ls("all",3)),1)
+
+from mdig.Region import Region
+class RegionTest(unittest.TestCase):
+    
+    @patch('mdig.GRASSInterface.get_g')
+    def test_create_region(self,get_g):
+        from lxml import etree
+        xml = """ <region id='a' name='test_region'/> """
+        tree = etree.parse(StringIO(xml))
+        r_node = tree.getroot()
+        r = Region(r_node)
+        self.assertEqual(r.get_name(), 'test_region')
+        self.assertEqual(r.get_resolution(), None)
+        r.set_resolution(1)
+        self.assertEqual(r.get_resolution(), 1)
+
+        xml = """ <region id='a'></region> """
+        tree = etree.parse(StringIO(xml))
+        r_node = tree.getroot()
+        r = Region(r_node)
+        self.assertEqual(r.get_resolution(), 1)
+        self.assertEqual(r.get_name(), None)
+        xml = """ <region id='a'><resolution>1</resolution></region> """
+        tree = etree.parse(StringIO(xml))
+        r_node = tree.getroot()
+        r = Region(r_node)
+        self.assertEqual(r.get_resolution(), 1)
+        self.assertEqual(r.get_name(), None)
+        xml = """ <region id='a'><resolution>201</resolution></region> """
+        tree = etree.parse(StringIO(xml))
+        r_node = tree.getroot()
+        r = Region(r_node)
+        self.assertEqual(r.get_resolution(), 201)
+        self.assertEqual(r.get_name(), None)
+        xml = """ <region id='a'><resolution>flibble</resolution></region> """
+        tree = etree.parse(StringIO(xml))
+        r_node = tree.getroot()
+        r = Region(r_node)
+        self.assertRaises(ValueError,r.get_resolution)
+        self.assertEqual(r.get_name(), None)
+
+        r.set_name('test_region')
+        self.assertEqual(r.get_name(), 'test_region')
+
+        r.set_resolution(1)
+        self.assertEqual(r.get_resolution(), 1)
+        self.assertRaises(ValueError,r.set_resolution,'fox')
+
+    @patch('mdig.GRASSInterface.get_g')
+    def test_extents(self,get_g):
+        from lxml import etree
+        xml = """ <region id='a'><extents n='10' s='-10' e='10' w='-10'/></region> """
+        tree = etree.parse(StringIO(xml))
+        r_node = tree.getroot()
+        r = Region(r_node)
+        e = r.get_extents()
+        self.assertEqual(e['n'], 10)
+        e = {'n':1,'s':0,'e':2,'w':1}
+        r.set_extents(e)
+        self.assertEqual(r.get_extents(),e)
+
+        xml = """ <region id='a'></region> """
+        tree = etree.parse(StringIO(xml))
+        r_node = tree.getroot()
+        r = Region(r_node)
+        e = r.get_extents()
+        self.assertEqual(e, None)
+
+        e = {'n':1,'s':0,'e':2,'w':1}
+        r.set_extents(e)
+        self.assertEqual(r.get_extents(),e)
+
+        bade = {'k':1,'s':0,'e':2,'w':1}
+        self.assertRaises(KeyError,r.set_extents,bade)
+        self.assertEqual(r.get_extents(),e)
+        bade = {'n':1,'s':0,'roar':2,'w':1}
+        self.assertRaises(KeyError,r.set_extents,bade)
+        self.assertEqual(r.get_extents(),e)
+
+        r.update_xml() # does nothing
+
 
         
 

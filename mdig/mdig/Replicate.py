@@ -158,7 +158,7 @@ class Replicate:
         
         if ls_id in self.saved_maps:
             return self.saved_maps[ls_id]
-        else: return None
+        else: return []
 
     def delete_maps(self):
         """ Deletes all maps created by replicate, this currently
@@ -169,9 +169,16 @@ class Replicate:
         """
         g = GRASSInterface.get_g()
         for ls_id in self.instance.experiment.get_lifestage_ids():
-            for m in self.get_saved_maps(ls_id):
-                # remove map
-                g.remove_map(m,self.instance.get_mapset())
+            try:
+                ls_saved_maps = self.get_saved_maps(ls_id)
+            except GRASSInterface.MapNotFoundException, e:
+                # If maps are missing, there still might be some found, even
+                # though it's unlikely
+                ls_saved_maps = self.get_saved_maps(ls_id)
+            finally:
+                for m in ls_saved_maps:
+                    # remove map
+                    g.remove_map(m,self.instance.get_mapset())
         
             ls_node = self.node.xpath('lifestage[@id="%s"]' % ls_id)
             if len(ls_node) == 0: continue

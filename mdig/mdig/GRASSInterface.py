@@ -574,7 +574,7 @@ class GRASSInterface:
             self.log.debug("Setting region to match raster %s", raster)
             ret = self.run_command('g.region rast=%s' % raster)
         else:
-            extents = region.getExtents()
+            extents = region.get_extents()
             command_string = 'g.region '
             extent_string = ''
             res_str = ''
@@ -592,7 +592,7 @@ class GRASSInterface:
             else:
                 self.log.warning("Region %s didn't define extents" % region.id)
 
-            res = region.getResolution()
+            res = region.get_resolution()
             if res is not None:
                 res_str = 'res=' + repr(res)
             else:

@@ -24,6 +24,7 @@ Copyright 2006, Joel Pitt
 """
 
 import logging
+import lxml
 from GrassMap import GrassMap
 
 class Region:
@@ -42,39 +43,43 @@ class Region:
     def set_name(self, new_name):
         self.xml_node.attrib["name"] = new_name
     
-    def getResolution(self):
+    def get_resolution(self):
         res_node = self.xml_node.xpath('resolution')
         if len(res_node) == 1:
             return float(res_node[0].text)
         else:
-            return 1
+            if self.get_name() is not None: return None
+            else: return 1
             
-    def setResolution(self, res):
+    def set_resolution(self, res):
         res_node = self.xml_node.xpath('resolution')
         if len(res_node) == 0:
             res_node = lxml.etree.SubElement(self.xml_node,'resolution')
         else:
             res_node = res_node[0]
-        res_node.text = repr(res)
+        res_node.text = repr(float(res))
         
-    def getExtents(self):
+    def get_extents(self):
         ext_node = self.xml_node.xpath('extents')
         if len(ext_node) == 1:
-            extents = {}
-            extents = ext_node[0].attrib
+            extents = dict(ext_node[0].attrib)
+            for i in extents: extents[i] = float(extents[i])
             return extents
         else:
             self.log.debug("Region has no unique extent node")
             return None
         
-    def setExtents(self, ext):
+    def set_extents(self, ext):
         ext_node = self.xml_node.xpath('extents')
-        if len(ext_node) == 1:
-            extents = {}
-            extents = ext_node[0].attrib
-            return float(res.node.text)
+        if len(ext_node) == 0:
+            ext_node = lxml.etree.SubElement(self.xml_node,'extents')
         else:
-            return None
+            ext_node = ext_node[0]
+        for i in ext:
+            if i not in ['n','s','e','w']:
+                raise KeyError('extent keys must be one of n,s,e,w')
+        for i in ext:
+            ext_node.attrib[i] = str(ext[i])
         
     # This is now stored in mdig.conf and is up to user to specify
     #def getBackgroundMap(self):

@@ -10,9 +10,9 @@
 <body>
 <div class="description">
 <h1>Modular Dispersal in GIS</h1>
-<p>Version {{version}} "{{v_name}}" - <a href="http://fruitionnz.com/mdig">website</a></p>
-<p>You can browse, run, analyse and export existing spread models, or submit a new model
-description.</p>
+<small>Version <a href="http://fruitionnz.com/mdig/index.php?title=Version_History">{{version}}</a>
+<i>"{{v_name}}"</i> - <a href="http://fruitionnz.com/mdig">website</a></small>
+<p>You can browse, run, analyse and export existing spread models, or submit a new model description.</p>
 </div>
 <div class="repository">
 <h2>Model Repository</h2>
@@ -47,8 +47,7 @@ if (answer)
 %end
 </tbody>
 </table>
-<p class="rdetails"><small>Repository directory: {{repo_location}}</small> | <small>GRASS details - GRASSDB: {{grass_env["GISDBASE"]}}, Location:
-{{grass_env["LOCATION_NAME"]}}, Mapset: {{grass_env["MAPSET"]}}</small></p>
+<p class="rdetails"><small>Repository directory: {{repo_location}}</small> | <small>GRASS details - GRASSDB: {{grass_env["GISDBASE"]}} </small></p>
 </div>
 <div class="footer">
 <p class="copyright">
