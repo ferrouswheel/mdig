@@ -90,7 +90,7 @@ class Replicate:
         missing_maps = {}
         total_reps = self.instance.experiment.get_num_replicates()
         self.log.debug("Checking replicate %d/%d is complete" % \
-            (self.r_index,total_reps)) 
+            (self.r_index+1,total_reps)) 
         ls_keys = self.instance.experiment.get_lifestage_ids()
         for ls_key in ls_keys:
             try:
