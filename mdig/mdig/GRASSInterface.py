@@ -864,19 +864,19 @@ class GRASSInterface:
         self.log.log(log_level, "exec: " + commandstring)
         ret = None
         
-        lvl = 0
+        lvl = logging.WARNING
         if len(logging.getLogger("mdig").handlers) > 0:
             lvl = logging.getLogger("mdig").handlers[0].level
-        if lvl >= logging.INFO:
-            p = Popen(commandstring, shell=True, stdout=subprocess.PIPE, \
-                    stderr=subprocess.PIPE)
-        else:
-            p = Popen(commandstring, shell=True, stdout=subprocess.PIPE)
+        #if lvl >= logging.INFO:
+        p = Popen(commandstring, shell=True, stdout=subprocess.PIPE, \
+                stderr=subprocess.PIPE)
+        #else:
+        #    p = Popen(commandstring, shell=True, stdout=subprocess.PIPE)
         
         self.stdout, self.stderr = p.communicate()
         if len(self.stdout) > 0:
             self.log.debug("stdout: " + self.stdout)
-        if self.stderr is not None and len(self.stderr) > 0:
+        if lvl >= logging.INFO and self.stderr is not None and len(self.stderr) > 0:
             self.log.debug("stderr: " + self.stderr)
         ret = p.returncode
 

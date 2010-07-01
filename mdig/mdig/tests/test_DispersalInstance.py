@@ -14,7 +14,7 @@ class DispersalInstanceTest(unittest.TestCase):
 
     def setUp(self):
         mdig.repository = self.repo = ModelRepository()
-        logging.getLogger('mdig').setLevel(logging.CRITICAL)
+        #logging.getLogger('mdig').setLevel(logging.CRITICAL)
         fn = mdig.repository.get_models()['lifestage_test']
         self.m_lifestage = DispersalModel(fn)
 
@@ -25,29 +25,33 @@ class DispersalInstanceTest(unittest.TestCase):
         # Model initialise with variables
         fn = mdig.repository.get_models()['variables']
         self.m_variables = DispersalModel(fn)
-        logging.getLogger('mdig').setLevel(logging.WARNING)
+        #logging.getLogger('mdig').setLevel(logging.WARNING)
 
     def testDown(self):
         pass
 
-    def test_load_replicates(self):
+    @patch('mdig.GRASSInterface.get_g')
+    def test_load_replicates(self,m_g):
         # replicates loaded on init
         self.m_lifestage.get_instances()
         self.m_strategy.get_instances()
         self.m_variables.get_instances()
 
-    def test_get_mapset(self):
+    @patch('mdig.GRASSInterface.get_g')
+    def test_get_mapset(self,m_g):
         i = self.m_lifestage.get_instances()[0]
         self.assertEqual(i.get_mapset().find('lifestage_test_i'), 0)
         del i.node.attrib['mapset']
         self.assertEqual(i.get_mapset(),'lifestage_test')
 
-    def test_set_mapset(self):
+    @patch('mdig.GRASSInterface.get_g')
+    def test_set_mapset(self,m_g):
         i = self.m_lifestage.get_instances()[0]
         i.set_mapset('blah')
         self.assertEqual(i.node.attrib['mapset'], 'blah')
 
-    def test_add_envelope(self):
+    @patch('mdig.GRASSInterface.get_g')
+    def test_add_envelope(self,m_g):
         i = self.m_variables.get_instances()[0]
         i._add_envelope('test_envelope','all',1)
         e = i.node.find('envelopes')
@@ -56,7 +60,8 @@ class DispersalInstanceTest(unittest.TestCase):
         i._add_envelope('test_envelope','all',1)
         self.assertEqual(len(e),1)
 
-    def test_update_xml(self):
+    @patch('mdig.GRASSInterface.get_g')
+    def test_update_xml(self,m_g):
         i = self.m_variables.get_instances()[0]
         i.enabled = False
         i.update_xml()

@@ -10,7 +10,8 @@ test_dir = ""
 __all__=['test_Model']
 
 def setup():
-    setup_logger()
+    # This is why logging spews on nosetests
+    #setup_logger()
 
     # Setup config file to use test mdig.conf which refers to test GRASS db
     MDiGConfig.MDiGConfig.config_file = os.path.join(os.path.dirname(__file__),'mdig.conf')

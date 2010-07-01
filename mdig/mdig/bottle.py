@@ -162,8 +162,6 @@ class HTTPError(HTTPResponse):
         self.traceback = traceback
 
     def __repr__(self):
-        import sys
-        print sys.path
         return ''.join(ERROR_PAGE_TEMPLATE.render(e=self))
 
 

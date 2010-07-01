@@ -143,8 +143,9 @@ class WebServiceTest(tools.ServerTestBase):
         WebService.app = self.app
         WebService.shutdown_webapp()
 
+    @patch('mdig.GRASSInterface.get_g')
     @patch('mdig.bottle.run')
-    def test_start_webapp(self,m_run):
+    def test_start_webapp(self,m_run,m_g):
         WebService.start_web_service()
         WebService.shutdown_webapp()
 
