@@ -799,6 +799,7 @@ class GRASSInterface:
         
         if len(maps_to_combine) > 10000:
             self.log.warning("Probability envelope not designed for more than 10000 maps")
+            return None
         elif len(maps_to_combine) == 0: 
             self.log.error("No maps provided for combining into probability envelope")
             return None
@@ -825,6 +826,8 @@ class GRASSInterface:
             index = index+max_maps
             num_maps = num_maps - max_maps
             temp_file = self.generate_map_name();
+            print map_str
+            import pdb;pdb.set_trace()
             self.run_command("r.series input=%s output=%s method=count" % (map_str,temp_file))
             # Now remove temporary reclass maps
             for r_map in reclass_to_occupancy_maps:

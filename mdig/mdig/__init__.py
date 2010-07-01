@@ -18,13 +18,28 @@
 #
 __all__ = ["Analysis","DispersalInstance","DispersalModel","Displayer","Event",
         "GRASSInterface","GrassMap","ImageShow","Lifestage","MDiGConfig",
-        "OutputFormats","Region.py","Replicate.py","ManagementStratey","WebService"]
+        "OutputFormats","Region.py","Replicate.py","ManagementStratey","WebService","bottle"]
 
 import configobj
 
 version = "0.2.9"
 version_name = "Spade"
 version_string = "MDiG " + version + " - \"" + version_name + "\""
+
+def compare_version(first,second):
+    """ returns < 0 if first is earlier than second,
+    0 if equal, > 0 if first is older than second
+    """
+    bits1=[int(x) for x in first.split('.')]
+    bits2=[int(x) for x in second.split('.')]
+    i = 0
+    while i < len(bits1) and i < len(bits2):
+        x = bits1[i] - bits2[i]
+        if x != 0: return x
+        i = i+1
+    # if we get here, they are equal up the last common place, so longest is
+    # newer
+    return len(bits1) - len(bits2)
 
 mdig_exit_codes = {
     "ok" : 0,

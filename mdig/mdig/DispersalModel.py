@@ -68,6 +68,8 @@ class MissingFileException(Exception):
     def __str__(self):
         return "RepositoryException: " + self.desc + str(self.files)
 
+# Thrown when repository needs to be migrated
+class UpgradeRequired(Exception): pass
 
 class DispersalModel(object):
     """ DispersalModel keeps track of general model data and allows high level

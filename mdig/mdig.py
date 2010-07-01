@@ -103,14 +103,21 @@ def do_migration(args):
         if not mdig_config.migration_occurred:
             print "Nothing to migrate within mdig.conf"
             print "Use 'mdig.py migrate old_repo_dir grassdb' to manually migrate a repository"
+    elif len(args) == 1:
+        import mdig.migrate
+        print "Migrating repository %s" % args[0]
+        mdig.migrate.migrate_repository(args[0])
     elif len(args) == 2:
         import mdig.migrate
         print "Old repository: %s" % args[0]
         print "GRASSDB destination: %s" % args[1]
-        mdig.migrate.migrate_repository(args[0],args[1])
+        mdig.migrate.migrate_old_repository(args[0],args[1])
     else:
-        print "Syntax error"
-        print "Use 'mdig.py migrate old_repo_dir grassdb' to manually migrate a repository"
+        print "Syntax error, just use 'mdig.py migrate <grassdb>'; or"
+        print "Use 'mdig.py migrate <grassdb>' to manually " + \
+                "migrate a repository."
+        print "Use 'mdig.py migrate <old_repo_dir> <grassdb>' to manually " + \
+                "migrate an old style repository."
     sys.exit(0)
 
 simulations = []  # list of DispersalModels

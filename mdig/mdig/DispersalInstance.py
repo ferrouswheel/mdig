@@ -91,6 +91,37 @@ class DispersalInstance:
         
         self.log.debug(str(self))
 
+    def check_mdig_files(self):
+        """ Check that the mdig/original files exists (linking back to the
+        original model mapset) and that there is a mdig/instance_info file that
+        indicates the details of the instance (since map names were getting too
+        long to store all info).
+        """
+        d = self.get_mdig_dir_path()
+        try:
+            fn = os.path.join(d,'original_model')
+            if os.path.isfile(fn):
+                f = open(fn,'r')
+                # check that it matches the original model name
+                if f.readlines()[0] != self.experiment.get_name():
+                    self.log.error("Model name doesn't match instance")
+                    return False
+        except OSError, e:
+            # if file doesn't exist, then print error and throw exception
+            self.log.error("Instance doesn't have link to original model")
+            return False
+        try:
+            fn = os.path.join(d,'instance_info')
+            if not os.path.isfile(fn):
+                # TODO check that it matches the instance info
+                pass
+        except OSError, e:
+            # suggest migration if old version of mdig
+            self.log.error("Instance doesn't specify any info about itself")
+            # if file doesn't exist, then print error and throw exception
+            return False
+        return True
+
     def _load_replicates(self):
         c = self.experiment.get_completed_permutations()
         # c is a list of dicts with each dict being a completed replicate
@@ -144,7 +175,7 @@ class DispersalInstance:
 
     def set_mapset(self, mapset):
         if "mapset" in self.node.attrib:
-            # TODO delete mapset self.node.attrib["mapset"].strip()
+            # TODO delete old mapset self.node.attrib["mapset"].strip()
             pass
         self.node.attrib["mapset"] = mapset
 
@@ -160,16 +191,36 @@ class DispersalInstance:
         else:
             if not g.change_mapset(mapset,loc,True):
                 raise MapsetError("Failure to create mapset %s" % mapset)
-
             # create mdig dir in mapset
             try:
                 mdig_dir = g.create_mdig_subdir(mapset)
-                f = open(os.path.join(mdig_dir,"original_model"),'w')
-                f.write("%s\n" % self.experiment.get_mapset())
-                f.close()
+                self.create_mdig_files(mdig_dir)
             except OSError, e:
                 g.remove_mapset(mapset,force=True)
                 raise e
+
+    def create_mdig_files(self, mdig_dir):
+        f = open(os.path.join(mdig_dir,"original_model"),'w')
+        f.write("%s\n" % self.experiment.get_mapset())
+        f.close()
+
+        f = open(os.path.join(mdig_dir,"instance_info"),'w')
+        f.write("strategy:%s\n" % self.strategy)
+        if self.var_keys is not None:
+            s = "variables:\n"
+            for vv in zip(self.var_keys, self.variables):
+                s += str(vv[0]) + ":" + str(vv[0]) + "\n"
+            f.write(s)
+        f.close()
+
+    def get_mdig_dir_path(self):
+        # Get the mdig directory
+        g = GRASSInterface.get_g()
+        db = g.grass_vars['GISDBASE']
+        loc = self.experiment.infer_location()
+        mapset = self.get_mapset()
+        d = os.path.join(db,loc,mapset,'mdig')
+        return d
 
     def run(self):
         num_reps = self.experiment.get_num_replicates()

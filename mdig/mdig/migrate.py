@@ -3,7 +3,11 @@ import mdig # for exit status codes
 import os
 import sys
 
-def migrate_repository(old_format_dir, grassdb_dir):
+def migrate_repository(grassdb_dir):
+    pass
+
+
+def migrate_old_repository(old_format_dir, grassdb_dir):
     model_names = {}
     for i in os.listdir(old_format_dir):
         model_dir = os.path.join(old_format_dir,i)

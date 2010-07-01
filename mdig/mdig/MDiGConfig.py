@@ -234,6 +234,7 @@ class MDiGConfig(ConfigObj):
         update config files.
         """
         import mdig
+        version_change = False
         if "version" not in self:
             # before we started tracking the config file version
             if "ansi" in self:
@@ -242,19 +243,23 @@ class MDiGConfig(ConfigObj):
             if self.has_key("repository"):
                 # repository was an old way of storing models and output, now we keep them as
                 # part of GRASS mapsets. This copies to the grassdb
-                migration_is_allowed = True
                 if self.migration_is_allowed: 
                     if len(self["GRASS"]["GISDBASE"]) == 0:
                         sys.stderr.write('No GIS database directory specified, please '+\
                             ' edit %s and update the GRASS->GISDBASE value\n' % self.cf_full_path)
                         sys.exit(mdig.mdig_exit_codes['grass_setup'])
                     import mdig.migrate
-                    mdig.migrate.migrate_repository(self["repository"]["location"],self["GRASS"]["GISDBASE"])
+                    mdig.migrate.migrate_old_repository(self["repository"]["location"],self["GRASS"]["GISDBASE"])
                     del self["repository"]
                     self.migration_occurred = True
                 else:
                     sys.stderr.write("Deprecated MDiG repository detected, please run 'mdig.py migrate'\n")
                     sys.exit(mdig.mdig_exit_codes['migrate'])
+            # we only have to give a version here to allow other migration paths
+            # to also run...
+            self['version']='0'
+            version_change=True
+        if version_change:
             self['version']=mdig.version
             self.write()
 
