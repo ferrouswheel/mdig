@@ -47,7 +47,7 @@ class DispersalInstanceTest(unittest.TestCase):
         i = self.m_lifestage.get_instances()[0]
         self.assertEqual(i.get_mapset().find('lifestage_test_i'), 0)
         del i.node.attrib['mapset']
-        self.assertEqual(i.get_mapset(),'lifestage_test')
+        self.assertRaises(mdig.DispersalInstance.DispersalInstanceException,i.get_mapset)
 
     @patch('mdig.GRASSInterface.get_g')
     def test_set_mapset(self,m_g):

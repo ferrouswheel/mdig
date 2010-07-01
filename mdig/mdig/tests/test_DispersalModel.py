@@ -67,3 +67,17 @@ class DispersalModelTest(unittest.TestCase):
             res = m.get_resources()
             self.assertEqual(len(res),0)
 
+    @patch('shutil.rmtree')
+    def test_hard_reset(self,m_rm):
+        mdig.repository = ModelRepository()
+        models = mdig.repository.get_models()
+        fn = models['lifestage_test']
+        m = DispersalModel(fn)
+        # init the mapsets so we have something to remove
+        for i in m.get_instances():
+            i.init_mapset()
+        m.hard_reset()
+        self.assertEqual(m_rm.call_count,1)
+        self.assertEqual(len(m.xml_model.xpath('/model/instances/completed')),0)
+
+

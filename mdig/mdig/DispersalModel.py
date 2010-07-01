@@ -271,6 +271,49 @@ class DispersalModel(object):
         for i in [x for x in instances if x.enabled]:
             i.reset()
 
+    def get_instance_mapsets(self):
+        """ Get instance mapsets by directly obtaining the xml references and
+        mapsets that refer to the model's main mapset """
+
+        # Get directly from instances
+        maps = set([])
+        instances = self.get_instances()
+        for i in instances:
+            maps.add(i.get_mapset())
+        # Also check GRASS DB for orphaned mapsets
+        g = GRASSInterface.get_g()
+        db = g.grass_vars['GISDBASE']
+        location = self.infer_location()
+        mapsets_dir = os.path.join(db,location)
+        if os.path.isdir(mapsets_dir):
+            for mapset in os.listdir(mapsets_dir):
+                mdig_dir = os.path.join(mapsets_dir,mapset,'mdig')
+                fn = os.path.join(mdig_dir, 'original_model')
+                if os.path.isdir(mdig_dir) and os.path.isfile(fn):
+                    f = open(fn,'r')
+                    model_name=f.readlines()[0].strip()
+                    if model_name == self.get_name():
+                        maps.add(mapset)
+        return maps
+
+    def hard_reset(self):
+        """ A hard reset actually deletes entire instance mapsets and removes
+        any xml traces of prior runs. This is probably preferable in most
+        cases... but reset_instances was appropriate for when everything was
+        in a single mapset """
+        g = GRASSInterface.get_g()
+        for mapset in self.get_instance_mapsets():
+            # Don't let the core mapset disappear
+            if self.get_name() == mapset: continue
+            db = g.grass_vars['GISDBASE']
+            location = self.infer_location()
+            ms_dir = os.path.join(db,location,mapset)
+            shutil.rmtree(ms_dir)
+        instances_node = self.xml_model.xpath('/model/instances')
+        if len(instances_node) > 0:
+            i = instances_node[0]
+            i.getparent().remove(i)
+
     def get_resources(self):
         """ Aggregate all the files the simulation depends on.
         returns a list of 3-tuples:
@@ -429,9 +472,7 @@ class DispersalModel(object):
                            DispersalInstance(node,self,r_id,p["var_keys"],p["var"][i]))
             
             for instance in self.instances:
-                #instance.set_replicates(self.getCompletedReplicates(instance))
                 instance.listeners.extend(self.listeners)
-            
         return self.instances
     
     def get_incomplete_instances(self):

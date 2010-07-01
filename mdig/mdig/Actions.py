@@ -350,6 +350,42 @@ class AnalysisAction(Action):
                     mdig_model.run_command_on_maps(cmd[1], ls, [-1],
                             prob=self.options.combined_analysis)
 
+class ResetAction(Action):
+    description = "Reset the model. Delete all prior instances/replicates."
+
+    def __init__(self):
+        Action.__init__(self)
+        self.parser = OptionParser(version=mdig.version_string,
+                description = ResetAction.description,
+                usage = "%prog reset <path/model.xml>")
+        self.add_options()
+
+    def add_options(self):
+        Action.add_options(self)
+        self.parser.add_option("-f","--force",
+                help="Don't prompt first",
+                action="store_true",
+                dest="force")
+        self.parser.add_option("-s","--soft",
+                help="Do a soft reset, just forget replicates.",
+                action="store_true",
+                dest="soft")
+
+    def act_on_options(self,options):
+        Action.act_on_options(self,options)
+
+    def do_me(self,mdig_model):
+        if not self.options.force:
+            ans = raw_input('This will delete all simulation output, are you sure?')
+            if ans.lower() not in ['y', 'yes']:
+                print "Abort"
+                return
+        if self.options.soft:
+            mdig_model.reset_instances()
+        else:
+            mdig_model.hard_reset()
+        mdig_model.save_model()
+        
 class AddAction(Action):
     description = "Add a model to the repository based on an xml definition."
 
@@ -1083,6 +1119,7 @@ mdig_actions = {
     "node": ClientAction,
     "info": InfoAction,
     "roc": ROCAction,
+    "reset": ResetAction,
     "remove": RemoveAction
     }
 

@@ -88,13 +88,14 @@ class DispersalInstance:
             del self.var_keys[0]
             del self.variables[0]
 
-        self.change_mapset()
-        self.check_mdig_files()
-
         self.replicates = self._load_replicates()
         self.activeReps = []
         
         self.log.debug(str(self))
+
+    def init_mapset(self):
+        self.change_mapset()
+        self.check_mdig_files()
 
     def check_mdig_files(self):
         """ Check that the mdig/original files exists (linking back to the
@@ -103,26 +104,25 @@ class DispersalInstance:
         long to store all info).
         """
         d = self.get_mdig_dir_path()
-        try:
-            fn = os.path.join(d,'original_model')
-            if os.path.isfile(fn):
-                f = open(fn,'r')
-                # check that it matches the original model name
-                out=f.readlines()
-                if out[0].strip() != self.experiment.get_name():
-                    errstr= "Model name %s doesn't match instances' (%s)" % \
-                        (out[0].strip(),self.experiment.get_name())
-                    self.log.error(errstr)
-                    raise InstanceMetadataException(errstr)
-        except OSError, e:
+        fn = os.path.join(d,'original_model')
+        if os.path.isfile(fn):
+            f = open(fn,'r')
+            # check that it matches the original model name
+            out=f.readlines()
+            f.close()
+            if out[0].strip() != self.experiment.get_name():
+                errstr= "Model name %s doesn't match instances' (%s)" % \
+                    (out[0].strip(),self.experiment.get_name())
+                self.log.error(errstr)
+                raise InstanceMetadataException(errstr)
+        else:
             self.log.warning("Instance doesn't have link to original model")
             raise InstanceMetadataException('No link to original model')
-        try:
-            fn = os.path.join(d,'instance_info')
-            if not os.path.isfile(fn):
-                # TODO check that it matches the instance info
-                pass
-        except OSError, e:
+        fn = os.path.join(d,'instance_info')
+        if os.path.isfile(fn):
+            # TODO check that it matches the instance info
+            pass
+        else:
             self.log.warning("Instance doesn't specify any info about itself")
             # suggest migration if old version of mdig
             raise InstanceMetadataException('No instance info')
@@ -177,15 +177,18 @@ class DispersalInstance:
         if "mapset" in self.node.attrib:
             return self.node.attrib["mapset"].strip()
         else:
+            raise DispersalInstanceException('MDiG no longer supports instances sharing one mapset')
             # For old style system of keeping all instances in one mapset
             # as well as for experiments with only one instance
-            return self.experiment.get_mapset()
+            #return self.experiment.get_mapset()
 
     def set_mapset(self, mapset):
         if "mapset" in self.node.attrib:
             # TODO delete old mapset self.node.attrib["mapset"].strip()
             pass
         self.node.attrib["mapset"] = mapset
+        # ensure mapset exists and setup files
+        self.change_mapset()
 
     def change_mapset(self):
         """ Change the current mapset to the one associated with this instance
@@ -227,9 +230,6 @@ class DispersalInstance:
         db = g.grass_vars['GISDBASE']
         loc = self.experiment.infer_location()
         mapset = self.get_mapset()
-        print 'db' + str(db)
-        print 'loc' + str(loc)
-        print 'mapset' + str(mapset)
         d = os.path.join(db,loc,mapset,'mdig')
         return d
 
@@ -459,6 +459,7 @@ class DispersalInstance:
         # the instance
         if self.get_mapset() == self.experiment.get_mapset():
             self.set_mapset(self.experiment.create_instance_mapset_name())
+
     
     def get_occupancy_envelopes(self):
         prob_env = {}
