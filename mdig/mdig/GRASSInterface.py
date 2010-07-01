@@ -825,9 +825,7 @@ class GRASSInterface:
             map_str = ','.join(reclass_to_occupancy_maps)
             index = index+max_maps
             num_maps = num_maps - max_maps
-            temp_file = self.generate_map_name();
-            print map_str
-            import pdb;pdb.set_trace()
+            temp_file = self.generate_map_name()
             self.run_command("r.series input=%s output=%s method=count" % (map_str,temp_file))
             # Now remove temporary reclass maps
             for r_map in reclass_to_occupancy_maps:
