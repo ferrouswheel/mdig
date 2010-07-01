@@ -13,7 +13,7 @@ from mdig import GRASSInterface
 from mdig.DispersalModel import DispersalModel
 from mdig.ModelRepository import ModelRepository,RepositoryException
 
-class RepositoryTest(unittest.TestCase):
+class ModelRepositoryTest(unittest.TestCase):
 
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp(prefix="mdig_test_")
@@ -40,7 +40,9 @@ class RepositoryTest(unittest.TestCase):
         g.change_mapset.return_value = True
         g.create_mdig_subdir.return_value = os.path.join( \
                 self.temp_dir,'grass_location/variables/mdig')
-        g.grass_vars = {"GISDBASE": None}
+        c = MDiGConfig.get_config()
+        gisdb = c['GRASS']['GISDBASE']
+        g.grass_vars = {"GISDBASE": gisdb}
 
     def create_mock_location(self,db_path):
         try: os.mkdir(os.path.join(db_path,'grass_location'))

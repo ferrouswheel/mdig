@@ -41,10 +41,13 @@ import OutputFormats
 import GRASSInterface
 import MDiGConfig
 
-class InvalidLifestageException(Exception): pass
-class InstanceIncompleteException(Exception): pass
-class InvalidReplicateException(Exception): pass
-class NoOccupancyEnvelopesException(Exception): pass
+class DispersalInstanceException(Exception): pass
+
+class InvalidLifestageException(DispersalInstanceException): pass
+class InstanceIncompleteException(DispersalInstanceException): pass
+class InvalidReplicateException(DispersalInstanceException): pass
+class NoOccupancyEnvelopesException(DispersalInstanceException): pass
+class InstanceMetadataException(DispersalInstanceException): pass
 
 class DispersalInstance:
     """ A DispersalInstance is a realisation of a combination of variables
@@ -86,6 +89,8 @@ class DispersalInstance:
             del self.variables[0]
 
         self.change_mapset()
+        self.check_mdig_files()
+
         self.replicates = self._load_replicates()
         self.activeReps = []
         
@@ -103,24 +108,24 @@ class DispersalInstance:
             if os.path.isfile(fn):
                 f = open(fn,'r')
                 # check that it matches the original model name
-                if f.readlines()[0] != self.experiment.get_name():
-                    self.log.error("Model name doesn't match instance")
-                    return False
+                out=f.readlines()
+                if out[0].strip() != self.experiment.get_name():
+                    errstr= "Model name %s doesn't match instances' (%s)" % \
+                        (out[0].strip(),self.experiment.get_name())
+                    self.log.error(errstr)
+                    raise InstanceMetadataException(errstr)
         except OSError, e:
-            # if file doesn't exist, then print error and throw exception
-            self.log.error("Instance doesn't have link to original model")
-            return False
+            self.log.warning("Instance doesn't have link to original model")
+            raise InstanceMetadataException('No link to original model')
         try:
             fn = os.path.join(d,'instance_info')
             if not os.path.isfile(fn):
                 # TODO check that it matches the instance info
                 pass
         except OSError, e:
+            self.log.warning("Instance doesn't specify any info about itself")
             # suggest migration if old version of mdig
-            self.log.error("Instance doesn't specify any info about itself")
-            # if file doesn't exist, then print error and throw exception
-            return False
-        return True
+            raise InstanceMetadataException('No instance info')
 
     def _load_replicates(self):
         c = self.experiment.get_completed_permutations()
@@ -222,6 +227,9 @@ class DispersalInstance:
         db = g.grass_vars['GISDBASE']
         loc = self.experiment.infer_location()
         mapset = self.get_mapset()
+        print 'db' + str(db)
+        print 'loc' + str(loc)
+        print 'mapset' + str(mapset)
         d = os.path.join(db,loc,mapset,'mdig')
         return d
 

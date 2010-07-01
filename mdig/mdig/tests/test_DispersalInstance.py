@@ -27,11 +27,15 @@ class DispersalInstanceTest(unittest.TestCase):
         self.m_variables = DispersalModel(fn)
         #logging.getLogger('mdig').setLevel(logging.WARNING)
 
+        c = MDiGConfig.get_config()
+        self.gisdb = c['GRASS']['GISDBASE']
+
     def testDown(self):
         pass
 
     @patch('mdig.GRASSInterface.get_g')
     def test_load_replicates(self,m_g):
+        m_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
         # replicates loaded on init
         self.m_lifestage.get_instances()
         self.m_strategy.get_instances()
@@ -39,6 +43,7 @@ class DispersalInstanceTest(unittest.TestCase):
 
     @patch('mdig.GRASSInterface.get_g')
     def test_get_mapset(self,m_g):
+        m_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
         i = self.m_lifestage.get_instances()[0]
         self.assertEqual(i.get_mapset().find('lifestage_test_i'), 0)
         del i.node.attrib['mapset']
@@ -46,12 +51,14 @@ class DispersalInstanceTest(unittest.TestCase):
 
     @patch('mdig.GRASSInterface.get_g')
     def test_set_mapset(self,m_g):
+        m_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
         i = self.m_lifestage.get_instances()[0]
         i.set_mapset('blah')
         self.assertEqual(i.node.attrib['mapset'], 'blah')
 
     @patch('mdig.GRASSInterface.get_g')
     def test_add_envelope(self,m_g):
+        m_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
         i = self.m_variables.get_instances()[0]
         i._add_envelope('test_envelope','all',1)
         e = i.node.find('envelopes')
@@ -62,6 +69,7 @@ class DispersalInstanceTest(unittest.TestCase):
 
     @patch('mdig.GRASSInterface.get_g')
     def test_update_xml(self,m_g):
+        m_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
         i = self.m_variables.get_instances()[0]
         i.enabled = False
         i.update_xml()
@@ -73,6 +81,7 @@ class DispersalInstanceTest(unittest.TestCase):
     @patch('mdig.GRASSInterface.get_g')
     def test_update_occupancy_envelope(self,m_get_g):
         m_get_g.return_value.occupancy_envelope.return_value = "test_env"
+        m_get_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
         i = self.m_variables.get_instances()[0]
         self.assertRaises(InstanceIncompleteException,i.update_occupancy_envelope)
         #i.is_complete = True
