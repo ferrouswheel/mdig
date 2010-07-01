@@ -7,6 +7,8 @@ import tempfile
 
 test_dir = ""
 
+__all__=['test_Model']
+
 def setup():
     setup_logger()
 
