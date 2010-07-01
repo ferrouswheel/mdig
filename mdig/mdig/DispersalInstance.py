@@ -165,6 +165,9 @@ class DispersalInstance:
                                     #" st " + repr(self.strategy) + " matches c_i " + repr(c_i))
         return reps
 
+    def get_index(self):
+        return self.experiment.get_instance_index(self)
+
     def get_mapset(self):
         if "mapset" in self.node.attrib:
             return self.node.attrib["mapset"].strip()
@@ -332,6 +335,26 @@ class DispersalInstance:
                 # add the analysis result to xml filename
                 # under instance...
                 self.add_analysis_result(ls_id, ac) #TODO(cmd_string, tmp_fn))
+
+    def get_map_name_base(self,long_version=False):
+        # Format of saved filename:
+        # <model_name>_region_<region_id>_i<instance#>
+        fn = self.experiment.get_name() + "_region_" + self.r_id
+        if long_version:
+            # long version filenames include all instance detail
+            if self.strategy is not None:
+                fn += "_strategy_" + self.strategy
+            if self.var_keys is not None:
+                for v in self.var_keys:
+                    fn += "_" + v + "_"
+                    var_value=self.variables[self.var_keys.index(v)]
+                    if isinstance(var_value,str):
+                        fn += var_value
+                    else:
+                        fn += repr(var_value)
+        else:
+            fn += "_i" + str(self.get_index())
+        return fn
 
     def get_occ_envelope_img_filenames(self, ls="all", extension=True, gif=False):
         output_dir = os.path.join(self.experiment.base_dir,"output")

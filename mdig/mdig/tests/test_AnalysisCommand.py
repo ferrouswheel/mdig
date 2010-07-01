@@ -37,12 +37,13 @@ class AnalysisCommandTest(unittest.TestCase):
         self.assertRaises(mdig.OutputFileExistsException, ac.init_output_file, i)
         mdig_config.overwrite_flag = True
         output_file = ac.init_output_file(i)
-        self.assertEqual(output_file.index("lifestage_test_region_a_"), 0)
+        self.assertEqual(output_file.index("lifestage_test_region_a_i0"), 0)
 
         # test with rep
         isfile_mock.return_value = False
         output_file = ac.init_output_file(i, i.replicates[0])
-        self.assertEqual(output_file.index("lifestage_test_region_a_0_"), 0)
+        print output_file
+        self.assertEqual(output_file.index("lifestage_test_region_a_i0_rep_0"), 0)
 
     def test_insert_output_into_cmd(self):
         model_fn = self.repo.get_models()['lifestage_test']

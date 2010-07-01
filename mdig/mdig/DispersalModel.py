@@ -249,7 +249,9 @@ class DispersalModel(object):
 
     def create_instance_mapset_name(self):
         """ To be called by Dispersal instances when they want a mapset to do
-        their simulations in """
+        their simulations in - this may use the suffix # which is the same the
+        instance's index, but it's not guaranteed (depends what mapsets already
+        exist) """
         base_mapset_name = self.get_mapset()
         counter=0
         mapset_exists = True
@@ -1183,6 +1185,10 @@ class DispersalModel(object):
                     " doesn't exist, creating it.")
             result=g.change_mapset(self.get_name(),location=loc,create=True)
         return result
+
+    def get_instance_index(self, i):
+        """ Return the index of the passed instance """
+        return self.get_instances().index(i)
 
     def get_mapset(self):
         """ Get the mapset where this model's maps are contained.

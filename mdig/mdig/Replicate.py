@@ -194,6 +194,14 @@ class Replicate:
             maps=self.get_saved_maps(ls_key)
             for m in maps.values():
                 GRASSInterface.get_g().null_bitmask(m,generate=generate_null)
+
+    def get_map_name_base(self):
+        i = self.instance
+        # Format of saved filename:
+        # species_region_vars*_rep_lifestage.t
+        fn = i.get_map_name_base()
+        fn += "_rep_" + str(i.replicates.index(self))
+        return fn
     
     def get_img_filenames(self, ls="all", extension=True, gif=False):
         """ Get a dict of time:image_filename pairs for outputting maps to.

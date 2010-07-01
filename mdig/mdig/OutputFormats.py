@@ -29,40 +29,12 @@ from Replicate import Replicate
 #TODO: move into classes
 def create_filename(rep):
     if isinstance(rep,Replicate):
-        i = rep.instance
-        # Format of saved filename:
-        # species_region_vars*_rep_lifestage.t
-        fn = i.experiment.get_name() + "_region_" + i.r_id
-        if i.strategy is not None:
-            fn += "_strategy_" + i.strategy
-        if i.var_keys is not None:
-            for v in i.var_keys:
-                fn += "_" + v + "_"
-                var_value=i.variables[i.var_keys.index(v)]
-                if isinstance(var_value,str):
-                    fn += var_value
-                else:
-                    fn += repr(var_value)
-        fn += "_rep_" + repr(i.replicates.index(rep))
-        return fn
+        return rep.get_map_name_base()
     elif isinstance(rep,DispersalInstance):
         i = rep
-        # Format of saved filename:
-        # species_region_vars*_rep_lifestage.t
-        fn = i.experiment.get_name() + "_region_" + i.r_id
-        if i.strategy is not None:
-            fn += "_strategy_" + i.strategy
-        if i.var_keys is not None:
-            for v in i.var_keys:
-                fn += "_" + v + "_"
-                var_value=i.variables[i.var_keys.index(v)]
-                if isinstance(var_value,str):
-                    fn += var_value
-                else:
-                    fn += repr(var_value)
-        return fn
+        return i.get_map_name_base()
     else:
-        print "Unknown object to create filename for."
+        logging.getLogger('mdig').error("Unknown object to create filename for.")
         return None
         
 
