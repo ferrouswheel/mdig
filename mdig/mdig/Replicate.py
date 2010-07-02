@@ -118,7 +118,7 @@ class Replicate:
         return complete
             
         
-    def _load_saved_maps(self):
+    def _load_saved_maps(self, skip_check = False):
         self.saved_maps = {}
         self.map_intervals = {}
         missing_maps=[]
@@ -136,7 +136,8 @@ class Replicate:
                 for m in ls_maps_node[0]:
                     if m.tag == "map":
                         time_step=m.attrib["time"]
-                        if not GRASSInterface.get_g().check_map(m.text,self.instance.get_mapset()):
+                        if not skip_check and \
+                            not GRASSInterface.get_g().check_map(m.text,self.instance.get_mapset()):
                             missing_maps.append(m.text)
                         else:
                             self.saved_maps[ls_key][time_step] = m.text

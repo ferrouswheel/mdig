@@ -709,7 +709,7 @@ class DispersalModel(object):
         
     def set_num_replicates(self,max_r):
         value = self.xml_model.xpath("/model/random/replicates")
-        value[0].text = repr(max_r)
+        value[0].text = str(max_r)
         
     def get_completed_permutations(self):
         completed=[]

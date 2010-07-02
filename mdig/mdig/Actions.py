@@ -167,6 +167,11 @@ class RunAction(Action):
                 action="store",
                 dest="output_dir",
                 type="string")
+        self.parser.add_option("-s","--reps",
+                help="Manually set the number of reps to run (overwrite count specifed in model)",
+                action="store",
+                dest="reps",
+                type="int")
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
@@ -204,6 +209,8 @@ class RunAction(Action):
             self.log.debug("Will ignoring division by zero errors in lifestage transition.")
             for i in mdig_model.get_lifestage_transitions():
                 i.t_matrix.ignore_div_by_zero = True
+        if self.options.reps is not None:
+            mdig_model.set_num_replicates(self.options.reps)
         if self.options.rerun_instances:
             self.log.debug("Resetting model so all replicates will be rerun")
             mdig_model.reset_instances()
@@ -367,7 +374,7 @@ class ResetAction(Action):
                 action="store_true",
                 dest="force")
         self.parser.add_option("-s","--soft",
-                help="Do a soft reset, just forget replicates.",
+                help="Do a soft reset, just forget replicates and reuse mapsets.",
                 action="store_true",
                 dest="soft")
 

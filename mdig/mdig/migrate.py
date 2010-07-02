@@ -3,8 +3,55 @@ import mdig # for exit status codes
 import os
 import sys
 
+from mdig.DispersalModel import DispersalModel
+from mdig.DispersalInstance import *
+
+def split_instances_into_own_mapsets(dm):
+    i_mapset = dm.create_instance_mapset_name()
+    instance_node=dm.xml_model.xpath('instances/completed')
+    i = dm.get_instances()
+    i.set_mapset(i_mapset)
+    
+    # Avoid loading/looking for maps (since they'd be in the main mapset)
+    c = MDiGConfig.get_config()
+    if "replicate" not in c: c["replicate"] = {}
+    c["replicate"]["check_complete"] = "false"
+
+    g = GRASSInterface.get_g()
+    reps = i._load_replicates()
+    for r in reps:
+        r._load_saved_maps(skip_check=True)
+        for ls in r.saved_maps:
+            for t in r.saved_maps[ls]:
+                src_map=r.saved_maps[ls][t]
+                src_mapset = dm.get_mapset()
+                dst_map=r.get_map_name_base() + "_" + str(t)
+                dst_mapset = i.get_mapset()
+                # setup src_mapset in in mapset path
+                # change to dest mapset
+                # *then* copy map
+                g.copy()
+
 def migrate_repository(grassdb_dir):
-    pass
+    mr = ModelRepository(grassdb_dir)
+    model_fns = mr.get_models()
+    for model_fn in models_fns:
+        # check for unseparated instances from main mapset
+        dm = DispersalModel(model_fn)
+        try:
+            instances = dm.get_instances()
+            for i in instances:
+                mapset = i.get_mapset()
+                print mapset + " ok"
+        except DispersalInstanceException, e:
+            if not "no longer supports instances sharing one mapset" in str(e):
+                continue
+            # if so, fix them
+            print dm.get_mapset() + " not ok.. fixing"
+            split_instances_into_own_mapsets(dm)
+        dm.get_instances()
+        # check existance instance_info in instance mapsets
+        # if missing, then create and then rename all maps
 
 
 def migrate_old_repository(old_format_dir, grassdb_dir):
