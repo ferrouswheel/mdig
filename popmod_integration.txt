@@ -1,2 +1,0 @@
-Add a part to the Replicate run method which will call Steve's
-LifestageTransition code.
