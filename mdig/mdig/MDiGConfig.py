@@ -249,7 +249,9 @@ class MDiGConfig(ConfigObj):
                             ' edit %s and update the GRASS->GISDBASE value\n' % self.cf_full_path)
                         sys.exit(mdig.mdig_exit_codes['grass_setup'])
                     import mdig.migrate
-                    mdig.migrate.migrate_old_repository(self["repository"]["location"],self["GRASS"]["GISDBASE"])
+                    ret = mdig.migrate.migrate_old_repository(self["repository"]["location"],self["GRASS"]["GISDBASE"])
+                    if not ret:
+                        sys.exit(mdig.mdig_exit_codes['migrate'])
                     del self["repository"]
                     self.migration_occurred = True
                 else:

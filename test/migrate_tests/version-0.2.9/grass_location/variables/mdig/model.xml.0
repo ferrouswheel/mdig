@@ -1,0 +1,170 @@
+<model>
+  <user>
+    <email>joel@fruitionnz.com</email>
+  </user>
+  <name> variables </name>
+  <description> Test variable definitions </description>
+  <random>
+    <initialSeed> 1 </initialSeed>
+    <replicates> 2 </replicates>
+    <offset>251</offset>
+  </random>
+  <regions>
+    <region id="a">
+      <resolution>1</resolution>
+      <extents north="10" south="-10" west="-10" east="10"/>
+    </region>
+  </regions>
+  <period>
+    <startTime> 0 </startTime>
+    <endTime> 5 </endTime>
+  </period>
+  <output>
+    <raster>
+      <interval>1</interval>
+      <lifestage>all</lifestage>
+    </raster>
+  </output>
+  <lifestages>
+    <lifestage name="all" populationBased="false">
+      <initialDistribution region="a">
+        <sites>
+          <s x="1" y="0" count="100"/>
+          <s x="2" y="0"/>
+          <s x="3" y="0"/>
+          <s x="4" y="0"/>
+          <s x="5" y="0"/>
+          <s x="0" y="-5"/>
+        </sites>
+      </initialDistribution>
+      <phenology region="a">
+        <value> 1 </value>
+      </phenology>
+      <event name="r.mdig.agepop">
+            </event>
+      <event name="r.mdig.localspread">
+        <param name="spread">
+          <variable id="d1">
+            <value>3</value>
+            <value>2</value>
+            <range start="3" end="5" step="2"/>
+          </variable>
+        </param>
+        <param name="agem">
+          <variable id="agem">
+            <value>2</value>
+            <!-- Although this tests novalue successfully, the maps
+            won't expand. Without agem, localspread thinks that the map is a
+            population map. -->
+            <novalue/>
+          </variable>
+        </param>
+      </event>
+    </lifestage>
+  </lifestages>
+  <instances>
+    <completed>
+      <region id="a"/>
+      <variable id="agem">2</variable>
+      <variable id="d1">3</variable>
+      <replicates>
+        <replicate ts="2010-07-05T18:47:06.448978">
+          <seed>-685968527</seed>
+          <lifestage id="all">
+<maps><map time="0">variables_region_a_i0_rep_0_ls_all_0</map><map time="1">variables_region_a_i0_rep_0_ls_all_1</map><map time="2">variables_region_a_i0_rep_0_ls_all_2</map><map time="3">variables_region_a_i0_rep_0_ls_all_3</map><map time="4">variables_region_a_i0_rep_0_ls_all_4</map><map time="5">variables_region_a_i0_rep_0_ls_all_5</map></maps></lifestage>
+        </replicate>
+        <replicate ts="2010-07-05T18:47:10.748079">
+          <seed>1578053446</seed>
+          <lifestage id="all">
+<maps><map time="0">variables_region_a_i0_rep_1_ls_all_0</map><map time="1">variables_region_a_i0_rep_1_ls_all_1</map><map time="2">variables_region_a_i0_rep_1_ls_all_2</map><map time="3">variables_region_a_i0_rep_1_ls_all_3</map><map time="4">variables_region_a_i0_rep_1_ls_all_4</map><map time="5">variables_region_a_i0_rep_1_ls_all_5</map></maps></lifestage>
+        </replicate>
+      </replicates>
+    </completed>
+    <completed>
+      <region id="a"/>
+      <variable id="agem">2</variable>
+      <variable id="d1">2</variable>
+      <replicates>
+        <replicate ts="2010-07-05T18:47:15.013004">
+          <seed>1951232357</seed>
+          <lifestage id="all">
+<maps><map time="0">variables_region_a_i1_rep_0_ls_all_0</map><map time="1">variables_region_a_i1_rep_0_ls_all_1</map><map time="2">variables_region_a_i1_rep_0_ls_all_2</map><map time="3">variables_region_a_i1_rep_0_ls_all_3</map><map time="4">variables_region_a_i1_rep_0_ls_all_4</map><map time="5">variables_region_a_i1_rep_0_ls_all_5</map></maps></lifestage>
+        </replicate>
+        <replicate ts="2010-07-05T18:47:19.487697">
+          <seed>-1566174441</seed>
+          <lifestage id="all">
+<maps><map time="0">variables_region_a_i1_rep_1_ls_all_0</map><map time="1">variables_region_a_i1_rep_1_ls_all_1</map><map time="2">variables_region_a_i1_rep_1_ls_all_2</map><map time="3">variables_region_a_i1_rep_1_ls_all_3</map><map time="4">variables_region_a_i1_rep_1_ls_all_4</map><map time="5">variables_region_a_i1_rep_1_ls_all_5</map></maps></lifestage>
+        </replicate>
+      </replicates>
+    </completed>
+    <completed>
+      <region id="a"/>
+      <variable id="agem">None</variable>
+      <variable id="d1">5</variable>
+      <replicates>
+        <replicate ts="2010-07-05T18:47:23.945060">
+          <seed>-1699623055</seed>
+          <lifestage id="all">
+<maps><map time="0">variables_region_a_i2_rep_0_ls_all_0</map><map time="1">variables_region_a_i2_rep_0_ls_all_1</map><map time="2">variables_region_a_i2_rep_0_ls_all_2</map><map time="3">variables_region_a_i2_rep_0_ls_all_3</map><map time="4">variables_region_a_i2_rep_0_ls_all_4</map><map time="5">variables_region_a_i2_rep_0_ls_all_5</map></maps></lifestage>
+        </replicate>
+        <replicate ts="2010-07-05T18:47:28.515272">
+          <seed>-1833117194</seed>
+          <lifestage id="all">
+<maps><map time="0">variables_region_a_i2_rep_1_ls_all_0</map><map time="1">variables_region_a_i2_rep_1_ls_all_1</map><map time="2">variables_region_a_i2_rep_1_ls_all_2</map><map time="3">variables_region_a_i2_rep_1_ls_all_3</map><map time="4">variables_region_a_i2_rep_1_ls_all_4</map><map time="5">variables_region_a_i2_rep_1_ls_all_5</map></maps></lifestage>
+        </replicate>
+      </replicates>
+    </completed>
+    <completed>
+      <region id="a"/>
+      <variable id="agem">None</variable>
+      <variable id="d1">2</variable>
+      <replicates>
+        <replicate ts="2010-07-05T18:47:34.597292">
+          <seed>1237448623</seed>
+          <lifestage id="all">
+<maps><map time="0">variables_region_a_i3_rep_0_ls_all_0</map><map time="1">variables_region_a_i3_rep_0_ls_all_1</map><map time="2">variables_region_a_i3_rep_0_ls_all_2</map><map time="3">variables_region_a_i3_rep_0_ls_all_3</map><map time="4">variables_region_a_i3_rep_0_ls_all_4</map><map time="5">variables_region_a_i3_rep_0_ls_all_5</map></maps></lifestage>
+        </replicate>
+        <replicate ts="2010-07-05T18:47:40.580091">
+          <seed>-683339028</seed>
+          <lifestage id="all">
+<maps><map time="0">variables_region_a_i3_rep_1_ls_all_0</map><map time="1">variables_region_a_i3_rep_1_ls_all_1</map><map time="2">variables_region_a_i3_rep_1_ls_all_2</map><map time="3">variables_region_a_i3_rep_1_ls_all_3</map><map time="4">variables_region_a_i3_rep_1_ls_all_4</map><map time="5">variables_region_a_i3_rep_1_ls_all_5</map></maps></lifestage>
+        </replicate>
+      </replicates>
+    </completed>
+    <completed>
+      <region id="a"/>
+      <variable id="agem">None</variable>
+      <variable id="d1">3</variable>
+      <replicates>
+        <replicate ts="2010-07-05T18:47:45.247777">
+          <seed>1210764693</seed>
+          <lifestage id="all">
+<maps><map time="0">variables_region_a_i4_rep_0_ls_all_0</map><map time="1">variables_region_a_i4_rep_0_ls_all_1</map><map time="2">variables_region_a_i4_rep_0_ls_all_2</map><map time="3">variables_region_a_i4_rep_0_ls_all_3</map><map time="4">variables_region_a_i4_rep_0_ls_all_4</map><map time="5">variables_region_a_i4_rep_0_ls_all_5</map></maps></lifestage>
+        </replicate>
+        <replicate ts="2010-07-05T18:47:49.607516">
+          <seed>304003821</seed>
+          <lifestage id="all">
+<maps><map time="0">variables_region_a_i4_rep_1_ls_all_0</map><map time="1">variables_region_a_i4_rep_1_ls_all_1</map><map time="2">variables_region_a_i4_rep_1_ls_all_2</map><map time="3">variables_region_a_i4_rep_1_ls_all_3</map><map time="4">variables_region_a_i4_rep_1_ls_all_4</map><map time="5">variables_region_a_i4_rep_1_ls_all_5</map></maps></lifestage>
+        </replicate>
+      </replicates>
+    </completed>
+    <completed>
+      <region id="a"/>
+      <variable id="agem">2</variable>
+      <variable id="d1">5</variable>
+      <replicates>
+        <replicate ts="2010-07-05T18:47:54.682666">
+          <seed>-1796395958</seed>
+          <lifestage id="all">
+<maps><map time="0">variables_region_a_i5_rep_0_ls_all_0</map><map time="1">variables_region_a_i5_rep_0_ls_all_1</map><map time="2">variables_region_a_i5_rep_0_ls_all_2</map><map time="3">variables_region_a_i5_rep_0_ls_all_3</map><map time="4">variables_region_a_i5_rep_0_ls_all_4</map><map time="5">variables_region_a_i5_rep_0_ls_all_5</map></maps></lifestage>
+        </replicate>
+        <replicate ts="2010-07-05T18:48:00.162186">
+          <seed>1678333479</seed>
+          <lifestage id="all">
+<maps><map time="0">variables_region_a_i5_rep_1_ls_all_0</map><map time="1">variables_region_a_i5_rep_1_ls_all_1</map><map time="2">variables_region_a_i5_rep_1_ls_all_2</map><map time="3">variables_region_a_i5_rep_1_ls_all_3</map><map time="4">variables_region_a_i5_rep_1_ls_all_4</map><map time="5">variables_region_a_i5_rep_1_ls_all_5</map></maps></lifestage>
+        </replicate>
+      </replicates>
+    </completed>
+  </instances>
+</model>
+

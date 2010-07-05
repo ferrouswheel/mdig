@@ -23,6 +23,7 @@ package name in brackets) are needed:
 * configobj python library (python-configobj)
 * lxml python library (python-lxml)
 * ImageMagick's convert utility (imagemagick)
+* simplejson (python-simplejson)
 
 For grass modules:
 

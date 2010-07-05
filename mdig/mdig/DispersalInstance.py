@@ -32,6 +32,7 @@ import pdb
 import string
 import datetime
 import dateutil.parser
+import simplejson as json
 
 import lxml
 
@@ -91,11 +92,18 @@ class DispersalInstance:
         self.replicates = self._load_replicates()
         self.activeReps = []
         
-        self.log.debug(str(self))
+        try:
+            self.log.debug(str(self))
+        except DispersalInstanceException, e:
+            # just pass if we have issue with accessing any of the data for now
+            # (otherwise it makes impossible to instantiate and fix the instance
+            pass
+        self.mapset_initialised = False
 
     def init_mapset(self):
-        self.change_mapset()
-        self.check_mdig_files()
+        if not self.mapset_initialised:
+            self.change_mapset()
+            self.check_mdig_files()
 
     def check_mdig_files(self):
         """ Check that the mdig/original files exists (linking back to the
@@ -216,12 +224,12 @@ class DispersalInstance:
         f.close()
 
         f = open(os.path.join(mdig_dir,"instance_info"),'w')
-        f.write("strategy:%s\n" % self.strategy)
+        info = { 'strategy': self.strategy }
         if self.var_keys is not None:
-            s = "variables:\n"
+            info['variables'] = {}
             for vv in zip(self.var_keys, self.variables):
-                s += str(vv[0]) + ":" + str(vv[0]) + "\n"
-            f.write(s)
+                info['variables'][str(vv[0])] = str(vv[1])
+        f.write(json.dumps(info))
         f.close()
 
     def get_mdig_dir_path(self):
@@ -237,6 +245,7 @@ class DispersalInstance:
         num_reps = self.experiment.get_num_replicates()
         # Catch when somebody has decreased the reps and there
         # are more reps saved than the new number expected
+        self.init_mapset()
         if num_reps < len(self.replicates):
             self.log.info("More replicates stored than expected." + \
                     " Extra replicates will be discarded.")

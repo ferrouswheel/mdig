@@ -537,6 +537,10 @@ class GRASSInterface:
             self.remove_map(dest)
         self.run_command('g.copy rast=%s,%s' % (src, dest), logging.DEBUG)
     
+    def rename_map(self,src,dest,overwrite=False):
+        if overwrite: self.remove_map(dest)
+        self.run_command('g.rename rast=%s,%s' % (src, dest), logging.DEBUG)
+    
     def get_current_resolution(self):
         output=Popen("g.region -p", shell=True, stdout=subprocess.PIPE).communicate()[0]
         res=re.search("nsres:\s+(\d+)\newres:\s+(\d+)",output)
@@ -582,13 +586,13 @@ class GRASSInterface:
             if extents is not None:
                 for key in extents.keys():
                     if key == "north":
-                        extent_string += 'n=' + str(extents[key] + ' ')
+                        extent_string += 'n=' + str(extents[key]) + ' '
                     elif key == "south":
-                        extent_string += 's=' + str(extents[key] + ' ')
+                        extent_string += 's=' + str(extents[key]) + ' '
                     elif key == "east":
-                        extent_string += 'e=' + str(extents[key] + ' ')
+                        extent_string += 'e=' + str(extents[key]) + ' '
                     elif key == "west":
-                        extent_string += 'w=' + str(extents[key] + ' ')
+                        extent_string += 'w=' + str(extents[key]) + ' '
             else:
                 self.log.warning("Region %s didn't define extents" % region.id)
 
@@ -600,12 +604,13 @@ class GRASSInterface:
             
             self.log.debug("Setting region using extents %s and res %s",
                     repr(extent_string), repr(res))
-            ret = self.run_command(command_string + extent_string + res_str)
-        if ret is None:
-            self.log.error("Error setting region %s" % region.id)
-            raise SetRegionException()
-        else:
-            return True
+            try:
+                ret = self.run_command(command_string + extent_string + res_str)
+            except GRASSCommandException, e:
+                self.log.error("Error setting region %s" % region.id)
+                self.log.error("stderr was %s" % str(e))
+                raise e
+        return True
                     
     def get_map_info(self,map_name):
         # Have to check all possible types of maps
@@ -635,13 +640,13 @@ class GRASSInterface:
             return False
 
     def remove_map(self,map_name,mapset=None):
-        map_type = self.check_map(map_name)
         # If mapset is different from the current one, then we to temporarily
         # change because grass can only alter the current mapset.
         old_mapset = None
         if mapset and mapset != self.grass_vars['MAPSET']:
             old_mapset = self.grass_vars['MAPSET']
             self.change_mapset(mapset)
+        map_type = self.check_map(map_name)
         if map_type: self.log.debug("Removing %s map %s", map_type, map_name)
         if map_type == 'raster':
             self.run_command('g.remove rast=%s' % map_name, logging.DEBUG);      
@@ -879,6 +884,7 @@ class GRASSInterface:
         ret = p.returncode
 
         if (ret is not None) and ret != 0:
+            import pdb; pdb.set_trace()
             raise GRASSCommandException(commandstring,self.stderr,ret)
         return ret
 

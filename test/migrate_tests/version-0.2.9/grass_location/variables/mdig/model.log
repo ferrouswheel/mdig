@@ -1,0 +1,386 @@
+20100705 20:33:50 [mdig.model] DEBUG: Total number of instances: 6
+20100705 20:33:50 [mdig.model] DEBUG: {'a': {'var': [['2', '3'], ['2', '2'], [None, '5'], [None, '2'], [None, '3'], ['2', '5']], 'var_keys': ['agem', 'd1'], 'reps': [0, 0, 0, 0, 0, 0]}}
+20100705 20:33:50 [mdig.instance] DEBUG: loading replicate with variables ['2', '3']
+20100705 20:33:50 [mdig.instance] DEBUG: loading replicate with variables ['2', '3']
+20100705 20:33:50 [mdig.instance] DEBUG: loading replicate with variables ['2', '2']
+20100705 20:33:50 [mdig.instance] DEBUG: loading replicate with variables ['2', '2']
+20100705 20:33:50 [mdig.instance] DEBUG: loading replicate with variables [None, '5']
+20100705 20:33:50 [mdig.instance] DEBUG: loading replicate with variables [None, '5']
+20100705 20:33:50 [mdig.instance] DEBUG: loading replicate with variables [None, '2']
+20100705 20:33:50 [mdig.instance] DEBUG: loading replicate with variables [None, '2']
+20100705 20:33:50 [mdig.instance] DEBUG: loading replicate with variables [None, '3']
+20100705 20:33:50 [mdig.instance] DEBUG: loading replicate with variables [None, '3']
+20100705 20:33:50 [mdig.instance] DEBUG: loading replicate with variables ['2', '5']
+20100705 20:33:50 [mdig.instance] DEBUG: loading replicate with variables ['2', '5']
+20100705 20:33:50 [mdig.grass] DEBUG: exec: g.mapset -c mapset=variables_i0 location=grass_location
+20100705 20:33:50 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:50 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i0_rep_0_ls_all_1@variables,variables_region_a_i0_rep_0_ls_all_t_1
+20100705 20:33:50 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:50 [mdig.grass] DEBUG: Removing raster map variables_region_a_i0_rep_0_ls_all_1
+20100705 20:33:50 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i0_rep_0_ls_all_1
+20100705 20:33:50 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:50 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i0_rep_0_ls_all_0@variables,variables_region_a_i0_rep_0_ls_all_t_0
+20100705 20:33:50 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:50 [mdig.grass] DEBUG: Removing raster map variables_region_a_i0_rep_0_ls_all_0
+20100705 20:33:50 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i0_rep_0_ls_all_0
+20100705 20:33:50 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:50 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i0_rep_0_ls_all_3@variables,variables_region_a_i0_rep_0_ls_all_t_3
+20100705 20:33:50 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:50 [mdig.grass] DEBUG: Removing raster map variables_region_a_i0_rep_0_ls_all_3
+20100705 20:33:50 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i0_rep_0_ls_all_3
+20100705 20:33:50 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:50 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i0_rep_0_ls_all_2@variables,variables_region_a_i0_rep_0_ls_all_t_2
+20100705 20:33:50 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:50 [mdig.grass] DEBUG: Removing raster map variables_region_a_i0_rep_0_ls_all_2
+20100705 20:33:50 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i0_rep_0_ls_all_2
+20100705 20:33:50 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:50 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i0_rep_0_ls_all_5@variables,variables_region_a_i0_rep_0_ls_all_t_5
+20100705 20:33:50 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:50 [mdig.grass] DEBUG: Removing raster map variables_region_a_i0_rep_0_ls_all_5
+20100705 20:33:50 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i0_rep_0_ls_all_5
+20100705 20:33:50 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:50 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i0_rep_0_ls_all_4@variables,variables_region_a_i0_rep_0_ls_all_t_4
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: Removing raster map variables_region_a_i0_rep_0_ls_all_4
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i0_rep_0_ls_all_4
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i0_rep_1_ls_all_1@variables,variables_region_a_i0_rep_1_ls_all_t_1
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: Removing raster map variables_region_a_i0_rep_1_ls_all_1
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i0_rep_1_ls_all_1
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i0_rep_1_ls_all_0@variables,variables_region_a_i0_rep_1_ls_all_t_0
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: Removing raster map variables_region_a_i0_rep_1_ls_all_0
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i0_rep_1_ls_all_0
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i0_rep_1_ls_all_3@variables,variables_region_a_i0_rep_1_ls_all_t_3
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: Removing raster map variables_region_a_i0_rep_1_ls_all_3
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i0_rep_1_ls_all_3
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i0_rep_1_ls_all_2@variables,variables_region_a_i0_rep_1_ls_all_t_2
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: Removing raster map variables_region_a_i0_rep_1_ls_all_2
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i0_rep_1_ls_all_2
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i0_rep_1_ls_all_5@variables,variables_region_a_i0_rep_1_ls_all_t_5
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: Removing raster map variables_region_a_i0_rep_1_ls_all_5
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i0_rep_1_ls_all_5
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i0_rep_1_ls_all_4@variables,variables_region_a_i0_rep_1_ls_all_t_4
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:51 [mdig.grass] DEBUG: Removing raster map variables_region_a_i0_rep_1_ls_all_4
+20100705 20:33:51 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i0_rep_1_ls_all_4
+20100705 20:33:51 [mdig.grass] DEBUG: Change to mapset variables_i0@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.mapset -c mapset=variables_i1 location=grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i1_rep_0_ls_all_1@variables,variables_region_a_i1_rep_0_ls_all_t_1
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: Removing raster map variables_region_a_i1_rep_0_ls_all_1
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i1_rep_0_ls_all_1
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i1_rep_0_ls_all_0@variables,variables_region_a_i1_rep_0_ls_all_t_0
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: Removing raster map variables_region_a_i1_rep_0_ls_all_0
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i1_rep_0_ls_all_0
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i1_rep_0_ls_all_3@variables,variables_region_a_i1_rep_0_ls_all_t_3
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: Removing raster map variables_region_a_i1_rep_0_ls_all_3
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i1_rep_0_ls_all_3
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i1_rep_0_ls_all_2@variables,variables_region_a_i1_rep_0_ls_all_t_2
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: Removing raster map variables_region_a_i1_rep_0_ls_all_2
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i1_rep_0_ls_all_2
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i1_rep_0_ls_all_5@variables,variables_region_a_i1_rep_0_ls_all_t_5
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: Removing raster map variables_region_a_i1_rep_0_ls_all_5
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i1_rep_0_ls_all_5
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i1_rep_0_ls_all_4@variables,variables_region_a_i1_rep_0_ls_all_t_4
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: Removing raster map variables_region_a_i1_rep_0_ls_all_4
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i1_rep_0_ls_all_4
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i1_rep_1_ls_all_1@variables,variables_region_a_i1_rep_1_ls_all_t_1
+20100705 20:33:52 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:52 [mdig.grass] DEBUG: Removing raster map variables_region_a_i1_rep_1_ls_all_1
+20100705 20:33:52 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i1_rep_1_ls_all_1
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i1_rep_1_ls_all_0@variables,variables_region_a_i1_rep_1_ls_all_t_0
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: Removing raster map variables_region_a_i1_rep_1_ls_all_0
+20100705 20:33:53 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i1_rep_1_ls_all_0
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i1_rep_1_ls_all_3@variables,variables_region_a_i1_rep_1_ls_all_t_3
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: Removing raster map variables_region_a_i1_rep_1_ls_all_3
+20100705 20:33:53 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i1_rep_1_ls_all_3
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i1_rep_1_ls_all_2@variables,variables_region_a_i1_rep_1_ls_all_t_2
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: Removing raster map variables_region_a_i1_rep_1_ls_all_2
+20100705 20:33:53 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i1_rep_1_ls_all_2
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i1_rep_1_ls_all_5@variables,variables_region_a_i1_rep_1_ls_all_t_5
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: Removing raster map variables_region_a_i1_rep_1_ls_all_5
+20100705 20:33:53 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i1_rep_1_ls_all_5
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i1_rep_1_ls_all_4@variables,variables_region_a_i1_rep_1_ls_all_t_4
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: Removing raster map variables_region_a_i1_rep_1_ls_all_4
+20100705 20:33:53 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i1_rep_1_ls_all_4
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables_i1@grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: exec: g.mapset -c mapset=variables_i2 location=grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:53 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i2_rep_0_ls_all_1@variables,variables_region_a_i2_rep_0_ls_all_t_1
+20100705 20:33:53 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: Removing raster map variables_region_a_i2_rep_0_ls_all_1
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i2_rep_0_ls_all_1
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i2_rep_0_ls_all_0@variables,variables_region_a_i2_rep_0_ls_all_t_0
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: Removing raster map variables_region_a_i2_rep_0_ls_all_0
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i2_rep_0_ls_all_0
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i2_rep_0_ls_all_3@variables,variables_region_a_i2_rep_0_ls_all_t_3
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: Removing raster map variables_region_a_i2_rep_0_ls_all_3
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i2_rep_0_ls_all_3
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i2_rep_0_ls_all_2@variables,variables_region_a_i2_rep_0_ls_all_t_2
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: Removing raster map variables_region_a_i2_rep_0_ls_all_2
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i2_rep_0_ls_all_2
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i2_rep_0_ls_all_5@variables,variables_region_a_i2_rep_0_ls_all_t_5
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: Removing raster map variables_region_a_i2_rep_0_ls_all_5
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i2_rep_0_ls_all_5
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i2_rep_0_ls_all_4@variables,variables_region_a_i2_rep_0_ls_all_t_4
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: Removing raster map variables_region_a_i2_rep_0_ls_all_4
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i2_rep_0_ls_all_4
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i2_rep_1_ls_all_1@variables,variables_region_a_i2_rep_1_ls_all_t_1
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: Removing raster map variables_region_a_i2_rep_1_ls_all_1
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i2_rep_1_ls_all_1
+20100705 20:33:54 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:54 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i2_rep_1_ls_all_0@variables,variables_region_a_i2_rep_1_ls_all_t_0
+20100705 20:33:55 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: Removing raster map variables_region_a_i2_rep_1_ls_all_0
+20100705 20:33:55 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i2_rep_1_ls_all_0
+20100705 20:33:55 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i2_rep_1_ls_all_3@variables,variables_region_a_i2_rep_1_ls_all_t_3
+20100705 20:33:55 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: Removing raster map variables_region_a_i2_rep_1_ls_all_3
+20100705 20:33:55 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i2_rep_1_ls_all_3
+20100705 20:33:55 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i2_rep_1_ls_all_2@variables,variables_region_a_i2_rep_1_ls_all_t_2
+20100705 20:33:55 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: Removing raster map variables_region_a_i2_rep_1_ls_all_2
+20100705 20:33:55 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i2_rep_1_ls_all_2
+20100705 20:33:55 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i2_rep_1_ls_all_5@variables,variables_region_a_i2_rep_1_ls_all_t_5
+20100705 20:33:55 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: Removing raster map variables_region_a_i2_rep_1_ls_all_5
+20100705 20:33:55 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i2_rep_1_ls_all_5
+20100705 20:33:55 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i2_rep_1_ls_all_4@variables,variables_region_a_i2_rep_1_ls_all_t_4
+20100705 20:33:55 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: Removing raster map variables_region_a_i2_rep_1_ls_all_4
+20100705 20:33:55 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i2_rep_1_ls_all_4
+20100705 20:33:55 [mdig.grass] DEBUG: Change to mapset variables_i2@grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: exec: g.mapset -c mapset=variables_i3 location=grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i3_rep_0_ls_all_1@variables,variables_region_a_i3_rep_0_ls_all_t_1
+20100705 20:33:55 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:55 [mdig.grass] DEBUG: Removing raster map variables_region_a_i3_rep_0_ls_all_1
+20100705 20:33:55 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i3_rep_0_ls_all_1
+20100705 20:33:56 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:56 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i3_rep_0_ls_all_0@variables,variables_region_a_i3_rep_0_ls_all_t_0
+20100705 20:33:56 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:56 [mdig.grass] DEBUG: Removing raster map variables_region_a_i3_rep_0_ls_all_0
+20100705 20:33:56 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i3_rep_0_ls_all_0
+20100705 20:33:56 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:56 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i3_rep_0_ls_all_3@variables,variables_region_a_i3_rep_0_ls_all_t_3
+20100705 20:33:56 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:56 [mdig.grass] DEBUG: Removing raster map variables_region_a_i3_rep_0_ls_all_3
+20100705 20:33:56 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i3_rep_0_ls_all_3
+20100705 20:33:56 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:56 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i3_rep_0_ls_all_2@variables,variables_region_a_i3_rep_0_ls_all_t_2
+20100705 20:33:56 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:56 [mdig.grass] DEBUG: Removing raster map variables_region_a_i3_rep_0_ls_all_2
+20100705 20:33:56 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i3_rep_0_ls_all_2
+20100705 20:33:56 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:56 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i3_rep_0_ls_all_5@variables,variables_region_a_i3_rep_0_ls_all_t_5
+20100705 20:33:56 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:56 [mdig.grass] DEBUG: Removing raster map variables_region_a_i3_rep_0_ls_all_5
+20100705 20:33:56 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i3_rep_0_ls_all_5
+20100705 20:33:56 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:56 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i3_rep_0_ls_all_4@variables,variables_region_a_i3_rep_0_ls_all_t_4
+20100705 20:33:56 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:56 [mdig.grass] DEBUG: Removing raster map variables_region_a_i3_rep_0_ls_all_4
+20100705 20:33:56 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i3_rep_0_ls_all_4
+20100705 20:33:56 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:56 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i3_rep_1_ls_all_1@variables,variables_region_a_i3_rep_1_ls_all_t_1
+20100705 20:33:56 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:56 [mdig.grass] DEBUG: Removing raster map variables_region_a_i3_rep_1_ls_all_1
+20100705 20:33:56 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i3_rep_1_ls_all_1
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i3_rep_1_ls_all_0@variables,variables_region_a_i3_rep_1_ls_all_t_0
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: Removing raster map variables_region_a_i3_rep_1_ls_all_0
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i3_rep_1_ls_all_0
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i3_rep_1_ls_all_3@variables,variables_region_a_i3_rep_1_ls_all_t_3
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: Removing raster map variables_region_a_i3_rep_1_ls_all_3
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i3_rep_1_ls_all_3
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i3_rep_1_ls_all_2@variables,variables_region_a_i3_rep_1_ls_all_t_2
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: Removing raster map variables_region_a_i3_rep_1_ls_all_2
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i3_rep_1_ls_all_2
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i3_rep_1_ls_all_5@variables,variables_region_a_i3_rep_1_ls_all_t_5
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: Removing raster map variables_region_a_i3_rep_1_ls_all_5
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i3_rep_1_ls_all_5
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i3_rep_1_ls_all_4@variables,variables_region_a_i3_rep_1_ls_all_t_4
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: Removing raster map variables_region_a_i3_rep_1_ls_all_4
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i3_rep_1_ls_all_4
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables_i3@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.mapset -c mapset=variables_i4 location=grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i4_rep_0_ls_all_1@variables,variables_region_a_i4_rep_0_ls_all_t_1
+20100705 20:33:57 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:57 [mdig.grass] DEBUG: Removing raster map variables_region_a_i4_rep_0_ls_all_1
+20100705 20:33:57 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i4_rep_0_ls_all_1
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i4_rep_0_ls_all_0@variables,variables_region_a_i4_rep_0_ls_all_t_0
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: Removing raster map variables_region_a_i4_rep_0_ls_all_0
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i4_rep_0_ls_all_0
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i4_rep_0_ls_all_3@variables,variables_region_a_i4_rep_0_ls_all_t_3
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: Removing raster map variables_region_a_i4_rep_0_ls_all_3
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i4_rep_0_ls_all_3
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i4_rep_0_ls_all_2@variables,variables_region_a_i4_rep_0_ls_all_t_2
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: Removing raster map variables_region_a_i4_rep_0_ls_all_2
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i4_rep_0_ls_all_2
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i4_rep_0_ls_all_5@variables,variables_region_a_i4_rep_0_ls_all_t_5
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: Removing raster map variables_region_a_i4_rep_0_ls_all_5
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i4_rep_0_ls_all_5
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i4_rep_0_ls_all_4@variables,variables_region_a_i4_rep_0_ls_all_t_4
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: Removing raster map variables_region_a_i4_rep_0_ls_all_4
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i4_rep_0_ls_all_4
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i4_rep_1_ls_all_1@variables,variables_region_a_i4_rep_1_ls_all_t_1
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: Removing raster map variables_region_a_i4_rep_1_ls_all_1
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i4_rep_1_ls_all_1
+20100705 20:33:58 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:58 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i4_rep_1_ls_all_0@variables,variables_region_a_i4_rep_1_ls_all_t_0
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: Removing raster map variables_region_a_i4_rep_1_ls_all_0
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i4_rep_1_ls_all_0
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i4_rep_1_ls_all_3@variables,variables_region_a_i4_rep_1_ls_all_t_3
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: Removing raster map variables_region_a_i4_rep_1_ls_all_3
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i4_rep_1_ls_all_3
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i4_rep_1_ls_all_2@variables,variables_region_a_i4_rep_1_ls_all_t_2
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: Removing raster map variables_region_a_i4_rep_1_ls_all_2
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i4_rep_1_ls_all_2
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i4_rep_1_ls_all_5@variables,variables_region_a_i4_rep_1_ls_all_t_5
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: Removing raster map variables_region_a_i4_rep_1_ls_all_5
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i4_rep_1_ls_all_5
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i4_rep_1_ls_all_4@variables,variables_region_a_i4_rep_1_ls_all_t_4
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: Removing raster map variables_region_a_i4_rep_1_ls_all_4
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i4_rep_1_ls_all_4
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables_i4@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.mapset -c mapset=variables_i5 location=grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i5_rep_0_ls_all_1@variables,variables_region_a_i5_rep_0_ls_all_t_1
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: Removing raster map variables_region_a_i5_rep_0_ls_all_1
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i5_rep_0_ls_all_1
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i5_rep_0_ls_all_0@variables,variables_region_a_i5_rep_0_ls_all_t_0
+20100705 20:33:59 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:33:59 [mdig.grass] DEBUG: Removing raster map variables_region_a_i5_rep_0_ls_all_0
+20100705 20:33:59 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i5_rep_0_ls_all_0
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i5_rep_0_ls_all_3@variables,variables_region_a_i5_rep_0_ls_all_t_3
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: Removing raster map variables_region_a_i5_rep_0_ls_all_3
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i5_rep_0_ls_all_3
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i5_rep_0_ls_all_2@variables,variables_region_a_i5_rep_0_ls_all_t_2
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: Removing raster map variables_region_a_i5_rep_0_ls_all_2
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i5_rep_0_ls_all_2
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i5_rep_0_ls_all_5@variables,variables_region_a_i5_rep_0_ls_all_t_5
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: Removing raster map variables_region_a_i5_rep_0_ls_all_5
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i5_rep_0_ls_all_5
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i5_rep_0_ls_all_4@variables,variables_region_a_i5_rep_0_ls_all_t_4
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: Removing raster map variables_region_a_i5_rep_0_ls_all_4
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i5_rep_0_ls_all_4
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i5_rep_1_ls_all_1@variables,variables_region_a_i5_rep_1_ls_all_t_1
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: Removing raster map variables_region_a_i5_rep_1_ls_all_1
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i5_rep_1_ls_all_1
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i5_rep_1_ls_all_0@variables,variables_region_a_i5_rep_1_ls_all_t_0
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: Removing raster map variables_region_a_i5_rep_1_ls_all_0
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i5_rep_1_ls_all_0
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i5_rep_1_ls_all_3@variables,variables_region_a_i5_rep_1_ls_all_t_3
+20100705 20:34:00 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:34:00 [mdig.grass] DEBUG: Removing raster map variables_region_a_i5_rep_1_ls_all_3
+20100705 20:34:00 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i5_rep_1_ls_all_3
+20100705 20:34:01 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location
+20100705 20:34:01 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i5_rep_1_ls_all_2@variables,variables_region_a_i5_rep_1_ls_all_t_2
+20100705 20:34:01 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:34:01 [mdig.grass] DEBUG: Removing raster map variables_region_a_i5_rep_1_ls_all_2
+20100705 20:34:01 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i5_rep_1_ls_all_2
+20100705 20:34:01 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location
+20100705 20:34:01 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i5_rep_1_ls_all_5@variables,variables_region_a_i5_rep_1_ls_all_t_5
+20100705 20:34:01 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:34:01 [mdig.grass] DEBUG: Removing raster map variables_region_a_i5_rep_1_ls_all_5
+20100705 20:34:01 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i5_rep_1_ls_all_5
+20100705 20:34:01 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location
+20100705 20:34:01 [mdig.grass] DEBUG: exec: g.copy rast=variables_region_a_i5_rep_1_ls_all_4@variables,variables_region_a_i5_rep_1_ls_all_t_4
+20100705 20:34:01 [mdig.grass] DEBUG: Change to mapset variables@grass_location
+20100705 20:34:01 [mdig.grass] DEBUG: Removing raster map variables_region_a_i5_rep_1_ls_all_4
+20100705 20:34:01 [mdig.grass] DEBUG: exec: g.remove rast=variables_region_a_i5_rep_1_ls_all_4
+20100705 20:34:01 [mdig.grass] DEBUG: Change to mapset variables_i5@grass_location

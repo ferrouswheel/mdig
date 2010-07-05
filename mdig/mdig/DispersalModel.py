@@ -308,7 +308,13 @@ class DispersalModel(object):
             db = g.grass_vars['GISDBASE']
             location = self.infer_location()
             ms_dir = os.path.join(db,location,mapset)
-            shutil.rmtree(ms_dir)
+            try:
+                shutil.rmtree(ms_dir)
+            except OSError, e:
+                # it's okay if the directories don't actually exist, as we want
+                # to want to remove them anyhow
+                if "No such file or directory" in str(e): pass
+                else: raise e
         instances_node = self.xml_model.xpath('/model/instances')
         if len(instances_node) > 0:
             i = instances_node[0]

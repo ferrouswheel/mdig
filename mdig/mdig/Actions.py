@@ -383,7 +383,7 @@ class ResetAction(Action):
 
     def do_me(self,mdig_model):
         if not self.options.force:
-            ans = raw_input('This will delete all simulation output, are you sure?')
+            ans = raw_input('This will delete all simulation output, are you sure? ')
             if ans.lower() not in ['y', 'yes']:
                 print "Abort"
                 return
