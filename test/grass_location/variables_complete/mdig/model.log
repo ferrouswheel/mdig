@@ -1,0 +1,2526 @@
+20100706 10:53:26 [mdig.grass] DEBUG: Change to mapset variables_complete@grass_location
+20100706 10:53:26 [mdig.action] DEBUG: Executing simulation
+20100706 10:53:26 [mdig.model] DEBUG: Total number of instances: 6
+20100706 10:53:26 [mdig.model] DEBUG: {'a': {'var': [['2', '3'], ['2', '2'], [None, '5'], [None, '2'], [None, '3'], ['2', '5']], 'var_keys': ['agem', 'd1'], 'reps': [2, 2, 2, 2, 2, 2]}}
+20100706 10:53:26 [mdig.model] DEBUG: Added "completed" node: <Element completed at 2dae6d8>
+20100706 10:53:26 [mdig.instance] DEBUG: [Instance - p: {('agem', '2'),('d1', '3'),}; region: a; replicates: 0/2; active: None mapset: variables_complete_i0]
+20100706 10:53:26 [mdig.model] DEBUG: Added "completed" node: <Element completed at 2dae890>
+20100706 10:53:26 [mdig.instance] DEBUG: [Instance - p: {('agem', '2'),('d1', '2'),}; region: a; replicates: 0/2; active: None mapset: variables_complete_i1]
+20100706 10:53:26 [mdig.model] DEBUG: Added "completed" node: <Element completed at 2dae9f0>
+20100706 10:53:26 [mdig.instance] DEBUG: [Instance - p: {('agem', None),('d1', '5'),}; region: a; replicates: 0/2; active: None mapset: variables_complete_i2]
+20100706 10:53:26 [mdig.model] DEBUG: Added "completed" node: <Element completed at 2daeb50>
+20100706 10:53:26 [mdig.instance] DEBUG: [Instance - p: {('agem', None),('d1', '2'),}; region: a; replicates: 0/2; active: None mapset: variables_complete_i3]
+20100706 10:53:26 [mdig.model] DEBUG: Added "completed" node: <Element completed at 2daecb0>
+20100706 10:53:26 [mdig.instance] DEBUG: [Instance - p: {('agem', None),('d1', '3'),}; region: a; replicates: 0/2; active: None mapset: variables_complete_i4]
+20100706 10:53:26 [mdig.model] DEBUG: Added "completed" node: <Element completed at 2daee10>
+20100706 10:53:26 [mdig.instance] DEBUG: [Instance - p: {('agem', '2'),('d1', '5'),}; region: a; replicates: 0/2; active: None mapset: variables_complete_i5]
+20100706 10:53:26 [mdig.model] INFO: Starting simulations at 2010-07-06T10:53:26.413970
+20100706 10:53:26 [mdig.model] DEBUG: Running instances in region a
+20100706 10:53:26 [mdig.grass] DEBUG: exec: g.mapset -c mapset=variables_complete_i0 location=grass_location
+20100706 10:53:26 [mdig.grass] DEBUG: stderr: Erasing monitors...
+Cleaning up temporary files...
+WARNING: Your shell continues to use the history for the old mapset
+You can switch the history by commands:
+history -w; history -r
+../test/grass_location/variables_complete_i0/.bash_history;
+HISTFILE=../test/grass_location/variables_complete_i0/.bash_history
+
+20100706 10:53:26 [mdig.grass] DEBUG: Change to mapset variables_complete_i0@grass_location
+20100706 10:53:26 [mdig.replicate] INFO: Replicate 1/2 of exp. instance [vars: {'agem': '2', 'd1': '3'}]
+20100706 10:53:26 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 10:53:26 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 10:53:26 [mdig.grass] INFO: Creating map 3426__78287 using coordinates [(1, 0, 100.0), (2, 0, 1), (3, 0, 1), (4, 0, 1), (5, 0, 1), (0, -5, 1)]
+20100706 10:53:26 [mdig.grass] DEBUG: exec: v.to.rast input=v____3426__78287 output=3426__78287 use=cat --o
+20100706 10:53:26 [mdig.grass] DEBUG: stderr: Loading data...
+Reading features...
+Writing raster map...
+Converted areas: 0 of 0
+Converted points/lines: 6 of 6
+v.to.rast complete.
+
+20100706 10:53:27 [mdig.grass] DEBUG: Removing vector map v____3426__78287
+20100706 10:53:27 [mdig.grass] DEBUG: exec: g.remove vect=v____3426__78287
+20100706 10:53:27 [mdig.grass] DEBUG: stderr: Removing vector <v____3426__78287>
+
+20100706 10:53:27 [mdig.grass] DEBUG: exec: g.copy rast=3426__78287@variables_complete_i0,3426_all_741281
+20100706 10:53:27 [mdig.grass] DEBUG: stderr: Copy raster <3426__78287@variables_complete_i0> to current mapset as
+<3426_all_741281>
+
+20100706 10:53:27 [mdig.replicate] DEBUG: Initial maps:  3426__78287@variables_complete_i0
+20100706 10:53:27 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 10:53:27 [mdig.replicate] INFO: t=0
+20100706 10:53:27 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_741281,3426_all_224716
+20100706 10:53:27 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_741281@variables_complete_i0> to current mapset as
+<3426_all_224716>
+
+20100706 10:53:27 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:27 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_741281 output=3426_all_58244 
+20100706 10:53:27 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_58244=if(3426_all_741281>0,3426_all_741281+1,3426_all_741281)
+
+20100706 10:53:27 [mdig.grass] DEBUG: Removing raster map 3426_all_741281
+20100706 10:53:27 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_741281
+20100706 10:53:27 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_741281>
+
+20100706 10:53:27 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_58244 agem=2 spread=3 output=3426_all_741281 
+20100706 10:53:27 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:27 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:27 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:27 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i0_rep_0_ls_all_0
+20100706 10:53:27 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_741281,variables_complete_region_a_i0_rep_0_ls_all_0
+20100706 10:53:27 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_741281@variables_complete_i0> to current mapset as
+<variables_complete_region_a_i0_rep_0_ls_all_0>
+
+20100706 10:53:27 [mdig.replicate] INFO: t=1
+20100706 10:53:27 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_741281,3426_all_904504
+20100706 10:53:27 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_741281@variables_complete_i0> to current mapset as
+<3426_all_904504>
+
+20100706 10:53:27 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:27 [mdig.grass] DEBUG: Removing raster map 3426_all_58244
+20100706 10:53:27 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_58244
+20100706 10:53:27 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_58244>
+
+20100706 10:53:27 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_741281 output=3426_all_58244 
+20100706 10:53:27 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_58244=if(3426_all_741281>0,3426_all_741281+1,3426_all_741281)
+
+20100706 10:53:27 [mdig.grass] DEBUG: Removing raster map 3426_all_741281
+20100706 10:53:27 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_741281
+20100706 10:53:27 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_741281>
+
+20100706 10:53:27 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_58244 agem=2 spread=3 output=3426_all_741281 
+20100706 10:53:27 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:27 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:27 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:27 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i0_rep_0_ls_all_1
+20100706 10:53:27 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_741281,variables_complete_region_a_i0_rep_0_ls_all_1
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_741281@variables_complete_i0> to current mapset as
+<variables_complete_region_a_i0_rep_0_ls_all_1>
+
+20100706 10:53:28 [mdig.replicate] INFO: t=2
+20100706 10:53:28 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_741281,3426_all_227015
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_741281@variables_complete_i0> to current mapset as
+<3426_all_227015>
+
+20100706 10:53:28 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:28 [mdig.grass] DEBUG: Removing raster map 3426_all_58244
+20100706 10:53:28 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_58244
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_58244>
+
+20100706 10:53:28 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_741281 output=3426_all_58244 
+20100706 10:53:28 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_58244=if(3426_all_741281>0,3426_all_741281+1,3426_all_741281)
+
+20100706 10:53:28 [mdig.grass] DEBUG: Removing raster map 3426_all_741281
+20100706 10:53:28 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_741281
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_741281>
+
+20100706 10:53:28 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_58244 agem=2 spread=3 output=3426_all_741281 
+20100706 10:53:28 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:28 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:28 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:28 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i0_rep_0_ls_all_2
+20100706 10:53:28 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_741281,variables_complete_region_a_i0_rep_0_ls_all_2
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_741281@variables_complete_i0> to current mapset as
+<variables_complete_region_a_i0_rep_0_ls_all_2>
+
+20100706 10:53:28 [mdig.replicate] INFO: t=3
+20100706 10:53:28 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_741281,3426_all_757918
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_741281@variables_complete_i0> to current mapset as
+<3426_all_757918>
+
+20100706 10:53:28 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:28 [mdig.grass] DEBUG: Removing raster map 3426_all_58244
+20100706 10:53:28 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_58244
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_58244>
+
+20100706 10:53:28 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_741281 output=3426_all_58244 
+20100706 10:53:28 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_58244=if(3426_all_741281>0,3426_all_741281+1,3426_all_741281)
+
+20100706 10:53:28 [mdig.grass] DEBUG: Removing raster map 3426_all_741281
+20100706 10:53:28 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_741281
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_741281>
+
+20100706 10:53:28 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_58244 agem=2 spread=3 output=3426_all_741281 
+20100706 10:53:28 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:28 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:28 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:28 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i0_rep_0_ls_all_3
+20100706 10:53:28 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_741281,variables_complete_region_a_i0_rep_0_ls_all_3
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_741281@variables_complete_i0> to current mapset as
+<variables_complete_region_a_i0_rep_0_ls_all_3>
+
+20100706 10:53:28 [mdig.replicate] INFO: t=4
+20100706 10:53:28 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_741281,3426_all_569187
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_741281@variables_complete_i0> to current mapset as
+<3426_all_569187>
+
+20100706 10:53:28 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:28 [mdig.grass] DEBUG: Removing raster map 3426_all_58244
+20100706 10:53:28 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_58244
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_58244>
+
+20100706 10:53:28 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_741281 output=3426_all_58244 
+20100706 10:53:28 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_58244=if(3426_all_741281>0,3426_all_741281+1,3426_all_741281)
+
+20100706 10:53:28 [mdig.grass] DEBUG: Removing raster map 3426_all_741281
+20100706 10:53:28 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_741281
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_741281>
+
+20100706 10:53:28 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_58244 agem=2 spread=3 output=3426_all_741281 
+20100706 10:53:28 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:28 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:28 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:28 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i0_rep_0_ls_all_4
+20100706 10:53:28 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_741281,variables_complete_region_a_i0_rep_0_ls_all_4
+20100706 10:53:28 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_741281@variables_complete_i0> to current mapset as
+<variables_complete_region_a_i0_rep_0_ls_all_4>
+
+20100706 10:53:28 [mdig.replicate] INFO: t=5
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_741281,3426_all_927975
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_741281@variables_complete_i0> to current mapset as
+<3426_all_927975>
+
+20100706 10:53:29 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:29 [mdig.grass] DEBUG: Removing raster map 3426_all_58244
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_58244
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_58244>
+
+20100706 10:53:29 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_741281 output=3426_all_58244 
+20100706 10:53:29 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_58244=if(3426_all_741281>0,3426_all_741281+1,3426_all_741281)
+
+20100706 10:53:29 [mdig.grass] DEBUG: Removing raster map 3426_all_741281
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_741281
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_741281>
+
+20100706 10:53:29 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_58244 agem=2 spread=3 output=3426_all_741281 
+20100706 10:53:29 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:29 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:29 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:29 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i0_rep_0_ls_all_5
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_741281,variables_complete_region_a_i0_rep_0_ls_all_5
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_741281@variables_complete_i0> to current mapset as
+<variables_complete_region_a_i0_rep_0_ls_all_5>
+
+20100706 10:53:29 [mdig.grass] DEBUG: Removing raster map 3426_all_741281
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_741281
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_741281>
+
+20100706 10:53:29 [mdig.grass] DEBUG: Removing raster map 3426_all_58244
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_58244
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_58244>
+
+20100706 10:53:29 [mdig.grass] DEBUG: Removing raster map 3426_all_224716
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_224716
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_224716>
+
+20100706 10:53:29 [mdig.grass] DEBUG: Removing raster map 3426_all_904504
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_904504
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_904504>
+
+20100706 10:53:29 [mdig.grass] DEBUG: Removing raster map 3426_all_227015
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_227015
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_227015>
+
+20100706 10:53:29 [mdig.grass] DEBUG: Removing raster map 3426_all_757918
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_757918
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_757918>
+
+20100706 10:53:29 [mdig.grass] DEBUG: Removing raster map 3426_all_569187
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_569187
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_569187>
+
+20100706 10:53:29 [mdig.grass] DEBUG: Removing raster map 3426_all_927975
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_927975
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_927975>
+
+20100706 10:53:29 [mdig.replicate] INFO: Replicate 2/2 of exp. instance [vars: {'agem': '2', 'd1': '3'}]
+20100706 10:53:29 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.copy rast=3426__78287@variables_complete_i0,3426_all_241456
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Copy raster <3426__78287@variables_complete_i0> to current mapset as
+<3426_all_241456>
+
+20100706 10:53:29 [mdig.replicate] DEBUG: Initial maps:  3426__78287@variables_complete_i0
+20100706 10:53:29 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 10:53:29 [mdig.replicate] INFO: t=0
+20100706 10:53:29 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_241456,3426_all_161768
+20100706 10:53:29 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_241456@variables_complete_i0> to current mapset as
+<3426_all_161768>
+
+20100706 10:53:29 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:30 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_241456 output=3426_all_966819 
+20100706 10:53:30 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_966819=if(3426_all_241456>0,3426_all_241456+1,3426_all_241456)
+
+20100706 10:53:30 [mdig.grass] DEBUG: Removing raster map 3426_all_241456
+20100706 10:53:30 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_241456
+20100706 10:53:30 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_241456>
+
+20100706 10:53:30 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_966819 agem=2 spread=3 output=3426_all_241456 
+20100706 10:53:30 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:30 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:30 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:30 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i0_rep_1_ls_all_0
+20100706 10:53:30 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_241456,variables_complete_region_a_i0_rep_1_ls_all_0
+20100706 10:53:30 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_241456@variables_complete_i0> to current mapset as
+<variables_complete_region_a_i0_rep_1_ls_all_0>
+
+20100706 10:53:30 [mdig.replicate] INFO: t=1
+20100706 10:53:30 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_241456,3426_all_668467
+20100706 10:53:30 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_241456@variables_complete_i0> to current mapset as
+<3426_all_668467>
+
+20100706 10:53:30 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:30 [mdig.grass] DEBUG: Removing raster map 3426_all_966819
+20100706 10:53:30 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_966819
+20100706 10:53:30 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_966819>
+
+20100706 10:53:30 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_241456 output=3426_all_966819 
+20100706 10:53:30 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_966819=if(3426_all_241456>0,3426_all_241456+1,3426_all_241456)
+
+20100706 10:53:30 [mdig.grass] DEBUG: Removing raster map 3426_all_241456
+20100706 10:53:30 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_241456
+20100706 10:53:30 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_241456>
+
+20100706 10:53:30 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_966819 agem=2 spread=3 output=3426_all_241456 
+20100706 10:53:30 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:30 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:30 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:30 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i0_rep_1_ls_all_1
+20100706 10:53:30 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_241456,variables_complete_region_a_i0_rep_1_ls_all_1
+20100706 10:53:30 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_241456@variables_complete_i0> to current mapset as
+<variables_complete_region_a_i0_rep_1_ls_all_1>
+
+20100706 10:53:30 [mdig.replicate] INFO: t=2
+20100706 10:53:30 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_241456,3426_all_28610
+20100706 10:53:30 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_241456@variables_complete_i0> to current mapset as
+<3426_all_28610>
+
+20100706 10:53:30 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:30 [mdig.grass] DEBUG: Removing raster map 3426_all_966819
+20100706 10:53:30 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_966819
+20100706 10:53:30 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_966819>
+
+20100706 10:53:30 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_241456 output=3426_all_966819 
+20100706 10:53:30 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_966819=if(3426_all_241456>0,3426_all_241456+1,3426_all_241456)
+
+20100706 10:53:30 [mdig.grass] DEBUG: Removing raster map 3426_all_241456
+20100706 10:53:30 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_241456
+20100706 10:53:30 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_241456>
+
+20100706 10:53:30 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_966819 agem=2 spread=3 output=3426_all_241456 
+20100706 10:53:30 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:30 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:30 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:30 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i0_rep_1_ls_all_2
+20100706 10:53:30 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_241456,variables_complete_region_a_i0_rep_1_ls_all_2
+20100706 10:53:30 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_241456@variables_complete_i0> to current mapset as
+<variables_complete_region_a_i0_rep_1_ls_all_2>
+
+20100706 10:53:30 [mdig.replicate] INFO: t=3
+20100706 10:53:30 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_241456,3426_all_717754
+20100706 10:53:30 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_241456@variables_complete_i0> to current mapset as
+<3426_all_717754>
+
+20100706 10:53:30 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:30 [mdig.grass] DEBUG: Removing raster map 3426_all_966819
+20100706 10:53:30 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_966819
+20100706 10:53:30 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_966819>
+
+20100706 10:53:30 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_241456 output=3426_all_966819 
+20100706 10:53:31 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_966819=if(3426_all_241456>0,3426_all_241456+1,3426_all_241456)
+
+20100706 10:53:31 [mdig.grass] DEBUG: Removing raster map 3426_all_241456
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_241456
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_241456>
+
+20100706 10:53:31 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_966819 agem=2 spread=3 output=3426_all_241456 
+20100706 10:53:31 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:31 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:31 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:31 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i0_rep_1_ls_all_3
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_241456,variables_complete_region_a_i0_rep_1_ls_all_3
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_241456@variables_complete_i0> to current mapset as
+<variables_complete_region_a_i0_rep_1_ls_all_3>
+
+20100706 10:53:31 [mdig.replicate] INFO: t=4
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_241456,3426_all_292721
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_241456@variables_complete_i0> to current mapset as
+<3426_all_292721>
+
+20100706 10:53:31 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:31 [mdig.grass] DEBUG: Removing raster map 3426_all_966819
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_966819
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_966819>
+
+20100706 10:53:31 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_241456 output=3426_all_966819 
+20100706 10:53:31 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_966819=if(3426_all_241456>0,3426_all_241456+1,3426_all_241456)
+
+20100706 10:53:31 [mdig.grass] DEBUG: Removing raster map 3426_all_241456
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_241456
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_241456>
+
+20100706 10:53:31 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_966819 agem=2 spread=3 output=3426_all_241456 
+20100706 10:53:31 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:31 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:31 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:31 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i0_rep_1_ls_all_4
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_241456,variables_complete_region_a_i0_rep_1_ls_all_4
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_241456@variables_complete_i0> to current mapset as
+<variables_complete_region_a_i0_rep_1_ls_all_4>
+
+20100706 10:53:31 [mdig.replicate] INFO: t=5
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_241456,3426_all_722980
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_241456@variables_complete_i0> to current mapset as
+<3426_all_722980>
+
+20100706 10:53:31 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:31 [mdig.grass] DEBUG: Removing raster map 3426_all_966819
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_966819
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_966819>
+
+20100706 10:53:31 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_241456 output=3426_all_966819 
+20100706 10:53:31 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_966819=if(3426_all_241456>0,3426_all_241456+1,3426_all_241456)
+
+20100706 10:53:31 [mdig.grass] DEBUG: Removing raster map 3426_all_241456
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_241456
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_241456>
+
+20100706 10:53:31 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_966819 agem=2 spread=3 output=3426_all_241456 
+20100706 10:53:31 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:31 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:31 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:31 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i0_rep_1_ls_all_5
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_241456,variables_complete_region_a_i0_rep_1_ls_all_5
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_241456@variables_complete_i0> to current mapset as
+<variables_complete_region_a_i0_rep_1_ls_all_5>
+
+20100706 10:53:31 [mdig.grass] DEBUG: Removing raster map 3426_all_241456
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_241456
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_241456>
+
+20100706 10:53:31 [mdig.grass] DEBUG: Removing raster map 3426_all_966819
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_966819
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_966819>
+
+20100706 10:53:31 [mdig.grass] DEBUG: Removing raster map 3426_all_161768
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_161768
+20100706 10:53:31 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_161768>
+
+20100706 10:53:31 [mdig.grass] DEBUG: Removing raster map 3426_all_668467
+20100706 10:53:31 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_668467
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_668467>
+
+20100706 10:53:32 [mdig.grass] DEBUG: Removing raster map 3426_all_28610
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_28610
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_28610>
+
+20100706 10:53:32 [mdig.grass] DEBUG: Removing raster map 3426_all_717754
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_717754
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_717754>
+
+20100706 10:53:32 [mdig.grass] DEBUG: Removing raster map 3426_all_292721
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_292721
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_292721>
+
+20100706 10:53:32 [mdig.grass] DEBUG: Removing raster map 3426_all_722980
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_722980
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_722980>
+
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.mapset -c mapset=variables_complete_i1 location=grass_location
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Erasing monitors...
+Cleaning up temporary files...
+WARNING: Your shell continues to use the history for the old mapset
+You can switch the history by commands:
+history -w; history -r
+../test/grass_location/variables_complete_i1/.bash_history;
+HISTFILE=../test/grass_location/variables_complete_i1/.bash_history
+
+20100706 10:53:32 [mdig.grass] DEBUG: Change to mapset variables_complete_i1@grass_location
+20100706 10:53:32 [mdig.replicate] INFO: Replicate 1/2 of exp. instance [vars: {'agem': '2', 'd1': '2'}]
+20100706 10:53:32 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.copy rast=3426__78287@variables_complete_i0,3426_all_722904
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Copy raster <3426__78287@variables_complete_i0> to current mapset as
+<3426_all_722904>
+
+20100706 10:53:32 [mdig.replicate] DEBUG: Initial maps:  3426__78287@variables_complete_i0
+20100706 10:53:32 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 10:53:32 [mdig.replicate] INFO: t=0
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_722904,3426_all_56242
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_722904@variables_complete_i1> to current mapset as
+<3426_all_56242>
+
+20100706 10:53:32 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:32 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_722904 output=3426_all_625720 
+20100706 10:53:32 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_625720=if(3426_all_722904>0,3426_all_722904+1,3426_all_722904)
+
+20100706 10:53:32 [mdig.grass] DEBUG: Removing raster map 3426_all_722904
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_722904
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_722904>
+
+20100706 10:53:32 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_625720 agem=2 spread=2 output=3426_all_722904 
+20100706 10:53:32 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:32 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:32 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:32 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i1_rep_0_ls_all_0
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_722904,variables_complete_region_a_i1_rep_0_ls_all_0
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_722904@variables_complete_i1> to current mapset as
+<variables_complete_region_a_i1_rep_0_ls_all_0>
+
+20100706 10:53:32 [mdig.replicate] INFO: t=1
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_722904,3426_all_503007
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_722904@variables_complete_i1> to current mapset as
+<3426_all_503007>
+
+20100706 10:53:32 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:32 [mdig.grass] DEBUG: Removing raster map 3426_all_625720
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_625720
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_625720>
+
+20100706 10:53:32 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_722904 output=3426_all_625720 
+20100706 10:53:32 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_625720=if(3426_all_722904>0,3426_all_722904+1,3426_all_722904)
+
+20100706 10:53:32 [mdig.grass] DEBUG: Removing raster map 3426_all_722904
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_722904
+20100706 10:53:32 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_722904>
+
+20100706 10:53:32 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_625720 agem=2 spread=2 output=3426_all_722904 
+20100706 10:53:32 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:32 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:32 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:32 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i1_rep_0_ls_all_1
+20100706 10:53:32 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_722904,variables_complete_region_a_i1_rep_0_ls_all_1
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_722904@variables_complete_i1> to current mapset as
+<variables_complete_region_a_i1_rep_0_ls_all_1>
+
+20100706 10:53:33 [mdig.replicate] INFO: t=2
+20100706 10:53:33 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_722904,3426_all_479225
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_722904@variables_complete_i1> to current mapset as
+<3426_all_479225>
+
+20100706 10:53:33 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:33 [mdig.grass] DEBUG: Removing raster map 3426_all_625720
+20100706 10:53:33 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_625720
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_625720>
+
+20100706 10:53:33 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_722904 output=3426_all_625720 
+20100706 10:53:33 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_625720=if(3426_all_722904>0,3426_all_722904+1,3426_all_722904)
+
+20100706 10:53:33 [mdig.grass] DEBUG: Removing raster map 3426_all_722904
+20100706 10:53:33 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_722904
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_722904>
+
+20100706 10:53:33 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_625720 agem=2 spread=2 output=3426_all_722904 
+20100706 10:53:33 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:33 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:33 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:33 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i1_rep_0_ls_all_2
+20100706 10:53:33 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_722904,variables_complete_region_a_i1_rep_0_ls_all_2
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_722904@variables_complete_i1> to current mapset as
+<variables_complete_region_a_i1_rep_0_ls_all_2>
+
+20100706 10:53:33 [mdig.replicate] INFO: t=3
+20100706 10:53:33 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_722904,3426_all_591892
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_722904@variables_complete_i1> to current mapset as
+<3426_all_591892>
+
+20100706 10:53:33 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:33 [mdig.grass] DEBUG: Removing raster map 3426_all_625720
+20100706 10:53:33 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_625720
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_625720>
+
+20100706 10:53:33 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_722904 output=3426_all_625720 
+20100706 10:53:33 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_625720=if(3426_all_722904>0,3426_all_722904+1,3426_all_722904)
+
+20100706 10:53:33 [mdig.grass] DEBUG: Removing raster map 3426_all_722904
+20100706 10:53:33 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_722904
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_722904>
+
+20100706 10:53:33 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_625720 agem=2 spread=2 output=3426_all_722904 
+20100706 10:53:33 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:33 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:33 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:33 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i1_rep_0_ls_all_3
+20100706 10:53:33 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_722904,variables_complete_region_a_i1_rep_0_ls_all_3
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_722904@variables_complete_i1> to current mapset as
+<variables_complete_region_a_i1_rep_0_ls_all_3>
+
+20100706 10:53:33 [mdig.replicate] INFO: t=4
+20100706 10:53:33 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_722904,3426_all_762643
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_722904@variables_complete_i1> to current mapset as
+<3426_all_762643>
+
+20100706 10:53:33 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:33 [mdig.grass] DEBUG: Removing raster map 3426_all_625720
+20100706 10:53:33 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_625720
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_625720>
+
+20100706 10:53:33 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_722904 output=3426_all_625720 
+20100706 10:53:33 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_625720=if(3426_all_722904>0,3426_all_722904+1,3426_all_722904)
+
+20100706 10:53:33 [mdig.grass] DEBUG: Removing raster map 3426_all_722904
+20100706 10:53:33 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_722904
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_722904>
+
+20100706 10:53:33 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_625720 agem=2 spread=2 output=3426_all_722904 
+20100706 10:53:33 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:33 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:33 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:33 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i1_rep_0_ls_all_4
+20100706 10:53:33 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_722904,variables_complete_region_a_i1_rep_0_ls_all_4
+20100706 10:53:33 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_722904@variables_complete_i1> to current mapset as
+<variables_complete_region_a_i1_rep_0_ls_all_4>
+
+20100706 10:53:33 [mdig.replicate] INFO: t=5
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_722904,3426_all_123618
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_722904@variables_complete_i1> to current mapset as
+<3426_all_123618>
+
+20100706 10:53:34 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:34 [mdig.grass] DEBUG: Removing raster map 3426_all_625720
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_625720
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_625720>
+
+20100706 10:53:34 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_722904 output=3426_all_625720 
+20100706 10:53:34 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_625720=if(3426_all_722904>0,3426_all_722904+1,3426_all_722904)
+
+20100706 10:53:34 [mdig.grass] DEBUG: Removing raster map 3426_all_722904
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_722904
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_722904>
+
+20100706 10:53:34 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_625720 agem=2 spread=2 output=3426_all_722904 
+20100706 10:53:34 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:34 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:34 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:34 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i1_rep_0_ls_all_5
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_722904,variables_complete_region_a_i1_rep_0_ls_all_5
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_722904@variables_complete_i1> to current mapset as
+<variables_complete_region_a_i1_rep_0_ls_all_5>
+
+20100706 10:53:34 [mdig.grass] DEBUG: Removing raster map 3426_all_722904
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_722904
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_722904>
+
+20100706 10:53:34 [mdig.grass] DEBUG: Removing raster map 3426_all_625720
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_625720
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_625720>
+
+20100706 10:53:34 [mdig.grass] DEBUG: Removing raster map 3426_all_56242
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_56242
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_56242>
+
+20100706 10:53:34 [mdig.grass] DEBUG: Removing raster map 3426_all_503007
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_503007
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_503007>
+
+20100706 10:53:34 [mdig.grass] DEBUG: Removing raster map 3426_all_479225
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_479225
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_479225>
+
+20100706 10:53:34 [mdig.grass] DEBUG: Removing raster map 3426_all_591892
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_591892
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_591892>
+
+20100706 10:53:34 [mdig.grass] DEBUG: Removing raster map 3426_all_762643
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_762643
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_762643>
+
+20100706 10:53:34 [mdig.grass] DEBUG: Removing raster map 3426_all_123618
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_123618
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_123618>
+
+20100706 10:53:34 [mdig.replicate] INFO: Replicate 2/2 of exp. instance [vars: {'agem': '2', 'd1': '2'}]
+20100706 10:53:34 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.copy rast=3426__78287@variables_complete_i0,3426_all_668651
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Copy raster <3426__78287@variables_complete_i0> to current mapset as
+<3426_all_668651>
+
+20100706 10:53:34 [mdig.replicate] DEBUG: Initial maps:  3426__78287@variables_complete_i0
+20100706 10:53:34 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 10:53:34 [mdig.replicate] INFO: t=0
+20100706 10:53:34 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_668651,3426_all_530757
+20100706 10:53:34 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_668651@variables_complete_i1> to current mapset as
+<3426_all_530757>
+
+20100706 10:53:34 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:34 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_668651 output=3426_all_205466 
+20100706 10:53:35 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_205466=if(3426_all_668651>0,3426_all_668651+1,3426_all_668651)
+
+20100706 10:53:35 [mdig.grass] DEBUG: Removing raster map 3426_all_668651
+20100706 10:53:35 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_668651
+20100706 10:53:35 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_668651>
+
+20100706 10:53:35 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_205466 agem=2 spread=2 output=3426_all_668651 
+20100706 10:53:35 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:35 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:35 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:35 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i1_rep_1_ls_all_0
+20100706 10:53:35 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_668651,variables_complete_region_a_i1_rep_1_ls_all_0
+20100706 10:53:35 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_668651@variables_complete_i1> to current mapset as
+<variables_complete_region_a_i1_rep_1_ls_all_0>
+
+20100706 10:53:35 [mdig.replicate] INFO: t=1
+20100706 10:53:35 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_668651,3426_all_545780
+20100706 10:53:35 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_668651@variables_complete_i1> to current mapset as
+<3426_all_545780>
+
+20100706 10:53:35 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:35 [mdig.grass] DEBUG: Removing raster map 3426_all_205466
+20100706 10:53:35 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_205466
+20100706 10:53:35 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_205466>
+
+20100706 10:53:35 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_668651 output=3426_all_205466 
+20100706 10:53:35 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_205466=if(3426_all_668651>0,3426_all_668651+1,3426_all_668651)
+
+20100706 10:53:35 [mdig.grass] DEBUG: Removing raster map 3426_all_668651
+20100706 10:53:35 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_668651
+20100706 10:53:35 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_668651>
+
+20100706 10:53:35 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_205466 agem=2 spread=2 output=3426_all_668651 
+20100706 10:53:35 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:35 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:35 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:35 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i1_rep_1_ls_all_1
+20100706 10:53:35 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_668651,variables_complete_region_a_i1_rep_1_ls_all_1
+20100706 10:53:35 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_668651@variables_complete_i1> to current mapset as
+<variables_complete_region_a_i1_rep_1_ls_all_1>
+
+20100706 10:53:35 [mdig.replicate] INFO: t=2
+20100706 10:53:35 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_668651,3426_all_825826
+20100706 10:53:35 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_668651@variables_complete_i1> to current mapset as
+<3426_all_825826>
+
+20100706 10:53:35 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:35 [mdig.grass] DEBUG: Removing raster map 3426_all_205466
+20100706 10:53:35 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_205466
+20100706 10:53:35 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_205466>
+
+20100706 10:53:35 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_668651 output=3426_all_205466 
+20100706 10:53:35 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_205466=if(3426_all_668651>0,3426_all_668651+1,3426_all_668651)
+
+20100706 10:53:35 [mdig.grass] DEBUG: Removing raster map 3426_all_668651
+20100706 10:53:35 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_668651
+20100706 10:53:35 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_668651>
+
+20100706 10:53:35 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_205466 agem=2 spread=2 output=3426_all_668651 
+20100706 10:53:35 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:35 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:35 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:35 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i1_rep_1_ls_all_2
+20100706 10:53:35 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_668651,variables_complete_region_a_i1_rep_1_ls_all_2
+20100706 10:53:35 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_668651@variables_complete_i1> to current mapset as
+<variables_complete_region_a_i1_rep_1_ls_all_2>
+
+20100706 10:53:35 [mdig.replicate] INFO: t=3
+20100706 10:53:36 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_668651,3426_all_98913
+20100706 10:53:36 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_668651@variables_complete_i1> to current mapset as
+<3426_all_98913>
+
+20100706 10:53:36 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:36 [mdig.grass] DEBUG: Removing raster map 3426_all_205466
+20100706 10:53:36 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_205466
+20100706 10:53:36 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_205466>
+
+20100706 10:53:36 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_668651 output=3426_all_205466 
+20100706 10:53:36 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_205466=if(3426_all_668651>0,3426_all_668651+1,3426_all_668651)
+
+20100706 10:53:36 [mdig.grass] DEBUG: Removing raster map 3426_all_668651
+20100706 10:53:36 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_668651
+20100706 10:53:36 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_668651>
+
+20100706 10:53:36 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_205466 agem=2 spread=2 output=3426_all_668651 
+20100706 10:53:36 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:36 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:36 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:36 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i1_rep_1_ls_all_3
+20100706 10:53:36 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_668651,variables_complete_region_a_i1_rep_1_ls_all_3
+20100706 10:53:36 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_668651@variables_complete_i1> to current mapset as
+<variables_complete_region_a_i1_rep_1_ls_all_3>
+
+20100706 10:53:36 [mdig.replicate] INFO: t=4
+20100706 10:53:36 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_668651,3426_all_861150
+20100706 10:53:36 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_668651@variables_complete_i1> to current mapset as
+<3426_all_861150>
+
+20100706 10:53:36 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:36 [mdig.grass] DEBUG: Removing raster map 3426_all_205466
+20100706 10:53:36 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_205466
+20100706 10:53:36 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_205466>
+
+20100706 10:53:36 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_668651 output=3426_all_205466 
+20100706 10:53:36 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_205466=if(3426_all_668651>0,3426_all_668651+1,3426_all_668651)
+
+20100706 10:53:36 [mdig.grass] DEBUG: Removing raster map 3426_all_668651
+20100706 10:53:36 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_668651
+20100706 10:53:36 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_668651>
+
+20100706 10:53:36 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_205466 agem=2 spread=2 output=3426_all_668651 
+20100706 10:53:36 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:36 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:36 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:36 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i1_rep_1_ls_all_4
+20100706 10:53:36 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_668651,variables_complete_region_a_i1_rep_1_ls_all_4
+20100706 10:53:36 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_668651@variables_complete_i1> to current mapset as
+<variables_complete_region_a_i1_rep_1_ls_all_4>
+
+20100706 10:53:36 [mdig.replicate] INFO: t=5
+20100706 10:53:36 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_668651,3426_all_232249
+20100706 10:53:37 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_668651@variables_complete_i1> to current mapset as
+<3426_all_232249>
+
+20100706 10:53:37 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:37 [mdig.grass] DEBUG: Removing raster map 3426_all_205466
+20100706 10:53:37 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_205466
+20100706 10:53:37 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_205466>
+
+20100706 10:53:37 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_668651 output=3426_all_205466 
+20100706 10:53:37 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_205466=if(3426_all_668651>0,3426_all_668651+1,3426_all_668651)
+
+20100706 10:53:37 [mdig.grass] DEBUG: Removing raster map 3426_all_668651
+20100706 10:53:37 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_668651
+20100706 10:53:37 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_668651>
+
+20100706 10:53:37 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_205466 agem=2 spread=2 output=3426_all_668651 
+20100706 10:53:37 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:37 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:37 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:37 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i1_rep_1_ls_all_5
+20100706 10:53:37 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_668651,variables_complete_region_a_i1_rep_1_ls_all_5
+20100706 10:53:37 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_668651@variables_complete_i1> to current mapset as
+<variables_complete_region_a_i1_rep_1_ls_all_5>
+
+20100706 10:53:37 [mdig.grass] DEBUG: Removing raster map 3426_all_668651
+20100706 10:53:37 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_668651
+20100706 10:53:37 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_668651>
+
+20100706 10:53:37 [mdig.grass] DEBUG: Removing raster map 3426_all_205466
+20100706 10:53:37 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_205466
+20100706 10:53:37 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_205466>
+
+20100706 10:53:37 [mdig.grass] DEBUG: Removing raster map 3426_all_530757
+20100706 10:53:37 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_530757
+20100706 10:53:37 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_530757>
+
+20100706 10:53:37 [mdig.grass] DEBUG: Removing raster map 3426_all_545780
+20100706 10:53:37 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_545780
+20100706 10:53:37 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_545780>
+
+20100706 10:53:37 [mdig.grass] DEBUG: Removing raster map 3426_all_825826
+20100706 10:53:37 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_825826
+20100706 10:53:37 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_825826>
+
+20100706 10:53:37 [mdig.grass] DEBUG: Removing raster map 3426_all_98913
+20100706 10:53:37 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_98913
+20100706 10:53:37 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_98913>
+
+20100706 10:53:37 [mdig.grass] DEBUG: Removing raster map 3426_all_861150
+20100706 10:53:37 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_861150
+20100706 10:53:37 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_861150>
+
+20100706 10:53:37 [mdig.grass] DEBUG: Removing raster map 3426_all_232249
+20100706 10:53:37 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_232249
+20100706 10:53:37 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_232249>
+
+20100706 10:53:37 [mdig.grass] DEBUG: exec: g.mapset -c mapset=variables_complete_i2 location=grass_location
+20100706 10:53:38 [mdig.grass] DEBUG: stderr: Erasing monitors...
+Cleaning up temporary files...
+WARNING: Your shell continues to use the history for the old mapset
+You can switch the history by commands:
+history -w; history -r
+../test/grass_location/variables_complete_i2/.bash_history;
+HISTFILE=../test/grass_location/variables_complete_i2/.bash_history
+
+20100706 10:53:38 [mdig.grass] DEBUG: Change to mapset variables_complete_i2@grass_location
+20100706 10:53:38 [mdig.replicate] INFO: Replicate 1/2 of exp. instance [vars: {'agem': None, 'd1': '5'}]
+20100706 10:53:38 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 10:53:38 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 10:53:38 [mdig.grass] DEBUG: exec: g.copy rast=3426__78287@variables_complete_i0,3426_all_333982
+20100706 10:53:38 [mdig.grass] DEBUG: stderr: Copy raster <3426__78287@variables_complete_i0> to current mapset as
+<3426_all_333982>
+
+20100706 10:53:38 [mdig.replicate] DEBUG: Initial maps:  3426__78287@variables_complete_i0
+20100706 10:53:38 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 10:53:38 [mdig.replicate] INFO: t=0
+20100706 10:53:38 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_333982,3426_all_985375
+20100706 10:53:38 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_333982@variables_complete_i2> to current mapset as
+<3426_all_985375>
+
+20100706 10:53:38 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:38 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_333982 output=3426_all_533063 
+20100706 10:53:38 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_533063=if(3426_all_333982>0,3426_all_333982+1,3426_all_333982)
+
+20100706 10:53:38 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:38 [mdig.grass] DEBUG: Removing raster map 3426_all_333982
+20100706 10:53:38 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_333982
+20100706 10:53:38 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_333982>
+
+20100706 10:53:38 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_533063 spread=5 output=3426_all_333982 
+20100706 10:53:38 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:38 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:38 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:38 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i2_rep_0_ls_all_0
+20100706 10:53:38 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_333982,variables_complete_region_a_i2_rep_0_ls_all_0
+20100706 10:53:38 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_333982@variables_complete_i2> to current mapset as
+<variables_complete_region_a_i2_rep_0_ls_all_0>
+
+20100706 10:53:38 [mdig.replicate] INFO: t=1
+20100706 10:53:39 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_333982,3426_all_783701
+20100706 10:53:39 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_333982@variables_complete_i2> to current mapset as
+<3426_all_783701>
+
+20100706 10:53:39 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:39 [mdig.grass] DEBUG: Removing raster map 3426_all_533063
+20100706 10:53:39 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_533063
+20100706 10:53:39 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_533063>
+
+20100706 10:53:39 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_333982 output=3426_all_533063 
+20100706 10:53:39 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_533063=if(3426_all_333982>0,3426_all_333982+1,3426_all_333982)
+
+20100706 10:53:39 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:39 [mdig.grass] DEBUG: Removing raster map 3426_all_333982
+20100706 10:53:39 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_333982
+20100706 10:53:39 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_333982>
+
+20100706 10:53:39 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_533063 spread=5 output=3426_all_333982 
+20100706 10:53:39 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:39 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:39 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:39 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i2_rep_0_ls_all_1
+20100706 10:53:39 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_333982,variables_complete_region_a_i2_rep_0_ls_all_1
+20100706 10:53:39 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_333982@variables_complete_i2> to current mapset as
+<variables_complete_region_a_i2_rep_0_ls_all_1>
+
+20100706 10:53:39 [mdig.replicate] INFO: t=2
+20100706 10:53:39 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_333982,3426_all_81393
+20100706 10:53:39 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_333982@variables_complete_i2> to current mapset as
+<3426_all_81393>
+
+20100706 10:53:39 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:39 [mdig.grass] DEBUG: Removing raster map 3426_all_533063
+20100706 10:53:39 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_533063
+20100706 10:53:39 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_533063>
+
+20100706 10:53:39 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_333982 output=3426_all_533063 
+20100706 10:53:39 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_533063=if(3426_all_333982>0,3426_all_333982+1,3426_all_333982)
+
+20100706 10:53:39 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:39 [mdig.grass] DEBUG: Removing raster map 3426_all_333982
+20100706 10:53:39 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_333982
+20100706 10:53:39 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_333982>
+
+20100706 10:53:39 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_533063 spread=5 output=3426_all_333982 
+20100706 10:53:39 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:39 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:39 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:39 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i2_rep_0_ls_all_2
+20100706 10:53:39 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_333982,variables_complete_region_a_i2_rep_0_ls_all_2
+20100706 10:53:39 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_333982@variables_complete_i2> to current mapset as
+<variables_complete_region_a_i2_rep_0_ls_all_2>
+
+20100706 10:53:39 [mdig.replicate] INFO: t=3
+20100706 10:53:39 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_333982,3426_all_501156
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_333982@variables_complete_i2> to current mapset as
+<3426_all_501156>
+
+20100706 10:53:40 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:40 [mdig.grass] DEBUG: Removing raster map 3426_all_533063
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_533063
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_533063>
+
+20100706 10:53:40 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_333982 output=3426_all_533063 
+20100706 10:53:40 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_533063=if(3426_all_333982>0,3426_all_333982+1,3426_all_333982)
+
+20100706 10:53:40 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:40 [mdig.grass] DEBUG: Removing raster map 3426_all_333982
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_333982
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_333982>
+
+20100706 10:53:40 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_533063 spread=5 output=3426_all_333982 
+20100706 10:53:40 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:40 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:40 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:40 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i2_rep_0_ls_all_3
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_333982,variables_complete_region_a_i2_rep_0_ls_all_3
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_333982@variables_complete_i2> to current mapset as
+<variables_complete_region_a_i2_rep_0_ls_all_3>
+
+20100706 10:53:40 [mdig.replicate] INFO: t=4
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_333982,3426_all_95938
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_333982@variables_complete_i2> to current mapset as
+<3426_all_95938>
+
+20100706 10:53:40 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:40 [mdig.grass] DEBUG: Removing raster map 3426_all_533063
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_533063
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_533063>
+
+20100706 10:53:40 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_333982 output=3426_all_533063 
+20100706 10:53:40 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_533063=if(3426_all_333982>0,3426_all_333982+1,3426_all_333982)
+
+20100706 10:53:40 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:40 [mdig.grass] DEBUG: Removing raster map 3426_all_333982
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_333982
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_333982>
+
+20100706 10:53:40 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_533063 spread=5 output=3426_all_333982 
+20100706 10:53:40 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:40 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:40 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:40 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i2_rep_0_ls_all_4
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_333982,variables_complete_region_a_i2_rep_0_ls_all_4
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_333982@variables_complete_i2> to current mapset as
+<variables_complete_region_a_i2_rep_0_ls_all_4>
+
+20100706 10:53:40 [mdig.replicate] INFO: t=5
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_333982,3426_all_489040
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_333982@variables_complete_i2> to current mapset as
+<3426_all_489040>
+
+20100706 10:53:40 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:40 [mdig.grass] DEBUG: Removing raster map 3426_all_533063
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_533063
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_533063>
+
+20100706 10:53:40 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_333982 output=3426_all_533063 
+20100706 10:53:40 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_533063=if(3426_all_333982>0,3426_all_333982+1,3426_all_333982)
+
+20100706 10:53:40 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:40 [mdig.grass] DEBUG: Removing raster map 3426_all_333982
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_333982
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_333982>
+
+20100706 10:53:40 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_533063 spread=5 output=3426_all_333982 
+20100706 10:53:40 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:40 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:40 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:40 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i2_rep_0_ls_all_5
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_333982,variables_complete_region_a_i2_rep_0_ls_all_5
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_333982@variables_complete_i2> to current mapset as
+<variables_complete_region_a_i2_rep_0_ls_all_5>
+
+20100706 10:53:40 [mdig.grass] DEBUG: Removing raster map 3426_all_333982
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_333982
+20100706 10:53:40 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_333982>
+
+20100706 10:53:40 [mdig.grass] DEBUG: Removing raster map 3426_all_533063
+20100706 10:53:40 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_533063
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_533063>
+
+20100706 10:53:41 [mdig.grass] DEBUG: Removing raster map 3426_all_985375
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_985375
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_985375>
+
+20100706 10:53:41 [mdig.grass] DEBUG: Removing raster map 3426_all_783701
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_783701
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_783701>
+
+20100706 10:53:41 [mdig.grass] DEBUG: Removing raster map 3426_all_81393
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_81393
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_81393>
+
+20100706 10:53:41 [mdig.grass] DEBUG: Removing raster map 3426_all_501156
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_501156
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_501156>
+
+20100706 10:53:41 [mdig.grass] DEBUG: Removing raster map 3426_all_95938
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_95938
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_95938>
+
+20100706 10:53:41 [mdig.grass] DEBUG: Removing raster map 3426_all_489040
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_489040
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_489040>
+
+20100706 10:53:41 [mdig.replicate] INFO: Replicate 2/2 of exp. instance [vars: {'agem': None, 'd1': '5'}]
+20100706 10:53:41 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.copy rast=3426__78287@variables_complete_i0,3426_all_10577
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Copy raster <3426__78287@variables_complete_i0> to current mapset as
+<3426_all_10577>
+
+20100706 10:53:41 [mdig.replicate] DEBUG: Initial maps:  3426__78287@variables_complete_i0
+20100706 10:53:41 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 10:53:41 [mdig.replicate] INFO: t=0
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_10577,3426_all_568491
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_10577@variables_complete_i2> to current mapset as
+<3426_all_568491>
+
+20100706 10:53:41 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:41 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_10577 output=3426_all_817434 
+20100706 10:53:41 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_817434=if(3426_all_10577>0,3426_all_10577+1,3426_all_10577)
+
+20100706 10:53:41 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:41 [mdig.grass] DEBUG: Removing raster map 3426_all_10577
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_10577
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_10577>
+
+20100706 10:53:41 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_817434 spread=5 output=3426_all_10577 
+20100706 10:53:41 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:41 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:41 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:41 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i2_rep_1_ls_all_0
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_10577,variables_complete_region_a_i2_rep_1_ls_all_0
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_10577@variables_complete_i2> to current mapset as
+<variables_complete_region_a_i2_rep_1_ls_all_0>
+
+20100706 10:53:41 [mdig.replicate] INFO: t=1
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_10577,3426_all_338846
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_10577@variables_complete_i2> to current mapset as
+<3426_all_338846>
+
+20100706 10:53:41 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:41 [mdig.grass] DEBUG: Removing raster map 3426_all_817434
+20100706 10:53:41 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_817434
+20100706 10:53:41 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_817434>
+
+20100706 10:53:41 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_10577 output=3426_all_817434 
+20100706 10:53:42 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_817434=if(3426_all_10577>0,3426_all_10577+1,3426_all_10577)
+
+20100706 10:53:42 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:42 [mdig.grass] DEBUG: Removing raster map 3426_all_10577
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_10577
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_10577>
+
+20100706 10:53:42 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_817434 spread=5 output=3426_all_10577 
+20100706 10:53:42 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:42 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:42 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:42 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i2_rep_1_ls_all_1
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_10577,variables_complete_region_a_i2_rep_1_ls_all_1
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_10577@variables_complete_i2> to current mapset as
+<variables_complete_region_a_i2_rep_1_ls_all_1>
+
+20100706 10:53:42 [mdig.replicate] INFO: t=2
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_10577,3426_all_809783
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_10577@variables_complete_i2> to current mapset as
+<3426_all_809783>
+
+20100706 10:53:42 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:42 [mdig.grass] DEBUG: Removing raster map 3426_all_817434
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_817434
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_817434>
+
+20100706 10:53:42 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_10577 output=3426_all_817434 
+20100706 10:53:42 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_817434=if(3426_all_10577>0,3426_all_10577+1,3426_all_10577)
+
+20100706 10:53:42 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:42 [mdig.grass] DEBUG: Removing raster map 3426_all_10577
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_10577
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_10577>
+
+20100706 10:53:42 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_817434 spread=5 output=3426_all_10577 
+20100706 10:53:42 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:42 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:42 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:42 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i2_rep_1_ls_all_2
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_10577,variables_complete_region_a_i2_rep_1_ls_all_2
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_10577@variables_complete_i2> to current mapset as
+<variables_complete_region_a_i2_rep_1_ls_all_2>
+
+20100706 10:53:42 [mdig.replicate] INFO: t=3
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_10577,3426_all_560792
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_10577@variables_complete_i2> to current mapset as
+<3426_all_560792>
+
+20100706 10:53:42 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:42 [mdig.grass] DEBUG: Removing raster map 3426_all_817434
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_817434
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_817434>
+
+20100706 10:53:42 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_10577 output=3426_all_817434 
+20100706 10:53:42 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_817434=if(3426_all_10577>0,3426_all_10577+1,3426_all_10577)
+
+20100706 10:53:42 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:42 [mdig.grass] DEBUG: Removing raster map 3426_all_10577
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_10577
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_10577>
+
+20100706 10:53:42 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_817434 spread=5 output=3426_all_10577 
+20100706 10:53:42 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:42 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:42 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:42 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i2_rep_1_ls_all_3
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_10577,variables_complete_region_a_i2_rep_1_ls_all_3
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_10577@variables_complete_i2> to current mapset as
+<variables_complete_region_a_i2_rep_1_ls_all_3>
+
+20100706 10:53:42 [mdig.replicate] INFO: t=4
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_10577,3426_all_963048
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_10577@variables_complete_i2> to current mapset as
+<3426_all_963048>
+
+20100706 10:53:42 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:42 [mdig.grass] DEBUG: Removing raster map 3426_all_817434
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_817434
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_817434>
+
+20100706 10:53:42 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_10577 output=3426_all_817434 
+20100706 10:53:42 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_817434=if(3426_all_10577>0,3426_all_10577+1,3426_all_10577)
+
+20100706 10:53:42 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:42 [mdig.grass] DEBUG: Removing raster map 3426_all_10577
+20100706 10:53:42 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_10577
+20100706 10:53:42 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_10577>
+
+20100706 10:53:42 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_817434 spread=5 output=3426_all_10577 
+20100706 10:53:42 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:42 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:42 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:42 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i2_rep_1_ls_all_4
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_10577,variables_complete_region_a_i2_rep_1_ls_all_4
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_10577@variables_complete_i2> to current mapset as
+<variables_complete_region_a_i2_rep_1_ls_all_4>
+
+20100706 10:53:43 [mdig.replicate] INFO: t=5
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_10577,3426_all_451316
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_10577@variables_complete_i2> to current mapset as
+<3426_all_451316>
+
+20100706 10:53:43 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:43 [mdig.grass] DEBUG: Removing raster map 3426_all_817434
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_817434
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_817434>
+
+20100706 10:53:43 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_10577 output=3426_all_817434 
+20100706 10:53:43 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_817434=if(3426_all_10577>0,3426_all_10577+1,3426_all_10577)
+
+20100706 10:53:43 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:43 [mdig.grass] DEBUG: Removing raster map 3426_all_10577
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_10577
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_10577>
+
+20100706 10:53:43 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_817434 spread=5 output=3426_all_10577 
+20100706 10:53:43 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:43 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:43 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:43 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i2_rep_1_ls_all_5
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_10577,variables_complete_region_a_i2_rep_1_ls_all_5
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_10577@variables_complete_i2> to current mapset as
+<variables_complete_region_a_i2_rep_1_ls_all_5>
+
+20100706 10:53:43 [mdig.grass] DEBUG: Removing raster map 3426_all_10577
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_10577
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_10577>
+
+20100706 10:53:43 [mdig.grass] DEBUG: Removing raster map 3426_all_817434
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_817434
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_817434>
+
+20100706 10:53:43 [mdig.grass] DEBUG: Removing raster map 3426_all_568491
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_568491
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_568491>
+
+20100706 10:53:43 [mdig.grass] DEBUG: Removing raster map 3426_all_338846
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_338846
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_338846>
+
+20100706 10:53:43 [mdig.grass] DEBUG: Removing raster map 3426_all_809783
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_809783
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_809783>
+
+20100706 10:53:43 [mdig.grass] DEBUG: Removing raster map 3426_all_560792
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_560792
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_560792>
+
+20100706 10:53:43 [mdig.grass] DEBUG: Removing raster map 3426_all_963048
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_963048
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_963048>
+
+20100706 10:53:43 [mdig.grass] DEBUG: Removing raster map 3426_all_451316
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_451316
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_451316>
+
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.mapset -c mapset=variables_complete_i3 location=grass_location
+20100706 10:53:43 [mdig.grass] DEBUG: stderr: Erasing monitors...
+Cleaning up temporary files...
+WARNING: Your shell continues to use the history for the old mapset
+You can switch the history by commands:
+history -w; history -r
+../test/grass_location/variables_complete_i3/.bash_history;
+HISTFILE=../test/grass_location/variables_complete_i3/.bash_history
+
+20100706 10:53:43 [mdig.grass] DEBUG: Change to mapset variables_complete_i3@grass_location
+20100706 10:53:43 [mdig.replicate] INFO: Replicate 1/2 of exp. instance [vars: {'agem': None, 'd1': '2'}]
+20100706 10:53:43 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 10:53:43 [mdig.grass] DEBUG: exec: g.copy rast=3426__78287@variables_complete_i0,3426_all_249020
+20100706 10:53:44 [mdig.grass] DEBUG: stderr: Copy raster <3426__78287@variables_complete_i0> to current mapset as
+<3426_all_249020>
+
+20100706 10:53:44 [mdig.replicate] DEBUG: Initial maps:  3426__78287@variables_complete_i0
+20100706 10:53:44 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 10:53:44 [mdig.replicate] INFO: t=0
+20100706 10:53:44 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_249020,3426_all_942083
+20100706 10:53:44 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_249020@variables_complete_i3> to current mapset as
+<3426_all_942083>
+
+20100706 10:53:44 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:44 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_249020 output=3426_all_1021 
+20100706 10:53:44 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_1021=if(3426_all_249020>0,3426_all_249020+1,3426_all_249020)
+
+20100706 10:53:44 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:44 [mdig.grass] DEBUG: Removing raster map 3426_all_249020
+20100706 10:53:44 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_249020
+20100706 10:53:44 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_249020>
+
+20100706 10:53:44 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_1021 spread=2 output=3426_all_249020 
+20100706 10:53:44 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:44 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:44 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:44 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i3_rep_0_ls_all_0
+20100706 10:53:44 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_249020,variables_complete_region_a_i3_rep_0_ls_all_0
+20100706 10:53:44 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_249020@variables_complete_i3> to current mapset as
+<variables_complete_region_a_i3_rep_0_ls_all_0>
+
+20100706 10:53:44 [mdig.replicate] INFO: t=1
+20100706 10:53:44 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_249020,3426_all_651297
+20100706 10:53:44 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_249020@variables_complete_i3> to current mapset as
+<3426_all_651297>
+
+20100706 10:53:44 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:44 [mdig.grass] DEBUG: Removing raster map 3426_all_1021
+20100706 10:53:44 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_1021
+20100706 10:53:44 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_1021>
+
+20100706 10:53:44 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_249020 output=3426_all_1021 
+20100706 10:53:44 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_1021=if(3426_all_249020>0,3426_all_249020+1,3426_all_249020)
+
+20100706 10:53:44 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:44 [mdig.grass] DEBUG: Removing raster map 3426_all_249020
+20100706 10:53:44 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_249020
+20100706 10:53:44 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_249020>
+
+20100706 10:53:44 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_1021 spread=2 output=3426_all_249020 
+20100706 10:53:44 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:44 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:44 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:44 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i3_rep_0_ls_all_1
+20100706 10:53:44 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_249020,variables_complete_region_a_i3_rep_0_ls_all_1
+20100706 10:53:44 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_249020@variables_complete_i3> to current mapset as
+<variables_complete_region_a_i3_rep_0_ls_all_1>
+
+20100706 10:53:44 [mdig.replicate] INFO: t=2
+20100706 10:53:44 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_249020,3426_all_609672
+20100706 10:53:44 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_249020@variables_complete_i3> to current mapset as
+<3426_all_609672>
+
+20100706 10:53:44 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:44 [mdig.grass] DEBUG: Removing raster map 3426_all_1021
+20100706 10:53:44 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_1021
+20100706 10:53:44 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_1021>
+
+20100706 10:53:44 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_249020 output=3426_all_1021 
+20100706 10:53:44 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_1021=if(3426_all_249020>0,3426_all_249020+1,3426_all_249020)
+
+20100706 10:53:44 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:44 [mdig.grass] DEBUG: Removing raster map 3426_all_249020
+20100706 10:53:44 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_249020
+20100706 10:53:44 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_249020>
+
+20100706 10:53:44 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_1021 spread=2 output=3426_all_249020 
+20100706 10:53:44 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:44 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:44 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:44 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i3_rep_0_ls_all_2
+20100706 10:53:44 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_249020,variables_complete_region_a_i3_rep_0_ls_all_2
+20100706 10:53:45 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_249020@variables_complete_i3> to current mapset as
+<variables_complete_region_a_i3_rep_0_ls_all_2>
+
+20100706 10:53:45 [mdig.replicate] INFO: t=3
+20100706 10:53:45 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_249020,3426_all_547717
+20100706 10:53:45 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_249020@variables_complete_i3> to current mapset as
+<3426_all_547717>
+
+20100706 10:53:45 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:45 [mdig.grass] DEBUG: Removing raster map 3426_all_1021
+20100706 10:53:45 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_1021
+20100706 10:53:45 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_1021>
+
+20100706 10:53:45 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_249020 output=3426_all_1021 
+20100706 10:53:45 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_1021=if(3426_all_249020>0,3426_all_249020+1,3426_all_249020)
+
+20100706 10:53:45 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:45 [mdig.grass] DEBUG: Removing raster map 3426_all_249020
+20100706 10:53:45 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_249020
+20100706 10:53:45 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_249020>
+
+20100706 10:53:45 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_1021 spread=2 output=3426_all_249020 
+20100706 10:53:45 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:45 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:45 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:45 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i3_rep_0_ls_all_3
+20100706 10:53:45 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_249020,variables_complete_region_a_i3_rep_0_ls_all_3
+20100706 10:53:45 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_249020@variables_complete_i3> to current mapset as
+<variables_complete_region_a_i3_rep_0_ls_all_3>
+
+20100706 10:53:45 [mdig.replicate] INFO: t=4
+20100706 10:53:45 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_249020,3426_all_794883
+20100706 10:53:45 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_249020@variables_complete_i3> to current mapset as
+<3426_all_794883>
+
+20100706 10:53:45 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:45 [mdig.grass] DEBUG: Removing raster map 3426_all_1021
+20100706 10:53:45 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_1021
+20100706 10:53:45 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_1021>
+
+20100706 10:53:45 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_249020 output=3426_all_1021 
+20100706 10:53:45 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_1021=if(3426_all_249020>0,3426_all_249020+1,3426_all_249020)
+
+20100706 10:53:45 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:45 [mdig.grass] DEBUG: Removing raster map 3426_all_249020
+20100706 10:53:45 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_249020
+20100706 10:53:45 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_249020>
+
+20100706 10:53:45 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_1021 spread=2 output=3426_all_249020 
+20100706 10:53:45 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:45 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:45 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:45 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i3_rep_0_ls_all_4
+20100706 10:53:45 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_249020,variables_complete_region_a_i3_rep_0_ls_all_4
+20100706 10:53:45 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_249020@variables_complete_i3> to current mapset as
+<variables_complete_region_a_i3_rep_0_ls_all_4>
+
+20100706 10:53:45 [mdig.replicate] INFO: t=5
+20100706 10:53:45 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_249020,3426_all_539203
+20100706 10:53:45 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_249020@variables_complete_i3> to current mapset as
+<3426_all_539203>
+
+20100706 10:53:45 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:45 [mdig.grass] DEBUG: Removing raster map 3426_all_1021
+20100706 10:53:45 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_1021
+20100706 10:53:45 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_1021>
+
+20100706 10:53:45 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_249020 output=3426_all_1021 
+20100706 10:53:45 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_1021=if(3426_all_249020>0,3426_all_249020+1,3426_all_249020)
+
+20100706 10:53:45 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:45 [mdig.grass] DEBUG: Removing raster map 3426_all_249020
+20100706 10:53:45 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_249020
+20100706 10:53:45 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_249020>
+
+20100706 10:53:45 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_1021 spread=2 output=3426_all_249020 
+20100706 10:53:45 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:45 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:45 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:45 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i3_rep_0_ls_all_5
+20100706 10:53:45 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_249020,variables_complete_region_a_i3_rep_0_ls_all_5
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_249020@variables_complete_i3> to current mapset as
+<variables_complete_region_a_i3_rep_0_ls_all_5>
+
+20100706 10:53:46 [mdig.grass] DEBUG: Removing raster map 3426_all_249020
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_249020
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_249020>
+
+20100706 10:53:46 [mdig.grass] DEBUG: Removing raster map 3426_all_1021
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_1021
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_1021>
+
+20100706 10:53:46 [mdig.grass] DEBUG: Removing raster map 3426_all_942083
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_942083
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_942083>
+
+20100706 10:53:46 [mdig.grass] DEBUG: Removing raster map 3426_all_651297
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_651297
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_651297>
+
+20100706 10:53:46 [mdig.grass] DEBUG: Removing raster map 3426_all_609672
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_609672
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_609672>
+
+20100706 10:53:46 [mdig.grass] DEBUG: Removing raster map 3426_all_547717
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_547717
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_547717>
+
+20100706 10:53:46 [mdig.grass] DEBUG: Removing raster map 3426_all_794883
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_794883
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_794883>
+
+20100706 10:53:46 [mdig.grass] DEBUG: Removing raster map 3426_all_539203
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_539203
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_539203>
+
+20100706 10:53:46 [mdig.replicate] INFO: Replicate 2/2 of exp. instance [vars: {'agem': None, 'd1': '2'}]
+20100706 10:53:46 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.copy rast=3426__78287@variables_complete_i0,3426_all_825647
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Copy raster <3426__78287@variables_complete_i0> to current mapset as
+<3426_all_825647>
+
+20100706 10:53:46 [mdig.replicate] DEBUG: Initial maps:  3426__78287@variables_complete_i0
+20100706 10:53:46 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 10:53:46 [mdig.replicate] INFO: t=0
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_825647,3426_all_972736
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_825647@variables_complete_i3> to current mapset as
+<3426_all_972736>
+
+20100706 10:53:46 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:46 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_825647 output=3426_all_739846 
+20100706 10:53:46 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_739846=if(3426_all_825647>0,3426_all_825647+1,3426_all_825647)
+
+20100706 10:53:46 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:46 [mdig.grass] DEBUG: Removing raster map 3426_all_825647
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_825647
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_825647>
+
+20100706 10:53:46 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_739846 spread=2 output=3426_all_825647 
+20100706 10:53:46 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:46 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:46 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:46 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i3_rep_1_ls_all_0
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_825647,variables_complete_region_a_i3_rep_1_ls_all_0
+20100706 10:53:46 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_825647@variables_complete_i3> to current mapset as
+<variables_complete_region_a_i3_rep_1_ls_all_0>
+
+20100706 10:53:46 [mdig.replicate] INFO: t=1
+20100706 10:53:46 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_825647,3426_all_742750
+20100706 10:53:47 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_825647@variables_complete_i3> to current mapset as
+<3426_all_742750>
+
+20100706 10:53:47 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:47 [mdig.grass] DEBUG: Removing raster map 3426_all_739846
+20100706 10:53:47 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_739846
+20100706 10:53:47 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_739846>
+
+20100706 10:53:47 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_825647 output=3426_all_739846 
+20100706 10:53:47 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_739846=if(3426_all_825647>0,3426_all_825647+1,3426_all_825647)
+
+20100706 10:53:47 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:47 [mdig.grass] DEBUG: Removing raster map 3426_all_825647
+20100706 10:53:47 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_825647
+20100706 10:53:47 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_825647>
+
+20100706 10:53:47 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_739846 spread=2 output=3426_all_825647 
+20100706 10:53:47 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:47 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:47 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:47 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i3_rep_1_ls_all_1
+20100706 10:53:47 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_825647,variables_complete_region_a_i3_rep_1_ls_all_1
+20100706 10:53:47 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_825647@variables_complete_i3> to current mapset as
+<variables_complete_region_a_i3_rep_1_ls_all_1>
+
+20100706 10:53:47 [mdig.replicate] INFO: t=2
+20100706 10:53:47 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_825647,3426_all_408377
+20100706 10:53:47 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_825647@variables_complete_i3> to current mapset as
+<3426_all_408377>
+
+20100706 10:53:47 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:47 [mdig.grass] DEBUG: Removing raster map 3426_all_739846
+20100706 10:53:47 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_739846
+20100706 10:53:47 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_739846>
+
+20100706 10:53:47 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_825647 output=3426_all_739846 
+20100706 10:53:47 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_739846=if(3426_all_825647>0,3426_all_825647+1,3426_all_825647)
+
+20100706 10:53:47 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:47 [mdig.grass] DEBUG: Removing raster map 3426_all_825647
+20100706 10:53:47 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_825647
+20100706 10:53:47 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_825647>
+
+20100706 10:53:47 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_739846 spread=2 output=3426_all_825647 
+20100706 10:53:47 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:47 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:47 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:47 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i3_rep_1_ls_all_2
+20100706 10:53:47 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_825647,variables_complete_region_a_i3_rep_1_ls_all_2
+20100706 10:53:47 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_825647@variables_complete_i3> to current mapset as
+<variables_complete_region_a_i3_rep_1_ls_all_2>
+
+20100706 10:53:47 [mdig.replicate] INFO: t=3
+20100706 10:53:47 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_825647,3426_all_750352
+20100706 10:53:47 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_825647@variables_complete_i3> to current mapset as
+<3426_all_750352>
+
+20100706 10:53:47 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:47 [mdig.grass] DEBUG: Removing raster map 3426_all_739846
+20100706 10:53:47 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_739846
+20100706 10:53:47 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_739846>
+
+20100706 10:53:47 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_825647 output=3426_all_739846 
+20100706 10:53:47 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_739846=if(3426_all_825647>0,3426_all_825647+1,3426_all_825647)
+
+20100706 10:53:47 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:47 [mdig.grass] DEBUG: Removing raster map 3426_all_825647
+20100706 10:53:47 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_825647
+20100706 10:53:47 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_825647>
+
+20100706 10:53:47 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_739846 spread=2 output=3426_all_825647 
+20100706 10:53:47 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:47 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:47 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:47 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i3_rep_1_ls_all_3
+20100706 10:53:47 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_825647,variables_complete_region_a_i3_rep_1_ls_all_3
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_825647@variables_complete_i3> to current mapset as
+<variables_complete_region_a_i3_rep_1_ls_all_3>
+
+20100706 10:53:48 [mdig.replicate] INFO: t=4
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_825647,3426_all_893153
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_825647@variables_complete_i3> to current mapset as
+<3426_all_893153>
+
+20100706 10:53:48 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:48 [mdig.grass] DEBUG: Removing raster map 3426_all_739846
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_739846
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_739846>
+
+20100706 10:53:48 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_825647 output=3426_all_739846 
+20100706 10:53:48 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_739846=if(3426_all_825647>0,3426_all_825647+1,3426_all_825647)
+
+20100706 10:53:48 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:48 [mdig.grass] DEBUG: Removing raster map 3426_all_825647
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_825647
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_825647>
+
+20100706 10:53:48 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_739846 spread=2 output=3426_all_825647 
+20100706 10:53:48 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:48 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:48 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:48 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i3_rep_1_ls_all_4
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_825647,variables_complete_region_a_i3_rep_1_ls_all_4
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_825647@variables_complete_i3> to current mapset as
+<variables_complete_region_a_i3_rep_1_ls_all_4>
+
+20100706 10:53:48 [mdig.replicate] INFO: t=5
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_825647,3426_all_560287
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_825647@variables_complete_i3> to current mapset as
+<3426_all_560287>
+
+20100706 10:53:48 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:48 [mdig.grass] DEBUG: Removing raster map 3426_all_739846
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_739846
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_739846>
+
+20100706 10:53:48 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_825647 output=3426_all_739846 
+20100706 10:53:48 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_739846=if(3426_all_825647>0,3426_all_825647+1,3426_all_825647)
+
+20100706 10:53:48 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:48 [mdig.grass] DEBUG: Removing raster map 3426_all_825647
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_825647
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_825647>
+
+20100706 10:53:48 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_739846 spread=2 output=3426_all_825647 
+20100706 10:53:48 [mdig.grass] DEBUG: stdout: spread rate 2.000000
+
+20100706 10:53:48 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:48 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:48 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i3_rep_1_ls_all_5
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_825647,variables_complete_region_a_i3_rep_1_ls_all_5
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_825647@variables_complete_i3> to current mapset as
+<variables_complete_region_a_i3_rep_1_ls_all_5>
+
+20100706 10:53:48 [mdig.grass] DEBUG: Removing raster map 3426_all_825647
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_825647
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_825647>
+
+20100706 10:53:48 [mdig.grass] DEBUG: Removing raster map 3426_all_739846
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_739846
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_739846>
+
+20100706 10:53:48 [mdig.grass] DEBUG: Removing raster map 3426_all_972736
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_972736
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_972736>
+
+20100706 10:53:48 [mdig.grass] DEBUG: Removing raster map 3426_all_742750
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_742750
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_742750>
+
+20100706 10:53:48 [mdig.grass] DEBUG: Removing raster map 3426_all_408377
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_408377
+20100706 10:53:48 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_408377>
+
+20100706 10:53:48 [mdig.grass] DEBUG: Removing raster map 3426_all_750352
+20100706 10:53:48 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_750352
+20100706 10:53:49 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_750352>
+
+20100706 10:53:49 [mdig.grass] DEBUG: Removing raster map 3426_all_893153
+20100706 10:53:49 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_893153
+20100706 10:53:49 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_893153>
+
+20100706 10:53:49 [mdig.grass] DEBUG: Removing raster map 3426_all_560287
+20100706 10:53:49 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_560287
+20100706 10:53:49 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_560287>
+
+20100706 10:53:49 [mdig.grass] DEBUG: exec: g.mapset -c mapset=variables_complete_i4 location=grass_location
+20100706 10:53:49 [mdig.grass] DEBUG: stderr: Erasing monitors...
+Cleaning up temporary files...
+WARNING: Your shell continues to use the history for the old mapset
+You can switch the history by commands:
+history -w; history -r
+../test/grass_location/variables_complete_i4/.bash_history;
+HISTFILE=../test/grass_location/variables_complete_i4/.bash_history
+
+20100706 10:53:49 [mdig.grass] DEBUG: Change to mapset variables_complete_i4@grass_location
+20100706 10:53:49 [mdig.replicate] INFO: Replicate 1/2 of exp. instance [vars: {'agem': None, 'd1': '3'}]
+20100706 10:53:49 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 10:53:49 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 10:53:49 [mdig.grass] DEBUG: exec: g.copy rast=3426__78287@variables_complete_i0,3426_all_873647
+20100706 10:53:49 [mdig.grass] DEBUG: stderr: Copy raster <3426__78287@variables_complete_i0> to current mapset as
+<3426_all_873647>
+
+20100706 10:53:49 [mdig.replicate] DEBUG: Initial maps:  3426__78287@variables_complete_i0
+20100706 10:53:49 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 10:53:49 [mdig.replicate] INFO: t=0
+20100706 10:53:49 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_873647,3426_all_764723
+20100706 10:53:49 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_873647@variables_complete_i4> to current mapset as
+<3426_all_764723>
+
+20100706 10:53:49 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:49 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_873647 output=3426_all_257436 
+20100706 10:53:49 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_257436=if(3426_all_873647>0,3426_all_873647+1,3426_all_873647)
+
+20100706 10:53:49 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:49 [mdig.grass] DEBUG: Removing raster map 3426_all_873647
+20100706 10:53:49 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_873647
+20100706 10:53:49 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_873647>
+
+20100706 10:53:49 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_257436 spread=3 output=3426_all_873647 
+20100706 10:53:49 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:49 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:49 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:49 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i4_rep_0_ls_all_0
+20100706 10:53:49 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_873647,variables_complete_region_a_i4_rep_0_ls_all_0
+20100706 10:53:49 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_873647@variables_complete_i4> to current mapset as
+<variables_complete_region_a_i4_rep_0_ls_all_0>
+
+20100706 10:53:49 [mdig.replicate] INFO: t=1
+20100706 10:53:49 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_873647,3426_all_994722
+20100706 10:53:49 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_873647@variables_complete_i4> to current mapset as
+<3426_all_994722>
+
+20100706 10:53:49 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:49 [mdig.grass] DEBUG: Removing raster map 3426_all_257436
+20100706 10:53:49 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_257436
+20100706 10:53:49 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_257436>
+
+20100706 10:53:49 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_873647 output=3426_all_257436 
+20100706 10:53:49 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_257436=if(3426_all_873647>0,3426_all_873647+1,3426_all_873647)
+
+20100706 10:53:49 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:49 [mdig.grass] DEBUG: Removing raster map 3426_all_873647
+20100706 10:53:49 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_873647
+20100706 10:53:49 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_873647>
+
+20100706 10:53:49 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_257436 spread=3 output=3426_all_873647 
+20100706 10:53:49 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:49 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:49 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:49 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i4_rep_0_ls_all_1
+20100706 10:53:50 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_873647,variables_complete_region_a_i4_rep_0_ls_all_1
+20100706 10:53:50 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_873647@variables_complete_i4> to current mapset as
+<variables_complete_region_a_i4_rep_0_ls_all_1>
+
+20100706 10:53:50 [mdig.replicate] INFO: t=2
+20100706 10:53:50 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_873647,3426_all_920156
+20100706 10:53:50 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_873647@variables_complete_i4> to current mapset as
+<3426_all_920156>
+
+20100706 10:53:50 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:50 [mdig.grass] DEBUG: Removing raster map 3426_all_257436
+20100706 10:53:50 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_257436
+20100706 10:53:50 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_257436>
+
+20100706 10:53:50 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_873647 output=3426_all_257436 
+20100706 10:53:50 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_257436=if(3426_all_873647>0,3426_all_873647+1,3426_all_873647)
+
+20100706 10:53:50 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:50 [mdig.grass] DEBUG: Removing raster map 3426_all_873647
+20100706 10:53:50 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_873647
+20100706 10:53:50 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_873647>
+
+20100706 10:53:50 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_257436 spread=3 output=3426_all_873647 
+20100706 10:53:50 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:50 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:50 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:50 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i4_rep_0_ls_all_2
+20100706 10:53:50 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_873647,variables_complete_region_a_i4_rep_0_ls_all_2
+20100706 10:53:50 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_873647@variables_complete_i4> to current mapset as
+<variables_complete_region_a_i4_rep_0_ls_all_2>
+
+20100706 10:53:50 [mdig.replicate] INFO: t=3
+20100706 10:53:50 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_873647,3426_all_829508
+20100706 10:53:50 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_873647@variables_complete_i4> to current mapset as
+<3426_all_829508>
+
+20100706 10:53:50 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:50 [mdig.grass] DEBUG: Removing raster map 3426_all_257436
+20100706 10:53:50 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_257436
+20100706 10:53:50 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_257436>
+
+20100706 10:53:50 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_873647 output=3426_all_257436 
+20100706 10:53:50 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_257436=if(3426_all_873647>0,3426_all_873647+1,3426_all_873647)
+
+20100706 10:53:50 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:50 [mdig.grass] DEBUG: Removing raster map 3426_all_873647
+20100706 10:53:50 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_873647
+20100706 10:53:50 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_873647>
+
+20100706 10:53:50 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_257436 spread=3 output=3426_all_873647 
+20100706 10:53:50 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:50 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:50 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:50 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i4_rep_0_ls_all_3
+20100706 10:53:50 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_873647,variables_complete_region_a_i4_rep_0_ls_all_3
+20100706 10:53:50 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_873647@variables_complete_i4> to current mapset as
+<variables_complete_region_a_i4_rep_0_ls_all_3>
+
+20100706 10:53:50 [mdig.replicate] INFO: t=4
+20100706 10:53:50 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_873647,3426_all_403
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_873647@variables_complete_i4> to current mapset as
+<3426_all_403>
+
+20100706 10:53:51 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:51 [mdig.grass] DEBUG: Removing raster map 3426_all_257436
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_257436
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_257436>
+
+20100706 10:53:51 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_873647 output=3426_all_257436 
+20100706 10:53:51 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_257436=if(3426_all_873647>0,3426_all_873647+1,3426_all_873647)
+
+20100706 10:53:51 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:51 [mdig.grass] DEBUG: Removing raster map 3426_all_873647
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_873647
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_873647>
+
+20100706 10:53:51 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_257436 spread=3 output=3426_all_873647 
+20100706 10:53:51 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:51 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:51 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:51 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i4_rep_0_ls_all_4
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_873647,variables_complete_region_a_i4_rep_0_ls_all_4
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_873647@variables_complete_i4> to current mapset as
+<variables_complete_region_a_i4_rep_0_ls_all_4>
+
+20100706 10:53:51 [mdig.replicate] INFO: t=5
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_873647,3426_all_10056
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_873647@variables_complete_i4> to current mapset as
+<3426_all_10056>
+
+20100706 10:53:51 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:51 [mdig.grass] DEBUG: Removing raster map 3426_all_257436
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_257436
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_257436>
+
+20100706 10:53:51 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_873647 output=3426_all_257436 
+20100706 10:53:51 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_257436=if(3426_all_873647>0,3426_all_873647+1,3426_all_873647)
+
+20100706 10:53:51 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:51 [mdig.grass] DEBUG: Removing raster map 3426_all_873647
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_873647
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_873647>
+
+20100706 10:53:51 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_257436 spread=3 output=3426_all_873647 
+20100706 10:53:51 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:51 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:51 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:51 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i4_rep_0_ls_all_5
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_873647,variables_complete_region_a_i4_rep_0_ls_all_5
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_873647@variables_complete_i4> to current mapset as
+<variables_complete_region_a_i4_rep_0_ls_all_5>
+
+20100706 10:53:51 [mdig.grass] DEBUG: Removing raster map 3426_all_873647
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_873647
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_873647>
+
+20100706 10:53:51 [mdig.grass] DEBUG: Removing raster map 3426_all_257436
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_257436
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_257436>
+
+20100706 10:53:51 [mdig.grass] DEBUG: Removing raster map 3426_all_764723
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_764723
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_764723>
+
+20100706 10:53:51 [mdig.grass] DEBUG: Removing raster map 3426_all_994722
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_994722
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_994722>
+
+20100706 10:53:51 [mdig.grass] DEBUG: Removing raster map 3426_all_920156
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_920156
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_920156>
+
+20100706 10:53:51 [mdig.grass] DEBUG: Removing raster map 3426_all_829508
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_829508
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_829508>
+
+20100706 10:53:51 [mdig.grass] DEBUG: Removing raster map 3426_all_403
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_403
+20100706 10:53:51 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_403>
+
+20100706 10:53:51 [mdig.grass] DEBUG: Removing raster map 3426_all_10056
+20100706 10:53:51 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_10056
+20100706 10:53:52 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_10056>
+
+20100706 10:53:52 [mdig.replicate] INFO: Replicate 2/2 of exp. instance [vars: {'agem': None, 'd1': '3'}]
+20100706 10:53:52 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 10:53:52 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 10:53:52 [mdig.grass] DEBUG: exec: g.copy rast=3426__78287@variables_complete_i0,3426_all_364721
+20100706 10:53:52 [mdig.grass] DEBUG: stderr: Copy raster <3426__78287@variables_complete_i0> to current mapset as
+<3426_all_364721>
+
+20100706 10:53:52 [mdig.replicate] DEBUG: Initial maps:  3426__78287@variables_complete_i0
+20100706 10:53:52 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 10:53:52 [mdig.replicate] INFO: t=0
+20100706 10:53:52 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_364721,3426_all_423557
+20100706 10:53:52 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_364721@variables_complete_i4> to current mapset as
+<3426_all_423557>
+
+20100706 10:53:52 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:52 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_364721 output=3426_all_470025 
+20100706 10:53:52 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_470025=if(3426_all_364721>0,3426_all_364721+1,3426_all_364721)
+
+20100706 10:53:52 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:52 [mdig.grass] DEBUG: Removing raster map 3426_all_364721
+20100706 10:53:52 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_364721
+20100706 10:53:52 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_364721>
+
+20100706 10:53:52 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_470025 spread=3 output=3426_all_364721 
+20100706 10:53:52 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:52 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:52 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:52 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i4_rep_1_ls_all_0
+20100706 10:53:52 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_364721,variables_complete_region_a_i4_rep_1_ls_all_0
+20100706 10:53:52 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_364721@variables_complete_i4> to current mapset as
+<variables_complete_region_a_i4_rep_1_ls_all_0>
+
+20100706 10:53:52 [mdig.replicate] INFO: t=1
+20100706 10:53:52 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_364721,3426_all_929400
+20100706 10:53:52 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_364721@variables_complete_i4> to current mapset as
+<3426_all_929400>
+
+20100706 10:53:52 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:52 [mdig.grass] DEBUG: Removing raster map 3426_all_470025
+20100706 10:53:52 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_470025
+20100706 10:53:52 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_470025>
+
+20100706 10:53:52 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_364721 output=3426_all_470025 
+20100706 10:53:52 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_470025=if(3426_all_364721>0,3426_all_364721+1,3426_all_364721)
+
+20100706 10:53:52 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:52 [mdig.grass] DEBUG: Removing raster map 3426_all_364721
+20100706 10:53:52 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_364721
+20100706 10:53:52 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_364721>
+
+20100706 10:53:52 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_470025 spread=3 output=3426_all_364721 
+20100706 10:53:52 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:52 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:52 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:52 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i4_rep_1_ls_all_1
+20100706 10:53:52 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_364721,variables_complete_region_a_i4_rep_1_ls_all_1
+20100706 10:53:52 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_364721@variables_complete_i4> to current mapset as
+<variables_complete_region_a_i4_rep_1_ls_all_1>
+
+20100706 10:53:52 [mdig.replicate] INFO: t=2
+20100706 10:53:52 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_364721,3426_all_786735
+20100706 10:53:52 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_364721@variables_complete_i4> to current mapset as
+<3426_all_786735>
+
+20100706 10:53:52 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:52 [mdig.grass] DEBUG: Removing raster map 3426_all_470025
+20100706 10:53:52 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_470025
+20100706 10:53:52 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_470025>
+
+20100706 10:53:52 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_364721 output=3426_all_470025 
+20100706 10:53:52 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_470025=if(3426_all_364721>0,3426_all_364721+1,3426_all_364721)
+
+20100706 10:53:52 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:52 [mdig.grass] DEBUG: Removing raster map 3426_all_364721
+20100706 10:53:52 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_364721
+20100706 10:53:53 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_364721>
+
+20100706 10:53:53 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_470025 spread=3 output=3426_all_364721 
+20100706 10:53:53 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:53 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:53 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:53 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i4_rep_1_ls_all_2
+20100706 10:53:53 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_364721,variables_complete_region_a_i4_rep_1_ls_all_2
+20100706 10:53:53 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_364721@variables_complete_i4> to current mapset as
+<variables_complete_region_a_i4_rep_1_ls_all_2>
+
+20100706 10:53:53 [mdig.replicate] INFO: t=3
+20100706 10:53:53 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_364721,3426_all_921101
+20100706 10:53:53 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_364721@variables_complete_i4> to current mapset as
+<3426_all_921101>
+
+20100706 10:53:53 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:53 [mdig.grass] DEBUG: Removing raster map 3426_all_470025
+20100706 10:53:53 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_470025
+20100706 10:53:53 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_470025>
+
+20100706 10:53:53 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_364721 output=3426_all_470025 
+20100706 10:53:53 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_470025=if(3426_all_364721>0,3426_all_364721+1,3426_all_364721)
+
+20100706 10:53:53 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:53 [mdig.grass] DEBUG: Removing raster map 3426_all_364721
+20100706 10:53:53 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_364721
+20100706 10:53:53 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_364721>
+
+20100706 10:53:53 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_470025 spread=3 output=3426_all_364721 
+20100706 10:53:53 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:53 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:53 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:53 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i4_rep_1_ls_all_3
+20100706 10:53:53 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_364721,variables_complete_region_a_i4_rep_1_ls_all_3
+20100706 10:53:53 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_364721@variables_complete_i4> to current mapset as
+<variables_complete_region_a_i4_rep_1_ls_all_3>
+
+20100706 10:53:53 [mdig.replicate] INFO: t=4
+20100706 10:53:53 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_364721,3426_all_224648
+20100706 10:53:53 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_364721@variables_complete_i4> to current mapset as
+<3426_all_224648>
+
+20100706 10:53:53 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:53 [mdig.grass] DEBUG: Removing raster map 3426_all_470025
+20100706 10:53:53 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_470025
+20100706 10:53:53 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_470025>
+
+20100706 10:53:53 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_364721 output=3426_all_470025 
+20100706 10:53:53 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_470025=if(3426_all_364721>0,3426_all_364721+1,3426_all_364721)
+
+20100706 10:53:53 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:53 [mdig.grass] DEBUG: Removing raster map 3426_all_364721
+20100706 10:53:53 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_364721
+20100706 10:53:53 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_364721>
+
+20100706 10:53:53 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_470025 spread=3 output=3426_all_364721 
+20100706 10:53:53 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:53 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:53 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:53 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i4_rep_1_ls_all_4
+20100706 10:53:53 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_364721,variables_complete_region_a_i4_rep_1_ls_all_4
+20100706 10:53:53 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_364721@variables_complete_i4> to current mapset as
+<variables_complete_region_a_i4_rep_1_ls_all_4>
+
+20100706 10:53:53 [mdig.replicate] INFO: t=5
+20100706 10:53:53 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_364721,3426_all_940390
+20100706 10:53:53 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_364721@variables_complete_i4> to current mapset as
+<3426_all_940390>
+
+20100706 10:53:53 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:53 [mdig.grass] DEBUG: Removing raster map 3426_all_470025
+20100706 10:53:53 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_470025
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_470025>
+
+20100706 10:53:54 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_364721 output=3426_all_470025 
+20100706 10:53:54 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_470025=if(3426_all_364721>0,3426_all_364721+1,3426_all_364721)
+
+20100706 10:53:54 [mdig.event] INFO: Variable has None value for this instance
+20100706 10:53:54 [mdig.grass] DEBUG: Removing raster map 3426_all_364721
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_364721
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_364721>
+
+20100706 10:53:54 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_470025 spread=3 output=3426_all_364721 
+20100706 10:53:54 [mdig.grass] DEBUG: stdout: spread rate 3.000000
+
+20100706 10:53:54 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:54 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:54 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i4_rep_1_ls_all_5
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_364721,variables_complete_region_a_i4_rep_1_ls_all_5
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_364721@variables_complete_i4> to current mapset as
+<variables_complete_region_a_i4_rep_1_ls_all_5>
+
+20100706 10:53:54 [mdig.grass] DEBUG: Removing raster map 3426_all_364721
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_364721
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_364721>
+
+20100706 10:53:54 [mdig.grass] DEBUG: Removing raster map 3426_all_470025
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_470025
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_470025>
+
+20100706 10:53:54 [mdig.grass] DEBUG: Removing raster map 3426_all_423557
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_423557
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_423557>
+
+20100706 10:53:54 [mdig.grass] DEBUG: Removing raster map 3426_all_929400
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_929400
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_929400>
+
+20100706 10:53:54 [mdig.grass] DEBUG: Removing raster map 3426_all_786735
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_786735
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_786735>
+
+20100706 10:53:54 [mdig.grass] DEBUG: Removing raster map 3426_all_921101
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_921101
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_921101>
+
+20100706 10:53:54 [mdig.grass] DEBUG: Removing raster map 3426_all_224648
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_224648
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_224648>
+
+20100706 10:53:54 [mdig.grass] DEBUG: Removing raster map 3426_all_940390
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_940390
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_940390>
+
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.mapset -c mapset=variables_complete_i5 location=grass_location
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Erasing monitors...
+Cleaning up temporary files...
+WARNING: Your shell continues to use the history for the old mapset
+You can switch the history by commands:
+history -w; history -r
+../test/grass_location/variables_complete_i5/.bash_history;
+HISTFILE=../test/grass_location/variables_complete_i5/.bash_history
+
+20100706 10:53:54 [mdig.grass] DEBUG: Change to mapset variables_complete_i5@grass_location
+20100706 10:53:54 [mdig.replicate] INFO: Replicate 1/2 of exp. instance [vars: {'agem': '2', 'd1': '5'}]
+20100706 10:53:54 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.copy rast=3426__78287@variables_complete_i0,3426_all_445180
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Copy raster <3426__78287@variables_complete_i0> to current mapset as
+<3426_all_445180>
+
+20100706 10:53:54 [mdig.replicate] DEBUG: Initial maps:  3426__78287@variables_complete_i0
+20100706 10:53:54 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 10:53:54 [mdig.replicate] INFO: t=0
+20100706 10:53:54 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_445180,3426_all_977425
+20100706 10:53:54 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_445180@variables_complete_i5> to current mapset as
+<3426_all_977425>
+
+20100706 10:53:54 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:54 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_445180 output=3426_all_735221 
+20100706 10:53:55 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_735221=if(3426_all_445180>0,3426_all_445180+1,3426_all_445180)
+
+20100706 10:53:55 [mdig.grass] DEBUG: Removing raster map 3426_all_445180
+20100706 10:53:55 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_445180
+20100706 10:53:55 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_445180>
+
+20100706 10:53:55 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_735221 agem=2 spread=5 output=3426_all_445180 
+20100706 10:53:55 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:55 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:55 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:55 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i5_rep_0_ls_all_0
+20100706 10:53:55 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_445180,variables_complete_region_a_i5_rep_0_ls_all_0
+20100706 10:53:55 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_445180@variables_complete_i5> to current mapset as
+<variables_complete_region_a_i5_rep_0_ls_all_0>
+
+20100706 10:53:55 [mdig.replicate] INFO: t=1
+20100706 10:53:55 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_445180,3426_all_873344
+20100706 10:53:55 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_445180@variables_complete_i5> to current mapset as
+<3426_all_873344>
+
+20100706 10:53:55 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:55 [mdig.grass] DEBUG: Removing raster map 3426_all_735221
+20100706 10:53:55 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_735221
+20100706 10:53:55 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_735221>
+
+20100706 10:53:55 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_445180 output=3426_all_735221 
+20100706 10:53:55 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_735221=if(3426_all_445180>0,3426_all_445180+1,3426_all_445180)
+
+20100706 10:53:55 [mdig.grass] DEBUG: Removing raster map 3426_all_445180
+20100706 10:53:55 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_445180
+20100706 10:53:55 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_445180>
+
+20100706 10:53:55 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_735221 agem=2 spread=5 output=3426_all_445180 
+20100706 10:53:55 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:55 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:55 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:55 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i5_rep_0_ls_all_1
+20100706 10:53:55 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_445180,variables_complete_region_a_i5_rep_0_ls_all_1
+20100706 10:53:55 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_445180@variables_complete_i5> to current mapset as
+<variables_complete_region_a_i5_rep_0_ls_all_1>
+
+20100706 10:53:55 [mdig.replicate] INFO: t=2
+20100706 10:53:55 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_445180,3426_all_635143
+20100706 10:53:55 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_445180@variables_complete_i5> to current mapset as
+<3426_all_635143>
+
+20100706 10:53:55 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:55 [mdig.grass] DEBUG: Removing raster map 3426_all_735221
+20100706 10:53:55 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_735221
+20100706 10:53:55 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_735221>
+
+20100706 10:53:55 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_445180 output=3426_all_735221 
+20100706 10:53:55 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_735221=if(3426_all_445180>0,3426_all_445180+1,3426_all_445180)
+
+20100706 10:53:56 [mdig.grass] DEBUG: Removing raster map 3426_all_445180
+20100706 10:53:56 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_445180
+20100706 10:53:56 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_445180>
+
+20100706 10:53:56 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_735221 agem=2 spread=5 output=3426_all_445180 
+20100706 10:53:56 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:56 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:56 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:56 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i5_rep_0_ls_all_2
+20100706 10:53:56 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_445180,variables_complete_region_a_i5_rep_0_ls_all_2
+20100706 10:53:56 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_445180@variables_complete_i5> to current mapset as
+<variables_complete_region_a_i5_rep_0_ls_all_2>
+
+20100706 10:53:56 [mdig.replicate] INFO: t=3
+20100706 10:53:56 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_445180,3426_all_60277
+20100706 10:53:56 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_445180@variables_complete_i5> to current mapset as
+<3426_all_60277>
+
+20100706 10:53:56 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:56 [mdig.grass] DEBUG: Removing raster map 3426_all_735221
+20100706 10:53:56 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_735221
+20100706 10:53:56 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_735221>
+
+20100706 10:53:56 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_445180 output=3426_all_735221 
+20100706 10:53:56 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_735221=if(3426_all_445180>0,3426_all_445180+1,3426_all_445180)
+
+20100706 10:53:56 [mdig.grass] DEBUG: Removing raster map 3426_all_445180
+20100706 10:53:56 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_445180
+20100706 10:53:56 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_445180>
+
+20100706 10:53:56 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_735221 agem=2 spread=5 output=3426_all_445180 
+20100706 10:53:56 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:56 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:56 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:56 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i5_rep_0_ls_all_3
+20100706 10:53:56 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_445180,variables_complete_region_a_i5_rep_0_ls_all_3
+20100706 10:53:56 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_445180@variables_complete_i5> to current mapset as
+<variables_complete_region_a_i5_rep_0_ls_all_3>
+
+20100706 10:53:56 [mdig.replicate] INFO: t=4
+20100706 10:53:56 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_445180,3426_all_757484
+20100706 10:53:56 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_445180@variables_complete_i5> to current mapset as
+<3426_all_757484>
+
+20100706 10:53:56 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:56 [mdig.grass] DEBUG: Removing raster map 3426_all_735221
+20100706 10:53:56 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_735221
+20100706 10:53:56 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_735221>
+
+20100706 10:53:56 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_445180 output=3426_all_735221 
+20100706 10:53:56 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_735221=if(3426_all_445180>0,3426_all_445180+1,3426_all_445180)
+
+20100706 10:53:56 [mdig.grass] DEBUG: Removing raster map 3426_all_445180
+20100706 10:53:56 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_445180
+20100706 10:53:56 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_445180>
+
+20100706 10:53:56 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_735221 agem=2 spread=5 output=3426_all_445180 
+20100706 10:53:56 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:56 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:56 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:56 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i5_rep_0_ls_all_4
+20100706 10:53:56 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_445180,variables_complete_region_a_i5_rep_0_ls_all_4
+20100706 10:53:56 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_445180@variables_complete_i5> to current mapset as
+<variables_complete_region_a_i5_rep_0_ls_all_4>
+
+20100706 10:53:56 [mdig.replicate] INFO: t=5
+20100706 10:53:56 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_445180,3426_all_22694
+20100706 10:53:57 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_445180@variables_complete_i5> to current mapset as
+<3426_all_22694>
+
+20100706 10:53:57 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:57 [mdig.grass] DEBUG: Removing raster map 3426_all_735221
+20100706 10:53:57 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_735221
+20100706 10:53:57 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_735221>
+
+20100706 10:53:57 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_445180 output=3426_all_735221 
+20100706 10:53:57 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_735221=if(3426_all_445180>0,3426_all_445180+1,3426_all_445180)
+
+20100706 10:53:57 [mdig.grass] DEBUG: Removing raster map 3426_all_445180
+20100706 10:53:57 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_445180
+20100706 10:53:57 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_445180>
+
+20100706 10:53:57 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_735221 agem=2 spread=5 output=3426_all_445180 
+20100706 10:53:57 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:57 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:57 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:57 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i5_rep_0_ls_all_5
+20100706 10:53:57 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_445180,variables_complete_region_a_i5_rep_0_ls_all_5
+20100706 10:53:57 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_445180@variables_complete_i5> to current mapset as
+<variables_complete_region_a_i5_rep_0_ls_all_5>
+
+20100706 10:53:57 [mdig.grass] DEBUG: Removing raster map 3426_all_445180
+20100706 10:53:57 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_445180
+20100706 10:53:57 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_445180>
+
+20100706 10:53:57 [mdig.grass] DEBUG: Removing raster map 3426_all_735221
+20100706 10:53:57 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_735221
+20100706 10:53:57 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_735221>
+
+20100706 10:53:57 [mdig.grass] DEBUG: Removing raster map 3426_all_977425
+20100706 10:53:57 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_977425
+20100706 10:53:57 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_977425>
+
+20100706 10:53:57 [mdig.grass] DEBUG: Removing raster map 3426_all_873344
+20100706 10:53:57 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_873344
+20100706 10:53:57 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_873344>
+
+20100706 10:53:57 [mdig.grass] DEBUG: Removing raster map 3426_all_635143
+20100706 10:53:57 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_635143
+20100706 10:53:57 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_635143>
+
+20100706 10:53:57 [mdig.grass] DEBUG: Removing raster map 3426_all_60277
+20100706 10:53:57 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_60277
+20100706 10:53:58 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_60277>
+
+20100706 10:53:58 [mdig.grass] DEBUG: Removing raster map 3426_all_757484
+20100706 10:53:58 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_757484
+20100706 10:53:58 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_757484>
+
+20100706 10:53:58 [mdig.grass] DEBUG: Removing raster map 3426_all_22694
+20100706 10:53:58 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_22694
+20100706 10:53:58 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_22694>
+
+20100706 10:53:58 [mdig.replicate] INFO: Replicate 2/2 of exp. instance [vars: {'agem': '2', 'd1': '5'}]
+20100706 10:53:58 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 10:53:58 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 10:53:58 [mdig.grass] DEBUG: exec: g.copy rast=3426__78287@variables_complete_i0,3426_all_338594
+20100706 10:53:58 [mdig.grass] DEBUG: stderr: Copy raster <3426__78287@variables_complete_i0> to current mapset as
+<3426_all_338594>
+
+20100706 10:53:58 [mdig.replicate] DEBUG: Initial maps:  3426__78287@variables_complete_i0
+20100706 10:53:58 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 10:53:58 [mdig.replicate] INFO: t=0
+20100706 10:53:58 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_338594,3426_all_7815
+20100706 10:53:58 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_338594@variables_complete_i5> to current mapset as
+<3426_all_7815>
+
+20100706 10:53:58 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:58 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_338594 output=3426_all_82686 
+20100706 10:53:58 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_82686=if(3426_all_338594>0,3426_all_338594+1,3426_all_338594)
+
+20100706 10:53:58 [mdig.grass] DEBUG: Removing raster map 3426_all_338594
+20100706 10:53:58 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_338594
+20100706 10:53:58 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_338594>
+
+20100706 10:53:58 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_82686 agem=2 spread=5 output=3426_all_338594 
+20100706 10:53:58 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:58 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:58 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:58 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i5_rep_1_ls_all_0
+20100706 10:53:58 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_338594,variables_complete_region_a_i5_rep_1_ls_all_0
+20100706 10:53:58 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_338594@variables_complete_i5> to current mapset as
+<variables_complete_region_a_i5_rep_1_ls_all_0>
+
+20100706 10:53:58 [mdig.replicate] INFO: t=1
+20100706 10:53:58 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_338594,3426_all_80104
+20100706 10:53:58 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_338594@variables_complete_i5> to current mapset as
+<3426_all_80104>
+
+20100706 10:53:58 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:58 [mdig.grass] DEBUG: Removing raster map 3426_all_82686
+20100706 10:53:58 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_82686
+20100706 10:53:58 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_82686>
+
+20100706 10:53:58 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_338594 output=3426_all_82686 
+20100706 10:53:58 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_82686=if(3426_all_338594>0,3426_all_338594+1,3426_all_338594)
+
+20100706 10:53:58 [mdig.grass] DEBUG: Removing raster map 3426_all_338594
+20100706 10:53:58 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_338594
+20100706 10:53:58 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_338594>
+
+20100706 10:53:58 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_82686 agem=2 spread=5 output=3426_all_338594 
+20100706 10:53:58 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:58 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:58 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:58 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i5_rep_1_ls_all_1
+20100706 10:53:58 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_338594,variables_complete_region_a_i5_rep_1_ls_all_1
+20100706 10:53:58 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_338594@variables_complete_i5> to current mapset as
+<variables_complete_region_a_i5_rep_1_ls_all_1>
+
+20100706 10:53:58 [mdig.replicate] INFO: t=2
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_338594,3426_all_499902
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_338594@variables_complete_i5> to current mapset as
+<3426_all_499902>
+
+20100706 10:53:59 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:59 [mdig.grass] DEBUG: Removing raster map 3426_all_82686
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_82686
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_82686>
+
+20100706 10:53:59 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_338594 output=3426_all_82686 
+20100706 10:53:59 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_82686=if(3426_all_338594>0,3426_all_338594+1,3426_all_338594)
+
+20100706 10:53:59 [mdig.grass] DEBUG: Removing raster map 3426_all_338594
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_338594
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_338594>
+
+20100706 10:53:59 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_82686 agem=2 spread=5 output=3426_all_338594 
+20100706 10:53:59 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:59 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:59 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:59 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i5_rep_1_ls_all_2
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_338594,variables_complete_region_a_i5_rep_1_ls_all_2
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_338594@variables_complete_i5> to current mapset as
+<variables_complete_region_a_i5_rep_1_ls_all_2>
+
+20100706 10:53:59 [mdig.replicate] INFO: t=3
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_338594,3426_all_781860
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_338594@variables_complete_i5> to current mapset as
+<3426_all_781860>
+
+20100706 10:53:59 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:59 [mdig.grass] DEBUG: Removing raster map 3426_all_82686
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_82686
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_82686>
+
+20100706 10:53:59 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_338594 output=3426_all_82686 
+20100706 10:53:59 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_82686=if(3426_all_338594>0,3426_all_338594+1,3426_all_338594)
+
+20100706 10:53:59 [mdig.grass] DEBUG: Removing raster map 3426_all_338594
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_338594
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_338594>
+
+20100706 10:53:59 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_82686 agem=2 spread=5 output=3426_all_338594 
+20100706 10:53:59 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:59 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:59 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:59 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i5_rep_1_ls_all_3
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_338594,variables_complete_region_a_i5_rep_1_ls_all_3
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_338594@variables_complete_i5> to current mapset as
+<variables_complete_region_a_i5_rep_1_ls_all_3>
+
+20100706 10:53:59 [mdig.replicate] INFO: t=4
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_338594,3426_all_621762
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_338594@variables_complete_i5> to current mapset as
+<3426_all_621762>
+
+20100706 10:53:59 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:59 [mdig.grass] DEBUG: Removing raster map 3426_all_82686
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_82686
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_82686>
+
+20100706 10:53:59 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_338594 output=3426_all_82686 
+20100706 10:53:59 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_82686=if(3426_all_338594>0,3426_all_338594+1,3426_all_338594)
+
+20100706 10:53:59 [mdig.grass] DEBUG: Removing raster map 3426_all_338594
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_338594
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_338594>
+
+20100706 10:53:59 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_82686 agem=2 spread=5 output=3426_all_338594 
+20100706 10:53:59 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:53:59 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:53:59 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:53:59 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i5_rep_1_ls_all_4
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_338594,variables_complete_region_a_i5_rep_1_ls_all_4
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_338594@variables_complete_i5> to current mapset as
+<variables_complete_region_a_i5_rep_1_ls_all_4>
+
+20100706 10:53:59 [mdig.replicate] INFO: t=5
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_338594,3426_all_344046
+20100706 10:53:59 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_338594@variables_complete_i5> to current mapset as
+<3426_all_344046>
+
+20100706 10:53:59 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 10:53:59 [mdig.grass] DEBUG: Removing raster map 3426_all_82686
+20100706 10:53:59 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_82686
+20100706 10:54:00 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_82686>
+
+20100706 10:54:00 [mdig.grass] DEBUG: exec: r.mdig.agepop input=3426_all_338594 output=3426_all_82686 
+20100706 10:54:00 [mdig.grass] DEBUG: stdout: r.mapcalc 3426_all_82686=if(3426_all_338594>0,3426_all_338594+1,3426_all_338594)
+
+20100706 10:54:00 [mdig.grass] DEBUG: Removing raster map 3426_all_338594
+20100706 10:54:00 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_338594
+20100706 10:54:00 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_338594>
+
+20100706 10:54:00 [mdig.grass] DEBUG: exec: r.mdig.localspread input=3426_all_82686 agem=2 spread=5 output=3426_all_338594 
+20100706 10:54:00 [mdig.grass] DEBUG: stdout: spread rate 5.000000
+
+20100706 10:54:00 [mdig.replicate] INFO: Interval 1 completed.
+20100706 10:54:00 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 10:54:00 [mdig.RasterOutput] DEBUG: Writing raster variables_complete_region_a_i5_rep_1_ls_all_5
+20100706 10:54:00 [mdig.grass] DEBUG: exec: g.copy rast=3426_all_338594,variables_complete_region_a_i5_rep_1_ls_all_5
+20100706 10:54:00 [mdig.grass] DEBUG: stderr: Copy raster <3426_all_338594@variables_complete_i5> to current mapset as
+<variables_complete_region_a_i5_rep_1_ls_all_5>
+
+20100706 10:54:00 [mdig.grass] DEBUG: Removing raster map 3426_all_338594
+20100706 10:54:00 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_338594
+20100706 10:54:00 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_338594>
+
+20100706 10:54:00 [mdig.grass] DEBUG: Removing raster map 3426_all_82686
+20100706 10:54:00 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_82686
+20100706 10:54:00 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_82686>
+
+20100706 10:54:00 [mdig.grass] DEBUG: Removing raster map 3426_all_7815
+20100706 10:54:00 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_7815
+20100706 10:54:00 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_7815>
+
+20100706 10:54:00 [mdig.grass] DEBUG: Removing raster map 3426_all_80104
+20100706 10:54:00 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_80104
+20100706 10:54:00 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_80104>
+
+20100706 10:54:00 [mdig.grass] DEBUG: Removing raster map 3426_all_499902
+20100706 10:54:00 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_499902
+20100706 10:54:00 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_499902>
+
+20100706 10:54:00 [mdig.grass] DEBUG: Removing raster map 3426_all_781860
+20100706 10:54:00 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_781860
+20100706 10:54:00 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_781860>
+
+20100706 10:54:00 [mdig.grass] DEBUG: Removing raster map 3426_all_621762
+20100706 10:54:00 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_621762
+20100706 10:54:00 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_621762>
+
+20100706 10:54:00 [mdig.grass] DEBUG: Removing raster map 3426_all_344046
+20100706 10:54:00 [mdig.grass] DEBUG: exec: g.remove rast=3426_all_344046
+20100706 10:54:00 [mdig.grass] DEBUG: stderr: Removing raster <3426_all_344046>
+
+20100706 10:54:00 [mdig.model] INFO: Average time to run replicates for each instance:
+20100706 10:54:00 [mdig.model] INFO: [Instance - p: {('agem', '2'),('d1', '3'),}; region: a; replicates: 2/2; active: None mapset: variables_complete_i0]: 0:00:01.994733
+20100706 10:54:00 [mdig.model] INFO: [Instance - p: {('agem', '2'),('d1', '2'),}; region: a; replicates: 2/2; active: None mapset: variables_complete_i1]: 0:00:02.180383
+20100706 10:54:00 [mdig.model] INFO: [Instance - p: {('agem', None),('d1', '5'),}; region: a; replicates: 2/2; active: None mapset: variables_complete_i2]: 0:00:02.176149
+20100706 10:54:00 [mdig.model] INFO: [Instance - p: {('agem', None),('d1', '2'),}; region: a; replicates: 2/2; active: None mapset: variables_complete_i3]: 0:00:02.038019
+20100706 10:54:00 [mdig.model] INFO: [Instance - p: {('agem', None),('d1', '3'),}; region: a; replicates: 2/2; active: None mapset: variables_complete_i4]: 0:00:02.068186
+20100706 10:54:00 [mdig.model] INFO: [Instance - p: {('agem', '2'),('d1', '5'),}; region: a; replicates: 2/2; active: None mapset: variables_complete_i5]: 0:00:02.299014
+20100706 10:54:00 [mdig] DEBUG: Cleaning up
+20100706 10:54:01 [mdig.grass] INFO: Restoring region
+20100706 10:54:01 [mdig] INFO: Finished at 'Tue Jul  6 10:54:01 2010'
+20100706 10:54:01 [mdig] DEBUG: Exiting

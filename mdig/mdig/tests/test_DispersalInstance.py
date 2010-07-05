@@ -94,3 +94,4 @@ class DispersalInstanceTest(unittest.TestCase):
         #i = self.m_variables.get_instances()[0]
         #i.update_occupancy_envelope(force=True)
 
+
