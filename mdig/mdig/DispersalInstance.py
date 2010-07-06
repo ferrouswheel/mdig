@@ -531,6 +531,8 @@ class DispersalInstance:
                         self.log.debug("Missing envelope %s" % previous_envelopes[l][str(t)])
                     else:
                         self.log.debug("Found envelope %s" % previous_envelopes[l][str(t)])
+            # delete ls in missing years if it's empty
+            if len(missing_years[l]) == 0: del missing_years[l]
         return missing_years
 
     def are_envelopes_newer_than_reps(self):
@@ -565,7 +567,7 @@ class DispersalInstance:
         current_dir = os.path.dirname(os.path.abspath(result[1]))
         filename = os.path.basename(result[1])
         analysis_dir_abs_path = os.path.abspath(os.path.join(
-                    self.experiement.base_dir,mdig_config.analysis_dir))
+                    self.experiment.base_dir,mdig_config.analysis_dir))
         
         # move filename to analysis directory
         if current_dir is not analysis_dir_abs_path:
@@ -582,20 +584,13 @@ class DispersalInstance:
         filename = os.path.basename(filename)
         
         envelopes = self.node.find('envelopes')
-        if envelopes is None:
-            envelopes = lxml.etree.SubElement(self.node,'envelopes')
+        if envelopes is None: envelopes = lxml.etree.SubElement(self.node,'envelopes')
             
-        all_ls = envelopes.xpath("lifestage")
-        
-        ls_node = None
-        for a_ls_node in all_ls:
-            if a_ls_node.attrib["id"] == ls_id:
-                ls_node = a_ls_node
-                break
-        
-        if ls_node is None:
-            ls_node = lxml.etree.SubElement(self.node,'lifestage')
+        ls_node = envelopes.xpath("lifestage[@id='%s']" % ls_id)
+        if len(ls_node) == 0:
+            ls_node = lxml.etree.SubElement(envelopes,'lifestage')
             ls_node.attrib["id"] = ls_id
+        else: ls_node = ls_node[0]
                 
         # find analyses node
         analyses = ls_node.find('analyses')
@@ -665,8 +660,8 @@ class DispersalInstance:
                 r = self.replicates[r_idx]
                 self.log.debug("Getting saved maps for replicate %d", r_idx)
                 saved_maps = r.get_saved_maps(l)
-                if saved_maps:
-                    maps.append(saved_maps)
+                if saved_maps: maps.append(saved_maps)
+                else: raise DispersalInstanceException("Missing maps for replicate %d" % r_idx)
             
             for t in missing_envelopes[l]:
                 maps_to_combine = []
@@ -675,26 +670,16 @@ class DispersalInstance:
                         maps_to_combine.append(r[str(t)])
                     else:
                         self.log.warning("Missing map for time=" + str(t))
+                        raise DispersalInstanceException("Missing map for time %s" % str(t))
                     
-                filename = self.experiment.get_name() + "_region_" + self.r_id
-                if self.strategy is not None:
-                    filename += "_strategy_" + self.strategy
-                if self.var_keys is not None:
-                    for v in self.var_keys:
-                        filename += "_" + v + "_"
-                        var_value=self.variables[self.var_keys.index(v)]
-                        if isinstance(var_value,str):
-                            filename += var_value
-                        else:
-                            filename += repr(var_value)
-                filename += "_ls_" + l + "_" + repr(t) + "_prob"
+                filename = self.get_map_name_base()
+                filename += "_ls_" + l + "_t_" + repr(t) + "_prob"
                 prob_env = GRASSInterface.get_g().occupancy_envelope(maps_to_combine,filename)
                 if prob_env is not None:
                     self._add_envelope(prob_env,l,t)
                 for li in self.listeners:
                     if "occupancy_envelope_complete" in dir(li):
                         li.occupancy_envelope_complete(self,l,t)
-
                     
     def _add_envelope(self, env_name, lifestage_id, t):
         # Add envelope to completed/envelopes/lifestage[id=l]/envelope[t=t]

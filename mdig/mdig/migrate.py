@@ -47,7 +47,9 @@ def split_instances_into_own_mapsets(dm):
                     # remove original
                     g.remove_map(src_map, src_mapset)
             r_count += 1
+        # TODO: Also move rep/instance analysis results and envelopes?
         print ''
+
     dm.save_model()
 
 

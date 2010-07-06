@@ -159,7 +159,7 @@ class Replicate:
         
         if ls_id in self.saved_maps:
             return self.saved_maps[ls_id]
-        else: return []
+        else: return {}
 
     def delete_maps(self):
         """ Deletes all maps created by replicate, this currently

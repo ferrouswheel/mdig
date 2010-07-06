@@ -1,0 +1,2433 @@
+20100706 12:49:36 [mdig.grass] DEBUG: Change to mapset management_area_combine@grass_location
+20100706 12:49:36 [mdig.action] DEBUG: Executing simulation
+20100706 12:49:36 [mdig.model] DEBUG: Total number of instances: 4
+20100706 12:49:36 [mdig.model] DEBUG: {'a': {'var': [[None, '186'], ['area_or', '186'], ['area_and', '186'], ['area_filter_or', '186']], 'var_keys': ['__management_strategy', 'shape'], 'reps': [2, 2, 2, 2]}}
+20100706 12:49:36 [mdig.model] DEBUG: Added "completed" node: <Element completed at 22cf6d8>
+20100706 12:49:36 [mdig.instance] DEBUG: [Instance - p: {('shape', '186'),}; region: a; replicates: 0/2; active: None mapset: management_area_combine_i0]
+20100706 12:49:36 [mdig.model] DEBUG: Added "completed" node: <Element completed at 22cf7e0>
+20100706 12:49:36 [mdig.instance] DEBUG: [Instance - s:area_or; p: {('shape', '186'),}; region: a; replicates: 0/2; active: None mapset: management_area_combine_i1]
+20100706 12:49:36 [mdig.model] DEBUG: Added "completed" node: <Element completed at 22cf940>
+20100706 12:49:36 [mdig.instance] DEBUG: [Instance - s:area_and; p: {('shape', '186'),}; region: a; replicates: 0/2; active: None mapset: management_area_combine_i2]
+20100706 12:49:36 [mdig.model] DEBUG: Added "completed" node: <Element completed at 22cfaa0>
+20100706 12:49:36 [mdig.instance] DEBUG: [Instance - s:area_filter_or; p: {('shape', '186'),}; region: a; replicates: 0/2; active: None mapset: management_area_combine_i3]
+20100706 12:49:36 [mdig.model] INFO: Starting simulations at 2010-07-06T12:49:36.161370
+20100706 12:49:36 [mdig.model] DEBUG: Running instances in region a
+20100706 12:49:36 [mdig.grass] DEBUG: exec: g.mapset -c mapset=management_area_combine_i0 location=grass_location
+20100706 12:49:36 [mdig.grass] DEBUG: stderr: Erasing monitors...
+Cleaning up temporary files...
+WARNING: Your shell continues to use the history for the old mapset
+You can switch the history by commands:
+history -w; history -r
+../test/grass_location/management_area_combine_i0/.bash_history;
+HISTFILE=../test/grass_location/management_area_combine_i0/.bash_history
+
+20100706 12:49:36 [mdig.grass] DEBUG: Change to mapset management_area_combine_i0@grass_location
+20100706 12:49:36 [mdig.replicate] INFO: Replicate 1/2 of exp. instance [vars: {'shape': '186'}]
+20100706 12:49:36 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 12:49:36 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 12:49:36 [mdig.grass] INFO: Creating map 28090__686424 using coordinates [(1, 0, 1), (2, 0, 1), (3, 0, 1), (4, 0, 1), (5, 0, 1), (0, -5, 1)]
+20100706 12:49:36 [mdig.grass] DEBUG: exec: v.to.rast input=v____28090__686424 output=28090__686424 use=cat --o
+20100706 12:49:36 [mdig.grass] DEBUG: stderr: Loading data...
+Reading features...
+Writing raster map...
+Converted areas: 0 of 0
+Converted points/lines: 6 of 6
+v.to.rast complete.
+
+20100706 12:49:36 [mdig.grass] DEBUG: Removing vector map v____28090__686424
+20100706 12:49:36 [mdig.grass] DEBUG: exec: g.remove vect=v____28090__686424
+20100706 12:49:36 [mdig.grass] DEBUG: stderr: Removing vector <v____28090__686424>
+
+20100706 12:49:36 [mdig.grass] DEBUG: exec: g.copy rast=28090__686424@management_area_combine_i0,28090_all_144231
+20100706 12:49:36 [mdig.grass] DEBUG: stderr: Copy raster <28090__686424@management_area_combine_i0> to current mapset as
+<28090_all_144231>
+
+20100706 12:49:36 [mdig.replicate] DEBUG: Initial maps:  28090__686424@management_area_combine_i0
+20100706 12:49:36 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 12:49:36 [mdig.replicate] INFO: t=0
+20100706 12:49:36 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_144231,28090_all_124978
+20100706 12:49:36 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_144231@management_area_combine_i0> to current mapset
+as <28090_all_124978>
+
+20100706 12:49:36 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:36 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_144231 shape=186 -b radius=1 output=28090_all_191526 
+20100706 12:49:37 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:37 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:37 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i0_rep_0_ls_all_0
+20100706 12:49:37 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_191526,management_area_combine_region_a_i0_rep_0_ls_all_0
+20100706 12:49:37 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_191526@management_area_combine_i0> to current mapset
+as <management_area_combine_region_a_i0_rep_0_ls_all_0>
+
+20100706 12:49:37 [mdig.replicate] INFO: t=1
+20100706 12:49:37 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_191526,28090_all_471199
+20100706 12:49:37 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_191526@management_area_combine_i0> to current mapset
+as <28090_all_471199>
+
+20100706 12:49:37 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:37 [mdig.grass] DEBUG: Removing raster map 28090_all_144231
+20100706 12:49:37 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_144231
+20100706 12:49:37 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_144231>
+
+20100706 12:49:37 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_191526 shape=186 -b radius=1 output=28090_all_144231 
+20100706 12:49:37 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:37 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:37 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i0_rep_0_ls_all_1
+20100706 12:49:37 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_144231,management_area_combine_region_a_i0_rep_0_ls_all_1
+20100706 12:49:37 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_144231@management_area_combine_i0> to current mapset
+as <management_area_combine_region_a_i0_rep_0_ls_all_1>
+
+20100706 12:49:37 [mdig.replicate] INFO: t=2
+20100706 12:49:37 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_144231,28090_all_183561
+20100706 12:49:37 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_144231@management_area_combine_i0> to current mapset
+as <28090_all_183561>
+
+20100706 12:49:37 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:37 [mdig.grass] DEBUG: Removing raster map 28090_all_191526
+20100706 12:49:37 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_191526
+20100706 12:49:37 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_191526>
+
+20100706 12:49:37 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_144231 shape=186 -b radius=1 output=28090_all_191526 
+20100706 12:49:37 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:37 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:37 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i0_rep_0_ls_all_2
+20100706 12:49:37 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_191526,management_area_combine_region_a_i0_rep_0_ls_all_2
+20100706 12:49:37 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_191526@management_area_combine_i0> to current mapset
+as <management_area_combine_region_a_i0_rep_0_ls_all_2>
+
+20100706 12:49:37 [mdig.replicate] INFO: t=3
+20100706 12:49:37 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_191526,28090_all_650035
+20100706 12:49:37 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_191526@management_area_combine_i0> to current mapset
+as <28090_all_650035>
+
+20100706 12:49:37 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:37 [mdig.grass] DEBUG: Removing raster map 28090_all_144231
+20100706 12:49:37 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_144231
+20100706 12:49:37 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_144231>
+
+20100706 12:49:37 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_191526 shape=186 -b radius=1 output=28090_all_144231 
+20100706 12:49:37 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:37 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:37 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i0_rep_0_ls_all_3
+20100706 12:49:37 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_144231,management_area_combine_region_a_i0_rep_0_ls_all_3
+20100706 12:49:37 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_144231@management_area_combine_i0> to current mapset
+as <management_area_combine_region_a_i0_rep_0_ls_all_3>
+
+20100706 12:49:37 [mdig.replicate] INFO: t=4
+20100706 12:49:38 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_144231,28090_all_844333
+20100706 12:49:38 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_144231@management_area_combine_i0> to current mapset
+as <28090_all_844333>
+
+20100706 12:49:38 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:38 [mdig.grass] DEBUG: Removing raster map 28090_all_191526
+20100706 12:49:38 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_191526
+20100706 12:49:38 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_191526>
+
+20100706 12:49:38 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_144231 shape=186 -b radius=1 output=28090_all_191526 
+20100706 12:49:38 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:38 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:38 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i0_rep_0_ls_all_4
+20100706 12:49:38 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_191526,management_area_combine_region_a_i0_rep_0_ls_all_4
+20100706 12:49:38 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_191526@management_area_combine_i0> to current mapset
+as <management_area_combine_region_a_i0_rep_0_ls_all_4>
+
+20100706 12:49:38 [mdig.replicate] INFO: t=5
+20100706 12:49:38 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_191526,28090_all_66914
+20100706 12:49:38 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_191526@management_area_combine_i0> to current mapset
+as <28090_all_66914>
+
+20100706 12:49:38 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:38 [mdig.grass] DEBUG: Removing raster map 28090_all_144231
+20100706 12:49:38 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_144231
+20100706 12:49:38 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_144231>
+
+20100706 12:49:38 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_191526 shape=186 -b radius=1 output=28090_all_144231 
+20100706 12:49:38 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:38 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:38 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i0_rep_0_ls_all_5
+20100706 12:49:38 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_144231,management_area_combine_region_a_i0_rep_0_ls_all_5
+20100706 12:49:38 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_144231@management_area_combine_i0> to current mapset
+as <management_area_combine_region_a_i0_rep_0_ls_all_5>
+
+20100706 12:49:38 [mdig.grass] DEBUG: Removing raster map 28090_all_144231
+20100706 12:49:38 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_144231
+20100706 12:49:38 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_144231>
+
+20100706 12:49:38 [mdig.grass] DEBUG: Removing raster map 28090_all_191526
+20100706 12:49:38 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_191526
+20100706 12:49:38 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_191526>
+
+20100706 12:49:38 [mdig.grass] DEBUG: Removing raster map 28090_all_124978
+20100706 12:49:38 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_124978
+20100706 12:49:38 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_124978>
+
+20100706 12:49:39 [mdig.grass] DEBUG: Removing raster map 28090_all_471199
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_471199
+20100706 12:49:39 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_471199>
+
+20100706 12:49:39 [mdig.grass] DEBUG: Removing raster map 28090_all_183561
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_183561
+20100706 12:49:39 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_183561>
+
+20100706 12:49:39 [mdig.grass] DEBUG: Removing raster map 28090_all_650035
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_650035
+20100706 12:49:39 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_650035>
+
+20100706 12:49:39 [mdig.grass] DEBUG: Removing raster map 28090_all_844333
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_844333
+20100706 12:49:39 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_844333>
+
+20100706 12:49:39 [mdig.grass] DEBUG: Removing raster map 28090_all_66914
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_66914
+20100706 12:49:39 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_66914>
+
+20100706 12:49:39 [mdig.replicate] INFO: Replicate 2/2 of exp. instance [vars: {'shape': '186'}]
+20100706 12:49:39 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.copy rast=28090__686424@management_area_combine_i0,28090_all_703540
+20100706 12:49:39 [mdig.grass] DEBUG: stderr: Copy raster <28090__686424@management_area_combine_i0> to current mapset as
+<28090_all_703540>
+
+20100706 12:49:39 [mdig.replicate] DEBUG: Initial maps:  28090__686424@management_area_combine_i0
+20100706 12:49:39 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 12:49:39 [mdig.replicate] INFO: t=0
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_703540,28090_all_260983
+20100706 12:49:39 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_703540@management_area_combine_i0> to current mapset
+as <28090_all_260983>
+
+20100706 12:49:39 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:39 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_703540 shape=186 -b radius=1 output=28090_all_670714 
+20100706 12:49:39 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:39 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:39 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i0_rep_1_ls_all_0
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_670714,management_area_combine_region_a_i0_rep_1_ls_all_0
+20100706 12:49:39 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_670714@management_area_combine_i0> to current mapset
+as <management_area_combine_region_a_i0_rep_1_ls_all_0>
+
+20100706 12:49:39 [mdig.replicate] INFO: t=1
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_670714,28090_all_724178
+20100706 12:49:39 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_670714@management_area_combine_i0> to current mapset
+as <28090_all_724178>
+
+20100706 12:49:39 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:39 [mdig.grass] DEBUG: Removing raster map 28090_all_703540
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_703540
+20100706 12:49:39 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_703540>
+
+20100706 12:49:39 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_670714 shape=186 -b radius=1 output=28090_all_703540 
+20100706 12:49:39 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:39 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:39 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i0_rep_1_ls_all_1
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_703540,management_area_combine_region_a_i0_rep_1_ls_all_1
+20100706 12:49:39 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_703540@management_area_combine_i0> to current mapset
+as <management_area_combine_region_a_i0_rep_1_ls_all_1>
+
+20100706 12:49:39 [mdig.replicate] INFO: t=2
+20100706 12:49:39 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_703540,28090_all_187086
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_703540@management_area_combine_i0> to current mapset
+as <28090_all_187086>
+
+20100706 12:49:40 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:40 [mdig.grass] DEBUG: Removing raster map 28090_all_670714
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_670714
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_670714>
+
+20100706 12:49:40 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_703540 shape=186 -b radius=1 output=28090_all_670714 
+20100706 12:49:40 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:40 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:40 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i0_rep_1_ls_all_2
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_670714,management_area_combine_region_a_i0_rep_1_ls_all_2
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_670714@management_area_combine_i0> to current mapset
+as <management_area_combine_region_a_i0_rep_1_ls_all_2>
+
+20100706 12:49:40 [mdig.replicate] INFO: t=3
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_670714,28090_all_807980
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_670714@management_area_combine_i0> to current mapset
+as <28090_all_807980>
+
+20100706 12:49:40 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:40 [mdig.grass] DEBUG: Removing raster map 28090_all_703540
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_703540
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_703540>
+
+20100706 12:49:40 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_670714 shape=186 -b radius=1 output=28090_all_703540 
+20100706 12:49:40 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:40 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:40 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i0_rep_1_ls_all_3
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_703540,management_area_combine_region_a_i0_rep_1_ls_all_3
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_703540@management_area_combine_i0> to current mapset
+as <management_area_combine_region_a_i0_rep_1_ls_all_3>
+
+20100706 12:49:40 [mdig.replicate] INFO: t=4
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_703540,28090_all_878922
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_703540@management_area_combine_i0> to current mapset
+as <28090_all_878922>
+
+20100706 12:49:40 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:40 [mdig.grass] DEBUG: Removing raster map 28090_all_670714
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_670714
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_670714>
+
+20100706 12:49:40 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_703540 shape=186 -b radius=1 output=28090_all_670714 
+20100706 12:49:40 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:40 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:40 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i0_rep_1_ls_all_4
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_670714,management_area_combine_region_a_i0_rep_1_ls_all_4
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_670714@management_area_combine_i0> to current mapset
+as <management_area_combine_region_a_i0_rep_1_ls_all_4>
+
+20100706 12:49:40 [mdig.replicate] INFO: t=5
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_670714,28090_all_464349
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_670714@management_area_combine_i0> to current mapset
+as <28090_all_464349>
+
+20100706 12:49:40 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:40 [mdig.grass] DEBUG: Removing raster map 28090_all_703540
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_703540
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_703540>
+
+20100706 12:49:40 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_670714 shape=186 -b radius=1 output=28090_all_703540 
+20100706 12:49:40 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:40 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:40 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i0_rep_1_ls_all_5
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_703540,management_area_combine_region_a_i0_rep_1_ls_all_5
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_703540@management_area_combine_i0> to current mapset
+as <management_area_combine_region_a_i0_rep_1_ls_all_5>
+
+20100706 12:49:40 [mdig.grass] DEBUG: Removing raster map 28090_all_703540
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_703540
+20100706 12:49:40 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_703540>
+
+20100706 12:49:40 [mdig.grass] DEBUG: Removing raster map 28090_all_670714
+20100706 12:49:40 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_670714
+20100706 12:49:41 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_670714>
+
+20100706 12:49:41 [mdig.grass] DEBUG: Removing raster map 28090_all_260983
+20100706 12:49:41 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_260983
+20100706 12:49:41 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_260983>
+
+20100706 12:49:41 [mdig.grass] DEBUG: Removing raster map 28090_all_724178
+20100706 12:49:41 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_724178
+20100706 12:49:41 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_724178>
+
+20100706 12:49:41 [mdig.grass] DEBUG: Removing raster map 28090_all_187086
+20100706 12:49:41 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_187086
+20100706 12:49:41 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_187086>
+
+20100706 12:49:41 [mdig.grass] DEBUG: Removing raster map 28090_all_807980
+20100706 12:49:41 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_807980
+20100706 12:49:41 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_807980>
+
+20100706 12:49:41 [mdig.grass] DEBUG: Removing raster map 28090_all_878922
+20100706 12:49:41 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_878922
+20100706 12:49:41 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_878922>
+
+20100706 12:49:41 [mdig.grass] DEBUG: Removing raster map 28090_all_464349
+20100706 12:49:41 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_464349
+20100706 12:49:41 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_464349>
+
+20100706 12:49:41 [mdig.grass] DEBUG: exec: g.mapset -c mapset=management_area_combine_i1 location=grass_location
+20100706 12:49:41 [mdig.grass] DEBUG: stderr: Erasing monitors...
+Cleaning up temporary files...
+WARNING: Your shell continues to use the history for the old mapset
+You can switch the history by commands:
+history -w; history -r
+../test/grass_location/management_area_combine_i1/.bash_history;
+HISTFILE=../test/grass_location/management_area_combine_i1/.bash_history
+
+20100706 12:49:41 [mdig.grass] DEBUG: Change to mapset management_area_combine_i1@grass_location
+20100706 12:49:41 [mdig.replicate] INFO: Replicate 1/2 of exp. instance [vars: {'shape': '186'}] [strategy: area_or]
+20100706 12:49:41 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 12:49:41 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 12:49:41 [mdig.grass] DEBUG: exec: g.copy rast=28090__686424@management_area_combine_i0,28090_all_638836
+20100706 12:49:41 [mdig.grass] DEBUG: stderr: Copy raster <28090__686424@management_area_combine_i0> to current mapset as
+<28090_all_638836>
+
+20100706 12:49:41 [mdig.replicate] DEBUG: Initial maps:  28090__686424@management_area_combine_i0
+20100706 12:49:41 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 12:49:41 [mdig.replicate] INFO: t=0
+20100706 12:49:41 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_638836,28090_all_278221
+20100706 12:49:41 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_638836@management_area_combine_i1> to current mapset
+as <28090_all_278221>
+
+20100706 12:49:41 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:41 [mdig.strategy] DEBUG: Parsing management strategies
+20100706 12:49:41 [mdig.strategy] DEBUG: 1 treatments found for strategy area_or (Test to check map area combined with OR works.)
+20100706 12:49:41 [mdig.event] INFO: treatments is []
+20100706 12:49:41 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_638836 shape=186 -b radius=1 output=28090_all_439458 
+20100706 12:49:41 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_or
+20100706 12:49:41 [mdig.grass] DEBUG: exec: r.mapcalc '"28090__268067"=if(!isnull(28090__686424@management_area_combine_i0),1,null())'
+20100706 12:49:41 [mdig.grass] DEBUG: exec: r.mapcalc '"28090__835481"=if(x()>3,1,null())'
+20100706 12:49:41 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_or_area_t_0"=if(!isnull(28090__268067@management_area_combine_i1) || !isnull(28090__835481@management_area_combine_i1),1,null())'
+20100706 12:49:41 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_or_area_t_0
+20100706 12:49:41 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_or_area_t_0
+20100706 12:49:41 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:41 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:41 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:41 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:41 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_439458 survival=80 seed=-634211766 output=28090_all_638836 
+20100706 12:49:41 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:42 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_or_area_t_0"),"28090_all_439458","28090_all_638836")'
+20100706 12:49:42 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:42 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:42 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_638836
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i1> to current mapset as
+<28090_all_638836>
+
+20100706 12:49:42 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:42 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:42 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i1_rep_0_ls_all_0
+20100706 12:49:42 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_638836,management_area_combine_region_a_i1_rep_0_ls_all_0
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_638836@management_area_combine_i1> to current mapset
+as <management_area_combine_region_a_i1_rep_0_ls_all_0>
+
+20100706 12:49:42 [mdig.replicate] INFO: t=1
+20100706 12:49:42 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_638836,28090_all_512784
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_638836@management_area_combine_i1> to current mapset
+as <28090_all_512784>
+
+20100706 12:49:42 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:42 [mdig.event] INFO: treatments is []
+20100706 12:49:42 [mdig.grass] DEBUG: Removing raster map 28090_all_439458
+20100706 12:49:42 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_439458
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_439458>
+
+20100706 12:49:42 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_638836 shape=186 -b radius=1 output=28090_all_439458 
+20100706 12:49:42 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_or
+20100706 12:49:42 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_or_area_t_0
+20100706 12:49:42 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_or_area_t_0
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:42 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:42 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:42 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_439458 survival=80 seed=-2033197645 output=28090_all_638836 
+20100706 12:49:42 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:42 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_or_area_t_0"),"28090_all_439458","28090_all_638836")'
+20100706 12:49:42 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:42 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:42 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_638836
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i1> to current mapset as
+<28090_all_638836>
+
+20100706 12:49:42 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:42 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:42 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i1_rep_0_ls_all_1
+20100706 12:49:42 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_638836,management_area_combine_region_a_i1_rep_0_ls_all_1
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_638836@management_area_combine_i1> to current mapset
+as <management_area_combine_region_a_i1_rep_0_ls_all_1>
+
+20100706 12:49:42 [mdig.replicate] INFO: t=2
+20100706 12:49:42 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_638836,28090_all_869098
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_638836@management_area_combine_i1> to current mapset
+as <28090_all_869098>
+
+20100706 12:49:42 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:42 [mdig.event] INFO: treatments is []
+20100706 12:49:42 [mdig.grass] DEBUG: Removing raster map 28090_all_439458
+20100706 12:49:42 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_439458
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_439458>
+
+20100706 12:49:42 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_638836 shape=186 -b radius=1 output=28090_all_439458 
+20100706 12:49:42 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_or
+20100706 12:49:42 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_or_area_t_0
+20100706 12:49:42 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_or_area_t_0
+20100706 12:49:42 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:42 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:42 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:43 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_439458 survival=80 seed=-960548204 output=28090_all_638836 
+20100706 12:49:43 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:43 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_or_area_t_0"),"28090_all_439458","28090_all_638836")'
+20100706 12:49:43 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:43 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:43 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_638836
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i1> to current mapset as
+<28090_all_638836>
+
+20100706 12:49:43 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:43 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:43 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i1_rep_0_ls_all_2
+20100706 12:49:43 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_638836,management_area_combine_region_a_i1_rep_0_ls_all_2
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_638836@management_area_combine_i1> to current mapset
+as <management_area_combine_region_a_i1_rep_0_ls_all_2>
+
+20100706 12:49:43 [mdig.replicate] INFO: t=3
+20100706 12:49:43 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_638836,28090_all_988299
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_638836@management_area_combine_i1> to current mapset
+as <28090_all_988299>
+
+20100706 12:49:43 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:43 [mdig.event] INFO: treatments is []
+20100706 12:49:43 [mdig.grass] DEBUG: Removing raster map 28090_all_439458
+20100706 12:49:43 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_439458
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_439458>
+
+20100706 12:49:43 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_638836 shape=186 -b radius=1 output=28090_all_439458 
+20100706 12:49:43 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_or
+20100706 12:49:43 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_or_area_t_0
+20100706 12:49:43 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_or_area_t_0
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:43 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:43 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:43 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_439458 survival=80 seed=-472701796 output=28090_all_638836 
+20100706 12:49:43 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:43 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_or_area_t_0"),"28090_all_439458","28090_all_638836")'
+20100706 12:49:43 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:43 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:43 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_638836
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i1> to current mapset as
+<28090_all_638836>
+
+20100706 12:49:43 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:43 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:43 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i1_rep_0_ls_all_3
+20100706 12:49:43 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_638836,management_area_combine_region_a_i1_rep_0_ls_all_3
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_638836@management_area_combine_i1> to current mapset
+as <management_area_combine_region_a_i1_rep_0_ls_all_3>
+
+20100706 12:49:43 [mdig.replicate] INFO: t=4
+20100706 12:49:43 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_638836,28090_all_71624
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_638836@management_area_combine_i1> to current mapset
+as <28090_all_71624>
+
+20100706 12:49:43 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:43 [mdig.event] INFO: treatments is []
+20100706 12:49:43 [mdig.grass] DEBUG: Removing raster map 28090_all_439458
+20100706 12:49:43 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_439458
+20100706 12:49:43 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_439458>
+
+20100706 12:49:43 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_638836 shape=186 -b radius=1 output=28090_all_439458 
+20100706 12:49:43 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_or
+20100706 12:49:43 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_or_area_t_0
+20100706 12:49:43 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_or_area_t_0
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:44 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:44 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:44 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_439458 survival=80 seed=126144921 output=28090_all_638836 
+20100706 12:49:44 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:44 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_or_area_t_0"),"28090_all_439458","28090_all_638836")'
+20100706 12:49:44 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:44 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:44 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_638836
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i1> to current mapset as
+<28090_all_638836>
+
+20100706 12:49:44 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:44 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:44 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i1_rep_0_ls_all_4
+20100706 12:49:44 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_638836,management_area_combine_region_a_i1_rep_0_ls_all_4
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_638836@management_area_combine_i1> to current mapset
+as <management_area_combine_region_a_i1_rep_0_ls_all_4>
+
+20100706 12:49:44 [mdig.replicate] INFO: t=5
+20100706 12:49:44 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_638836,28090_all_633167
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_638836@management_area_combine_i1> to current mapset
+as <28090_all_633167>
+
+20100706 12:49:44 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:44 [mdig.event] INFO: treatments is []
+20100706 12:49:44 [mdig.grass] DEBUG: Removing raster map 28090_all_439458
+20100706 12:49:44 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_439458
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_439458>
+
+20100706 12:49:44 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_638836 shape=186 -b radius=1 output=28090_all_439458 
+20100706 12:49:44 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_or
+20100706 12:49:44 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_or_area_t_0
+20100706 12:49:44 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_or_area_t_0
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:44 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:44 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:44 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_439458 survival=80 seed=-1059962413 output=28090_all_638836 
+20100706 12:49:44 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:44 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_or_area_t_0"),"28090_all_439458","28090_all_638836")'
+20100706 12:49:44 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:44 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:44 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_638836
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i1> to current mapset as
+<28090_all_638836>
+
+20100706 12:49:44 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:44 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:44 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i1_rep_0_ls_all_5
+20100706 12:49:44 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_638836,management_area_combine_region_a_i1_rep_0_ls_all_5
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_638836@management_area_combine_i1> to current mapset
+as <management_area_combine_region_a_i1_rep_0_ls_all_5>
+
+20100706 12:49:44 [mdig.grass] DEBUG: Removing raster map 28090_all_638836
+20100706 12:49:44 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_638836
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_638836>
+
+20100706 12:49:44 [mdig.grass] DEBUG: Removing raster map 28090_all_439458
+20100706 12:49:44 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_439458
+20100706 12:49:44 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_439458>
+
+20100706 12:49:45 [mdig.grass] DEBUG: Removing raster map 28090_all_278221
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_278221
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_278221>
+
+20100706 12:49:45 [mdig.grass] DEBUG: Removing raster map 28090_all_512784
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_512784
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_512784>
+
+20100706 12:49:45 [mdig.grass] DEBUG: Removing raster map 28090_all_869098
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_869098
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_869098>
+
+20100706 12:49:45 [mdig.grass] DEBUG: Removing raster map 28090_all_988299
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_988299
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_988299>
+
+20100706 12:49:45 [mdig.grass] DEBUG: Removing raster map 28090_all_71624
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_71624
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_71624>
+
+20100706 12:49:45 [mdig.grass] DEBUG: Removing raster map 28090_all_633167
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_633167
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_633167>
+
+20100706 12:49:45 [mdig.replicate] INFO: Replicate 2/2 of exp. instance [vars: {'shape': '186'}] [strategy: area_or]
+20100706 12:49:45 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.copy rast=28090__686424@management_area_combine_i0,28090_all_853186
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: Copy raster <28090__686424@management_area_combine_i0> to current mapset as
+<28090_all_853186>
+
+20100706 12:49:45 [mdig.replicate] DEBUG: Initial maps:  28090__686424@management_area_combine_i0
+20100706 12:49:45 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 12:49:45 [mdig.replicate] INFO: t=0
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_853186,28090_all_298520
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_853186@management_area_combine_i1> to current mapset
+as <28090_all_298520>
+
+20100706 12:49:45 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:45 [mdig.event] INFO: treatments is []
+20100706 12:49:45 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_853186 shape=186 -b radius=1 output=28090_all_164710 
+20100706 12:49:45 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_or
+20100706 12:49:45 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_or_area_t_0
+20100706 12:49:45 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_or_area_t_0
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:45 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:45 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_164710 survival=80 seed=477499522 output=28090_all_853186 
+20100706 12:49:45 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:45 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_or_area_t_0"),"28090_all_164710","28090_all_853186")'
+20100706 12:49:45 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_853186
+20100706 12:49:45 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i1> to current mapset as
+<28090_all_853186>
+
+20100706 12:49:45 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:45 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:45 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i1_rep_1_ls_all_0
+20100706 12:49:45 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_853186,management_area_combine_region_a_i1_rep_1_ls_all_0
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_853186@management_area_combine_i1> to current mapset
+as <management_area_combine_region_a_i1_rep_1_ls_all_0>
+
+20100706 12:49:46 [mdig.replicate] INFO: t=1
+20100706 12:49:46 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_853186,28090_all_58925
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_853186@management_area_combine_i1> to current mapset
+as <28090_all_58925>
+
+20100706 12:49:46 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:46 [mdig.event] INFO: treatments is []
+20100706 12:49:46 [mdig.grass] DEBUG: Removing raster map 28090_all_164710
+20100706 12:49:46 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_164710
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_164710>
+
+20100706 12:49:46 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_853186 shape=186 -b radius=1 output=28090_all_164710 
+20100706 12:49:46 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_or
+20100706 12:49:46 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_or_area_t_0
+20100706 12:49:46 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_or_area_t_0
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:46 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:46 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:46 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_164710 survival=80 seed=809151803 output=28090_all_853186 
+20100706 12:49:46 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:46 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_or_area_t_0"),"28090_all_164710","28090_all_853186")'
+20100706 12:49:46 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:46 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:46 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_853186
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i1> to current mapset as
+<28090_all_853186>
+
+20100706 12:49:46 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:46 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:46 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i1_rep_1_ls_all_1
+20100706 12:49:46 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_853186,management_area_combine_region_a_i1_rep_1_ls_all_1
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_853186@management_area_combine_i1> to current mapset
+as <management_area_combine_region_a_i1_rep_1_ls_all_1>
+
+20100706 12:49:46 [mdig.replicate] INFO: t=2
+20100706 12:49:46 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_853186,28090_all_446235
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_853186@management_area_combine_i1> to current mapset
+as <28090_all_446235>
+
+20100706 12:49:46 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:46 [mdig.event] INFO: treatments is []
+20100706 12:49:46 [mdig.grass] DEBUG: Removing raster map 28090_all_164710
+20100706 12:49:46 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_164710
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_164710>
+
+20100706 12:49:46 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_853186 shape=186 -b radius=1 output=28090_all_164710 
+20100706 12:49:46 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_or
+20100706 12:49:46 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_or_area_t_0
+20100706 12:49:46 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_or_area_t_0
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:46 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:46 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:46 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_164710 survival=80 seed=2127862496 output=28090_all_853186 
+20100706 12:49:46 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:46 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_or_area_t_0"),"28090_all_164710","28090_all_853186")'
+20100706 12:49:46 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:46 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:46 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:46 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_853186
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i1> to current mapset as
+<28090_all_853186>
+
+20100706 12:49:47 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:47 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:47 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i1_rep_1_ls_all_2
+20100706 12:49:47 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_853186,management_area_combine_region_a_i1_rep_1_ls_all_2
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_853186@management_area_combine_i1> to current mapset
+as <management_area_combine_region_a_i1_rep_1_ls_all_2>
+
+20100706 12:49:47 [mdig.replicate] INFO: t=3
+20100706 12:49:47 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_853186,28090_all_484051
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_853186@management_area_combine_i1> to current mapset
+as <28090_all_484051>
+
+20100706 12:49:47 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:47 [mdig.event] INFO: treatments is []
+20100706 12:49:47 [mdig.grass] DEBUG: Removing raster map 28090_all_164710
+20100706 12:49:47 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_164710
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_164710>
+
+20100706 12:49:47 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_853186 shape=186 -b radius=1 output=28090_all_164710 
+20100706 12:49:47 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_or
+20100706 12:49:47 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_or_area_t_0
+20100706 12:49:47 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_or_area_t_0
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:47 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:47 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:47 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_164710 survival=80 seed=-656940920 output=28090_all_853186 
+20100706 12:49:47 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:47 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_or_area_t_0"),"28090_all_164710","28090_all_853186")'
+20100706 12:49:47 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:47 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:47 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_853186
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i1> to current mapset as
+<28090_all_853186>
+
+20100706 12:49:47 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:47 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:47 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i1_rep_1_ls_all_3
+20100706 12:49:47 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_853186,management_area_combine_region_a_i1_rep_1_ls_all_3
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_853186@management_area_combine_i1> to current mapset
+as <management_area_combine_region_a_i1_rep_1_ls_all_3>
+
+20100706 12:49:47 [mdig.replicate] INFO: t=4
+20100706 12:49:47 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_853186,28090_all_861141
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_853186@management_area_combine_i1> to current mapset
+as <28090_all_861141>
+
+20100706 12:49:47 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:47 [mdig.event] INFO: treatments is []
+20100706 12:49:47 [mdig.grass] DEBUG: Removing raster map 28090_all_164710
+20100706 12:49:47 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_164710
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_164710>
+
+20100706 12:49:47 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_853186 shape=186 -b radius=1 output=28090_all_164710 
+20100706 12:49:47 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_or
+20100706 12:49:47 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_or_area_t_0
+20100706 12:49:47 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_or_area_t_0
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:47 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:47 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:47 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_164710 survival=80 seed=914408521 output=28090_all_853186 
+20100706 12:49:47 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:47 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:47 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_or_area_t_0"),"28090_all_164710","28090_all_853186")'
+20100706 12:49:47 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:47 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_853186
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i1> to current mapset as
+<28090_all_853186>
+
+20100706 12:49:48 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:48 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:48 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i1_rep_1_ls_all_4
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_853186,management_area_combine_region_a_i1_rep_1_ls_all_4
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_853186@management_area_combine_i1> to current mapset
+as <management_area_combine_region_a_i1_rep_1_ls_all_4>
+
+20100706 12:49:48 [mdig.replicate] INFO: t=5
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_853186,28090_all_92892
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_853186@management_area_combine_i1> to current mapset
+as <28090_all_92892>
+
+20100706 12:49:48 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:48 [mdig.event] INFO: treatments is []
+20100706 12:49:48 [mdig.grass] DEBUG: Removing raster map 28090_all_164710
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_164710
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_164710>
+
+20100706 12:49:48 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_853186 shape=186 -b radius=1 output=28090_all_164710 
+20100706 12:49:48 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_or
+20100706 12:49:48 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_or_area_t_0
+20100706 12:49:48 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_or_area_t_0
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:48 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:48 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_164710 survival=80 seed=-710658532 output=28090_all_853186 
+20100706 12:49:48 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:48 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_or_area_t_0"),"28090_all_164710","28090_all_853186")'
+20100706 12:49:48 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_853186
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i1> to current mapset as
+<28090_all_853186>
+
+20100706 12:49:48 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:48 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:48 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i1_rep_1_ls_all_5
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_853186,management_area_combine_region_a_i1_rep_1_ls_all_5
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_853186@management_area_combine_i1> to current mapset
+as <management_area_combine_region_a_i1_rep_1_ls_all_5>
+
+20100706 12:49:48 [mdig.grass] DEBUG: Removing raster map 28090_all_853186
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_853186
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_853186>
+
+20100706 12:49:48 [mdig.grass] DEBUG: Removing raster map 28090_all_164710
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_164710
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_164710>
+
+20100706 12:49:48 [mdig.grass] DEBUG: Removing raster map 28090_all_298520
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_298520
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_298520>
+
+20100706 12:49:48 [mdig.grass] DEBUG: Removing raster map 28090_all_58925
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_58925
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_58925>
+
+20100706 12:49:48 [mdig.grass] DEBUG: Removing raster map 28090_all_446235
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_446235
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_446235>
+
+20100706 12:49:48 [mdig.grass] DEBUG: Removing raster map 28090_all_484051
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_484051
+20100706 12:49:48 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_484051>
+
+20100706 12:49:48 [mdig.grass] DEBUG: Removing raster map 28090_all_861141
+20100706 12:49:48 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_861141
+20100706 12:49:49 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_861141>
+
+20100706 12:49:49 [mdig.grass] DEBUG: Removing raster map 28090_all_92892
+20100706 12:49:49 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_92892
+20100706 12:49:49 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_92892>
+
+20100706 12:49:49 [mdig.grass] DEBUG: exec: g.mapset -c mapset=management_area_combine_i2 location=grass_location
+20100706 12:49:49 [mdig.grass] DEBUG: stderr: Erasing monitors...
+Cleaning up temporary files...
+WARNING: Your shell continues to use the history for the old mapset
+You can switch the history by commands:
+history -w; history -r
+../test/grass_location/management_area_combine_i2/.bash_history;
+HISTFILE=../test/grass_location/management_area_combine_i2/.bash_history
+
+20100706 12:49:49 [mdig.grass] DEBUG: Change to mapset management_area_combine_i2@grass_location
+20100706 12:49:49 [mdig.replicate] INFO: Replicate 1/2 of exp. instance [vars: {'shape': '186'}] [strategy: area_and]
+20100706 12:49:49 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 12:49:49 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 12:49:49 [mdig.grass] DEBUG: exec: g.copy rast=28090__686424@management_area_combine_i0,28090_all_240157
+20100706 12:49:49 [mdig.grass] DEBUG: stderr: Copy raster <28090__686424@management_area_combine_i0> to current mapset as
+<28090_all_240157>
+
+20100706 12:49:49 [mdig.replicate] DEBUG: Initial maps:  28090__686424@management_area_combine_i0
+20100706 12:49:49 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 12:49:49 [mdig.replicate] INFO: t=0
+20100706 12:49:49 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_240157,28090_all_221040
+20100706 12:49:49 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_240157@management_area_combine_i2> to current mapset
+as <28090_all_221040>
+
+20100706 12:49:49 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:49 [mdig.strategy] DEBUG: Parsing management strategies
+20100706 12:49:49 [mdig.strategy] DEBUG: 1 treatments found for strategy area_and (Test to check map area combined with AND works.)
+20100706 12:49:49 [mdig.event] INFO: treatments is []
+20100706 12:49:49 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_240157 shape=186 -b radius=1 output=28090_all_613422 
+20100706 12:49:49 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_and
+20100706 12:49:49 [mdig.grass] DEBUG: exec: r.mapcalc '"28090__441320"=if(x()>3,1,null())'
+20100706 12:49:49 [mdig.grass] DEBUG: exec: r.mapcalc '"28090__398322"=if(y()==0,1,null())'
+20100706 12:49:49 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_and_area_t_0"=if(!isnull(28090__441320@management_area_combine_i2) && !isnull(28090__398322@management_area_combine_i2),1,null())'
+20100706 12:49:49 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_and_area_t_0
+20100706 12:49:49 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_and_area_t_0
+20100706 12:49:49 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:49 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:49 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:49 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:49 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_613422 survival=0 seed=1431601509 output=28090_all_240157 
+20100706 12:49:49 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:49 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:49 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_and_area_t_0"),"28090_all_613422","28090_all_240157")'
+20100706 12:49:49 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:49 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:50 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:50 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_240157
+20100706 12:49:50 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i2> to current mapset as
+<28090_all_240157>
+
+20100706 12:49:50 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:50 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:50 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i2_rep_0_ls_all_0
+20100706 12:49:50 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_240157,management_area_combine_region_a_i2_rep_0_ls_all_0
+20100706 12:49:50 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_240157@management_area_combine_i2> to current mapset
+as <management_area_combine_region_a_i2_rep_0_ls_all_0>
+
+20100706 12:49:50 [mdig.replicate] INFO: t=1
+20100706 12:49:50 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_240157,28090_all_792683
+20100706 12:49:50 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_240157@management_area_combine_i2> to current mapset
+as <28090_all_792683>
+
+20100706 12:49:50 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:50 [mdig.event] INFO: treatments is []
+20100706 12:49:50 [mdig.grass] DEBUG: Removing raster map 28090_all_613422
+20100706 12:49:50 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_613422
+20100706 12:49:50 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_613422>
+
+20100706 12:49:50 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_240157 shape=186 -b radius=1 output=28090_all_613422 
+20100706 12:49:50 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_and
+20100706 12:49:50 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_and_area_t_0
+20100706 12:49:50 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_and_area_t_0
+20100706 12:49:50 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:50 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:50 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:50 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:50 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_613422 survival=0 seed=-1193814788 output=28090_all_240157 
+20100706 12:49:50 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:50 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:50 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_and_area_t_0"),"28090_all_613422","28090_all_240157")'
+20100706 12:49:50 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:50 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:50 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:50 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_240157
+20100706 12:49:50 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i2> to current mapset as
+<28090_all_240157>
+
+20100706 12:49:50 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:50 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:50 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i2_rep_0_ls_all_1
+20100706 12:49:50 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_240157,management_area_combine_region_a_i2_rep_0_ls_all_1
+20100706 12:49:50 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_240157@management_area_combine_i2> to current mapset
+as <management_area_combine_region_a_i2_rep_0_ls_all_1>
+
+20100706 12:49:50 [mdig.replicate] INFO: t=2
+20100706 12:49:50 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_240157,28090_all_774302
+20100706 12:49:51 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_240157@management_area_combine_i2> to current mapset
+as <28090_all_774302>
+
+20100706 12:49:51 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:51 [mdig.event] INFO: treatments is []
+20100706 12:49:51 [mdig.grass] DEBUG: Removing raster map 28090_all_613422
+20100706 12:49:51 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_613422
+20100706 12:49:51 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_613422>
+
+20100706 12:49:51 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_240157 shape=186 -b radius=1 output=28090_all_613422 
+20100706 12:49:51 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_and
+20100706 12:49:51 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_and_area_t_0
+20100706 12:49:51 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_and_area_t_0
+20100706 12:49:51 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:51 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:51 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:51 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:51 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_613422 survival=0 seed=1441882175 output=28090_all_240157 
+20100706 12:49:51 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:51 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:51 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_and_area_t_0"),"28090_all_613422","28090_all_240157")'
+20100706 12:49:51 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:51 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:51 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:51 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_240157
+20100706 12:49:51 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i2> to current mapset as
+<28090_all_240157>
+
+20100706 12:49:51 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:51 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:51 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i2_rep_0_ls_all_2
+20100706 12:49:51 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_240157,management_area_combine_region_a_i2_rep_0_ls_all_2
+20100706 12:49:51 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_240157@management_area_combine_i2> to current mapset
+as <management_area_combine_region_a_i2_rep_0_ls_all_2>
+
+20100706 12:49:51 [mdig.replicate] INFO: t=3
+20100706 12:49:51 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_240157,28090_all_396427
+20100706 12:49:51 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_240157@management_area_combine_i2> to current mapset
+as <28090_all_396427>
+
+20100706 12:49:51 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:51 [mdig.event] INFO: treatments is []
+20100706 12:49:51 [mdig.grass] DEBUG: Removing raster map 28090_all_613422
+20100706 12:49:51 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_613422
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_613422>
+
+20100706 12:49:52 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_240157 shape=186 -b radius=1 output=28090_all_613422 
+20100706 12:49:52 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_and
+20100706 12:49:52 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_and_area_t_0
+20100706 12:49:52 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_and_area_t_0
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:52 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:52 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:52 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_613422 survival=0 seed=836993911 output=28090_all_240157 
+20100706 12:49:52 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:52 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_and_area_t_0"),"28090_all_613422","28090_all_240157")'
+20100706 12:49:52 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:52 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:52 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_240157
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i2> to current mapset as
+<28090_all_240157>
+
+20100706 12:49:52 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:52 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:52 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i2_rep_0_ls_all_3
+20100706 12:49:52 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_240157,management_area_combine_region_a_i2_rep_0_ls_all_3
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_240157@management_area_combine_i2> to current mapset
+as <management_area_combine_region_a_i2_rep_0_ls_all_3>
+
+20100706 12:49:52 [mdig.replicate] INFO: t=4
+20100706 12:49:52 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_240157,28090_all_349445
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_240157@management_area_combine_i2> to current mapset
+as <28090_all_349445>
+
+20100706 12:49:52 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:52 [mdig.event] INFO: treatments is []
+20100706 12:49:52 [mdig.grass] DEBUG: Removing raster map 28090_all_613422
+20100706 12:49:52 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_613422
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_613422>
+
+20100706 12:49:52 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_240157 shape=186 -b radius=1 output=28090_all_613422 
+20100706 12:49:52 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_and
+20100706 12:49:52 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_and_area_t_0
+20100706 12:49:52 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_and_area_t_0
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:52 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:52 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:52 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_613422 survival=0 seed=1710948855 output=28090_all_240157 
+20100706 12:49:52 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:52 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_and_area_t_0"),"28090_all_613422","28090_all_240157")'
+20100706 12:49:52 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:52 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:52 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_240157
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i2> to current mapset as
+<28090_all_240157>
+
+20100706 12:49:52 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:52 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:52 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i2_rep_0_ls_all_4
+20100706 12:49:52 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_240157,management_area_combine_region_a_i2_rep_0_ls_all_4
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_240157@management_area_combine_i2> to current mapset
+as <management_area_combine_region_a_i2_rep_0_ls_all_4>
+
+20100706 12:49:52 [mdig.replicate] INFO: t=5
+20100706 12:49:52 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_240157,28090_all_352242
+20100706 12:49:52 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_240157@management_area_combine_i2> to current mapset
+as <28090_all_352242>
+
+20100706 12:49:52 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:52 [mdig.event] INFO: treatments is []
+20100706 12:49:53 [mdig.grass] DEBUG: Removing raster map 28090_all_613422
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_613422
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_613422>
+
+20100706 12:49:53 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_240157 shape=186 -b radius=1 output=28090_all_613422 
+20100706 12:49:53 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_and
+20100706 12:49:53 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_and_area_t_0
+20100706 12:49:53 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_and_area_t_0
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:53 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:53 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_613422 survival=0 seed=-574359131 output=28090_all_240157 
+20100706 12:49:53 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:53 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_and_area_t_0"),"28090_all_613422","28090_all_240157")'
+20100706 12:49:53 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_240157
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i2> to current mapset as
+<28090_all_240157>
+
+20100706 12:49:53 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:53 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:53 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i2_rep_0_ls_all_5
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_240157,management_area_combine_region_a_i2_rep_0_ls_all_5
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_240157@management_area_combine_i2> to current mapset
+as <management_area_combine_region_a_i2_rep_0_ls_all_5>
+
+20100706 12:49:53 [mdig.grass] DEBUG: Removing raster map 28090_all_240157
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_240157
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_240157>
+
+20100706 12:49:53 [mdig.grass] DEBUG: Removing raster map 28090_all_613422
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_613422
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_613422>
+
+20100706 12:49:53 [mdig.grass] DEBUG: Removing raster map 28090_all_221040
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_221040
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_221040>
+
+20100706 12:49:53 [mdig.grass] DEBUG: Removing raster map 28090_all_792683
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_792683
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_792683>
+
+20100706 12:49:53 [mdig.grass] DEBUG: Removing raster map 28090_all_774302
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_774302
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_774302>
+
+20100706 12:49:53 [mdig.grass] DEBUG: Removing raster map 28090_all_396427
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_396427
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_396427>
+
+20100706 12:49:53 [mdig.grass] DEBUG: Removing raster map 28090_all_349445
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_349445
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_349445>
+
+20100706 12:49:53 [mdig.grass] DEBUG: Removing raster map 28090_all_352242
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_352242
+20100706 12:49:53 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_352242>
+
+20100706 12:49:53 [mdig.replicate] INFO: Replicate 2/2 of exp. instance [vars: {'shape': '186'}] [strategy: area_and]
+20100706 12:49:53 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 12:49:53 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 12:49:54 [mdig.grass] DEBUG: exec: g.copy rast=28090__686424@management_area_combine_i0,28090_all_639563
+20100706 12:49:54 [mdig.grass] DEBUG: stderr: Copy raster <28090__686424@management_area_combine_i0> to current mapset as
+<28090_all_639563>
+
+20100706 12:49:54 [mdig.replicate] DEBUG: Initial maps:  28090__686424@management_area_combine_i0
+20100706 12:49:54 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 12:49:54 [mdig.replicate] INFO: t=0
+20100706 12:49:54 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_639563,28090_all_730520
+20100706 12:49:54 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_639563@management_area_combine_i2> to current mapset
+as <28090_all_730520>
+
+20100706 12:49:54 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:54 [mdig.event] INFO: treatments is []
+20100706 12:49:54 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_639563 shape=186 -b radius=1 output=28090_all_953832 
+20100706 12:49:54 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_and
+20100706 12:49:54 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_and_area_t_0
+20100706 12:49:54 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_and_area_t_0
+20100706 12:49:54 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:54 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:54 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:54 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:54 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_953832 survival=0 seed=523172031 output=28090_all_639563 
+20100706 12:49:54 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:54 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:54 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_and_area_t_0"),"28090_all_953832","28090_all_639563")'
+20100706 12:49:54 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:54 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:54 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:54 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_639563
+20100706 12:49:54 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i2> to current mapset as
+<28090_all_639563>
+
+20100706 12:49:54 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:54 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:54 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i2_rep_1_ls_all_0
+20100706 12:49:54 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_639563,management_area_combine_region_a_i2_rep_1_ls_all_0
+20100706 12:49:54 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_639563@management_area_combine_i2> to current mapset
+as <management_area_combine_region_a_i2_rep_1_ls_all_0>
+
+20100706 12:49:54 [mdig.replicate] INFO: t=1
+20100706 12:49:54 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_639563,28090_all_721390
+20100706 12:49:54 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_639563@management_area_combine_i2> to current mapset
+as <28090_all_721390>
+
+20100706 12:49:54 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:54 [mdig.event] INFO: treatments is []
+20100706 12:49:54 [mdig.grass] DEBUG: Removing raster map 28090_all_953832
+20100706 12:49:54 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_953832
+20100706 12:49:54 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_953832>
+
+20100706 12:49:54 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_639563 shape=186 -b radius=1 output=28090_all_953832 
+20100706 12:49:54 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_and
+20100706 12:49:54 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_and_area_t_0
+20100706 12:49:54 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_and_area_t_0
+20100706 12:49:54 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:54 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:54 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:54 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:54 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_953832 survival=0 seed=45584359 output=28090_all_639563 
+20100706 12:49:54 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:55 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_and_area_t_0"),"28090_all_953832","28090_all_639563")'
+20100706 12:49:55 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:55 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:55 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_639563
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i2> to current mapset as
+<28090_all_639563>
+
+20100706 12:49:55 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:55 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:55 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i2_rep_1_ls_all_1
+20100706 12:49:55 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_639563,management_area_combine_region_a_i2_rep_1_ls_all_1
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_639563@management_area_combine_i2> to current mapset
+as <management_area_combine_region_a_i2_rep_1_ls_all_1>
+
+20100706 12:49:55 [mdig.replicate] INFO: t=2
+20100706 12:49:55 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_639563,28090_all_124901
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_639563@management_area_combine_i2> to current mapset
+as <28090_all_124901>
+
+20100706 12:49:55 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:55 [mdig.event] INFO: treatments is []
+20100706 12:49:55 [mdig.grass] DEBUG: Removing raster map 28090_all_953832
+20100706 12:49:55 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_953832
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_953832>
+
+20100706 12:49:55 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_639563 shape=186 -b radius=1 output=28090_all_953832 
+20100706 12:49:55 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_and
+20100706 12:49:55 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_and_area_t_0
+20100706 12:49:55 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_and_area_t_0
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:55 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:55 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:55 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_953832 survival=0 seed=-474421457 output=28090_all_639563 
+20100706 12:49:55 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:55 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_and_area_t_0"),"28090_all_953832","28090_all_639563")'
+20100706 12:49:55 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:55 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:55 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_639563
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i2> to current mapset as
+<28090_all_639563>
+
+20100706 12:49:55 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:55 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:55 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i2_rep_1_ls_all_2
+20100706 12:49:55 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_639563,management_area_combine_region_a_i2_rep_1_ls_all_2
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_639563@management_area_combine_i2> to current mapset
+as <management_area_combine_region_a_i2_rep_1_ls_all_2>
+
+20100706 12:49:55 [mdig.replicate] INFO: t=3
+20100706 12:49:55 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_639563,28090_all_230608
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_639563@management_area_combine_i2> to current mapset
+as <28090_all_230608>
+
+20100706 12:49:55 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:55 [mdig.event] INFO: treatments is []
+20100706 12:49:55 [mdig.grass] DEBUG: Removing raster map 28090_all_953832
+20100706 12:49:55 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_953832
+20100706 12:49:55 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_953832>
+
+20100706 12:49:55 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_639563 shape=186 -b radius=1 output=28090_all_953832 
+20100706 12:49:56 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_and
+20100706 12:49:56 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_and_area_t_0
+20100706 12:49:56 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_and_area_t_0
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:56 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:56 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:56 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_953832 survival=0 seed=1754361437 output=28090_all_639563 
+20100706 12:49:56 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:56 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_and_area_t_0"),"28090_all_953832","28090_all_639563")'
+20100706 12:49:56 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:56 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:56 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_639563
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i2> to current mapset as
+<28090_all_639563>
+
+20100706 12:49:56 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:56 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:56 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i2_rep_1_ls_all_3
+20100706 12:49:56 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_639563,management_area_combine_region_a_i2_rep_1_ls_all_3
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_639563@management_area_combine_i2> to current mapset
+as <management_area_combine_region_a_i2_rep_1_ls_all_3>
+
+20100706 12:49:56 [mdig.replicate] INFO: t=4
+20100706 12:49:56 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_639563,28090_all_131824
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_639563@management_area_combine_i2> to current mapset
+as <28090_all_131824>
+
+20100706 12:49:56 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:56 [mdig.event] INFO: treatments is []
+20100706 12:49:56 [mdig.grass] DEBUG: Removing raster map 28090_all_953832
+20100706 12:49:56 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_953832
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_953832>
+
+20100706 12:49:56 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_639563 shape=186 -b radius=1 output=28090_all_953832 
+20100706 12:49:56 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_and
+20100706 12:49:56 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_and_area_t_0
+20100706 12:49:56 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_and_area_t_0
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:56 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:56 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:56 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_953832 survival=0 seed=200254428 output=28090_all_639563 
+20100706 12:49:56 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:56 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_and_area_t_0"),"28090_all_953832","28090_all_639563")'
+20100706 12:49:56 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:56 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:56 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_639563
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i2> to current mapset as
+<28090_all_639563>
+
+20100706 12:49:56 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:56 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:56 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i2_rep_1_ls_all_4
+20100706 12:49:56 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_639563,management_area_combine_region_a_i2_rep_1_ls_all_4
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_639563@management_area_combine_i2> to current mapset
+as <management_area_combine_region_a_i2_rep_1_ls_all_4>
+
+20100706 12:49:56 [mdig.replicate] INFO: t=5
+20100706 12:49:56 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_639563,28090_all_76614
+20100706 12:49:56 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_639563@management_area_combine_i2> to current mapset
+as <28090_all_76614>
+
+20100706 12:49:56 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:56 [mdig.event] INFO: treatments is []
+20100706 12:49:56 [mdig.grass] DEBUG: Removing raster map 28090_all_953832
+20100706 12:49:56 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_953832
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_953832>
+
+20100706 12:49:57 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_639563 shape=186 -b radius=1 output=28090_all_953832 
+20100706 12:49:57 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_and
+20100706 12:49:57 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_and_area_t_0
+20100706 12:49:57 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_and_area_t_0
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:57 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:57 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_953832 survival=0 seed=241231715 output=28090_all_639563 
+20100706 12:49:57 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:57 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_and_area_t_0"),"28090_all_953832","28090_all_639563")'
+20100706 12:49:57 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_639563
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i2> to current mapset as
+<28090_all_639563>
+
+20100706 12:49:57 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:57 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:57 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i2_rep_1_ls_all_5
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_639563,management_area_combine_region_a_i2_rep_1_ls_all_5
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_639563@management_area_combine_i2> to current mapset
+as <management_area_combine_region_a_i2_rep_1_ls_all_5>
+
+20100706 12:49:57 [mdig.grass] DEBUG: Removing raster map 28090_all_639563
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_639563
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_639563>
+
+20100706 12:49:57 [mdig.grass] DEBUG: Removing raster map 28090_all_953832
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_953832
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_953832>
+
+20100706 12:49:57 [mdig.grass] DEBUG: Removing raster map 28090_all_730520
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_730520
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_730520>
+
+20100706 12:49:57 [mdig.grass] DEBUG: Removing raster map 28090_all_721390
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_721390
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_721390>
+
+20100706 12:49:57 [mdig.grass] DEBUG: Removing raster map 28090_all_124901
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_124901
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_124901>
+
+20100706 12:49:57 [mdig.grass] DEBUG: Removing raster map 28090_all_230608
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_230608
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_230608>
+
+20100706 12:49:57 [mdig.grass] DEBUG: Removing raster map 28090_all_131824
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_131824
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_131824>
+
+20100706 12:49:57 [mdig.grass] DEBUG: Removing raster map 28090_all_76614
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_76614
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_76614>
+
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.mapset -c mapset=management_area_combine_i3 location=grass_location
+20100706 12:49:57 [mdig.grass] DEBUG: stderr: Erasing monitors...
+Cleaning up temporary files...
+WARNING: Your shell continues to use the history for the old mapset
+You can switch the history by commands:
+history -w; history -r
+../test/grass_location/management_area_combine_i3/.bash_history;
+HISTFILE=../test/grass_location/management_area_combine_i3/.bash_history
+
+20100706 12:49:57 [mdig.grass] DEBUG: Change to mapset management_area_combine_i3@grass_location
+20100706 12:49:57 [mdig.replicate] INFO: Replicate 1/2 of exp. instance [vars: {'shape': '186'}] [strategy: area_filter_or]
+20100706 12:49:57 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 12:49:57 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 12:49:58 [mdig.grass] DEBUG: exec: g.copy rast=28090__686424@management_area_combine_i0,28090_all_40138
+20100706 12:49:58 [mdig.grass] DEBUG: stderr: Copy raster <28090__686424@management_area_combine_i0> to current mapset as
+<28090_all_40138>
+
+20100706 12:49:58 [mdig.replicate] DEBUG: Initial maps:  28090__686424@management_area_combine_i0
+20100706 12:49:58 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 12:49:58 [mdig.replicate] INFO: t=0
+20100706 12:49:58 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_40138,28090_all_509797
+20100706 12:49:58 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_40138@management_area_combine_i3> to current mapset
+as <28090_all_509797>
+
+20100706 12:49:58 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:58 [mdig.strategy] DEBUG: Parsing management strategies
+20100706 12:49:58 [mdig.strategy] DEBUG: 1 treatments found for strategy area_filter_or (Test to check combined areas with a filter works.)
+20100706 12:49:58 [mdig.event] INFO: treatments is []
+20100706 12:49:58 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_40138 shape=186 -b radius=1 output=28090_all_717886 
+20100706 12:49:58 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_filter_or
+20100706 12:49:58 [mdig.grass] DEBUG: exec: r.mdig.outliers max=5 output=x_t___strategy_area_filter_or_area_t_0_0 input=28090_all_717886 
+20100706 12:49:58 [mdig.grass] DEBUG: stdout: Setting seed from date
+
+20100706 12:49:58 [mdig.grass] DEBUG: stderr: Pass 1...
+Pass 2...
+r.clump complete. 2 clumps.
+r.recode complete. Raster map <x_t___strategy_area_filter_or_area_t_0_0>
+created.
+Removing raster <r.mdig.outliers.temp>
+Removing raster <r.mdig.outliers.temp2>
+
+20100706 12:49:58 [mdig.grass] DEBUG: exec: r.mapcalc '"28090__355969"=if(x()>3,1,null())'
+20100706 12:49:58 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_filter_or_area_t_0"=if(!isnull(x_t___strategy_area_filter_or_area_t_0_0) || !isnull(28090__355969@management_area_combine_i3),1,null())'
+20100706 12:49:58 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_filter_or_area_t_0
+20100706 12:49:58 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_filter_or_area_t_0
+20100706 12:49:58 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:58 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:49:58 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:49:58 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:49:58 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_717886 survival=0 seed=1244680798 output=28090_all_40138 
+20100706 12:49:58 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:58 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:58 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_filter_or_area_t_0"),"28090_all_717886","28090_all_40138")'
+20100706 12:49:58 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:49:58 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:49:58 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:49:58 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_40138
+20100706 12:49:58 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i3> to current mapset as
+<28090_all_40138>
+
+20100706 12:49:58 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:58 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:58 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i3_rep_0_ls_all_0
+20100706 12:49:58 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_40138,management_area_combine_region_a_i3_rep_0_ls_all_0
+20100706 12:49:58 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_40138@management_area_combine_i3> to current mapset
+as <management_area_combine_region_a_i3_rep_0_ls_all_0>
+
+20100706 12:49:58 [mdig.replicate] INFO: t=1
+20100706 12:49:58 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_40138,28090_all_948916
+20100706 12:49:58 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_40138@management_area_combine_i3> to current mapset
+as <28090_all_948916>
+
+20100706 12:49:58 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:58 [mdig.event] INFO: treatments is []
+20100706 12:49:58 [mdig.grass] DEBUG: Removing raster map 28090_all_717886
+20100706 12:49:58 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_717886
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_717886>
+
+20100706 12:49:59 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_40138 shape=186 -b radius=1 output=28090_all_717886 
+20100706 12:49:59 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_filter_or
+20100706 12:49:59 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0
+20100706 12:49:59 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0>
+
+20100706 12:49:59 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:49:59 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0_0>
+
+20100706 12:49:59 [mdig.grass] DEBUG: exec: r.mdig.outliers max=5 output=x_t___strategy_area_filter_or_area_t_0_0 input=28090_all_717886 
+20100706 12:49:59 [mdig.grass] DEBUG: stdout: Setting seed from date
+
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Pass 1...
+Pass 2...
+r.clump complete. 1 clumps.
+Removing raster <r.mdig.outliers.temp>
+Removing raster <r.mdig.outliers.temp2>
+
+20100706 12:49:59 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_filter_or_area_t_0"=if(!isnull(x_t___strategy_area_filter_or_area_t_0_0) || !isnull(28090__355969@management_area_combine_i3),1,null())'
+20100706 12:49:59 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_filter_or_area_t_0
+20100706 12:49:59 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_filter_or_area_t_0
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:49:59 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:49:59 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:49:59 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_717886 survival=0 seed=-957303262 output=28090_all_40138 
+20100706 12:49:59 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:49:59 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_filter_or_area_t_0"),"28090_all_717886","28090_all_40138")'
+20100706 12:49:59 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:49:59 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:49:59 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_40138
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i3> to current mapset as
+<28090_all_40138>
+
+20100706 12:49:59 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:49:59 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:49:59 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i3_rep_0_ls_all_1
+20100706 12:49:59 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_40138,management_area_combine_region_a_i3_rep_0_ls_all_1
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_40138@management_area_combine_i3> to current mapset
+as <management_area_combine_region_a_i3_rep_0_ls_all_1>
+
+20100706 12:49:59 [mdig.replicate] INFO: t=2
+20100706 12:49:59 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_40138,28090_all_270536
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_40138@management_area_combine_i3> to current mapset
+as <28090_all_270536>
+
+20100706 12:49:59 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:49:59 [mdig.event] INFO: treatments is []
+20100706 12:49:59 [mdig.grass] DEBUG: Removing raster map 28090_all_717886
+20100706 12:49:59 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_717886
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_717886>
+
+20100706 12:49:59 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_40138 shape=186 -b radius=1 output=28090_all_717886 
+20100706 12:49:59 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_filter_or
+20100706 12:49:59 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0
+20100706 12:49:59 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0>
+
+20100706 12:49:59 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:49:59 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:49:59 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0_0>
+
+20100706 12:49:59 [mdig.grass] DEBUG: exec: r.mdig.outliers max=5 output=x_t___strategy_area_filter_or_area_t_0_0 input=28090_all_717886 
+20100706 12:50:00 [mdig.grass] DEBUG: stdout: Setting seed from date
+
+20100706 12:50:00 [mdig.grass] DEBUG: stderr: Pass 1...
+Pass 2...
+r.clump complete. 1 clumps.
+Removing raster <r.mdig.outliers.temp>
+Removing raster <r.mdig.outliers.temp2>
+
+20100706 12:50:00 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_filter_or_area_t_0"=if(!isnull(x_t___strategy_area_filter_or_area_t_0_0) || !isnull(28090__355969@management_area_combine_i3),1,null())'
+20100706 12:50:00 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:00 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:00 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:50:00 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:50:00 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:50:00 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:50:00 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_717886 survival=0 seed=874430104 output=28090_all_40138 
+20100706 12:50:00 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:50:00 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:50:00 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_filter_or_area_t_0"),"28090_all_717886","28090_all_40138")'
+20100706 12:50:00 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:50:00 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:50:00 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:50:00 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_40138
+20100706 12:50:00 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i3> to current mapset as
+<28090_all_40138>
+
+20100706 12:50:00 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:50:00 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:50:00 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i3_rep_0_ls_all_2
+20100706 12:50:00 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_40138,management_area_combine_region_a_i3_rep_0_ls_all_2
+20100706 12:50:00 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_40138@management_area_combine_i3> to current mapset
+as <management_area_combine_region_a_i3_rep_0_ls_all_2>
+
+20100706 12:50:00 [mdig.replicate] INFO: t=3
+20100706 12:50:00 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_40138,28090_all_469436
+20100706 12:50:00 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_40138@management_area_combine_i3> to current mapset
+as <28090_all_469436>
+
+20100706 12:50:00 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:50:00 [mdig.event] INFO: treatments is []
+20100706 12:50:00 [mdig.grass] DEBUG: Removing raster map 28090_all_717886
+20100706 12:50:00 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_717886
+20100706 12:50:00 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_717886>
+
+20100706 12:50:00 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_40138 shape=186 -b radius=1 output=28090_all_717886 
+20100706 12:50:00 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_filter_or
+20100706 12:50:00 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:00 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:00 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0>
+
+20100706 12:50:00 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:00 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:00 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0_0>
+
+20100706 12:50:00 [mdig.grass] DEBUG: exec: r.mdig.outliers max=5 output=x_t___strategy_area_filter_or_area_t_0_0 input=28090_all_717886 
+20100706 12:50:01 [mdig.grass] DEBUG: stdout: Setting seed from date
+
+20100706 12:50:01 [mdig.grass] DEBUG: stderr: Pass 1...
+Pass 2...
+r.clump complete. 1 clumps.
+Removing raster <r.mdig.outliers.temp>
+Removing raster <r.mdig.outliers.temp2>
+
+20100706 12:50:01 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_filter_or_area_t_0"=if(!isnull(x_t___strategy_area_filter_or_area_t_0_0) || !isnull(28090__355969@management_area_combine_i3),1,null())'
+20100706 12:50:01 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:01 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:01 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:50:01 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:50:01 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:50:01 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:50:01 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_717886 survival=0 seed=-743774400 output=28090_all_40138 
+20100706 12:50:01 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:50:01 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:50:01 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_filter_or_area_t_0"),"28090_all_717886","28090_all_40138")'
+20100706 12:50:01 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:50:01 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:50:01 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:50:01 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_40138
+20100706 12:50:01 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i3> to current mapset as
+<28090_all_40138>
+
+20100706 12:50:01 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:50:01 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:50:01 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i3_rep_0_ls_all_3
+20100706 12:50:01 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_40138,management_area_combine_region_a_i3_rep_0_ls_all_3
+20100706 12:50:01 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_40138@management_area_combine_i3> to current mapset
+as <management_area_combine_region_a_i3_rep_0_ls_all_3>
+
+20100706 12:50:01 [mdig.replicate] INFO: t=4
+20100706 12:50:01 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_40138,28090_all_9834
+20100706 12:50:01 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_40138@management_area_combine_i3> to current mapset
+as <28090_all_9834>
+
+20100706 12:50:01 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:50:01 [mdig.event] INFO: treatments is []
+20100706 12:50:01 [mdig.grass] DEBUG: Removing raster map 28090_all_717886
+20100706 12:50:01 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_717886
+20100706 12:50:01 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_717886>
+
+20100706 12:50:01 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_40138 shape=186 -b radius=1 output=28090_all_717886 
+20100706 12:50:01 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_filter_or
+20100706 12:50:01 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:01 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:01 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0>
+
+20100706 12:50:01 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:01 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:01 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0_0>
+
+20100706 12:50:01 [mdig.grass] DEBUG: exec: r.mdig.outliers max=5 output=x_t___strategy_area_filter_or_area_t_0_0 input=28090_all_717886 
+20100706 12:50:02 [mdig.grass] DEBUG: stdout: Setting seed from date
+
+20100706 12:50:02 [mdig.grass] DEBUG: stderr: Pass 1...
+Pass 2...
+r.clump complete. 1 clumps.
+Removing raster <r.mdig.outliers.temp>
+Removing raster <r.mdig.outliers.temp2>
+
+20100706 12:50:02 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_filter_or_area_t_0"=if(!isnull(x_t___strategy_area_filter_or_area_t_0_0) || !isnull(28090__355969@management_area_combine_i3),1,null())'
+20100706 12:50:02 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:02 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:02 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:50:02 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:50:02 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:50:02 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:50:02 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_717886 survival=0 seed=-1336429154 output=28090_all_40138 
+20100706 12:50:02 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:50:02 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:50:02 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_filter_or_area_t_0"),"28090_all_717886","28090_all_40138")'
+20100706 12:50:02 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:50:02 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:50:02 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:50:02 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_40138
+20100706 12:50:02 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i3> to current mapset as
+<28090_all_40138>
+
+20100706 12:50:02 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:50:02 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:50:02 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i3_rep_0_ls_all_4
+20100706 12:50:02 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_40138,management_area_combine_region_a_i3_rep_0_ls_all_4
+20100706 12:50:02 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_40138@management_area_combine_i3> to current mapset
+as <management_area_combine_region_a_i3_rep_0_ls_all_4>
+
+20100706 12:50:02 [mdig.replicate] INFO: t=5
+20100706 12:50:02 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_40138,28090_all_421862
+20100706 12:50:02 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_40138@management_area_combine_i3> to current mapset
+as <28090_all_421862>
+
+20100706 12:50:02 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:50:02 [mdig.event] INFO: treatments is []
+20100706 12:50:02 [mdig.grass] DEBUG: Removing raster map 28090_all_717886
+20100706 12:50:02 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_717886
+20100706 12:50:02 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_717886>
+
+20100706 12:50:02 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_40138 shape=186 -b radius=1 output=28090_all_717886 
+20100706 12:50:03 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_filter_or
+20100706 12:50:03 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0>
+
+20100706 12:50:03 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0_0>
+
+20100706 12:50:03 [mdig.grass] DEBUG: exec: r.mdig.outliers max=5 output=x_t___strategy_area_filter_or_area_t_0_0 input=28090_all_717886 
+20100706 12:50:03 [mdig.grass] DEBUG: stdout: Setting seed from date
+
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Pass 1...
+Pass 2...
+r.clump complete. 1 clumps.
+Removing raster <r.mdig.outliers.temp>
+Removing raster <r.mdig.outliers.temp2>
+
+20100706 12:50:03 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_filter_or_area_t_0"=if(!isnull(x_t___strategy_area_filter_or_area_t_0_0) || !isnull(28090__355969@management_area_combine_i3),1,null())'
+20100706 12:50:03 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:03 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:50:03 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:50:03 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_717886 survival=0 seed=-702612278 output=28090_all_40138 
+20100706 12:50:03 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:50:03 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_filter_or_area_t_0"),"28090_all_717886","28090_all_40138")'
+20100706 12:50:03 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_40138
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i3> to current mapset as
+<28090_all_40138>
+
+20100706 12:50:03 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:50:03 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:50:03 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i3_rep_0_ls_all_5
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_40138,management_area_combine_region_a_i3_rep_0_ls_all_5
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_40138@management_area_combine_i3> to current mapset
+as <management_area_combine_region_a_i3_rep_0_ls_all_5>
+
+20100706 12:50:03 [mdig.grass] DEBUG: Removing raster map 28090_all_40138
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_40138
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_40138>
+
+20100706 12:50:03 [mdig.grass] DEBUG: Removing raster map 28090_all_717886
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_717886
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_717886>
+
+20100706 12:50:03 [mdig.grass] DEBUG: Removing raster map 28090_all_509797
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_509797
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_509797>
+
+20100706 12:50:03 [mdig.grass] DEBUG: Removing raster map 28090_all_948916
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_948916
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_948916>
+
+20100706 12:50:03 [mdig.grass] DEBUG: Removing raster map 28090_all_270536
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_270536
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_270536>
+
+20100706 12:50:03 [mdig.grass] DEBUG: Removing raster map 28090_all_469436
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_469436
+20100706 12:50:03 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_469436>
+
+20100706 12:50:03 [mdig.grass] DEBUG: Removing raster map 28090_all_9834
+20100706 12:50:03 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_9834
+20100706 12:50:04 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_9834>
+
+20100706 12:50:04 [mdig.grass] DEBUG: Removing raster map 28090_all_421862
+20100706 12:50:04 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_421862
+20100706 12:50:04 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_421862>
+
+20100706 12:50:04 [mdig.replicate] INFO: Replicate 2/2 of exp. instance [vars: {'shape': '186'}] [strategy: area_filter_or]
+20100706 12:50:04 [mdig.grass] DEBUG: Setting region using extents 'w=-10.0 e=10.0 n=10.0 s=-10.0 ' and res 1.0
+20100706 12:50:04 [mdig.grass] DEBUG: exec: g.region w=-10.0 e=10.0 n=10.0 s=-10.0 res=1.0
+20100706 12:50:04 [mdig.grass] DEBUG: exec: g.copy rast=28090__686424@management_area_combine_i0,28090_all_811726
+20100706 12:50:04 [mdig.grass] DEBUG: stderr: Copy raster <28090__686424@management_area_combine_i0> to current mapset as
+<28090_all_811726>
+
+20100706 12:50:04 [mdig.replicate] DEBUG: Initial maps:  28090__686424@management_area_combine_i0
+20100706 12:50:04 [mdig.replicate] DEBUG: Simulation period is (0, 5)
+20100706 12:50:04 [mdig.replicate] INFO: t=0
+20100706 12:50:04 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_811726,28090_all_187198
+20100706 12:50:04 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_811726@management_area_combine_i3> to current mapset
+as <28090_all_187198>
+
+20100706 12:50:04 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:50:04 [mdig.event] INFO: treatments is []
+20100706 12:50:04 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_811726 shape=186 -b radius=1 output=28090_all_328137 
+20100706 12:50:04 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_filter_or
+20100706 12:50:04 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:04 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:04 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0>
+
+20100706 12:50:04 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:04 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:04 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0_0>
+
+20100706 12:50:04 [mdig.grass] DEBUG: exec: r.mdig.outliers max=5 output=x_t___strategy_area_filter_or_area_t_0_0 input=28090_all_328137 
+20100706 12:50:04 [mdig.grass] DEBUG: stdout: Setting seed from date
+
+20100706 12:50:04 [mdig.grass] DEBUG: stderr: Pass 1...
+Pass 2...
+r.clump complete. 2 clumps.
+r.recode complete. Raster map <x_t___strategy_area_filter_or_area_t_0_0>
+created.
+Removing raster <r.mdig.outliers.temp>
+Removing raster <r.mdig.outliers.temp2>
+
+20100706 12:50:04 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_filter_or_area_t_0"=if(!isnull(x_t___strategy_area_filter_or_area_t_0_0) || !isnull(28090__355969@management_area_combine_i3),1,null())'
+20100706 12:50:04 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:04 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:04 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:50:04 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:04 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:04 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:04 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_328137 survival=0 seed=943998111 output=28090_all_811726 
+20100706 12:50:04 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:50:04 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:50:04 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_filter_or_area_t_0"),"28090_all_328137","28090_all_811726")'
+20100706 12:50:04 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:04 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:04 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:04 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_811726
+20100706 12:50:04 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i3> to current mapset as
+<28090_all_811726>
+
+20100706 12:50:04 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:50:04 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:50:04 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i3_rep_1_ls_all_0
+20100706 12:50:05 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_811726,management_area_combine_region_a_i3_rep_1_ls_all_0
+20100706 12:50:05 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_811726@management_area_combine_i3> to current mapset
+as <management_area_combine_region_a_i3_rep_1_ls_all_0>
+
+20100706 12:50:05 [mdig.replicate] INFO: t=1
+20100706 12:50:05 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_811726,28090_all_802266
+20100706 12:50:05 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_811726@management_area_combine_i3> to current mapset
+as <28090_all_802266>
+
+20100706 12:50:05 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:50:05 [mdig.event] INFO: treatments is []
+20100706 12:50:05 [mdig.grass] DEBUG: Removing raster map 28090_all_328137
+20100706 12:50:05 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_328137
+20100706 12:50:05 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_328137>
+
+20100706 12:50:05 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_811726 shape=186 -b radius=1 output=28090_all_328137 
+20100706 12:50:05 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_filter_or
+20100706 12:50:05 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:05 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:05 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0>
+
+20100706 12:50:05 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:05 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:05 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0_0>
+
+20100706 12:50:05 [mdig.grass] DEBUG: exec: r.mdig.outliers max=5 output=x_t___strategy_area_filter_or_area_t_0_0 input=28090_all_328137 
+20100706 12:50:05 [mdig.grass] DEBUG: stdout: Setting seed from date
+
+20100706 12:50:05 [mdig.grass] DEBUG: stderr: Pass 1...
+Pass 2...
+r.clump complete. 1 clumps.
+Removing raster <r.mdig.outliers.temp>
+Removing raster <r.mdig.outliers.temp2>
+
+20100706 12:50:05 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_filter_or_area_t_0"=if(!isnull(x_t___strategy_area_filter_or_area_t_0_0) || !isnull(28090__355969@management_area_combine_i3),1,null())'
+20100706 12:50:05 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:05 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:05 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:50:05 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:05 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:05 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:05 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_328137 survival=0 seed=-1155154062 output=28090_all_811726 
+20100706 12:50:05 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:50:05 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:50:05 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_filter_or_area_t_0"),"28090_all_328137","28090_all_811726")'
+20100706 12:50:05 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:05 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:05 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:05 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_811726
+20100706 12:50:05 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i3> to current mapset as
+<28090_all_811726>
+
+20100706 12:50:05 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:50:05 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:50:05 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i3_rep_1_ls_all_1
+20100706 12:50:05 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_811726,management_area_combine_region_a_i3_rep_1_ls_all_1
+20100706 12:50:05 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_811726@management_area_combine_i3> to current mapset
+as <management_area_combine_region_a_i3_rep_1_ls_all_1>
+
+20100706 12:50:05 [mdig.replicate] INFO: t=2
+20100706 12:50:05 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_811726,28090_all_778679
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_811726@management_area_combine_i3> to current mapset
+as <28090_all_778679>
+
+20100706 12:50:06 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:50:06 [mdig.event] INFO: treatments is []
+20100706 12:50:06 [mdig.grass] DEBUG: Removing raster map 28090_all_328137
+20100706 12:50:06 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_328137
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_328137>
+
+20100706 12:50:06 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_811726 shape=186 -b radius=1 output=28090_all_328137 
+20100706 12:50:06 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_filter_or
+20100706 12:50:06 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:06 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0>
+
+20100706 12:50:06 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:06 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0_0>
+
+20100706 12:50:06 [mdig.grass] DEBUG: exec: r.mdig.outliers max=5 output=x_t___strategy_area_filter_or_area_t_0_0 input=28090_all_328137 
+20100706 12:50:06 [mdig.grass] DEBUG: stdout: Setting seed from date
+
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Pass 1...
+Pass 2...
+r.clump complete. 1 clumps.
+Removing raster <r.mdig.outliers.temp>
+Removing raster <r.mdig.outliers.temp2>
+
+20100706 12:50:06 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_filter_or_area_t_0"=if(!isnull(x_t___strategy_area_filter_or_area_t_0_0) || !isnull(28090__355969@management_area_combine_i3),1,null())'
+20100706 12:50:06 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:06 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:50:06 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:06 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:06 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_328137 survival=0 seed=-1918051671 output=28090_all_811726 
+20100706 12:50:06 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:50:06 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_filter_or_area_t_0"),"28090_all_328137","28090_all_811726")'
+20100706 12:50:06 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:06 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:06 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_811726
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i3> to current mapset as
+<28090_all_811726>
+
+20100706 12:50:06 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:50:06 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:50:06 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i3_rep_1_ls_all_2
+20100706 12:50:06 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_811726,management_area_combine_region_a_i3_rep_1_ls_all_2
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_811726@management_area_combine_i3> to current mapset
+as <management_area_combine_region_a_i3_rep_1_ls_all_2>
+
+20100706 12:50:06 [mdig.replicate] INFO: t=3
+20100706 12:50:06 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_811726,28090_all_489554
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_811726@management_area_combine_i3> to current mapset
+as <28090_all_489554>
+
+20100706 12:50:06 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:50:06 [mdig.event] INFO: treatments is []
+20100706 12:50:06 [mdig.grass] DEBUG: Removing raster map 28090_all_328137
+20100706 12:50:06 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_328137
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_328137>
+
+20100706 12:50:06 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_811726 shape=186 -b radius=1 output=28090_all_328137 
+20100706 12:50:06 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_filter_or
+20100706 12:50:06 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:06 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0>
+
+20100706 12:50:06 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:06 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:06 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0_0>
+
+20100706 12:50:06 [mdig.grass] DEBUG: exec: r.mdig.outliers max=5 output=x_t___strategy_area_filter_or_area_t_0_0 input=28090_all_328137 
+20100706 12:50:07 [mdig.grass] DEBUG: stdout: Setting seed from date
+
+20100706 12:50:07 [mdig.grass] DEBUG: stderr: Pass 1...
+Pass 2...
+r.clump complete. 1 clumps.
+Removing raster <r.mdig.outliers.temp>
+Removing raster <r.mdig.outliers.temp2>
+
+20100706 12:50:07 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_filter_or_area_t_0"=if(!isnull(x_t___strategy_area_filter_or_area_t_0_0) || !isnull(28090__355969@management_area_combine_i3),1,null())'
+20100706 12:50:07 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:07 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:07 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:50:07 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:07 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:07 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:07 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_328137 survival=0 seed=1306961048 output=28090_all_811726 
+20100706 12:50:07 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:50:07 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:50:07 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_filter_or_area_t_0"),"28090_all_328137","28090_all_811726")'
+20100706 12:50:07 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:07 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:07 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:07 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_811726
+20100706 12:50:07 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i3> to current mapset as
+<28090_all_811726>
+
+20100706 12:50:07 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:50:07 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:50:07 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i3_rep_1_ls_all_3
+20100706 12:50:07 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_811726,management_area_combine_region_a_i3_rep_1_ls_all_3
+20100706 12:50:07 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_811726@management_area_combine_i3> to current mapset
+as <management_area_combine_region_a_i3_rep_1_ls_all_3>
+
+20100706 12:50:07 [mdig.replicate] INFO: t=4
+20100706 12:50:07 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_811726,28090_all_312942
+20100706 12:50:07 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_811726@management_area_combine_i3> to current mapset
+as <28090_all_312942>
+
+20100706 12:50:07 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:50:07 [mdig.event] INFO: treatments is []
+20100706 12:50:07 [mdig.grass] DEBUG: Removing raster map 28090_all_328137
+20100706 12:50:07 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_328137
+20100706 12:50:07 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_328137>
+
+20100706 12:50:07 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_811726 shape=186 -b radius=1 output=28090_all_328137 
+20100706 12:50:07 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_filter_or
+20100706 12:50:07 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:07 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:07 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0>
+
+20100706 12:50:07 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:07 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:07 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0_0>
+
+20100706 12:50:07 [mdig.grass] DEBUG: exec: r.mdig.outliers max=5 output=x_t___strategy_area_filter_or_area_t_0_0 input=28090_all_328137 
+20100706 12:50:07 [mdig.grass] DEBUG: stdout: Setting seed from date
+
+20100706 12:50:07 [mdig.grass] DEBUG: stderr: Pass 1...
+Pass 2...
+r.clump complete. 1 clumps.
+Removing raster <r.mdig.outliers.temp>
+Removing raster <r.mdig.outliers.temp2>
+
+20100706 12:50:07 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_filter_or_area_t_0"=if(!isnull(x_t___strategy_area_filter_or_area_t_0_0) || !isnull(28090__355969@management_area_combine_i3),1,null())'
+20100706 12:50:07 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:07 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:50:08 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:08 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:08 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_328137 survival=0 seed=1022540705 output=28090_all_811726 
+20100706 12:50:08 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:50:08 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_filter_or_area_t_0"),"28090_all_328137","28090_all_811726")'
+20100706 12:50:08 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:08 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:08 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_811726
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i3> to current mapset as
+<28090_all_811726>
+
+20100706 12:50:08 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:50:08 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:50:08 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i3_rep_1_ls_all_4
+20100706 12:50:08 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_811726,management_area_combine_region_a_i3_rep_1_ls_all_4
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_811726@management_area_combine_i3> to current mapset
+as <management_area_combine_region_a_i3_rep_1_ls_all_4>
+
+20100706 12:50:08 [mdig.replicate] INFO: t=5
+20100706 12:50:08 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_811726,28090_all_17372
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_811726@management_area_combine_i3> to current mapset
+as <28090_all_17372>
+
+20100706 12:50:08 [mdig.replicate] INFO: Interval 1 - Lifestage "all" started
+20100706 12:50:08 [mdig.event] INFO: treatments is []
+20100706 12:50:08 [mdig.grass] DEBUG: Removing raster map 28090_all_328137
+20100706 12:50:08 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_328137
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_328137>
+
+20100706 12:50:08 [mdig.grass] DEBUG: exec: r.mdig.neighbour input=28090_all_811726 shape=186 -b radius=1 output=28090_all_328137 
+20100706 12:50:08 [mdig.lifestage.all] DEBUG: Applying treatment 0 for strategy area_filter_or
+20100706 12:50:08 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:08 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0>
+
+20100706 12:50:08 [mdig.grass] DEBUG: Removing raster map x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:08 [mdig.grass] DEBUG: exec: g.remove rast=x_t___strategy_area_filter_or_area_t_0_0
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: Removing raster <x_t___strategy_area_filter_or_area_t_0_0>
+
+20100706 12:50:08 [mdig.grass] DEBUG: exec: r.mdig.outliers max=5 output=x_t___strategy_area_filter_or_area_t_0_0 input=28090_all_328137 
+20100706 12:50:08 [mdig.grass] DEBUG: stdout: Setting seed from date
+
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: Pass 1...
+Pass 2...
+r.clump complete. 1 clumps.
+Removing raster <r.mdig.outliers.temp>
+Removing raster <r.mdig.outliers.temp2>
+
+20100706 12:50:08 [mdig.grass] DEBUG: exec: r.mapcalc '"x_t___strategy_area_filter_or_area_t_0"=if(!isnull(x_t___strategy_area_filter_or_area_t_0_0) || !isnull(28090__355969@management_area_combine_i3),1,null())'
+20100706 12:50:08 [mdig.lifestage.all] DEBUG: Treatment area map is x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:08 [mdig.grass] DEBUG: exec: r.mask -o input=x_t___strategy_area_filter_or_area_t_0
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: MASK created. All subsequent raster operations
+will be limited to MASK area
+Removing or renaming raster file named MASK will
+restore raster operations to normal
+
+20100706 12:50:08 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:08 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:08 [mdig.grass] DEBUG: exec: r.mdig.survival input=28090_all_328137 survival=0 seed=1357836633 output=28090_all_811726 
+20100706 12:50:08 [mdig.grass] DEBUG: exec: r.mask -r
+20100706 12:50:08 [mdig.grass] DEBUG: stderr: Removing raster <MASK>
+Raster MASK removed
+
+20100706 12:50:08 [mdig.grass] DEBUG: exec: r.mapcalc '"wibble_foss"=if(isnull("x_t___strategy_area_filter_or_area_t_0"),"28090_all_328137","28090_all_811726")'
+20100706 12:50:08 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:08 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:09 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:09 [mdig.grass] DEBUG: exec: g.copy rast=wibble_foss,28090_all_811726
+20100706 12:50:09 [mdig.grass] DEBUG: stderr: Copy raster <wibble_foss@management_area_combine_i3> to current mapset as
+<28090_all_811726>
+
+20100706 12:50:09 [mdig.replicate] INFO: Interval 1 completed.
+20100706 12:50:09 [mdig.replicate] DEBUG: Lifestage all - No analyses
+20100706 12:50:09 [mdig.RasterOutput] DEBUG: Writing raster management_area_combine_region_a_i3_rep_1_ls_all_5
+20100706 12:50:09 [mdig.grass] DEBUG: exec: g.copy rast=28090_all_811726,management_area_combine_region_a_i3_rep_1_ls_all_5
+20100706 12:50:09 [mdig.grass] DEBUG: stderr: Copy raster <28090_all_811726@management_area_combine_i3> to current mapset
+as <management_area_combine_region_a_i3_rep_1_ls_all_5>
+
+20100706 12:50:09 [mdig.grass] DEBUG: Removing raster map 28090_all_811726
+20100706 12:50:09 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_811726
+20100706 12:50:09 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_811726>
+
+20100706 12:50:09 [mdig.grass] DEBUG: Removing raster map 28090_all_328137
+20100706 12:50:09 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_328137
+20100706 12:50:09 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_328137>
+
+20100706 12:50:09 [mdig.grass] DEBUG: Removing raster map 28090_all_187198
+20100706 12:50:09 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_187198
+20100706 12:50:09 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_187198>
+
+20100706 12:50:09 [mdig.grass] DEBUG: Removing raster map 28090_all_802266
+20100706 12:50:09 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_802266
+20100706 12:50:09 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_802266>
+
+20100706 12:50:09 [mdig.grass] DEBUG: Removing raster map 28090_all_778679
+20100706 12:50:09 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_778679
+20100706 12:50:09 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_778679>
+
+20100706 12:50:09 [mdig.grass] DEBUG: Removing raster map 28090_all_489554
+20100706 12:50:09 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_489554
+20100706 12:50:09 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_489554>
+
+20100706 12:50:09 [mdig.grass] DEBUG: Removing raster map 28090_all_312942
+20100706 12:50:09 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_312942
+20100706 12:50:09 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_312942>
+
+20100706 12:50:09 [mdig.grass] DEBUG: Removing raster map 28090_all_17372
+20100706 12:50:09 [mdig.grass] DEBUG: exec: g.remove rast=28090_all_17372
+20100706 12:50:09 [mdig.grass] DEBUG: stderr: Removing raster <28090_all_17372>
+
+20100706 12:50:09 [mdig.model] INFO: Average time to run replicates for each instance:
+20100706 12:50:09 [mdig.model] INFO: [Instance - p: {('shape', '186'),}; region: a; replicates: 2/2; active: None mapset: management_area_combine_i0]: 0:00:01.752815
+20100706 12:50:09 [mdig.model] INFO: [Instance - s:area_or; p: {('shape', '186'),}; region: a; replicates: 2/2; active: None mapset: management_area_combine_i1]: 0:00:03.256117
+20100706 12:50:09 [mdig.model] INFO: [Instance - s:area_and; p: {('shape', '186'),}; region: a; replicates: 2/2; active: None mapset: management_area_combine_i2]: 0:00:03.650069
+20100706 12:50:09 [mdig.model] INFO: [Instance - s:area_filter_or; p: {('shape', '186'),}; region: a; replicates: 2/2; active: None mapset: management_area_combine_i3]: 0:00:05.249304
+20100706 12:50:09 [mdig] DEBUG: Cleaning up
+20100706 12:50:10 [mdig.grass] INFO: Restoring region
+20100706 12:50:10 [mdig] INFO: Finished at 'Tue Jul  6 12:50:10 2010'
+20100706 12:50:10 [mdig] DEBUG: Exiting
