@@ -107,7 +107,6 @@ def validate_replicate(instance, rep_num):
     return True
 
 @route('/models/',method="POST")
-@view('staging_model.tpl')
 def submit_model():
     model_file = request.POST.get('new_model')
     data = model_file.file.read()
