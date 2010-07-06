@@ -1,0 +1,54 @@
+<model>
+  <user>
+    <email>joel@fruitionnz.com</email>
+  </user>
+  <name> model_to_add </name>
+  <description> Test using a named region as well as having maps as event parameters.</description>
+  <random>
+    <initialSeed> 1 </initialSeed>
+    <replicates> 2 </replicates>
+    <offset>227</offset>
+  </random>
+  <GISLocation>grass_location</GISLocation>
+  <regions>
+      <region id="a" name='test_region'/>
+  </regions>
+  <period>
+    <startTime> 0 </startTime>
+    <endTime> 5 </endTime>
+  </period>
+  <output>
+    <raster>
+      <interval>1</interval>
+      <lifestage>all</lifestage>
+    </raster>
+  </output>
+  <lifestages>
+    <lifestage name="all" populationBased="false">
+      <initialDistribution region="a">
+        <map>initial_map</map>
+      </initialDistribution>
+      <phenology region="a">
+        <value> 1 </value>
+      </phenology>
+      <event name="r.mdig.agepop">
+        <param name="agem">
+            <map>spread_map2</map> <!-- spread map 2 is in PERMANENT - test dupes -->
+        </param>
+      </event>
+      <event name="r.mdig.localspread">
+        <param name="spread">
+          <variable id="d1">
+            <value>2</value>
+            <map>spread_map</map> <!-- spread map is in main model mapset -->
+            <map>spread_map2</map> <!-- spread map 2 is in PERMANENT -->
+          </variable>
+        </param>
+        <param name="agem">
+            <map>spread_map3</map> <!-- spread map 3 doesn't exist, test missing -->
+        </param>
+      </event>
+    </lifestage>
+  </lifestages>
+</model>
+
