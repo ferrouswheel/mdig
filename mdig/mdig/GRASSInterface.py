@@ -48,9 +48,8 @@ class GRASSCommandException (Exception):
         self.exit_code = exit_code
 
     def __str__(self):
-        result = "GRASSCommandException '%s', errno: %d", commandstring, ret
-        result += " stdout: " + self.stderr
-        result += " stderr: " + self.stdout
+        result = "Command '%s' exiting with code %d," % (self.cmd, self.exit_code)
+        result += " stderr: '" + self.stderr + "'"
         return result
 
 import DispersalModel
