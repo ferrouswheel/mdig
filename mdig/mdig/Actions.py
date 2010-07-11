@@ -799,6 +799,7 @@ class ExportAction(Action):
             if not i.is_complete():
                 self.log.error("Instance " + repr(i) + " not complete")
                 raise InstanceIncompleteException()
+            i.change_mapset()
             # Run on occupancy envelopes
             self.log.info("Creating images for occupancy envelopes")
             self.log.debug("Fetching occupancy envelopes")
