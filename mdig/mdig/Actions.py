@@ -536,6 +536,7 @@ class ExportAction(Action):
                 usage = "%prog export [options] <model_name>")
         self.add_options()
         self.listeners = []
+        self.float64 = False
         
     def add_options(self):
         Action.add_options(self)
@@ -626,11 +627,16 @@ class ExportAction(Action):
                     self.log.error("Bad instance index specified")
                     sys.exit("Bad instance index specified")
 
+        show_output = MDiGConfig.get_config().output_level == "normal"
         for i in instances:
             try:
                 if self.options.output_map_pack:
+                    if show_output:
+                        print "Creating map pack for instance %d" % i.get_index()
                     self.do_instance_map_pack(i)
                 if output_images:
+                    if show_output:
+                        print "Creating images for instance %d" % i.get_index()
                     self.do_instance_images(i)
             except InvalidLifestageException, e:
                 sys.exit(mdig.mdig_exit_codes["invalid_lifestage"])
@@ -692,12 +698,14 @@ class ExportAction(Action):
                     m = saved_maps[t]
                     map_list.append(self.export_map(m,rep_filenames[t]))
                     self.update_listeners_map_pack(None, r, ls, t)
-                self.zip_maps(map_list,r.get_img_filenames(ls, extension=False, gif=True))
+                zip_fn = r.get_img_filenames(ls, extension=False, gif=True)[:-5]
+                self.zip_maps(map_list, zip_fn)
                 all_maps.extend(map_list)
         else:
             if not i.is_complete():
                 self.log.error("Instance " + repr(i) + " not complete")
                 raise InstanceIncompleteException()
+            i.change_mapset()
             # Run on occupancy envelopes
             self.log.info("Exporting occupancy envelope maps")
             self.log.debug("Fetching occupancy envelopes")
@@ -710,9 +718,10 @@ class ExportAction(Action):
             img_filenames = i.get_occ_envelope_img_filenames(ls, extension=False) 
             for t in times:
                 m = env[ls][t]
-                map_list.append(self.export_map(m,img_filenames[t]))
+                map_list.append(self.export_map(m,img_filenames[t],envelope=True))
                 self.update_listeners_map_pack(i, None, ls, t)
-            self.zip_maps(map_list,i.get_occ_envelope_img_filenames(ls, extension=False, gif=True) )
+            zip_fn = i.get_occ_envelope_img_filenames(ls, extension=False, gif=True)[:-5]
+            self.zip_maps(map_list, zip_fn)
             all_maps.extend(map_list)
         # Remove the non-zipped maps
         for m in all_maps:
@@ -725,13 +734,25 @@ class ExportAction(Action):
         g.set_region(raster=map) 
         cmd = 'r.out.gdal input=%s output=%s.tif format=GTiff type=%s createopt="COMPRESS=PACKBITS,INTERLEAVE=PIXEL"'
         if envelope:
-            cmd = cmd % (map, out_fn, 'Float32')
+            if self.float64:
+                cmd = cmd % (map, out_fn, 'Float64')
+            else:
+                cmd = cmd % (map, out_fn, 'Float32')
         else:
             cmd = cmd % (map, out_fn, 'UInt16')
 
-        g.run_command(cmd)
-        g.set_region(old_region) 
-        return out_fn + ".tif"
+        try:
+            g.run_command(cmd)
+            out_fn += ".tif"
+        except GRASSInterface.GRASSCommandException, e:
+            # This swaps to 64 bit floats if GRASS complains about
+            # losing precision on export
+            if "Precision loss" in e.stderr:
+                self.float64 = True
+            out_fn = self.export_map(map,out_fn,envelope)
+        finally:
+            g.set_region(old_region) 
+        return out_fn
 
     def zip_maps(self,maps,zip_fn):
         import zipfile
