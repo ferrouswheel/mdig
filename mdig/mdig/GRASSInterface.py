@@ -48,7 +48,10 @@ class GRASSCommandException (Exception):
         self.exit_code = exit_code
 
     def __str__(self):
-        return "GRASSCommandException (cmd:%s)" % (self.cmd)
+        result = "GRASSCommandException '%s', errno: %d", commandstring, ret
+        result += " stdout: " + self.stderr
+        result += " stderr: " + self.stdout
+        return result
 
 import DispersalModel
 import MDiGConfig
@@ -884,7 +887,6 @@ class GRASSInterface:
         ret = p.returncode
 
         if (ret is not None) and ret != 0:
-            import pdb; pdb.set_trace()
             raise GRASSCommandException(commandstring,self.stderr,ret)
         return ret
 
