@@ -1004,8 +1004,11 @@ def start_web_service():
     # setup and run webapp
     global app; app = bottle.app()
     app.catchall = False
-    import paste.evalexception
-    myapp = paste.evalexception.middleware.EvalException(app)
+    try:
+        import paste.evalexception
+        myapp = paste.evalexception.middleware.EvalException(app)
+    except ImportError, e:
+        myapp = app
     myapp = RestoreMapset(myapp)
     c = MDiGConfig.get_config()
     # Don't check replicates are complete, since this will make the web service
