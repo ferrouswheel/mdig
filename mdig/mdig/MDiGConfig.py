@@ -35,7 +35,7 @@ import logging
 #sys.path.append(os.path.join(sys.path[0], 'support'))
 # was in support dir, but now expected to be installed as part of
 # python... (package python-configobj in Ubuntu)
-from configobj import ConfigObj
+from mdig.contrib.configobj import ConfigObj
 
 import mdig
 
@@ -96,14 +96,20 @@ def find_grass_base_dir():
     # TODO find from GRASS environment if it exists
     # find from guessing /usr/local/grass*
     import glob
-    return glob.glob('/usr/local/grass-*')[0]
+    if sys.platform == "win32":
+        opts = glob.glob(os.path.join(os.environ['OSGEO4W_ROOT'],'apps\\grass\\grass-*'))
+    else:
+        opts = glob.glob('/usr/local/grass-*')
+    if len(opts) > 0: return opts[-1]
+    else: return None
 
 def find_grassdb_dir():
     # TODO find from GRASS environment if it exists
     # find from guessing /home/user/src/mdig/test
     my_path = os.path.normpath(os.path.join(home_dir, '..', 'src/mdig/test'))
-    if os.path.isdir(my_path):
-        return my_path
+    if os.path.isdir(my_path): return my_path
+    my_path = os.path.normpath(os.path.join(os.environ['OSGEO4W_ROOT'], 'src/mdig/test'))
+    if os.path.isdir(my_path): return my_path
     return None
 
 def find_location_dir():
@@ -295,6 +301,7 @@ values. Push any key to continue, or CTRL-C to abort. """
         if section in MDiGConfig.required \
                 and k in MDiGConfig.required[section]:
             guess = MDiGConfig.required[section][k]
+	import pdb;pdb.set_trace()
         if guess: guess = guess() # guess should be a callable
         if not fresh:
             print "While setting up config, required parameter %s:%s was missing" % (section,k)

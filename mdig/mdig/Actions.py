@@ -8,6 +8,14 @@ import mdig
 from mdig import MDiGConfig
 from mdig import GRASSInterface
 from mdig import ROCAnalysis
+#if sys.platform != "win32":
+#    print sys.platform
+#    from mdig import ROCAnalysis
+#    roc_on = True
+#else:
+#    roc_on = False
+#    print "ROC analysis not supported on Windows"
+
 from mdig import Displayer
 from mdig.DispersalModel import DispersalModel
 
@@ -1147,8 +1155,8 @@ mdig_actions = {
     "web": WebAction,
     "node": ClientAction,
     "info": InfoAction,
-    "roc": ROCAction,
     "reset": ResetAction,
     "remove": RemoveAction
     }
+mdig_actions["roc"] = ROCAction
 

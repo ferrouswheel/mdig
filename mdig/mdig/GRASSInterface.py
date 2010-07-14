@@ -194,7 +194,7 @@ class GRASSInterface:
         if var in os.environ:
             old_path = os.environ[var]
         if old_path:
-            path += ":" + old_path
+            path += os.pathsep + old_path
         os.environ[var] = path
 
     def init_environment(self):
@@ -212,9 +212,9 @@ class GRASSInterface:
             os.environ["GRASS_LD_LIBRARY_PATH"]=os.environ["LD_LIBRARY_PATH"]
 
             self.insert_environ_path("PATH",
-                    os.path.join(self.grass_vars["GISBASE"],"bin"))
-            self.insert_environ_path("PATH",
                     os.path.join(self.grass_vars["GISBASE"],"scripts"))
+            self.insert_environ_path("PATH",
+                    os.path.join(self.grass_vars["GISBASE"],"bin"))
 
             self.insert_environ_path("PYTHONPATH",
                     os.path.join(self.grass_vars["GISBASE"],"etc/python"))
@@ -234,18 +234,18 @@ class GRASSInterface:
         self.old_gisdbase = self.grass_vars['GISDBASE']
 
     def init_pid_specific_files(self):
+        import tempfile
         #export GIS_LOCK=$$
         pid = str(os.getpid())
         os.environ["GIS_LOCK"]=pid
         #export GRASS_VERSION="7.0.svn"
         os.environ["GIS_VERSION"]="6.4.svn"
         #setup GISRC file
-        tmp="/tmp/grass6-mdig-" + pid
+        tmp=os.path.join(tempfile.gettempdir(),"grass6-mdig-" + pid)
         self.pid_dir = tmp
-        os.environ["GISRC"]=tmp + "/gisrc"
+        os.environ["GISRC"]=os.path.join(tmp,"gisrc")
         os.mkdir(tmp)
-        from MDiGConfig import home_dir
-        shutil.copyfile(os.path.join(home_dir,"../.grassrc6"),os.environ["GISRC"])
+        shutil.copyfile(os.path.join(os.environ["HOME"],".grassrc6"),os.environ["GISRC"])
 
     def check_paths(self):
         """ Check paths that should exist with the current GRASS environment,
@@ -490,14 +490,12 @@ class GRASSInterface:
                     if mapcalc_expr.find(k) != -1:
                         self.log.error("No map passed to initMap to substitute " \
                                 + k + " variable in mapcalc expression")
-                    pdb.set_trace()
                 else:
                     mapcalc_expr = mapcalc_expr.replace(k, map_replacements[k])
             self.mapcalc(name,mapcalc_expr)
             map_type="raster"
         else:
             self.log.error("Unknown GrassMap type for initialisation")
-            pdb.set_trace()
         bmap.ready = True
         return name, map_type
     
@@ -696,7 +694,6 @@ class GRASSInterface:
             p=os.popen("g.findfile element=%s file=%s" % (t,file_name), 'r')
             output = p.read()
             res=re.search("name='(.+)'",output)
-            #pdb.set_trace()
             if res is not None:
                 if t in ["cell","fcell","dcell"]:
                     # Return raster sub types simply as "raster"
@@ -944,7 +941,6 @@ class GRASSInterface:
         r.stdout, r.stderr = r.communicate()
         if r.stdout == '':
             self.log.error("That raster does not exist in the current mapset.")
-            pdb.set_trace()
             #indexRaster = raw_input()
             #cmd = "r.info -m %s --v" %(indexRaster)
             #r = grass.pipe_command(cmd) 

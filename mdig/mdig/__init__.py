@@ -20,8 +20,6 @@ __all__ = ["Analysis","DispersalInstance","DispersalModel","Displayer","Event",
         "GRASSInterface","GrassMap","ImageShow","Lifestage","MDiGConfig",
         "OutputFormats","Region.py","Replicate.py","ManagementStratey","WebService","bottle"]
 
-import configobj
-
 version = "0.2.9"
 version_name = "Spade"
 version_string = "MDiG " + version + " - \"" + version_name + "\""
