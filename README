@@ -24,6 +24,7 @@ package name in brackets) are needed:
 * lxml python library (python-lxml)
 * ImageMagick's convert utility (imagemagick)
 * simplejson (python-simplejson)
+* DateUtil (python-dateutil)
 
 For grass modules:
 
