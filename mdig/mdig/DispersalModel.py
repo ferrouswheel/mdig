@@ -80,7 +80,8 @@ class DispersalModel(object):
         self.action = the_action
         
         self.log = logging.getLogger("mdig.model")
-        
+	self.log_handler=None
+
         self.model_file = model_file
         self.backup_filename = None
         self.regions={}
@@ -144,13 +145,11 @@ class DispersalModel(object):
         while fh is None:
             try:
                 fh = logging.handlers.RotatingFileHandler(self.log_file,maxBytes=0,backupCount=5)
-                if rollover:
-                    fh.doRollover()
+                if rollover: fh.doRollover()
             except WindowsError, e:
                 # Windows isn't a real operating system and when there a multiple
                 # threads in complains about renaming files that are open by another
                 # thread... so instead, we have to create another name...
-                fh = None
                 self.log_file = os.path.join(self.base_dir, "model%d.log" % count)
                 count += 1
                 # Bail if we have too much trouble
@@ -159,6 +158,20 @@ class DispersalModel(object):
         # If we start having multiple simulations at once, then this should be
         # changed (and also areas that are not under mdig.model)
         logging.getLogger("mdig").addHandler(fh)
+	self.log_handler=fh
+
+    def __del__(self):
+	self.remove_log_handler()
+
+    def remove_log_handler(self):
+	""" Manually clean up logs since Windows can't handler renaming an
+	open file and things get messed up
+	"""
+	if self.log_handler:
+            logging.getLogger("mdig").removeHandler(self.log_handler)
+	    self.log_handler.close()
+	    self.log_handler=None
+	    self.log_file=None
 
     def set_base_dir(self, dir=None):
         # Set up base directory for output

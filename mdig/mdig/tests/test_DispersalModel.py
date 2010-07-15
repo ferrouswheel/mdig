@@ -23,7 +23,6 @@ class DispersalModelTest(unittest.TestCase):
         self.assertEqual(dm.xml_model.tag, "model")
 
     def test_model_constructor(self):
-        # test bailing on creating models with bad combos
         dm = DispersalModel(the_action = RunAction())
         dm = DispersalModel(the_action = RunAction(), setup=False)
     
@@ -39,6 +38,7 @@ class DispersalModelTest(unittest.TestCase):
         self.assertEqual(len([i[0] for i in res if i[0] =='popmod']),1)
         self.assertEqual(len([i[0] for i in res if i[0] =='coda']),6)
         del models['lifestage_test']
+	m.remove_log_handler()
 
         fn = models['test_named_region']
         m = DispersalModel(fn)
@@ -50,6 +50,7 @@ class DispersalModelTest(unittest.TestCase):
         self.assertEqual(len([i[0] for i in res if i[2] =='test_named_region']),2)
         self.assertEqual(len([i[0] for i in res if i[2] is None]),1)
         del models['test_named_region']
+	m.remove_log_handler()
 
         fn = models['management_use_maps']
         m = DispersalModel(fn)
@@ -59,6 +60,7 @@ class DispersalModelTest(unittest.TestCase):
         self.assertEqual(len([i[0] for i in res if i[2] =='PERMANENT']),1)
         self.assertEqual(len([i[0] for i in res if i[2] is None]),2)
         del models['management_use_maps']
+	m.remove_log_handler()
 
         # check the others don't erroneously report resources
         for k in models:
@@ -66,6 +68,7 @@ class DispersalModelTest(unittest.TestCase):
             m = DispersalModel(fn)
             res = m.get_resources()
             self.assertEqual(len(res),0)
+	    m.remove_log_handler()
 
     @patch('shutil.rmtree')
     def test_hard_reset(self,m_rm):
@@ -79,5 +82,6 @@ class DispersalModelTest(unittest.TestCase):
         m.hard_reset()
         self.assertEqual(m_rm.call_count,1)
         self.assertEqual(len(m.xml_model.xpath('/model/instances/completed')),0)
+	m.remove_log_handler()
 
 

@@ -48,6 +48,7 @@ class ExportActionTest(unittest.TestCase):
         ea.options.instances = None
         ea.do_me(m)
         self.assertEqual(ea.do_instance_map_pack.call_count, 6)
+	m.remove_log_handler()
 
     @patch('mdig.GRASSInterface.get_g')
     @patch('os.remove')
@@ -66,6 +67,7 @@ class ExportActionTest(unittest.TestCase):
         #self.assertRaises(InvalidReplicateException,ea.do_instance_map_pack,instances[0])
 
         #ea.do_instance_map_pack(instances[0])
+	m.remove_log_handler()
 
     @patch('mdig.GRASSInterface.get_g')
     @patch('os.remove')
@@ -87,4 +89,5 @@ class ExportActionTest(unittest.TestCase):
         #instances[0].replicates[0].get_saved_maps.return_value = {'1':'xx','2':'yy'}
         #instances[0].replicates[0].get_img_filenames.return_value = {'1':'xx','2':'yy'}
         # ea.do_instance_images(instances[0])
+	m.remove_log_handler()
 

@@ -880,6 +880,7 @@ class MDiGWorker():
 
     def run(self):
         # NOTE: To add a pdb statement to this process you need to use:
+	# (of course, this only works in *nix)
         #import pdb;
         #pdb.Pdb(stdin=open('/dev/stdin', 'r+'), stdout=open('/dev/stdout', 'r+')).set_trace()
         while self.running:

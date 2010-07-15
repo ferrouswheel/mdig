@@ -35,7 +35,10 @@ class DispersalInstanceTest(unittest.TestCase):
         self.gisdb = c['GRASS']['GISDBASE']
 
     def tearDown(self):
-        pass
+	self.m_variables.remove_log_handler()
+	self.m_variables_complete.remove_log_handler()
+	self.m_lifestage.remove_log_handler()
+	self.m_strategy.remove_log_handler()
 
     @patch('mdig.GRASSInterface.get_g')
     def test_load_replicates(self,m_g):
