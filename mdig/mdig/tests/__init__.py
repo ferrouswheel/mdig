@@ -18,6 +18,7 @@ def setup():
     
     # Copy test repository
     c = MDiGConfig.get_config()
+    c['GISBASE'] = MDiGConfig.find_grass_base_dir()
     global test_dir
     test_dir = tempfile.mkdtemp(prefix="mdig_test_")
     end_part = os.path.split(c['GRASS']['GISDBASE'])[1]

@@ -66,7 +66,7 @@ class AnalysisCommandTest(unittest.TestCase):
         output_cmd = ac.insert_output_into_cmd()
         self.assertEqual(output_cmd, "test %%f >> " + output_file)
 
-    @patch_object(AnalysisCommand, 'run_command_once')
+    @patch.object(AnalysisCommand, 'run_command_once')
     def test_run_command(self, rc_mock):
         model_fn = self.repo.get_models()['lifestage_test']
         model = DispersalModel(model_fn,setup=False)
