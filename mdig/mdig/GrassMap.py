@@ -65,10 +65,6 @@ class GrassMap:
             # are temporary by default
             self.temporary = False
 
-    def __del__ (self):
-        if self.temporary and self.ready:
-            GRASSInterface.get_g().destruct_map(self.filename)
-        
     def _read_XML(self):
         """
         Parse map node XML
