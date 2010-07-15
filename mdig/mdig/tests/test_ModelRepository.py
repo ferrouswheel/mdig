@@ -74,6 +74,8 @@ class ModelRepositoryTest(unittest.TestCase):
 
         # Try to add a model from one repository to the empty one
         try: self.remove_mock_location(self.temp_dir)
+	except WindowsError, e:
+            if 'system cannot find the path specified' not in str(e): raise e
         except OSError, e:
             if 'No such file' not in str(e): raise e
         m2 = ModelRepository()
@@ -105,6 +107,8 @@ class ModelRepositoryTest(unittest.TestCase):
 
         # Try to add a model from one repository to the empty one
         try: self.remove_mock_location(self.temp_dir)
+	except WindowsError, e:
+            if 'system cannot find the path specified' not in str(e): raise e
         except OSError, e:
             if 'No such file' not in str(e): raise e
         m2 = ModelRepository()
@@ -151,6 +155,8 @@ class ModelRepositoryTest(unittest.TestCase):
 
         # Try to add a model from one repository to the empty one
         try: self.remove_mock_location(self.temp_dir)
+	except WindowsError, e:
+            if 'system cannot find the path specified' not in str(e): raise e
         except OSError, e:
             if 'No such file' not in str(e): raise e
         m2 = ModelRepository()
