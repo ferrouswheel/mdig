@@ -38,6 +38,7 @@ def setup_logger():
     logger.addHandler(ch)
 
 def teardown():
+    logging.shutdown()
     # Delete test repository
     if len(test_dir) > 0:
         shutil.rmtree(test_dir)
