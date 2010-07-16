@@ -73,11 +73,13 @@ class ModelRepositoryTest(unittest.TestCase):
         self.assertEqual(len(m.get_models()), 0)
 
         # Try to add a model from one repository to the empty one
-        try: self.remove_mock_location(self.temp_dir)
-	except WindowsError, e:
-            if 'system cannot find the path specified' not in str(e): raise e
+        try:
+            self.remove_mock_location(self.temp_dir)
         except OSError, e:
-            if 'No such file' not in str(e): raise e
+            stre = str(e)
+            if 'No such file' not in stre and \
+                'system cannot find the path specified' not in stre:
+                raise e
         m2 = ModelRepository()
         a_file = m2.get_models()['variables']
         self.create_mock_location(self.temp_dir)
@@ -107,10 +109,11 @@ class ModelRepositoryTest(unittest.TestCase):
 
         # Try to add a model from one repository to the empty one
         try: self.remove_mock_location(self.temp_dir)
-	except WindowsError, e:
-            if 'system cannot find the path specified' not in str(e): raise e
         except OSError, e:
-            if 'No such file' not in str(e): raise e
+            stre = str(e)
+            if 'No such file' not in stre and \
+                'system cannot find the path specified' not in stre:
+                raise e
         m2 = ModelRepository()
         a_file = m2.get_models()['variables']
         self.create_mock_location(self.temp_dir)
@@ -155,10 +158,11 @@ class ModelRepositoryTest(unittest.TestCase):
 
         # Try to add a model from one repository to the empty one
         try: self.remove_mock_location(self.temp_dir)
-	except WindowsError, e:
-            if 'system cannot find the path specified' not in str(e): raise e
         except OSError, e:
-            if 'No such file' not in str(e): raise e
+            stre = str(e)
+            if 'No such file' not in stre and \
+                'system cannot find the path specified' not in stre:
+                raise e
         m2 = ModelRepository()
         a_file = m2.get_models()['variables']
         self.assertRaises(RepositoryException,m.add_model,a_file)
