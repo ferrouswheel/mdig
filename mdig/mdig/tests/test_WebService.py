@@ -203,7 +203,7 @@ class WebServiceTest(tools.ServerTestBase):
         self.assertEqual(usage, 0.0)
         self.assertEqual(len(WebService.map_pack_lfu),1)
 
-    def test_add_to_map_pack(self):
+    def test_add_to_map_pack_lfu(self):
         WebService.map_pack_lfu = []
         # test empty
         WebService.add_to_map_pack_lfu('test1')
@@ -227,11 +227,11 @@ class WebServiceTest(tools.ServerTestBase):
         # test update date
         old_date = WebService.map_pack_lfu[0][1]
         WebService.add_to_map_pack_lfu('test2')
+        print WebService.map_pack_lfu
         self.assertTrue(WebService.map_pack_lfu[1][1]>old_date)
 
     def test_run_model(self):
         WebService.mdig_worker_process = Mock()
-        #import pdb; pdb.set_trace()
 
         WebService.models_in_queue = {}
         r = self.urlopen('/models/lifestage_test/run',method='POST',post='rerun=true')
