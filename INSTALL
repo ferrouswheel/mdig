@@ -1,0 +1,91 @@
+Windows
+=======
+
+1. Follow instructions from here:
+http://trac.osgeo.org/grass/wiki/CompileOnWindows#CreatingaWinGRASSInstaller 
+1a. BC, a dependency of MDiG, is installed by default for GRASS
+1b. m4 and unistd.h from bison package were not extracted in favour of existing
+newer versions from osgeo4w.
+1c. One can edit ./mswindows/osgeo4w/package.sh to skip clean on first build,
+    but should reenable it later.
+2. Get the MDiG source code so that you can compile the r.mdig.* modules
+2a. Install Bazaar from http://wiki.bazaar.canonical.com/WindowsDownloads
+2b. Download the source from the repository at lp:mdig
+2c. mkdir c:/osgeo4w/src/mdig && cd c:/osgeo4w/src/mdig && bzr branch lp:mdig
+--- possibly unneeded ---
+3. Get GSL from: http://sourceforge.net/projects/gnuwin32/files/ 
+3a. Download gsl-1.8-lib.zip (in gsl/1.8 folder)
+3b. Unzip to c:/osgeo4w
+---
+Instead, compile switch removes libgslcblas link
+---
+
+===== These are for 2.5 python ====
+3. Proceed to download MDiG dependencies:
+... Note, it might be easier to get setuptools first and use that (provides
+        easy_install)
+3a. http://www.imagemagick.org/script/binary-releases.php - install as normal
+3b. configobj is now included in mdig.contrib 
+3c. install lxml. get win32, py 2.5, exe from http://pypi.python.org/pypi/lxml/2.2.6
+3c1. to run the installer you'll need msvcr71.dll - this is available from the
+GRASS 6.5 SVN windows distribution extralibs dir, or in the Bazaar install dir
+3c2. let windows registry know about python2.5 install from osgeo4w using script
+from: http://effbot.org/zone/python-register.htm (also now in mdig utilities
+dir)
+3c3. run msys as administrator, then run:
+$ python /osgeo4w/src/mdig/utilities/win_registry.py
+3c4. run lxml installer as administrator.
+3d. download python-dateutil from:
+http://labix.org/download/python-dateutil/python-dateutil-1.5.tar.gz
+extract dateutil to osgeo4w/apps/Python2.5/libs/site-packages/
+3e. Download and install ipython:
+python easy_install-2.5-script.py ipython
+3e. Download and install matplotlib:
+Get py2.5 version from:
+http://www.lfd.uci.edu/~gohlke/pythonlibs/#matplotlib
+=====================================
+
+==== These are for dropping in Python27 into osgeo4w ====
+3. Install Python2.6 to osgeo4w/apps/Python26, cp python26.dll to osgeo4w/bin
+3a. Edit python.bat and grass.bat in osgeo4w/etc/ini to reflect new paths/exes
+3b. Install setuptools: download, extract, python setup.py build, python
+setup.py install
+3c. download python-dateutil from:
+http://labix.org/download/python-dateutil/python-dateutil-1.5.tar.gz
+python setup.py build
+python setup.py install
+3d. Download and install ipython:
+easy_install ipython
+3e. Download and install matplotlib:
+Get py2.6 version from:
+https://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-1.0/matplotlib-1.0.0.win32-py2.6.exe/download
+3f. Download and install numpy:
+https://sourceforge.net/projects/numpy/files/NumPy/1.4.1/numpy-1.4.1-win32-superpack-python2.6.exe/download
+3g. Download and install simplejson:
+easy_install simplejson
+3h. Download and install testing tools:
+easy_install nose coverage
+3i. Download and install pywin32 
+https://sourceforge.net/projects/pywin32/files/pywin32/Build%20214/pywin32-214.win32-py2.6.exe/download
+copy site-packages/pywin32_system32/*.dll to osgeo4w/bin
+3j. http://downloads.sourceforge.net/wxpython/wxPython2.8-win32-unicode-2.8.11.0-py26.exe
+3k. easy_install pil ... to get imagetk module
+
+
+
+
+
+
+Note this will probably mean that GRASS needs to be rebuilt.
+
+4. Add "\a \c bash" to the end of the line in the osgeo4w shell launcher that fires
+up cmd.exe
+5. Allow py files to run directly:
+assoc .py=python.file
+ftype python.file="C:\OSGeo4W\bin\python.exe" "%1" %~ 2 
+
+TODO: link mdig distribution with the python distribution within GRASS.
+
+Install scipy?
+Gracefully fail when paste isn't installed
+
