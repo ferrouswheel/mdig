@@ -66,9 +66,13 @@ class Replicate:
         self.start_time = None
 
         if node is None:
+            if instance is None:
+                raise ValueError("Can't create Replicate connected to None value as instance.")
             self.node = self.instance.experiment.add_replicate(self.instance.node)
             self.complete = False
             self.set_seed(self.instance.experiment.next_random_value())
+            self.instance.replicates.append(self)
+            self.r_index = self.instance.replicates.index(self)
         else:
             # if node is provided then create replicate node from xml
             self.node = node
@@ -109,10 +113,7 @@ class Replicate:
             for ls_key in ls_keys:
                 maps = self.get_saved_maps(ls_key)
                 for t in exp.map_year_generator(ls_key):
-                    if maps is None:
-                        complete = False
-                        break
-                    elif str(t) not in maps:
+                    if str(t) not in maps:
                         complete = False
                         break
         return complete

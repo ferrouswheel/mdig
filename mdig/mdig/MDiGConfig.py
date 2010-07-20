@@ -296,7 +296,7 @@ values. Push any key to continue, or CTRL-C to abort. """
                         self[section][k] = MDiGConfig.defaults[section][k]
         if sys.platform == 'win32':
             # Windows doesn't support ansi color codes
-            self['LOGGING']['ansi'] "false"
+            self['LOGGING']['ansi'] = "false"
         self.write()
 
     def prompt_for_config(self,section,k,fresh):

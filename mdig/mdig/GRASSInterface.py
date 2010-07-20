@@ -38,6 +38,7 @@ class MapNotFoundException (Exception):
     def __str__(self):
         return "MapNotFoundException (map_name=" + str(self.map_name) + ")"
 
+class SetMapsetException (Exception): pass        
 class SetRegionException (Exception): pass        
 class CommandException (Exception): pass        
     
@@ -686,8 +687,7 @@ class GRASSInterface:
     def check_map(self,file_name,mapset=None):
         # Have to check all possible types of maps
         map_types=[ "cell", "fcell", "dcell", "vector" ]
-        if mapset:
-            self.change_mapset(mapset)
+        if mapset: self.change_mapset(mapset)
         
         for t in map_types:
             #print "checking for existing map " + file_name + " of type " + t
@@ -733,13 +733,20 @@ class GRASSInterface:
         if mapset_name is None:
             mapset_name = "PERMANENT"
         loc = ""
+        loc_dir=self.grass_vars["LOCATION_NAME"]
         if location is not None:
             loc = " location=" + location
+            loc_dir = location
         if (self.get_mapset() != mapset_name) or \
                 (location and self.grass_vars["LOCATION_NAME"] != location):
             if create:
                 result = self.run_command("g.mapset -c mapset=%s%s" % (mapset_name,loc))
             else:
+                # check that the mapset actually exists
+                mapset_dir = os.path.join(self.grass_vars['GISDBASE'],
+                    loc_dir,mapset_name)
+                if not os.path.isdir(mapset_dir):
+                    raise SetMapsetException("Not mapset dir found: %s", mapset_dir)
                 if location: self.grass_vars["LOCATION_NAME"] = location
                 self.grass_vars["MAPSET"] = mapset_name
                 self.set_gis_env()

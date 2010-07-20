@@ -35,10 +35,10 @@ class DispersalInstanceTest(unittest.TestCase):
         self.gisdb = c['GRASS']['GISDBASE']
 
     def tearDown(self):
-	self.m_variables.remove_log_handler()
-	self.m_variables_complete.remove_log_handler()
-	self.m_lifestage.remove_log_handler()
-	self.m_strategy.remove_log_handler()
+        self.m_variables.remove_log_handler()
+        self.m_variables_complete.remove_log_handler()
+        self.m_lifestage.remove_log_handler()
+        self.m_strategy.remove_log_handler()
 
     @patch('mdig.GRASSInterface.get_g')
     def test_load_replicates(self,m_g):
@@ -53,8 +53,10 @@ class DispersalInstanceTest(unittest.TestCase):
         m_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
         i = self.m_lifestage.get_instances()[0]
         self.assertEqual(i.get_mapset().find('lifestage_test_i'), 0)
+        mapset = i.node.attrib['mapset']
         del i.node.attrib['mapset']
         self.assertRaises(mdig.DispersalInstance.DispersalInstanceException,i.get_mapset)
+        i.node.attrib['mapset'] = mapset
 
     @patch('mdig.GRASSInterface.get_g')
     def test_set_mapset(self,m_g):
