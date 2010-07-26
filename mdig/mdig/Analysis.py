@@ -120,7 +120,7 @@ class Analysis:
                 if p[p_name] == None:
                     return
             elif value == "initialMap":
-                p[p_name]=rep.getInitialMap(ls_id)
+                p[p_name]=rep.get_initial_map(ls_id)
         return p
 
     def run(self,in_name,rep):
