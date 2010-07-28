@@ -120,6 +120,46 @@ class Action:
     def do_me(self, mdig_model):
         pass
 
+class RepositoryAction(Action):
+    description = "Set/modify the current MDiG repository"
+
+    def __init__(self):
+        Action.__init__(self)
+        self.check_model = False
+        self.preload = False
+        self.parser = OptionParser(version=mdig.version_string,
+                description = RepositoryAction.description,
+                usage = "%prog repository [options] GISDBASE/LOCATION" )
+        self.add_options()
+        self.parser.remove_option('-k')
+        self.parser.remove_option('-r')
+
+    def parse_options(self,argv):
+        (self.options, args) = self.parser.parse_args(argv[1:])
+        if len(args) == 1:
+            self.repo_dir = args[0]
+            self.log.debug("Repo dir specified is " + self.repo_dir)
+        else:
+            self.log.error("No directory specified as repository/location.")
+            sys.exit(1)
+
+    def do_me(self, mdig_model):
+        c = MDiGConfig.get_config()
+        gisdbase, location = os.path.split(os.path.abspath(self.repo_dir))
+        if not os.path.isdir(gisdbase):
+            self.log.error("GISDBASE '%s' is not a directory", gisdbase)
+            sys.exit(1)
+        if not os.path.isdir(self.repo_dir):
+            self.log.error("LOCATION '%s' is not a directory", location)
+            sys.exit(1)
+        if not os.path.isdir(os.path.join(self.repo_dir,'PERMANENT')):
+            self.log.error("LOCATION '%s' doesn't have a PERMANENT mapset." + \
+                    " Is this path a proper GRASS database?", location)
+            sys.exit(1)
+        c['GRASS']['GISDBASE'] = gisdbase
+        c['GRASS']['GISDBASE'] = location
+        c.write()
+
 class RunAction(Action):
     description = "Run a model"
 
@@ -1156,7 +1196,8 @@ mdig_actions = {
     "node": ClientAction,
     "info": InfoAction,
     "reset": ResetAction,
-    "remove": RemoveAction
+    "remove": RemoveAction,
+    "repository": RepositoryAction
     }
 mdig_actions["roc"] = ROCAction
 
