@@ -446,6 +446,7 @@ class ResetAction(Action):
         else:
             mdig_model.hard_reset()
         mdig_model.save_model()
+        print "Model %s reset." % mdig_model.get_name()
         
 class AddAction(Action):
     description = "Add a model to the repository based on an xml definition."

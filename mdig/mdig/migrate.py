@@ -121,7 +121,11 @@ def migrate_old_repository(old_format_dir, grassdb_dir):
             # create a dictionary of model names
             model_names[i] = None
 
+    old_repo_dir_name = os.path.split(old_format_dir)[1]
     for location in os.listdir(grassdb_dir):
+        # in the weird case that the mdig_repo is in the GISDBASE...
+        if location == old_repo_dir_name: continue
+        # otherwise check for a matching mapset name
         mapset_dir = os.path.join(grassdb_dir,location)
         if not os.path.isdir(mapset_dir) or mapset_dir == old_format_dir: continue
         for mapset in os.listdir(mapset_dir):
