@@ -140,11 +140,12 @@ def main(argv):
         mdig_config["GRASS"]["GISDBASE"] = the_action.repository
     if the_action.location is not None:
         mdig_config["GRASS"]["LOCATION_NAME"] = the_action.location
-    mdig.repository = ModelRepository.ModelRepository()
-    models = mdig.repository.get_models()
-
-    # Check for grass environment and set up interface
-    grass_interface = GRASSInterface.get_g()
+    if the_action.init_repository:
+        mdig.repository = ModelRepository.ModelRepository()
+        models = mdig.repository.get_models()
+    if the_action.init_grass:
+        # Check for grass environment and set up interface
+        grass_interface = GRASSInterface.get_g()
         
     if the_action.preload == True:
         # Load model definition

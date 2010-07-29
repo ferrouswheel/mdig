@@ -52,6 +52,10 @@ class Action:
         # Whether do_me expects a DispersalModel from self.model_name to be
         # loaded first
         self.preload = True
+        # Whether to initialise the repository
+        self.init_repository = True
+        # Whether to initialise the GRASS interface
+        self.init_grass = True
         self.log = logging.getLogger("mdig.action")
 
     def add_options(self):
@@ -127,6 +131,8 @@ class RepositoryAction(Action):
         Action.__init__(self)
         self.check_model = False
         self.preload = False
+        self.init_repository = False
+        self.init_grass = False
         self.parser = OptionParser(version=mdig.version_string,
                 description = RepositoryAction.description,
                 usage = "%prog repository [options] GISDBASE/LOCATION" )
@@ -157,7 +163,7 @@ class RepositoryAction(Action):
                     " Is this path a proper GRASS database?", location)
             sys.exit(1)
         c['GRASS']['GISDBASE'] = gisdbase
-        c['GRASS']['GISDBASE'] = location
+        c['GRASS']['LOCATION_NAME'] = location
         c.write()
 
 class RunAction(Action):
