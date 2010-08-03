@@ -221,7 +221,7 @@ class Analysis:
                     rep.instance.experiment.base_dir,
                     mdig_config.analysis_dir)
         generated = os.path.join(generated, prefix)
-        generated += OutputFormats.create_filename(rep)
+        generated += outputformats.create_filename(rep)
         if not is_append:
             generated += "_t_" + repr(rep.current_t)
         if len(ext) > 0:

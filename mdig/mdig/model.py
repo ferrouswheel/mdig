@@ -264,7 +264,7 @@ class DispersalModel(object):
             
         return r_inst
     
-    def _getInstanceWithSmallestRepsRemaining(self,instances):
+    def _get_instance_w_smallest_reps_remaining(self,instances):
         # find instance with smallest number of reps left
         
         # max_reps because instances count completed reps rather than counting
@@ -443,12 +443,12 @@ class DispersalModel(object):
             
             self.log.debug("Running instances in region %s", r_id)
             
-            instance = self._getInstanceWithSmallestRepsRemaining(instances)
+            instance = self._get_instance_w_smallest_reps_remaining(instances)
             
             # while there are still something in the queue to be simulated
             while instance is not None:
                 instance.run()
-                instance = self._getInstanceWithSmallestRepsRemaining(instances)
+                instance = self._get_instance_w_smallest_reps_remaining(instances)
                 
         self.active = False
         self.end_time = datetime.now()
@@ -558,7 +558,9 @@ class DispersalModel(object):
         
     def get_name(self):
         nodes = self.xml_model.xpath('/model/name')
-        return nodes[0].text.strip()
+        if len(nodes) == 1:
+            return nodes[0].text.strip()
+        else: return None
         
     def set_name(self,name):
         nodes = self.xml_model.xpath('/model/name')

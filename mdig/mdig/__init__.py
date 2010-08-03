@@ -16,9 +16,9 @@
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
 #
-__all__ = ["analysis","DispersalInstance","DispersalModel","Displayer","Event",
-        "GRASSInterface","GrassMap","ImageShow","Lifestage","MDiGConfig",
-        "OutputFormats","Region.py","Replicate.py","ManagementStratey","WebService","bottle"]
+__all__ = ["analysis","instance","model","displayer","event",
+        "grass","grassmap","imageshow","lifestage","config",
+        "outputformats","region","replicate","management","webui","bottle"]
 
 version = "0.2.9"
 version_name = "Spade"

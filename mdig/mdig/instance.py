@@ -374,7 +374,7 @@ class DispersalInstance:
 
     def get_occ_envelope_img_filenames(self, ls="all", extension=True, gif=False):
         output_dir = os.path.join(self.experiment.base_dir,"output")
-        fn = OutputFormats.create_filename(self)
+        fn = outputformats.create_filename(self)
         if gif:
             result = os.path.join(output_dir, fn + "_ls_" + ls + "_anim")
             if extension: result += '.gif'
