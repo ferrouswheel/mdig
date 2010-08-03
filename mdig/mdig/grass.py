@@ -449,7 +449,7 @@ class GRASSInterface:
 
     def spawn_display(self, fileToWatch):
         pid = Popen(["python",
-            os.path.join(os.path.dirname(sys.argv[0]), "mdig", "ImageShow.py"), fileToWatch]).pid
+            os.path.join(os.path.dirname(sys.argv[0]), "mdig", "imageshow.py"), fileToWatch]).pid
         return pid
 
     def close_display(self, d_name=None):
