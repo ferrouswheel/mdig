@@ -103,7 +103,44 @@ class GRASSInterfaceTest(unittest.TestCase):
         self.assertFalse(g.check_paths())
         g.grass_vars['GISBASE'] = old_path
 
+    def test_clear_monitor(self):
+        g = self.g
+        os.environ['GRASS_PNG_READ']="TRUE"
+        g.clear_monitor()
+        self.assertEqual(os.environ['GRASS_PNG_READ'],"FALSE")
         
+    @patch('subprocess.Popen')
+    def test_paint_map(self,m_popen):
+        g = self.g
+        m_popen.return_value.communicate.return_value = ['','']
+        m_popen.return_value.returncode = 0
+        m_run = g.run_command = Mock()
+        # no layer info...
+        g.paint_map('a_map')
+        self.assertEqual(os.environ['GRASS_PNG_READ'],"TRUE")
+        self.assertEqual(m_popen.call_count,0)
+        self.assertEqual(m_run.call_count,1)
+        # specify layer for color setting...
+        g.paint_map('a_map',layer=1)
+        self.assertEqual(m_popen.call_count,1)
+        self.assertEqual(m_run.call_count,2)
+        # invalid layer...
+        self.assertRaises(ValueError,
+                g.paint_map,'a_map',layer='blerg')
+        self.assertEqual(m_popen.call_count,1)
+        self.assertEqual(m_run.call_count,2)
+        # r.color fail
+        m_popen.return_value.returncode = 1
+        self.assertRaises(GRASSInterface.GRASSCommandException,
+                g.paint_map,'a_map',layer=1)
+        self.assertEqual(m_popen.call_count,2)
+
+    @patch('subprocess.Popen')
+    def test_normalise_map_colors(self,m_popen):
+        pass
+
+
+
 
 
 

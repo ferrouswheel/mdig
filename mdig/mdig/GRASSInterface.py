@@ -303,12 +303,17 @@ class GRASSInterface:
                  3: [(0,0,255), (0,0,50)]
             }
             if layer in colors:
-                pcolor= subprocess.Popen('r.colors map=%s rules=-' % map_name, \
+                cmd_string = 'r.colors map=%s rules=-' % map_name
+                pcolor= subprocess.Popen(cmd_string,
                         shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
                 rule_string = "0%% %d:%d:%d\n" % colors[layer][1]
                 rule_string += "100%% %d:%d:%d\n" % colors[layer][0]
                 rule_string += 'end'
-                output = pcolor.communicate(rule_string)[0]
+                stderr = pcolor.communicate(rule_string)[1]
+                if pcolor.returncode != 0:
+                    raise GRASSCommandException(cmd_string, stderr,
+                            pcolor.returncode)
+            else: raise ValueError("Unknown layer value '%s'" % str(layer))
 
         self.run_command('d.rast map=%s -x -o bg=white' % map_name, logging.DEBUG)
         os.environ['GRASS_PNG_READ']="TRUE"
