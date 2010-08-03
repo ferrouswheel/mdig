@@ -3,12 +3,12 @@ from mock import *
 from StringIO import StringIO
 
 import mdig
-from mdig import GRASSInterface 
+from mdig import grass 
 
-from mdig.Region import Region
+from mdig.region import Region
 class RegionTest(unittest.TestCase):
     
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_create_region(self,get_g):
         from lxml import etree
         xml = """ <region id='a' name='test_region'/> """
@@ -52,7 +52,7 @@ class RegionTest(unittest.TestCase):
         self.assertEqual(r.get_resolution(), 1)
         self.assertRaises(ValueError,r.set_resolution,'fox')
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_extents(self,get_g):
         from lxml import etree
         xml = """ <region id='a'><extents n='10' s='-10' e='10' w='-10'/></region> """

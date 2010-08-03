@@ -17,10 +17,10 @@ import logging
 import pdb
 
 import mdig
-from DispersalModel import DispersalModel, ValidationError
-import MDiGConfig
-import GRASSInterface
-import ModelRepository
+from model import DispersalModel, ValidationError
+import config
+import grass
+import modelrepository
 
 app = None
 log = logging.getLogger('mdig.web')
@@ -88,7 +88,7 @@ def validate_model_name(mname):
         abort(404,"No such model")
     try:
         dm = DispersalModel(models[mname]) #,setup=False)
-    except mdig.DispersalModel.ValidationError, e:
+    except mdig.model.ValidationError, e:
         abort(500,"Model %s is badly formed" % mname)
     # Hack to get instances to initialise mapsets if they need to
     # and then save them
@@ -139,7 +139,7 @@ def get_map_pack_usage():
     return sum_storage_mb
 
 def purge_oldest_map_packs():
-    while get_map_pack_usage() > float(MDiGConfig.get_config()['WEB']['map_pack_storage']) \
+    while get_map_pack_usage() > float(config.get_config()['WEB']['map_pack_storage']) \
             and len(map_pack_lfu) > 1: 
         # If there is only one don't delete, even if it is very big
         # Delete oldest at position 0
@@ -209,7 +209,7 @@ def process_tasks():
     k.sort(key=lambda x: time_index[x])
     return k, updates
 
-from mdig.ModelRepository import RepositoryException
+from mdig.modelrepository import RepositoryException
 @route('/models/:model/del',method='POST')
 def del_model(model):
     try:
@@ -288,10 +288,10 @@ def index():
             desc = dm.get_description()
             desc = re.sub("[\\s\\t]+"," ",desc)
             m_list.append((m,desc))
-        except mdig.DispersalModel.ValidationError, e:
+        except mdig.model.ValidationError, e:
             log.error(str(e))
 
-    env = GRASSInterface.get_g().get_gis_env()
+    env = grass.get_g().get_gis_env()
     task_order, task_updates = process_tasks()
     return dict(name=mdig.version_string, version=mdig.version,
             v_name=mdig.version_name, models=m_list,
@@ -429,8 +429,8 @@ def show_replicate(model,instance,replicate):
             task_order=task_order, task_updates = task_updates, error=error)
 
 from bottle import send_file
-from mdig import OutputFormats
-from mdig.DispersalInstance import InstanceIncompleteException
+from mdig import outputformats
+from mdig.instance import InstanceIncompleteException
 
 # Following methods are for getting and creating occupancy envelopes 
 
@@ -757,7 +757,7 @@ class MDiGWorker():
         instance.update_occupancy_envelope(ls_list=[ls])
         # also convert occupancy envelopes into images
         # via ExportAction
-        from Actions import ExportAction
+        from actions import ExportAction
         ea=ExportAction()
         ea.parse_options([])
         ea.options.output_gif = True
@@ -796,7 +796,7 @@ class MDiGWorker():
         instance.update_occupancy_envelope(ls_list=[ls])
         # also convert occupancy envelopes into images
         # via ExportAction
-        from Actions import ExportAction
+        from actions import ExportAction
         ea=ExportAction()
         ea.parse_options([])
         ea.options.output_map_pack = True
@@ -829,7 +829,7 @@ class MDiGWorker():
         instance.listeners.append(self.listener)
         # also convert replicate maps into images
         # via ExportAction
-        from Actions import ExportAction
+        from actions import ExportAction
         ea=ExportAction()
         ea.parse_options([])
         ea.options.output_gif = True
@@ -862,7 +862,7 @@ class MDiGWorker():
         instance.listeners.append(self.listener)
         # also convert replicate maps into images
         # via ExportAction
-        from Actions import ExportAction
+        from actions import ExportAction
         ea=ExportAction()
         ea.parse_options([])
         ea.options.output_map_pack = True
@@ -929,13 +929,13 @@ class MDiGWorker():
                 if 'status' not in s: s['status'] = {}
                 s['status']['error'] = str(e)
                 self.results_q.put(s)
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         g.clean_up()
 
 def mdig_worker_start(work_q,results_q):
     # Have to replace some of the environment variables, otherwise they get
     # remembered and will confuse original Web server process
-    g = GRASSInterface.get_g()
+    g = grass.get_g()
     g.init_pid_specific_files()
     g.grass_vars["MAPSET"] = "PERMANENT"
     g.set_gis_env()
@@ -1011,7 +1011,7 @@ def start_web_service():
     except ImportError, e:
         myapp = app
     myapp = RestoreMapset(myapp)
-    c = MDiGConfig.get_config()
+    c = config.get_config()
     # Don't check replicates are complete, since this will make the web service
     # too slow if there are lots of replicates
     if "replicate" not in c: c["replicate"] = {}
@@ -1023,7 +1023,7 @@ def start_web_service():
 mapsets = {}
 def change_to_web_mapset():
     log.debug("Changing the web service mapset")
-    g = GRASSInterface.get_g(create=False)
+    g = grass.get_g(create=False)
     ms = "mdig_webservice"
     if not g.check_mapset(ms):
         g.change_mapset(ms, create=True)
@@ -1036,7 +1036,7 @@ def shutdown_webapp():
     rt.running = False
     work_q.put({'action':"SHUTDOWN"})
     if mdig_worker_process.pid: mdig_worker_process.join()
-    g = GRASSInterface.get_g(create=False)
+    g = grass.get_g(create=False)
     # Remove webservice mapsets
     log.debug("Removing temporary mapsets")
     global mapsets

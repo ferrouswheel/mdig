@@ -24,8 +24,8 @@ Copyright 2006, Joel Pitt
 
 import logging
 
-import MDiGConfig
-import GRASSInterface
+import config
+import grass
 
 class GrassMap:
     """
@@ -54,11 +54,11 @@ class GrassMap:
             self._read_XML()
         elif self.filename is not None:
             # If a filename was passed, check it's type and if it exists
-            self.map_type = GRASSInterface.get_g().check_map(self.filename)
+            self.map_type = grass.get_g().check_map(self.filename)
             self.temporary = False
             if self.map_type is None:
                 # ... raise an exception if it doesn't
-                raise GRASSInterface.MapNotFoundException(self.filename)
+                raise grass.MapNotFoundException(self.filename)
         
         if self.xml_map_type in ["name",None]:
             # Only maps specified in xml that are not existing maps
@@ -121,7 +121,7 @@ class GrassMap:
         lifestage.
         """
         if self.filename is None or self.refresh:
-            g = GRASSInterface.get_g()
+            g = grass.get_g()
             # If the map needs to be refreshed and has already been initiated
             # then destroy the old map...
             if self.refresh and self.ready:
@@ -138,7 +138,7 @@ class GrassMap:
         Just removes map if it is temporary
         """
         if self.temporary and self.ready:
-            GRASSInterface.get_g().destruct_map(self.filename)
+            grass.get_g().destruct_map(self.filename)
 
 
     

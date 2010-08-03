@@ -2,24 +2,24 @@ import unittest
 from mock import *
 
 import mdig
-from mdig.DispersalModel import DispersalModel
-from mdig.ModelRepository import ModelRepository,RepositoryException
+from mdig.model import DispersalModel
+from mdig.modelrepository import ModelRepository,RepositoryException
 
-from mdig import Actions
+from mdig import actions
 class ExportActionTest(unittest.TestCase):
 
     def setUp(self):
         mdig.repository = self.repo = ModelRepository()
 
     def test_create(self):
-        ea = Actions.ExportAction()
+        ea = actions.ExportAction()
 
     def test_act_on_options(self):
-        ea = Actions.ExportAction()
+        ea = actions.ExportAction()
         ea.parse_options([])
     
     def test_do_me(self):
-        ea = Actions.ExportAction()
+        ea = actions.ExportAction()
         fn = mdig.repository.get_models()['variables']
         m = DispersalModel(fn)
         ea.parse_options([])
@@ -50,11 +50,11 @@ class ExportActionTest(unittest.TestCase):
         self.assertEqual(ea.do_instance_map_pack.call_count, 6)
 	m.remove_log_handler()
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     @patch('os.remove')
     def test_do_instance_map_pack(self,m_rm,m_g):
         m_g.return_value.grass_vars = {}
-        ea = Actions.ExportAction()
+        ea = actions.ExportAction()
         fn = mdig.repository.get_models()['variables']
         m = DispersalModel(fn)
         ea.parse_options([])
@@ -69,11 +69,11 @@ class ExportActionTest(unittest.TestCase):
         #ea.do_instance_map_pack(instances[0])
 	m.remove_log_handler()
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     @patch('os.remove')
     def test_do_instance_images(self,m_rm,m_g):
         m_g.return_value.grass_vars = {}
-        ea = Actions.ExportAction()
+        ea = actions.ExportAction()
         fn = mdig.repository.get_models()['variables']
         m = DispersalModel(fn)
         ea.parse_options([])

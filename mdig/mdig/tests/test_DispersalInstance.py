@@ -3,11 +3,11 @@ from mock import *
 import logging
 
 import mdig
-from mdig import MDiGConfig
-from mdig import GRASSInterface 
-from mdig.DispersalModel import DispersalModel
-from mdig.ModelRepository import ModelRepository,RepositoryException
-from mdig.DispersalInstance import InvalidLifestageException, \
+from mdig import config
+from mdig import grass 
+from mdig.model import DispersalModel
+from mdig.modelrepository import ModelRepository,RepositoryException
+from mdig.instance import InvalidLifestageException, \
         InstanceIncompleteException, InvalidReplicateException, NoOccupancyEnvelopesException
 
 class DispersalInstanceTest(unittest.TestCase):
@@ -31,7 +31,7 @@ class DispersalInstanceTest(unittest.TestCase):
         fn = models['variables_complete']
         self.m_variables_complete = DispersalModel(fn)
 
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         self.gisdb = c['GRASS']['GISDBASE']
 
     def tearDown(self):
@@ -40,7 +40,7 @@ class DispersalInstanceTest(unittest.TestCase):
         self.m_lifestage.remove_log_handler()
         self.m_strategy.remove_log_handler()
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_load_replicates(self,m_g):
         m_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
         # replicates loaded on init
@@ -48,24 +48,24 @@ class DispersalInstanceTest(unittest.TestCase):
         self.m_strategy.get_instances()
         self.m_variables.get_instances()
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_get_mapset(self,m_g):
         m_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
         i = self.m_lifestage.get_instances()[0]
         self.assertEqual(i.get_mapset().find('lifestage_test_i'), 0)
         mapset = i.node.attrib['mapset']
         del i.node.attrib['mapset']
-        self.assertRaises(mdig.DispersalInstance.DispersalInstanceException,i.get_mapset)
+        self.assertRaises(mdig.instance.DispersalInstanceException,i.get_mapset)
         i.node.attrib['mapset'] = mapset
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_set_mapset(self,m_g):
         m_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
         i = self.m_lifestage.get_instances()[0]
         i.set_mapset('blah')
         self.assertEqual(i.node.attrib['mapset'], 'blah')
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_add_envelope(self,m_g):
         m_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
         i = self.m_variables.get_instances()[0]
@@ -76,7 +76,7 @@ class DispersalInstanceTest(unittest.TestCase):
         i._add_envelope('test_envelope','all',1)
         self.assertEqual(len(e),1)
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_update_xml(self,m_g):
         m_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
         i = self.m_variables.get_instances()[0]
@@ -87,7 +87,7 @@ class DispersalInstanceTest(unittest.TestCase):
         i.update_xml()
         self.assertEqual(i.node.attrib['enabled'],'true')
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_update_occupancy_envelope(self,m_get_g):
         m_get_g.return_value.occupancy_envelope.return_value = "test_env"
         m_get_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
@@ -113,7 +113,7 @@ class DispersalInstanceTest(unittest.TestCase):
         self.assertEqual(len(call_args[0][0]), 2)
         self.assertEqual(call_args[0][1], 'variables_complete_region_a_i0_ls_all_t_5_prob')
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_listeners(self,m_get_g):
         m_get_g.return_value.occupancy_envelope.return_value = "test_env"
         m_get_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
@@ -128,7 +128,7 @@ class DispersalInstanceTest(unittest.TestCase):
         self.assertEqual(len(call_args[0][0]), 2)
         self.assertEqual(call_args[0][1], 'variables_complete_region_a_i0_ls_all_t_5_prob')
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_update_occupancy_env_strategy(self,m_get_g):
         # test with strategy
         m_get_g.return_value.occupancy_envelope.return_value = "test_env"
@@ -142,8 +142,8 @@ class DispersalInstanceTest(unittest.TestCase):
         self.assertEqual(len(call_args[0][0]), 2)
         self.assertEqual(call_args[0][1], 'management_area_combine_region_a_i1_ls_all_t_5_prob')
 
-    @patch('mdig.GRASSInterface.get_g')
-    @patch('mdig.Replicate.Replicate.get_saved_maps')
+    @patch('mdig.grass.get_g')
+    @patch('mdig.replicate.Replicate.get_saved_maps')
     def test_update_occupancy_env_missing_maps(self,m_get_maps,m_get_g):
         # test without rep maps
         m_get_g.return_value.occupancy_envelope.return_value = "test_env"
@@ -152,17 +152,17 @@ class DispersalInstanceTest(unittest.TestCase):
         m_get_maps.return_value = {}
 
         i = self.m_variables_complete.get_instances()[0]
-        self.assertRaises(mdig.DispersalInstance.DispersalInstanceException,
+        self.assertRaises(mdig.instance.DispersalInstanceException,
                 i.update_occupancy_envelope,force=True)
         call_args = m_get_g.return_value.occupancy_envelope.call_args
         self.assertEqual(len(call_args), 0)
 
         #import pdb;pdb.set_trace()
         m_get_maps.return_value = {1:'test1',222:'test2'}
-        self.assertRaises(mdig.DispersalInstance.DispersalInstanceException,
+        self.assertRaises(mdig.instance.DispersalInstanceException,
                 i.update_occupancy_envelope,force=True)
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_str(self,m_get_g):
         # test with strategy
         m_get_g.return_value.grass_vars = {'GISDBASE':self.gisdb}
@@ -183,7 +183,7 @@ class DispersalInstanceTest(unittest.TestCase):
         self.assertTrue(len(str(i)) > 0)
         self.assertTrue(len(i.long_str()) > 0)
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     @patch('os.path')
     @patch('os.remove')
     @patch('shutil.move')
@@ -198,11 +198,11 @@ class DispersalInstanceTest(unittest.TestCase):
         # Test with file existing
         i.add_analysis_result('all',analysis_cmd)
         # Test with overwrite
-        MDiGConfig.get_config().overwrite_flag = True
+        config.get_config().overwrite_flag = True
         i.add_analysis_result('all',analysis_cmd)
         # run again to check parsing existing lifestage analysis results
         i.add_analysis_result('all',analysis_cmd)
-        MDiGConfig.get_config().overwrite_flag = False
+        config.get_config().overwrite_flag = False
 
 
 

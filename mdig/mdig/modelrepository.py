@@ -6,10 +6,9 @@ import logging
 import tempfile
 
 import mdig
-from mdig import MDiGConfig
-from mdig import GRASSInterface 
-from mdig import DispersalModel
-
+from mdig import config
+from mdig import grass 
+from mdig import model
 
 class RepositoryException(Exception):
     def __init__(self,desc,missing=[]):
@@ -24,9 +23,9 @@ class ModelRepository:
 
     def __init__(self, gisdbase=None):
         self.log = logging.getLogger("mdig.repos")
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         # Model repository is now a part of a GRASS db directory
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         if gisdbase is None:
             if g.in_grass_shell:
                 self.db = g.grass_vars["GISDBASE"]
@@ -42,8 +41,8 @@ class ModelRepository:
         import shutil
         if not os.path.isfile(model_fn):
             raise RepositoryException("Model file %s is not a file."%model_fn)
-        g = GRASSInterface.get_g()
-        dm = DispersalModel.DispersalModel(model_fn,setup=False)
+        g = grass.get_g()
+        dm = model.DispersalModel(model_fn,setup=False)
         loc = dm.get_location()
         if loc == None:
             raise RepositoryException("Model doesn't define GIS Location for simulation")
@@ -72,7 +71,7 @@ class ModelRepository:
         popmod_files = []
         try:
             popmod_files = dm.get_popmod_files()
-        except DispersalModel.MissingFileException,e:
+        except model.MissingFileException,e:
             missing_files.extend(e.files)
         for pm in popmod_files:
             src_file = pm
@@ -124,8 +123,8 @@ class ModelRepository:
 
         if force:
             import shutil
-            g = GRASSInterface.get_g()
-            dm = DispersalModel.DispersalModel(models[model_name],setup=False)
+            g = grass.get_g()
+            dm = model.DispersalModel(models[model_name],setup=False)
             loc = dm.get_location()
             if loc == None: loc = dm.infer_location()
             if not os.path.isdir(os.path.join(self.db,loc,"PERMANENT")):
@@ -136,8 +135,8 @@ class ModelRepository:
             for i in dm.get_instances():
                 i_mapset = i.get_mapset()
                 if i_mapset != model_name:
-                    GRASSInterface.get_g().remove_mapset(i_mapset, loc, force)
-            GRASSInterface.get_g().remove_mapset(model_name, loc, force)
+                    grass.get_g().remove_mapset(i_mapset, loc, force)
+            grass.get_g().remove_mapset(model_name, loc, force)
             print "Model removed"
 
     def get_models(self):

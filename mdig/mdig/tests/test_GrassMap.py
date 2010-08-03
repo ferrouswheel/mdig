@@ -8,15 +8,15 @@ import shutil
 import datetime
 
 import mdig
-from mdig import MDiGConfig
-from mdig import GRASSInterface 
-from mdig.DispersalModel import DispersalModel
-from mdig.Actions import RunAction
-from mdig.ModelRepository import ModelRepository,RepositoryException
-from mdig.DispersalInstance import InvalidLifestageException, \
+from mdig import config
+from mdig import grass 
+from mdig.model import DispersalModel
+from mdig.actions import RunAction
+from mdig.modelrepository import ModelRepository,RepositoryException
+from mdig.instance import InvalidLifestageException, \
         InstanceIncompleteException, InvalidReplicateException, NoOccupancyEnvelopesException
 
-from mdig.GrassMap import GrassMap
+from mdig.grassmap import GrassMap
 from StringIO import StringIO
 class GrassMapTest(unittest.TestCase):
 
@@ -27,7 +27,7 @@ class GrassMapTest(unittest.TestCase):
 	# Save objects from trying to cleanup after themselves
         #if self.gmap: self.gmap.__del__ = lambda x: None
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_create_sites_map(self,get_g):
         from lxml import etree
         xml = """<sites>
@@ -51,7 +51,7 @@ class GrassMapTest(unittest.TestCase):
         self.assertEqual(self.gmap.ready, True)
         self.assertEqual(self.gmap.mapset, "a_mapset")
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_create_name_map(self,get_g):
         from lxml import etree
         xml = "<map>nz_DEM</map>"
@@ -63,7 +63,7 @@ class GrassMapTest(unittest.TestCase):
         self.assertEqual(self.gmap.xml_map_type, "name")
         self.assertEqual(self.gmap.get_map_filename(), "nz_DEM")
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_create_value_map(self,get_g):
         from lxml import etree
         xml = "<value>1</value>"
@@ -73,7 +73,7 @@ class GrassMapTest(unittest.TestCase):
         self.assertEqual(self.gmap.value, "1")
         self.assertEqual(self.gmap.xml_map_type, "value")
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_create_mapcalc_map(self,get_g):
         from lxml import etree
         xml = "<mapcalc>if(isnull(nz_DEM),x(),nz_DEM)</mapcalc>"
@@ -102,12 +102,12 @@ class GrassMapTest(unittest.TestCase):
         self.gmap.clean_up()
         self.assertEqual(get_g.return_value.destruct_map.call_count,2)
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_change_map_type(self,get_g):
         self.gmap = GrassMap(filename="test")
         self.assertRaises(NotImplementedError, self.gmap.change_map_type, "raster", "1") 
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_use_existing_map(self,get_g):
         fn = "nz_DEM_jacques"
         self.gmap = GrassMap(filename=fn)
@@ -116,5 +116,5 @@ class GrassMapTest(unittest.TestCase):
 
         # test when we can't find the map
         get_g.return_value.check_map.return_value = None
-        self.assertRaises(mdig.GRASSInterface.MapNotFoundException,GrassMap,filename=fn)
+        self.assertRaises(mdig.grass.MapNotFoundException,GrassMap,filename=fn)
 

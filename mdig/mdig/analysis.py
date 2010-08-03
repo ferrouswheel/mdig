@@ -21,9 +21,9 @@ import logging
 import os
 import re
 
-import MDiGConfig
-import OutputFormats
-import GRASSInterface
+import config
+import outputformats
+import grass
 
 class Analysis:
     """ Represents an analysis that is run across replicate maps.
@@ -50,7 +50,7 @@ class Analysis:
         if "name" in self.xml_node.attrib.keys():
             return self.xml_node.attrib["name"]
         else:
-            self.log.error('Analysis has no "name" attribute')
+            self.log.error('analysis has no "name" attribute')
         return None
 
     def get_params(self):
@@ -135,8 +135,8 @@ class Analysis:
 
         #rawCommand = self.get_command()
         cmd = ""
-        #if rawCommand in Analysis.inbuiltCommands:
-        #    cmd = Analysis.inbuiltCommands[rawCommand].create_cmd_string(in_name,rep)
+        #if rawCommand in analysis.inbuiltCommands:
+        #    cmd = analysis.inbuiltCommands[rawCommand].create_cmd_string(in_name,rep)
         #else
         p=self._fill_in_map_parameters(rep,self.get_params())
         # put all the parameters and command into a command string
@@ -175,7 +175,7 @@ class Analysis:
             cmd += " > "
             
         # run command!
-        GRASSInterface.get_g().run_command(cmd + fn)
+        grass.get_g().run_command(cmd + fn)
             
         # if a file was generated then add this to the replicate
         ls_id = self.get_lifestage_id()
@@ -191,7 +191,7 @@ class Analysis:
         return name[0]
 
     def _make_filename(self,rep):
-        mdig_config = MDiGConfig.get_config()
+        mdig_config = config.get_config()
         
         nodes = self.xml_node.xpath("output/file")
         if len(nodes) == 0:

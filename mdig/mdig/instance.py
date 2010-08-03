@@ -36,11 +36,11 @@ import simplejson as json
 
 import lxml
 
-from Replicate import Replicate
-from AnalysisCommand import AnalysisCommand
-import OutputFormats
-import GRASSInterface
-import MDiGConfig
+from replicate import Replicate
+from analysiscommand import AnalysisCommand
+import outputformats
+import grass
+import config
 
 class DispersalInstanceException(Exception): pass
 
@@ -201,7 +201,7 @@ class DispersalInstance:
     def change_mapset(self):
         """ Change the current mapset to the one associated with this instance
         """
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         loc = self.experiment.infer_location()
         mapset = self.get_mapset()
         # Create new mapset and link back to experiment's original mapset
@@ -234,7 +234,7 @@ class DispersalInstance:
 
     def get_mdig_dir_path(self):
         # Get the mdig directory
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         db = g.grass_vars['GISDBASE']
         loc = self.experiment.infer_location()
         mapset = self.get_mapset()
@@ -304,7 +304,7 @@ class DispersalInstance:
             self.log.warning("Instance [%s] is incomplete, but will " +
                     "continue anyway" % i)
             
-        ac = AnalysisCommand(cmd_string)
+        ac = analysiscommand(cmd_string)
         for r in self.replicates:
             for ls_id in ls:
                 saved_maps = r.get_saved_maps(ls_id)
@@ -313,7 +313,7 @@ class DispersalInstance:
                 ac.set_times(self.experiment.get_period(),r_times,times)
                 ac.run_command(saved_maps)
                 
-                if MDiGConfig.get_config().analysis_add_to_xml:
+                if config.get_config().analysis_add_to_xml:
                     # add the analysis result to xml filename
                     # under instance...
                     r.add_analysis_result(ls_id, ac)
@@ -338,7 +338,7 @@ class DispersalInstance:
             self.log.error("Incomplete instance [%s]" % i)
             raise ImcompleteInstanceException()
 
-        ac = AnalysisCommand(cmd_string)
+        ac = analysiscommand(cmd_string)
         self.set_region()
         envelopes = self.get_occupancy_envelopes()
         for ls_id in ls:
@@ -525,7 +525,7 @@ class DispersalInstance:
                 else:
                     # yes... then check if map exists
                     self.log.debug("Checking for envelope %s" % previous_envelopes[l][str(t)])
-                    if GRASSInterface.get_g().check_map(previous_envelopes[l][str(t)]) is None:
+                    if grass.get_g().check_map(previous_envelopes[l][str(t)]) is None:
                         missing_years[l].append(t)
                         self.log.debug("Missing envelope %s" % previous_envelopes[l][str(t)])
                     else:
@@ -561,7 +561,7 @@ class DispersalInstance:
         """
         result = (analysis_cmd.cmd_string,analysis_cmd.output_fn)
         
-        mdig_config = MDiGConfig.get_config()
+        mdig_config = config.get_config()
         
         current_dir = os.path.dirname(os.path.abspath(result[1]))
         filename = os.path.basename(result[1])
@@ -623,11 +623,11 @@ class DispersalInstance:
         (and consequently the right mapset/location too)
         """
         current_region = self.experiment.get_region(self.r_id)
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         try:
             g.change_mapset(self.get_mapset(), self.experiment.infer_location())
             g.set_region(current_region)
-        except GRASSInterface.SetRegionException, e:
+        except grass.SetRegionException, e:
             raise e
     
     def update_occupancy_envelope(self, ls_list = None, start = None, end = None, force=False):
@@ -673,7 +673,7 @@ class DispersalInstance:
                     
                 filename = self.get_map_name_base()
                 filename += "_ls_" + l + "_t_" + repr(t) + "_prob"
-                prob_env = GRASSInterface.get_g().occupancy_envelope(maps_to_combine,filename)
+                prob_env = grass.get_g().occupancy_envelope(maps_to_combine,filename)
                 if prob_env is not None:
                     self._add_envelope(prob_env,l,t)
                 for li in self.listeners:

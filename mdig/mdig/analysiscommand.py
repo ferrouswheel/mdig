@@ -6,8 +6,8 @@ import pdb
 
 import mdig
 
-import OutputFormats
-import MDiGConfig
+import outputformats
+import config
 
 class AnalysisCommand:
     """ Wraps a command line string and associated utilities to be run on
@@ -34,7 +34,7 @@ class AnalysisCommand:
         self.times = None
         self.output_fn = None
         self.output_fn_base = None
-        self.log = logging.getLogger("mdig.AnalysisCommand")
+        self.log = logging.getLogger("mdig.analysiscommand")
 
     def get_earliest_time(self):
         if self.earliest_time is None:
@@ -56,7 +56,7 @@ class AnalysisCommand:
 
     def get_output_filename_base(self):
         if self.output_fn_base is None:
-            mdig_config = MDiGConfig.get_config()
+            mdig_config = config.get_config()
             if mdig_config.analysis_filename_base is None:
                 #create random name
                 self.output_fn_base = \
@@ -68,24 +68,24 @@ class AnalysisCommand:
 
     def init_output_file(self, instance, rep=None):
         """ Initialise a new output file """
-        mdig_config = MDiGConfig.get_config()
+        mdig_config = config.get_config()
         tmp_fn = self.get_output_filename_base()
         #   append variable/ls/region info
         if rep:
-            tmp_fn = OutputFormats.create_filename(rep) + "_" + tmp_fn # + "_" + \
+            tmp_fn = outputformats.create_filename(rep) + "_" + tmp_fn # + "_" + \
                      #repr(instance.replicates.index(rep)) + "_" + tmp_fn
         else:
-            tmp_fn = OutputFormats.create_filename(instance) + "_" + tmp_fn
+            tmp_fn = outputformats.create_filename(instance) + "_" + tmp_fn
         
         # check if file exists
         if os.path.isfile(tmp_fn):
             if mdig_config.overwrite_flag:
-                self.log.warning("Analysis output file " +tmp_fn+ " exists, overwriting...")
+                self.log.warning("analysis output file " +tmp_fn+ " exists, overwriting...")
                 os.remove(tmp_fn)
             else:
-                self.log.error("Analysis output file exists")
+                self.log.error("analysis output file exists")
                 raise mdig.OutputFileExistsException(tmp_fn)
-        self.log.info("Analysis output file set to " + tmp_fn + " (path " +
+        self.log.info("analysis output file set to " + tmp_fn + " (path " +
                 os.getcwd() + ")")
         self.output_fn = tmp_fn
         return tmp_fn
@@ -118,7 +118,7 @@ class AnalysisCommand:
         for t in self.times[self.get_earliest_time():]:
             ret = self.run_command_once(t,maps,tmp_cmd_string)
             if ret is not None:
-                self.log.error("Analysis command did not return 0")
+                self.log.error("analysis command did not return 0")
     
     def run_command_once(self,t,maps,cmd_string):
         # replace %t with current time if it exists in cmd_string
@@ -136,7 +136,7 @@ class AnalysisCommand:
                     maps[repr(self.times[t_index - map_index])], tmp_cmd_string)
         
         # Add time to the output file if option is enabled.
-        mdig_config = MDiGConfig.get_config()
+        mdig_config = config.get_config()
         if mdig_config.analysis_print_time:
             file = open(self.output_fn,'a')
             file.write('%d ' % t)

@@ -19,7 +19,7 @@
 #
 """ DispersalModel class for MDiG - Modular Dispersal in GIS
 
-Test usage: python DispersalModel.py [model=model.xml] [schema=model.xsd] to run
+Test usage: python model.py [model=model.xml] [schema=model.xsd] to run
 unit test on model.xml and validating with the schema model.xsd
 
 By default example.xml will be loaded and validated with mdig.xsd
@@ -43,19 +43,19 @@ import re
 from datetime import datetime
 from UserDict import UserDict
 
-import OutputFormats
-import GRASSInterface
-import MDiGConfig
+import outputformats
+import grass
+import config
 
-from Region import Region
-from DispersalInstance import DispersalInstance
-from Event import Event
-from Lifestage import Lifestage
-from Analysis import Analysis
-from Replicate import Replicate
-from GrassMap import GrassMap
-from LifestageTransition import LifestageTransition
-from ManagementStrategy import ManagementStrategy
+from region import Region
+from instance import DispersalInstance
+from event import Event
+from lifestage import Lifestage
+from analysis import Analysis
+from replicate import Replicate
+from grassmap import GrassMap
+from lifestagetransition import LifestageTransition
+from management import ManagementStrategy
 
 _debug=0
 
@@ -103,7 +103,7 @@ class DispersalModel(object):
         else:
             self.xml_model = lxml.etree.Element("model")
         
-        self.grass_i=GRASSInterface.get_g()
+        self.grass_i=grass.get_g()
         self.random = None
         
         self.active=False
@@ -195,15 +195,15 @@ class DispersalModel(object):
             self.init_paths()
 
     def init_paths(self):
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         assert( self.base_dir is not None )
         base_d = self.base_dir
         filename = os.path.join(base_d, c.analysis_dir)
-        MDiGConfig.makepath(filename)
+        config.makepath(filename)
         filename = os.path.join(base_d, c.maps_dir)
-        MDiGConfig.makepath(filename)
+        config.makepath(filename)
         filename = os.path.join(base_d, c.output_dir)
-        MDiGConfig.makepath(filename)
+        config.makepath(filename)
 
     def _load(self, model_file):
         """load XML input source, return parsed XML document
@@ -317,7 +317,7 @@ class DispersalModel(object):
         for i in instances:
             maps.add(i.get_mapset())
         # Also check GRASS DB for orphaned mapsets
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         db = g.grass_vars['GISDBASE']
         location = self.infer_location()
         mapsets_dir = os.path.join(db,location)
@@ -337,7 +337,7 @@ class DispersalModel(object):
         any xml traces of prior runs. This is probably preferable in most
         cases... but reset_instances was appropriate for when everything was
         in a single mapset """
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         for mapset in self.get_instance_mapsets():
             # Don't let the core mapset disappear
             if self.get_name() == mapset: continue
@@ -366,7 +366,7 @@ class DispersalModel(object):
         mapset
         """
         # change into appropriate mapset
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         g.change_mapset(self.get_mapset())
         # get maps
         maps = self.get_map_resources()
@@ -394,7 +394,7 @@ class DispersalModel(object):
                 ret = g.run_command('g.findfile element=windows file=%s' % r)
                 out_lines = StringIO.StringIO(g.stdout).readlines()
                 r_mapset = out_lines[1].split('=')[1].strip("\n'")
-            except GRASSInterface.GRASSCommandException, e:
+            except grass.GRASSCommandException, e:
                 # none
                 pass
             resources.append(('region',r,r_mapset))
@@ -729,10 +729,10 @@ class DispersalModel(object):
         
         for n in nodes[0]:
             if n.tag == "raster":
-                l = OutputFormats.RasterOutput(n)
+                l = outputformats.RasterOutput(n)
                 listeners.append(l)
             elif n.tag == "png":
-                l = OutputFormats.PngOutput(n)
+                l = outputformats.PngOutput(n)
                 listeners.append(l)
         return listeners
 
@@ -1079,7 +1079,7 @@ class DispersalModel(object):
         return completed_node
         
     def _add_completed(self,r_id,var_keys,var):
-        mdig_config = MDiGConfig.get_config()
+        mdig_config = config.get_config()
         
         model_node=self.xml_model.getroot()
         

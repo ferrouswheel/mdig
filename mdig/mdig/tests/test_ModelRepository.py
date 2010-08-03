@@ -8,10 +8,10 @@ import shutil
 import datetime
 
 import mdig
-from mdig import MDiGConfig
-from mdig import GRASSInterface 
-from mdig.DispersalModel import DispersalModel
-from mdig.ModelRepository import ModelRepository,RepositoryException
+from mdig import config
+from mdig import grass 
+from mdig.model import DispersalModel
+from mdig.modelrepository import ModelRepository,RepositoryException
 
 class ModelRepositoryTest(unittest.TestCase):
 
@@ -40,7 +40,7 @@ class ModelRepositoryTest(unittest.TestCase):
         g.change_mapset.return_value = True
         g.create_mdig_subdir.return_value = os.path.join( \
                 self.temp_dir,'grass_location/variables/mdig')
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         gisdb = c['GRASS']['GISDBASE']
         g.grass_vars = {"GISDBASE": gisdb}
 
@@ -64,11 +64,11 @@ class ModelRepositoryTest(unittest.TestCase):
         import shutil
         shutil.rmtree(os.path.join(db_path,'grass_location'))
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def remove_model_test(self,get_g):
         self.make_grass_mock(get_g.return_value)
         # Assume no appropriate files in tmp
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         m = ModelRepository(self.temp_dir)
         self.assertEqual(len(m.get_models()), 0)
 
@@ -96,15 +96,15 @@ class ModelRepositoryTest(unittest.TestCase):
         self.assertEqual(get_g.return_value.remove_mapset.call_args[0][0], 'variables')
         os.remove(temp_model_fn)
 
-        self.assertRaises(mdig.ModelRepository.RepositoryException,m.remove_model,'non_existant')
+        self.assertRaises(mdig.modelrepository.RepositoryException,m.remove_model,'non_existant')
         self.remove_mock_location(self.temp_dir)
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     @patch('__builtin__.raw_input')
     def remove_other_test(self,m_in,get_g):
         self.make_grass_mock(get_g.return_value)
         # Assume no appropriate files in tmp
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         m = ModelRepository(self.temp_dir)
 
         # Try to add a model from one repository to the empty one
@@ -134,11 +134,11 @@ class ModelRepositoryTest(unittest.TestCase):
         os.remove(temp_model_fn)
         self.remove_mock_location(self.temp_dir)
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def empty_repository_test(self,get_g):
         self.make_grass_mock(get_g.return_value)
         # Assume no appropriate files in tmp
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         
         m = ModelRepository(self.temp_dir)
         self.assertEqual(len(m.get_models()), 0)
@@ -190,7 +190,7 @@ class ModelRepositoryTest(unittest.TestCase):
         # test when mapset already exists with the name of model
         get_g.return_value.check_mapset.return_value = True
         self.create_mock_location(self.temp_dir)
-        self.assertRaises(mdig.ModelRepository.RepositoryException,m.add_model,temp_model_fn)
+        self.assertRaises(mdig.modelrepository.RepositoryException,m.add_model,temp_model_fn)
         #self.assertTrue("it already exists" in str(e))
         self.remove_mock_location(self.temp_dir)
         get_g.return_value.check_mapset.return_value = False
@@ -229,12 +229,12 @@ class ModelRepositoryTest(unittest.TestCase):
         self.assertTrue("doesn't exist in" in str(e))
         os.remove(temp_model_fn)
 
-    @patch('mdig.LifestageTransition.LifestageTransition.xml_to_param')
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.lifestagetransition.LifestageTransition.xml_to_param')
+    @patch('mdig.grass.get_g')
     def test_add_lifestage_model(self,get_g,m_ls):
         self.make_grass_mock(get_g.return_value)
         # Assume no appropriate files in tmp
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         m = ModelRepository(self.temp_dir)
         m2 = ModelRepository()
         a_file = m2.get_models()['lifestage_test']
@@ -257,11 +257,11 @@ class ModelRepositoryTest(unittest.TestCase):
         # more tests about lifestage resources?
         self.remove_mock_location(self.temp_dir)
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_lifestage_model_missing_files(self,get_g):
         self.make_grass_mock(get_g.return_value)
         # Assume no appropriate files in tmp
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         m = ModelRepository(self.temp_dir)
         m2 = ModelRepository()
         a_file = m2.get_models()['lifestage_test']
@@ -275,7 +275,7 @@ class ModelRepositoryTest(unittest.TestCase):
         dm.save_model(filename=temp_model_fn)
 
         # and then try to add
-        self.assertRaises(mdig.ModelRepository.RepositoryException,m.add_model,temp_model_fn) 
+        self.assertRaises(mdig.modelrepository.RepositoryException,m.add_model,temp_model_fn) 
         self.assertEqual(len(m.get_models()), 0)
         # more tests about lifestage resources?
         self.remove_mock_location(self.temp_dir)

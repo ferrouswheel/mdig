@@ -25,10 +25,10 @@ Copyright 2006, Joel Pitt
 import logging
 import pdb
 
-from GrassMap import GrassMap
-from Analysis import Analysis
-from Event import Event
-import GRASSInterface
+from grassmap import GrassMap
+from analysis import Analysis
+from event import Event
+import grass
 
 class Lifestage:
     
@@ -134,7 +134,7 @@ class Lifestage:
                 
                     sums=[0]*n_bins
                     bin_counts=[0]*n_bins
-                    freqs=GRASSInterface.get_g().raster_value_freq(p_mapname)
+                    freqs=grass.get_g().raster_value_freq(p_mapname)
                     
                     min_cell=int(freqs[0][0])
                     max_cell=int(freqs[-1][0])
@@ -193,7 +193,7 @@ class Lifestage:
         Actually generates a mask for a given interval and region (r_id)
         """
         # Get GRASS interface instance
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         # Generate a random map name
         mapname = g.generate_map_name("mask")
                 
@@ -221,7 +221,7 @@ class Lifestage:
         for r_id in self.initial_maps:
             im = self.initial_maps[r_id]
             if not im.temporary: maps.append(im.filename)
-        maps_w_mapset = GRASSInterface.get_g().find_mapsets(maps)
+        maps_w_mapset = grass.get_g().find_mapsets(maps)
         # get maps in events
         for e in self.events:
             maps_w_mapset.extend(e.get_map_resources(model))
@@ -229,7 +229,7 @@ class Lifestage:
         return maps_w_mapset
         
     def run(self, interval, rep, temp_map_names, strategy = None):
-        grass_i = GRASSInterface.get_g()
+        grass_i = grass.get_g()
         # Run through events for this lifestage
         for e in self.events:
             mask = ""
@@ -299,14 +299,14 @@ class Lifestage:
             nodes = self.xml_node.xpath("analyses/analysis")
             #pdb.set_trace()
             for node in nodes:
-                a=Analysis(node)
+                a=analysis(node)
                 self.analysis_list.append(a)
         return self.analysis_list
 
     def clean_up_maps(self):
         for grassmap in self.initial_maps.values():
             del grassmap
-            #GRASSInterface.get_g().destruct_map(grassmap)
+            #grass.get_g().destruct_map(grassmap)
             
     def update_xml(self):
         self.xml_node.attrib["name"] = self.name

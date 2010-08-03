@@ -25,7 +25,7 @@ import logging
 import string
 import pdb
 
-import GRASSInterface
+import grass
 
 class Event:
     """
@@ -167,8 +167,8 @@ class Event:
         
         cmd=self.create_cmd_string(p)
         
-        GRASSInterface.get_g().remove_map(out_name)
-        GRASSInterface.get_g().run_command(cmd)
+        grass.get_g().remove_map(out_name)
+        grass.get_g().run_command(cmd)
         #self.log.debug(cmd)
 
     def get_map_resources(self,model):
@@ -181,7 +181,7 @@ class Event:
                 maps.append(p[1])
             elif p[0] == "VAR":
                 maps.extend(var_maps[p[1]])
-        maps_w_mapset = GRASSInterface.get_g().find_mapsets(maps)
+        maps_w_mapset = grass.get_g().find_mapsets(maps)
         return maps_w_mapset
 
     def create_cmd_string(self,params):

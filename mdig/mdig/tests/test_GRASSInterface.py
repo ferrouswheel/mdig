@@ -8,36 +8,36 @@ import shutil
 import datetime
 
 import mdig
-from mdig import MDiGConfig
-from mdig import GRASSInterface 
-from mdig.DispersalModel import DispersalModel
-from mdig.ModelRepository import ModelRepository,RepositoryException
-from mdig.Actions import RunAction
+from mdig import config
+from mdig import grass 
+from mdig.model import DispersalModel
+from mdig.modelrepository import ModelRepository,RepositoryException
+from mdig.actions import RunAction
 
 class MapNotFoundExceptionTest(unittest.TestCase):
 
     def test_construct(self):
-        e = GRASSInterface.MapNotFoundException()
+        e = grass.MapNotFoundException()
         self.assertTrue('MapNotFoundException' in str(e))
-        e = GRASSInterface.MapNotFoundException('blag')
+        e = grass.MapNotFoundException('blag')
         self.assertTrue('blag' in str(e))
 
 
 class GRASSCommandExceptionTest(unittest.TestCase):
     
     def test_no_args(self):
-        e = GRASSInterface.GRASSCommandException()
+        e = grass.GRASSCommandException()
         self.assertTrue('Command' in str(e))
 
     def test_construct(self):
-        e = GRASSInterface.GRASSCommandException('g.region','my face',10)
+        e = grass.GRASSCommandException('g.region','my face',10)
         self.assertTrue('g.region' in str(e))
         self.assertTrue('10' in str(e))
 
 class GRASSInterfaceTest(unittest.TestCase):
 
     def setUp(self):
-        self.g = GRASSInterface.GRASSInterface()
+        self.g = grass.GRASSInterface()
 
     def tearDown(self):
         self.g.clean_up()
@@ -48,11 +48,11 @@ class GRASSInterfaceTest(unittest.TestCase):
         m_run = g.run_command = Mock()
         g.backup_region()
 
-        m_run.side_effect = GRASSInterface.GRASSCommandException()
-        self.assertRaises(GRASSInterface.GRASSCommandException,g.backup_region)
+        m_run.side_effect = grass.GRASSCommandException()
+        self.assertRaises(grass.GRASSCommandException,g.backup_region)
 
-        m_run.side_effect = GRASSInterface.GRASSCommandException('g.region','',1)
-        self.assertRaises(GRASSInterface.EnvironmentException,g.backup_region)
+        m_run.side_effect = grass.GRASSCommandException('g.region','',1)
+        self.assertRaises(grass.EnvironmentException,g.backup_region)
 
     def test_check_environment(self):
         g = self.g
@@ -131,7 +131,7 @@ class GRASSInterfaceTest(unittest.TestCase):
         self.assertEqual(m_run.call_count,2)
         # r.color fail
         m_popen.return_value.returncode = 1
-        self.assertRaises(GRASSInterface.GRASSCommandException,
+        self.assertRaises(grass.GRASSCommandException,
                 g.paint_map,'a_map',layer=1)
         self.assertEqual(m_popen.call_count,2)
 

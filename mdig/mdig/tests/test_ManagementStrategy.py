@@ -2,13 +2,13 @@ import unittest
 from mock import *
 
 import mdig
-import mdig.GRASSInterface
-from mdig.ManagementStrategy import ManagementStrategy, Treatment, TreatmentArea
+import mdig.grass
+from mdig.management import ManagementStrategy, Treatment, TreatmentArea
 from StringIO import StringIO
 
 class ManagementStrategyTest(unittest.TestCase):
     
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_create_strategy(self,get_g):
         from lxml import etree
         xml = """
@@ -52,7 +52,7 @@ class ManagementStrategyTest(unittest.TestCase):
         self.assertEqual(t.get_treatment_area_map(None), None)
         self.assertEqual(t.get_ls(), None)
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_s_with_delay(self,get_g):
         from lxml import etree
         xml = """
@@ -91,7 +91,7 @@ class ManagementStrategyTest(unittest.TestCase):
         self.assertEqual(len(s.get_treatments_for_param("dist",0)),0)
         self.assertEqual(len(s.get_treatments_for_param("dist",3)),1)
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_s_with_ls(self,get_g):
         from lxml import etree
         xml = """
@@ -129,7 +129,7 @@ class ManagementStrategyTest(unittest.TestCase):
         self.assertEqual(len(s.get_treatments_for_ls("all",0)),0)
         self.assertEqual(len(s.get_treatments_for_ls("all",3)),1)
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_treatment_no_node(self,get_g):
         self.assertRaises(NotImplementedError,Treatment,None,None,None)
 

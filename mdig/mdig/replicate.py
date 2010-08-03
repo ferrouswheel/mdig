@@ -33,11 +33,11 @@ import datetime
 
 import mdig
 
-import GRASSInterface 
-import MDiGConfig
-import OutputFormats
-from GRASSInterface import MapNotFoundException, SetRegionException
-import DispersalModel
+import grass 
+import config
+import outputformats
+from grass import MapNotFoundException, SetRegionException
+import model
 
 class Replicate:
     """
@@ -51,7 +51,7 @@ class Replicate:
         self.instance = instance
         self.log = logging.getLogger("mdig.replicate")
         
-        self.grass_i = GRASSInterface.get_g()
+        self.grass_i = grass.get_g()
         
         self.temp_map_names={}
         self.active = False
@@ -76,7 +76,7 @@ class Replicate:
         else:
             # if node is provided then create replicate node from xml
             self.node = node
-            c = MDiGConfig.get_config()
+            c = config.get_config()
             if "replicate" not in c or \
                 "check_complete" not in c["replicate"] or \
                 c["replicate"]["check_complete"] != "false":
@@ -138,12 +138,12 @@ class Replicate:
                     if m.tag == "map":
                         time_step=m.attrib["time"]
                         if not skip_check and \
-                            not GRASSInterface.get_g().check_map(m.text,self.instance.get_mapset()):
+                            not grass.get_g().check_map(m.text,self.instance.get_mapset()):
                             missing_maps.append(m.text)
                         else:
                             self.saved_maps[ls_key][time_step] = m.text
             elif len(ls_maps_node) > 1:
-                raise DispersalModel.InvalidXMLException, "More than one maps node"
+                raise model.InvalidXMLException, "More than one maps node"
 
         if missing_maps:
             raise MapNotFoundException(missing_maps)
@@ -162,15 +162,15 @@ class Replicate:
     def delete_maps(self):
         """ Deletes all maps created by replicate, this currently
         DOES NOT update the xml, as it's only used by the
-        DispersalInstance.remove_rep method which removes the entire replicate
+        instance.remove_rep method which removes the entire replicate
         xml node.
         TODO: update xml 
         """
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         for ls_id in self.instance.experiment.get_lifestage_ids():
             try:
                 ls_saved_maps = self.get_saved_maps(ls_id)
-            except GRASSInterface.MapNotFoundException, e:
+            except grass.MapNotFoundException, e:
                 # If maps are missing, there still might be some found, even
                 # though it's unlikely
                 ls_saved_maps = self.get_saved_maps(ls_id)
@@ -192,7 +192,7 @@ class Replicate:
         for ls_key in ls_keys:
             maps=self.get_saved_maps(ls_key)
             for m in maps.values():
-                GRASSInterface.get_g().null_bitmask(m,generate=generate_null)
+                grass.get_g().null_bitmask(m,generate=generate_null)
 
     def get_map_name_base(self):
         i = self.instance
@@ -208,7 +208,7 @@ class Replicate:
         If gif is true, then returns a single string
         """
         output_dir = os.path.join(self.instance.experiment.base_dir,"output")
-        fn = OutputFormats.create_filename(self)
+        fn = outputformats.create_filename(self)
         if gif:
             result = os.path.join(output_dir,fn + "_ls_" + ls + "_anim")
             if extension: result += '.gif'
@@ -272,7 +272,7 @@ class Replicate:
 
     def record_maps(self, remove_null=False):
         for ls_id in self.instance.experiment.get_lifestage_ids():
-            self.push_previous_map(ls_id,GRASSInterface.get_g().generate_map_name(ls_id))
+            self.push_previous_map(ls_id,grass.get_g().generate_map_name(ls_id))
             #if first_year:
                 #self.grass_i.copy_map(self.initial_maps[ls_id].get_map_filename(),self.get_previous_map(ls_id),True)
             #else:
@@ -296,7 +296,7 @@ class Replicate:
             rep_info_str += " [vars: %s]" % repr(var_dict)
         if self.instance.strategy:
             rep_info_str += " [strategy: %s]" % self.instance.strategy
-        if MDiGConfig.get_config().output_level == "normal":
+        if config.get_config().output_level == "normal":
             print rep_info_str
         self.log.log(logging.INFO, rep_info_str)
         
@@ -312,8 +312,8 @@ class Replicate:
             # Create temporary map names
             # - input is in [0], output in [1]
             self.temp_map_names[ls_key] = [
-                GRASSInterface.get_g().generate_map_name(ls_key),
-                GRASSInterface.get_g().generate_map_name(ls_key)
+                grass.get_g().generate_map_name(ls_key),
+                grass.get_g().generate_map_name(ls_key)
             ]
             
             # copy initial map to temporary source map, overwrite if necessary
@@ -409,7 +409,7 @@ class Replicate:
         """
         result = (analysis_cmd.cmd_string,analysis_cmd.output_fn)
 
-        mdig_config = MDiGConfig.get_config()
+        mdig_config = config.get_config()
         
         current_dir = os.path.dirname(os.path.abspath(result[1]))
         filename = os.path.basename(result[1])
@@ -485,7 +485,7 @@ class Replicate:
             if "replicate_update" in dir(l):
                 ls_filename = l.replicate_update(self,t)
             
-                if l.__class__ == OutputFormats.RasterOutput and ls_filename[0] is not None:
+                if l.__class__ == outputformats.RasterOutput and ls_filename[0] is not None:
                     self.add_completed_raster_map(self.current_t, ls_filename[0], ls_filename[1], l.interval)
         # set time of last change
         self.update_time_stamp()
@@ -509,12 +509,12 @@ class Replicate:
         return dateutil.parser.parse(self.node.attrib['ts'])
     
     def add_completed_raster_map(self,t,ls,file_name,interval=1):
-        mdig_config = MDiGConfig.get_config()
+        mdig_config = config.get_config()
         
         # If the command line has specified that the null bitmask
         # of completed raster maps should be removed:
         if mdig_config.remove_null:
-            GRASSInterface.get_g().null_bitmask(file_name,generate="False")
+            grass.get_g().null_bitmask(file_name,generate="False")
         
         # TODO: Check if the filename has already been associated with an analysis
         

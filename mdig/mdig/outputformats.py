@@ -21,10 +21,10 @@ import sys
 import logging
 import pdb
 
-import GRASSInterface
-import DispersalModel
-from DispersalInstance import DispersalInstance
-from Replicate import Replicate
+import grass
+import model
+from instance import DispersalInstance
+from replicate import Replicate
 
 #TODO: move into classes
 def create_filename(rep):
@@ -60,7 +60,7 @@ class PngOutput:
         self.listeningTo = []
         
     def replicate_update(self,rep,t):
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         
         fn = None
         
@@ -110,7 +110,7 @@ class RasterOutput:
         self.listeningTo = []
         
     def replicate_update(self,rep,t):
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         fn = None
 
         if rep.instance.experiment.interval_modulus(self.interval,t) == 0:

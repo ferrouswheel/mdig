@@ -31,14 +31,14 @@ import time
 import pdb
 
 import mdig
-import GRASSInterface 
-import MDiGConfig
-import OutputFormats
-from GrassMap import GrassMap
-from GRASSInterface import SetRegionException, MapNotFoundException
-import GRASSInterface
-import DispersalModel
-from Event import Event
+import grass 
+import config
+import outputformats
+import grass
+from grassmap import GrassMap
+from grass import SetRegionException, MapNotFoundException
+import model
+from event import Event
 
 class ManagementStrategy:
     """
@@ -52,7 +52,7 @@ class ManagementStrategy:
     def __init__(self,node,experiment,instance=None):
         self.log = logging.getLogger("mdig.strategy")
         
-        self.grass_i = GRASSInterface.get_g()
+        self.grass_i = grass.get_g()
         
         self.temp_map_names={}
         self.active = False
@@ -87,7 +87,7 @@ class ManagementStrategy:
     def set_region(self, r_id):
         rs = self.experiment.get_regions()
         if r_id not in rs:
-            raise GRASSInterface.SetRegionException("Invalid region ID %s" % r_id)
+            raise grass.SetRegionException("Invalid region ID %s" % r_id)
         self.node.attrib["region"] = r_id
 
     def get_description(self):
@@ -191,9 +191,9 @@ class Treatment:
 
     def __del__(self):
         if 'area_temp' in dir(self):
-            GRASSInterface.get_g().remove_map(self.area_temp)
+            grass.get_g().remove_map(self.area_temp)
         if 'var_temp' in dir(self):
-            GRASSInterface.get_g().remove_map(self.var_temp)
+            grass.get_g().remove_map(self.var_temp)
 
     def init_treatment(self):
         # TODO create the required elements with a default global area
@@ -281,7 +281,7 @@ class Treatment:
             operation = self.area_node.attrib['combine']
         assert(operation == "and" or operation == "or")
 
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         g.remove_map(self.area_temp)
         merge_str = "if("
         for a in self.areas:
@@ -329,7 +329,7 @@ class Treatment:
         Returns None if this treatment does not affect var_key.
         """
 #if self.strategy.instance is None:
-#            self.log.error("Not connected to a DispersalInstance.")
+#            self.log.error("Not connected to a instance.")
 #            return None
         if not self.affects_var(var_key):
             return None
@@ -344,7 +344,7 @@ class Treatment:
         orig_value = var_val
         if orig_value is None:
             orig_value = "null()"
-        GRASSInterface.get_g().mapcalc(self.var_temp, \
+        grass.get_g().mapcalc(self.var_temp, \
                 "if(" + area_mask_map + "==1," \
                 + str(altered_value) + "," + str(orig_value) + ")")
         return self.var_temp
@@ -356,7 +356,7 @@ class Treatment:
         if not self.affects_var(var_key):
             return None
         #if self.strategy.instance is None:
-            #self.log.error("Not connected to a DispersalInstance.")
+            #self.log.error("Not connected to a instance.")
             #return None
         orig_value = var_val #self.strategy.instance.get_var(var_key)
         # handle decrease, increase, ratio
@@ -415,7 +415,7 @@ class TreatmentArea:
 
     def __del__(self):
         if self.area_filter_output is not None:
-            GRASSInterface.get_g().remove_map(self.area_filter_output)
+            grass.get_g().remove_map(self.area_filter_output)
 
     def init_from_xml(self):
         if self.node.tag == "mfilter":
@@ -439,7 +439,7 @@ class TreatmentArea:
             maps.extend(self.area.get_map_resources(m))
         elif isinstance(self.area, GrassMap):
             if self.area.xml_map_type=="name":
-                g = GRASSInterface.get_g()
+                g = grass.get_g()
                 maps.append((self.area.filename,g.find_mapset(self.area.filename)))
         return maps
 
@@ -450,7 +450,7 @@ class TreatmentArea:
         """
         if isinstance(self.area, Event):
             if self.area_filter_output is not None:
-                GRASSInterface.get_g().remove_map(self.area_filter_output)
+                grass.get_g().remove_map(self.area_filter_output)
             dist_map = replicate.temp_map_names[self.treatment.area_ls][0]
             self.area.run( dist_map, \
                     self.area_temp, replicate, False)

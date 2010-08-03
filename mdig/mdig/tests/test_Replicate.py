@@ -3,11 +3,11 @@ from mock import *
 import logging
 
 import mdig
-from mdig import MDiGConfig
-from mdig import GRASSInterface 
-from mdig.DispersalModel import DispersalModel
-from mdig.ModelRepository import ModelRepository,RepositoryException
-from mdig.Replicate import Replicate
+from mdig import config
+from mdig import grass 
+from mdig.model import DispersalModel
+from mdig.modelrepository import ModelRepository,RepositoryException
+from mdig.replicate import Replicate
 
 class ReplicateTest(unittest.TestCase):
 
@@ -39,10 +39,10 @@ class ReplicateTest(unittest.TestCase):
         self.assertRaises(ValueError,Replicate,node=None,instance=None)
 
     def test_check_complete_on_creation(self):
-        MDiGConfig.get_config()['replicate']['check_complete']='true'
+        config.get_config()['replicate']['check_complete']='true'
         i = self.m_variables.get_instances()[0]
         r = Replicate(node=None,instance=i)
-        MDiGConfig.get_config()['replicate']['check_complete']='false'
+        config.get_config()['replicate']['check_complete']='false'
 
     def test_check_complete(self):
         i = self.m_variables.get_instances()[0]
@@ -57,7 +57,7 @@ class ReplicateTest(unittest.TestCase):
         global get_save_count
         get_save_count = 0
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_delete_maps(self,get_g):
         i = self.m_variables_complete.get_instances()[0]
         i.replicates[0].delete_maps()
@@ -75,7 +75,7 @@ class ReplicateTest(unittest.TestCase):
         global get_save_count
         get_save_count = 0
 
-    @patch('mdig.GRASSInterface.get_g')
+    @patch('mdig.grass.get_g')
     def test_null_bitmask(self,get_g):
         i = self.m_variables_complete.get_instances()[0]
         r = i.replicates[0]
@@ -128,7 +128,7 @@ def mock_get_saved_maps(ls_id):
         return {}
     else:
         get_save_count += 1
-        raise mdig.GRASSInterface.MapNotFoundException()
+        raise mdig.grass.MapNotFoundException()
 
 
 

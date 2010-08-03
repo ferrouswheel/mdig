@@ -8,11 +8,11 @@ import shutil
 import datetime
 
 import mdig
-from mdig import MDiGConfig
-from mdig import GRASSInterface 
-from mdig.DispersalModel import DispersalModel
-from mdig.ModelRepository import ModelRepository,RepositoryException
-from mdig.AnalysisCommand import AnalysisCommand, OutputFileNotSetException
+from mdig import config
+from mdig import grass 
+from mdig.model import DispersalModel
+from mdig.modelrepository import ModelRepository,RepositoryException
+from mdig.analysiscommand import AnalysisCommand, OutputFileNotSetException
 from mdig import NotEnoughHistoryException
 
 class AnalysisCommandTest(unittest.TestCase):
@@ -28,7 +28,7 @@ class AnalysisCommandTest(unittest.TestCase):
     @patch('os.remove')
     def test_init_output_file(self,rm_mock,isfile_mock):
         isfile_mock.return_value = True
-        mdig_config = MDiGConfig.get_config()
+        mdig_config = config.get_config()
         mdig_config.overwrite_flag = False
         model_fn = self.repo.get_models()['lifestage_test']
         model = DispersalModel(model_fn,setup=False)
@@ -109,7 +109,7 @@ class AnalysisCommandTest(unittest.TestCase):
         self.assertEqual(po_mock.call_args[0][0], "testcommand map1")
         return_val = ac.run_command_once(1992,maps,"testcommand %0")
         self.assertEqual(po_mock.call_args[0][0], "testcommand map3")
-        mdig_config = MDiGConfig.get_config()
+        mdig_config = config.get_config()
         mdig_config.analysis_print_time = True
         self.__do_run_command_once(model,ac,maps)
 
@@ -163,7 +163,7 @@ class AnalysisCommandTest(unittest.TestCase):
 
     def test_get_output_filename_base(self):
         ac = AnalysisCommand("test %1")
-        mdig_config = MDiGConfig.get_config()
+        mdig_config = config.get_config()
         spam = "woooo"
         old_base = mdig_config.analysis_filename_base
         mdig_config.analysis_filename_base = spam

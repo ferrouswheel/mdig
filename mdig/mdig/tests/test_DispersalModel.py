@@ -8,11 +8,11 @@ import shutil
 import datetime
 
 import mdig
-from mdig import MDiGConfig
-from mdig import GRASSInterface 
-from mdig.DispersalModel import DispersalModel
-from mdig.ModelRepository import ModelRepository,RepositoryException
-from mdig.Actions import RunAction
+from mdig import config
+from mdig import grass 
+from mdig.model import DispersalModel
+from mdig.modelrepository import ModelRepository,RepositoryException
+from mdig.actions import RunAction
 
 class DispersalModelTest(unittest.TestCase):
 
@@ -26,7 +26,7 @@ class DispersalModelTest(unittest.TestCase):
         dm = DispersalModel(the_action = RunAction())
         dm = DispersalModel(the_action = RunAction(), setup=False)
     
-    @patch('mdig.LifestageTransition.LifestageTransition.xml_to_param')
+    @patch('mdig.lifestagetransition.LifestageTransition.xml_to_param')
     def test_get_resources(self,m_xml):
         m_xml.return_value={}
         mdig.repository = self.repo = ModelRepository()

@@ -15,7 +15,7 @@ import numpy
 from numpy import vstack, concatenate, random, array, loadtxt
 
 import mdig
-import GRASSInterface
+import grass
 
 class TVGenerator(list):
     """ Generates a transition value
@@ -166,10 +166,10 @@ class ParamGenerator():
         try:
             if source == 'map':
                 # TODO create a GRASSInterface command to load map to an array
-                g = GRASSInterface.get_g()
+                g = grass.get_g()
                 self.map_name = str(vals[0])
                 if (g.check_map(self.map_name) != "raster"):
-                    raise GRASSInterface.MapNotFoundException(self.map_name)
+                    raise grass.MapNotFoundException(self.map_name)
                 map_range = g.get_range()
                 n_rows = int(map_range[8][6:])
                 n_cols = int(map_range[9][6:])
@@ -261,7 +261,7 @@ class LifestageTransition:
         self.expressions = self.xml_to_expression_list()
 
         # determine size of rasters
-        self.range_data = GRASSInterface.get_g().get_range()
+        self.range_data = grass.get_g().get_range()
         # process range_data
         self.n_rows = int(self.range_data[8][6:])
         self.n_cols = int(self.range_data[9][6:])
@@ -275,7 +275,7 @@ class LifestageTransition:
         self.log.debug('Transition matrix size set to %i x %i' % (self.tm_size, self.tm_size) )
 
         # Get the different indexes available
-        index_values = GRASSInterface.get_g().raster_value_freq(self.index_source)
+        index_values = grass.get_g().raster_value_freq(self.index_source)
         index_values = [int(x[0]) for x in index_values]
         self.log.debug('Index values found were: ' + str(index_values))
 
@@ -289,7 +289,7 @@ class LifestageTransition:
 
         ## Import Rasters
         # check Index raster name, check it exists
-        index_raster = GRASSInterface.get_g().get_index_raster(self.index_source)
+        index_raster = grass.get_g().get_index_raster(self.index_source)
         # check list of rasters that comprise stages (in order)
         pop_raster_list = current_pop_maps
 
@@ -298,12 +298,12 @@ class LifestageTransition:
         ascii_out_rasters = []
         for i in pop_raster_list:
             # output to ascii, and also replace null values with 0
-            data_fn, data_out_fn = GRASSInterface.get_g().raster_to_ascii(i,null_as_zero=True)
+            data_fn, data_out_fn = grass.get_g().raster_to_ascii(i,null_as_zero=True)
             ascii_pop_rasters.append(data_fn)
             ascii_out_rasters.append(data_out_fn)
 
         self.log.debug("Converting index file...")
-        ascii_indexes = GRASSInterface.get_g().index_to_ascii(index_raster)
+        ascii_indexes = grass.get_g().index_to_ascii(index_raster)
 
         # apply matrix multiplication
         self.process_rows(ls_ids, ascii_indexes, ascii_pop_rasters, ascii_out_rasters,
@@ -427,7 +427,7 @@ class LifestageTransition:
             else: # re-write temp ascii files to rasters in GRASS workspace
                 ascii_fn = temp_out_rasters[i-1]
                 rast_name = out_pop_rasters[i-1]
-                GRASSInterface.get_g().import_ascii_to_raster(ascii_fn,rast_name,0)
+                grass.get_g().import_ascii_to_raster(ascii_fn,rast_name,0)
             # remove temporary ascii map files
             os.remove(temp_rasters[i-1])
             os.remove(temp_out_rasters[i-1])

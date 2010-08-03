@@ -53,8 +53,8 @@ class GRASSCommandException (Exception):
         result += " stderr: '" + self.stderr + "'"
         return result
 
-import DispersalModel
-import MDiGConfig
+import model
+import config
 
 grass_i = None
 
@@ -117,7 +117,7 @@ class GRASSInterface:
     old_region="mdig_temp_region"
     
     def __init__(self):
-        self.config = MDiGConfig.get_config()
+        self.config = config.get_config()
         self.log = logging.getLogger("mdig.grass")
         self.stderr = ""
         self.stdout = ""
@@ -416,7 +416,7 @@ class GRASSInterface:
         
         # copy from tempfilanem to filename
         if self.filename and self.filename.find(".png") != -1 and not self.outputIsTemporary:
-            c = MDiGConfig.get_config()
+            c = self.config
             if not dest_dir and os.path.isdir(os.path.dirname(self.filename)):
                 # use path in filename
                 dest_dir = os.path.dirname(self.filename)

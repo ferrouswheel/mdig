@@ -1,4 +1,4 @@
-from mdig import MDiGConfig
+from mdig import config
 
 import os
 import logging
@@ -14,11 +14,11 @@ def setup():
     #setup_logger()
 
     # Setup config file to use test mdig.conf which refers to test GRASS db
-    MDiGConfig.MDiGConfig.config_file = os.path.join(os.path.dirname(__file__),'mdig.conf')
+    config.MDiGConfig.config_file = os.path.join(os.path.dirname(__file__),'mdig.conf')
     
     # Copy test repository
-    c = MDiGConfig.get_config()
-    c['GRASS']['GISBASE'] = MDiGConfig.find_grass_base_dir()
+    c = config.get_config()
+    c['GRASS']['GISBASE'] = config.find_grass_base_dir()
     global test_dir
     test_dir = tempfile.mkdtemp(prefix="mdig_test_")
     end_part = os.path.split(c['GRASS']['GISDBASE'])[1]

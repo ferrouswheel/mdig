@@ -3,9 +3,9 @@ import mdig # for exit status codes
 import os
 import sys
 
-from mdig.DispersalModel import DispersalModel
-from mdig.DispersalInstance import *
-from mdig.ModelRepository import ModelRepository,RepositoryException
+from mdig.model import DispersalModel
+from mdig.instance import *
+from mdig.modelrepository import ModelRepository,RepositoryException
 
 def split_instances_into_own_mapsets(dm):
     instances = dm.get_instances()
@@ -25,11 +25,11 @@ def split_instances_into_own_mapsets(dm):
         sys.stdout.flush()
         
         # Avoid loading/looking for maps (since they'd be in the main mapset)
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         if "replicate" not in c: c["replicate"] = {}
         c["replicate"]["check_complete"] = "false"
 
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         reps = i.replicates
         src_mapset = dm_mapset
         # change to dest mapset
@@ -90,11 +90,11 @@ def check_instances_have_info_file(instances):
         sys.stdout.flush()
         
         # Avoid loading/looking for maps
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         if "replicate" not in c: c["replicate"] = {}
         c["replicate"]["check_complete"] = "false"
 
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         reps = i.replicates
         # change to dest mapset
         i.change_mapset()

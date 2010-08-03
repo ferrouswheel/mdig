@@ -25,7 +25,7 @@ Copyright 2006, Joel Pitt
 
 """
 
-from mdig import GRASSInterface
+from mdig import grass
 
 class Displayer:
     
@@ -33,7 +33,7 @@ class Displayer:
         self.listeningTo = []
         
     def replicate_update(self,rep,t):
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         
         g.set_output()
         g.clear_monitor()

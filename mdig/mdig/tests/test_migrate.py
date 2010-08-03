@@ -2,21 +2,21 @@ import unittest
 from mock import *
 
 import mdig
-from mdig.DispersalModel import DispersalModel
-from mdig.ModelRepository import ModelRepository,RepositoryException
+from mdig.model import DispersalModel
+from mdig.modelrepository import ModelRepository,RepositoryException
 from mdig.migrate import *
 
 class Migrate0Test(unittest.TestCase):
 
     def setUp(self):
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         self.r_dir = os.path.join(c['GRASS']['GISDBASE'],'migrate_tests/version-0')
         self.old_r_dir = os.path.join(c['GRASS']['GISDBASE'],'migrate_tests/version-0/repository')
         self.old_dbase = c['GRASS']['GISDBASE']
         c['GRASS']['GISDBASE'] = self.r_dir
 
     def tearDown(self):
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         c['GRASS']['GISDBASE'] = self.old_dbase 
 
     @patch('__builtin__.raw_input')
@@ -32,7 +32,7 @@ class Migrate0Test(unittest.TestCase):
 class Migrate029Test(unittest.TestCase):
 
     def setUp(self):
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         self.old_dbase = c['GRASS']['GISDBASE']
         self.m_dir = os.path.join(c['GRASS']['GISDBASE'],'migrate_tests/version-0.2.9')
         c['GRASS']['GISDBASE'] = self.m_dir
@@ -43,37 +43,37 @@ class Migrate029Test(unittest.TestCase):
         print self.models
 
     def tearDown(self):
-        c = MDiGConfig.get_config()
+        c = config.get_config()
         c['GRASS']['GISDBASE'] = self.old_dbase 
 
-    @patch('mdig.GRASSInterface.GRASSInterface.copy_map')
-    @patch('mdig.GRASSInterface.GRASSInterface.remove_map')
+    @patch('mdig.grass.GRASSInterface.copy_map')
+    @patch('mdig.grass.GRASSInterface.remove_map')
     def test_no_split_instances(self, m_remove_map, m_copy_map):
         m_fn = self.models['variables']
         dm = DispersalModel(m_fn)
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         split_instances_into_own_mapsets(dm)
         self.assertEqual(m_remove_map.call_count, 0)
         self.assertEqual(m_copy_map.call_count, 0)
 
-    @patch('mdig.GRASSInterface.GRASSInterface.copy_map')
-    @patch('mdig.GRASSInterface.GRASSInterface.remove_map')
+    @patch('mdig.grass.GRASSInterface.copy_map')
+    @patch('mdig.grass.GRASSInterface.remove_map')
     def test_split_instances(self, m_remove_map, m_copy_map):
         m_fn = self.models['variables_split']
         dm = DispersalModel(m_fn)
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         split_instances_into_own_mapsets(dm)
         self.assertEqual(m_remove_map.call_count, m_copy_map.call_count)
 
-    #@patch('mdig.GRASSInterface.GRASSInterface.remove_map')
+    #@patch('mdig.grass.grass.remove_map')
     def test_check_info(self): #, m_remove_map, m_copy_map):
         m_fn = self.models['variables']
         dm = DispersalModel(m_fn)
-        g = GRASSInterface.get_g()
+        g = grass.get_g()
         check_instances_have_info_file(dm.get_instances())
         #self.assertEqual(m_remove_map.call_count, m_copy_map.call_count)
 
-    #@patch('mdig.GRASSInterface.get_g')
+    #@patch('mdig.grass.get_g')
     @patch('mdig.migrate.check_instances_have_info_file')
     @patch('mdig.migrate.split_instances_into_own_mapsets')
     def test_migrate_repository(self,m_split,m_check_info):# ,m_g):

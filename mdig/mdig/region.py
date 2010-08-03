@@ -25,7 +25,7 @@ Copyright 2006, Joel Pitt
 
 import logging
 import lxml
-from GrassMap import GrassMap
+from grassmap import GrassMap
 
 class Region:
     

@@ -74,7 +74,7 @@ def process_options(argv):
     global logger
     
     model_file = None
-    mdig_config = MDiGConfig.get_config()
+    mdig_config = config.get_config()
 
     # Remove action keyword first
     action_keyword = None
@@ -99,7 +99,7 @@ def process_options(argv):
 def do_migration(args):
     if len(args) == 0:
         MDiGConfig.MDiGConfig.migration_is_allowed = True
-        mdig_config = MDiGConfig.get_config()
+        mdig_config = config.get_config()
         if not mdig_config.migration_occurred:
             print "Nothing to migrate within mdig.conf"
             print "Use 'mdig.py migrate old_repo_dir grassdb' to manually migrate a repository"
@@ -129,7 +129,7 @@ def main(argv):
         do_migration(argv[1:])
 
     # Otherwise start up normally
-    mdig_config = MDiGConfig.get_config()
+    mdig_config = config.get_config()
     logger = setupLogger(mdig_config["LOGGING"]["ansi"])
     the_action = process_options(argv)
     
@@ -191,7 +191,7 @@ def exit_cleanup():
     if GRASSInterface.get_g(False) is not None:
         GRASSInterface.get_g().clean_up()
 
-    MDiGConfig.get_config().write()
+    config.get_config().write()
 
     from mdig.WebService import shutdown_webapp
     shutdown_webapp()
