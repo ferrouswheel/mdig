@@ -14,6 +14,15 @@ from mdig.model import DispersalModel
 from mdig.modelrepository import ModelRepository,RepositoryException
 from mdig.actions import RunAction
 
+class CompareVersionTest(unittest.TestCase):
+
+    def test_compare_version(self):
+        from mdig import compare_version
+        self.assertTrue(compare_version('1.2.3','1.3.5') < 0)
+        self.assertTrue(compare_version('1.3.5','1.2.44') > 0)
+        self.assertTrue(compare_version('1.3.5','1.3.5.1') < 0)
+
+
 class DispersalModelTest(unittest.TestCase):
 
     def test_empty_model(self):
@@ -104,7 +113,6 @@ class DispersalModelTest(unittest.TestCase):
         m.null_bitmask()
         for i in m.get_instances():
             self.assertEqual(i.null_bitmask.call_count,2)
-
 
         
     def test_run(self):
