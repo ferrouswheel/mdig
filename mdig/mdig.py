@@ -18,12 +18,7 @@
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
 #
 ''' MDiG - Modular Dispersal in GIS
-
 Command line interface/launcher for MDiG.
-
-The user should be in GRASS environment before running. Some commands might
-work outside of the GRASS env. but no guarantees.
-
 '''
 
 import sys
@@ -36,26 +31,26 @@ import signal
 from datetime import datetime, timedelta
 
 import mdig
-from mdig import Actions
-from mdig import MDiGConfig
-from mdig import ModelRepository
+from mdig import actions
+from mdig import config
+from mdig import modelrepository
 
-from mdig import GRASSInterface
-from mdig import DispersalModel
-from mdig import Displayer
+from mdig import grass
+from mdig import model
+from mdig import displayer
 
 def usage(db):
     usage_line = mdig.version_string + "\n"
     usage_line += "Usage: mdig.py <action> [options] [model_name|model.xml]"
     
     max_length = 0
-    for a in Actions.mdig_actions:
+    for a in actions.mdig_actions:
         max_length = max(len(a),max_length)
         
     actions_list = []
-    for a in Actions.mdig_actions:
+    for a in actions.mdig_actions:
         a_str = a + (" "*(max_length - len(a))) + " - " + \
-            Actions.mdig_actions[a].description
+            actions.mdig_actions[a].description
         actions_list.append(a_str)
     actions_list.sort()
 
@@ -82,9 +77,9 @@ def process_options(argv):
         action_keyword = argv[0]
     
     the_action = None
-    if Actions.mdig_actions.has_key( action_keyword ):
+    if actions.mdig_actions.has_key( action_keyword ):
         # Initialise with the class corresponding to the action
-        the_action = Actions.mdig_actions[action_keyword]()
+        the_action = actions.mdig_actions[action_keyword]()
     if the_action is not None:
         the_action.parse_options(argv)
     else:
@@ -98,7 +93,7 @@ def process_options(argv):
 
 def do_migration(args):
     if len(args) == 0:
-        MDiGConfig.MDiGConfig.migration_is_allowed = True
+        config.MDiGConfig.migration_is_allowed = True
         mdig_config = config.get_config()
         if not mdig_config.migration_occurred:
             print "Nothing to migrate within mdig.conf"
@@ -141,11 +136,11 @@ def main(argv):
     if the_action.location is not None:
         mdig_config["GRASS"]["LOCATION_NAME"] = the_action.location
     if the_action.init_repository:
-        mdig.repository = ModelRepository.ModelRepository()
+        mdig.repository = modelrepository.ModelRepository()
         models = mdig.repository.get_models()
     if the_action.init_grass:
         # Check for grass environment and set up interface
-        grass_interface = GRASSInterface.get_g()
+        grass_interface = grass.get_g()
         
     if the_action.preload == True:
         # Load model definition
@@ -157,7 +152,7 @@ def main(argv):
                 logger.error("Model " + m_name + " doesn't exist in repository")
                 sys.exit(mdig.mdig_exit_codes["model_not_found"])
             model_xml_file = models[m_name]
-            exp = DispersalModel.DispersalModel(model_xml_file, the_action)
+            exp = model.DispersalModel(model_xml_file, the_action)
             simulations.append(exp)
         else:
             logger.error ("No model file specified")
@@ -188,8 +183,8 @@ def exit_cleanup():
     for exp in simulations:
         exp.clean_up()
         exp.save_model()
-    if GRASSInterface.get_g(False) is not None:
-        GRASSInterface.get_g().clean_up()
+    if grass.get_g(False) is not None:
+        grass.get_g().clean_up()
 
     config.get_config().write()
 
