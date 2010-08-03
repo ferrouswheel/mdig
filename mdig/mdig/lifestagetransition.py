@@ -163,6 +163,11 @@ class ParamGenerator():
         #print '%s   %s   %s   %s is parameter value source' %(source, index, dist, vals)
 
     def _load_parameter(self):
+        source = self.source
+        dist = self.dist
+        vals = self.vals
+        index = self.index
+        model_dir = self.model_dir
         try:
             if source == 'map':
                 # TODO create a GRASSInterface command to load map to an array

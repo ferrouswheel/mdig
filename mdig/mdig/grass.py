@@ -50,7 +50,7 @@ class GRASSCommandException (Exception):
 
     def __str__(self):
         result = "Command '%s' exiting with code %d," % (self.cmd, self.exit_code)
-        result += " stderr: '" + self.stderr + "'"
+        result += " stderr: '" + self.stderr.strip() + "'"
         return result
 
 import model
@@ -570,12 +570,12 @@ class GRASSInterface:
             
         return res
         
-    def set_region(self,region=None,raster=None):
+    def set_region(self,a_region=None,raster=None):
         name = None
-        if region:
-            import mdig.Region
-            if isinstance(region,mdig.Region.Region): name = region.get_name()
-            else: name = region
+        if a_region:
+            import mdig.region
+            if isinstance(a_region,mdig.region.Region): name = a_region.get_name()
+            else: name = a_region
         # Now set region
         if name:
             self.log.debug("Setting region to %s", name)
@@ -584,7 +584,7 @@ class GRASSInterface:
             self.log.debug("Setting region to match raster %s", raster)
             ret = self.run_command('g.region rast=%s' % raster)
         else:
-            extents = region.get_extents()
+            extents = a_region.get_extents()
             command_string = 'g.region '
             extent_string = ''
             res_str = ''
@@ -600,20 +600,20 @@ class GRASSInterface:
                     elif key == "west":
                         extent_string += 'w=' + str(extents[key]) + ' '
             else:
-                self.log.warning("Region %s didn't define extents" % region.id)
+                self.log.warning("Region %s didn't define extents" % a_region.id)
 
-            res = region.get_resolution()
+            res = a_region.get_resolution()
             if res is not None:
                 res_str = 'res=' + repr(res)
             else:
-                self.log.warning("Region %s didn't define resolution" % region.id)
+                self.log.warning("Region %s didn't define resolution" % a_region.id)
             
             self.log.debug("Setting region using extents %s and res %s",
                     repr(extent_string), repr(res))
             try:
                 ret = self.run_command(command_string + extent_string + res_str)
             except GRASSCommandException, e:
-                self.log.error("Error setting region %s" % region.id)
+                self.log.error("Error setting region %s" % a_region.id)
                 self.log.error("stderr was %s" % str(e))
                 raise e
         return True
@@ -751,7 +751,7 @@ class GRASSInterface:
                 mapset_dir = os.path.join(self.grass_vars['GISDBASE'],
                     loc_dir,mapset_name)
                 if not os.path.isdir(mapset_dir):
-                    raise SetMapsetException("Not mapset dir found: %s", mapset_dir)
+                    raise SetMapsetException("No mapset dir found: %s", mapset_dir)
                 if location: self.grass_vars["LOCATION_NAME"] = location
                 self.grass_vars["MAPSET"] = mapset_name
                 self.set_gis_env()

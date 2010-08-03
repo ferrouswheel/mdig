@@ -188,7 +188,7 @@ def exit_cleanup():
 
     config.get_config().write()
 
-    from mdig.WebService import shutdown_webapp
+    from mdig.webui import shutdown_webapp
     shutdown_webapp()
         
     logger.info("Finished at %s" % repr(datetime.now().ctime()))

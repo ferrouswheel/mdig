@@ -168,12 +168,17 @@ class Replicate:
         """
         g = grass.get_g()
         for ls_id in self.instance.experiment.get_lifestage_ids():
+            ls_saved_maps=[]
             try:
                 ls_saved_maps = self.get_saved_maps(ls_id)
             except grass.MapNotFoundException, e:
                 # If maps are missing, there still might be some found, even
                 # though it's unlikely
                 ls_saved_maps = self.get_saved_maps(ls_id)
+            except grass.SetMapsetException, e:
+                self.log.warning("Couldn't find mapset '" + \
+                        self.instance.get_mapset() + \
+                        "', so forgetting about it.")
             finally:
                 for m in ls_saved_maps:
                     # remove map

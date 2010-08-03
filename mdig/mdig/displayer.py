@@ -26,6 +26,7 @@ Copyright 2006, Joel Pitt
 """
 
 from mdig import grass
+from mdig import config
 
 class Displayer:
     
@@ -38,9 +39,12 @@ class Displayer:
         g.set_output()
         g.clear_monitor()
         
-        bm=rep.instance.experiment.get_region(rep.instance.r_id).getBackgroundMap()
-        if bm is not None:      
-            g.paint_map(bm.get_map_filename())
+        bm=config.get_config()['OUTPUT']['background_map']
+        if bm is not None:
+            try:
+                g.paint_map(bm)
+            except grass.GRASSCommandException:
+                pass
         
         layer_index = 0
         for l in rep.temp_map_names.keys():

@@ -81,13 +81,5 @@ class Region:
         for i in ext:
             ext_node.attrib[i] = str(ext[i])
         
-    # This is now stored in mdig.conf and is up to user to specify
-    #def getBackgroundMap(self):
-    #    bmap = None
-    #    bmap_node = self.xml_node.xpath('background')
-    #    if len(bmap_node) > 0:
-    #        bmap=GrassMap(bmap_node[0][0])
-    #    return bmap
-    
     def update_xml(self):
         pass
