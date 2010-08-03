@@ -898,6 +898,24 @@ class GRASSInterface:
             raise GRASSCommandException(commandstring,self.stderr,ret)
         return ret
 
+    def check_for_executable(self, program):
+        """ Cross platform way to find whether an exe exists in the path.
+        Taken from:
+        http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python/377028#377028    
+        """
+        def is_exe(fpath):
+            return os.path.exists(fpath) and os.access(fpath, os.X_OK)
+        fpath, fname = os.path.split(program)
+        if fpath:
+            if is_exe(program):
+                return program
+        else:
+            for path in os.environ["PATH"].split(os.pathsep):
+                exe_file = os.path.join(path, program)
+                if is_exe(exe_file):
+                    return exe_file
+        return None
+
     def clean_up(self):
         self.log.log(logging.INFO,'Restoring region')
         

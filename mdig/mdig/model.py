@@ -113,13 +113,6 @@ class DispersalModel(object):
         self.start = {}
         self.instance_mapsets = []
         
-        if self.action is not None:
-            try:
-                if self.action.check_model:
-                    self.check_model()
-            except CheckModelException, e:
-                print e
-                
         self.base_dir = None
         if self.model_file:
             self.log_file = None
@@ -131,6 +124,10 @@ class DispersalModel(object):
             if setup:
                 self.init_mapset()
                 self.setup_logfile()
+
+        if self.action is not None:
+            if self.action.check_model:
+                self.check_model()
 
     def setup_logfile(self):
         if self.log_file: return 
@@ -526,34 +523,27 @@ class DispersalModel(object):
             ls = self.get_lifestage(ls_key)
             initial_maps[ls_id] = ls.initial_maps
         return initial_maps
+
+    def get_all_commands(self):
+        # TODO Scan all events to ensure all commands exist (to avoid running stuff
+        # when one of them are missing)
+        return ['r.mdig.kernel']
                 
     def check_model(self):
         self.log.debug("Checking model maps exist")
         
-        # - can check maps just by attempting to get the map
-        # - functions create GrassMap's automatically and
-        # checks the map exists
+        res = self.get_resources()
+        for r in res:
+            if r[2] is None:
+                raise CheckModelException("Resource missing: %s %s" % (r[0],r[1]))
         
-        empty_region = False
-        #check background map
-        for r_id, region in self.get_regions().items():
-            #check initial map for each lifestage exists
-            total_initial_maps = 0
-            for ls_key in self.get_lifestage_ids():
-                ls = self.get_lifestage(ls_key)
-                total_initial_maps += len(ls.initial_maps)
-            if total_initial_maps == 0:
-                self.error("Region %s has no initial maps defined" % r_id)
-                empty_region = True
-            
-        if empty_region:
-            exit(mdig.mdig_exit_codes["no_initial_maps"])
-                
-        #check phenology maps exist
+        # check that the event commands exist or are supported.
+        for cmd in self.get_all_commands():
+            if grass.get_g().check_for_executable(cmd) is None:
+                raise CheckModelException(
+                        "Model depends on missing executable: %s" % cmd)
         
-        #Check that the event commands exist or are supported.
-        
-        #self.grass_i.check_map(self.model.getBackgroundMap())
+        # TODO self.grass_i.check_map(self.model.getBackgroundMap())
         return True
     
     def get_user(self):

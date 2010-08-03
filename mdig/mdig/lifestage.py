@@ -222,6 +222,7 @@ class Lifestage:
             im = self.initial_maps[r_id]
             if not im.temporary: maps.append(im.filename)
         maps_w_mapset = grass.get_g().find_mapsets(maps)
+        # TODO: get phenology maps!
         # get maps in events
         for e in self.events:
             maps_w_mapset.extend(e.get_map_resources(model))
