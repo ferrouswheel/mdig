@@ -367,7 +367,6 @@
         <xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>
     
-    
     <xsd:complexType name="flagType">
         <xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>

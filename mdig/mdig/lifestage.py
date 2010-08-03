@@ -300,7 +300,7 @@ class Lifestage:
             nodes = self.xml_node.xpath("analyses/analysis")
             #pdb.set_trace()
             for node in nodes:
-                a=analysis(node)
+                a=Analysis(node)
                 self.analysis_list.append(a)
         return self.analysis_list
 

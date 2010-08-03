@@ -24,7 +24,7 @@ class ModelRepositoryTest(unittest.TestCase):
     def normal_repository_test(self):
         m = ModelRepository()
         models = m.get_models()
-        self.assertEqual(len(models),9)
+        self.assertEqual(len(models),10)
         self.assertTrue("lifestage_test" in models)
         self.assertTrue("variables" in models)
         self.assertTrue("management_area_combine" in models)

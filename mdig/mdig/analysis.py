@@ -21,6 +21,7 @@ import logging
 import os
 import re
 
+from mdig import OutputFileExistsException
 import config
 import outputformats
 import grass
@@ -87,15 +88,14 @@ class Analysis:
         set up to append to the output file. Otherwise the files are overwritten
         anyway (assuming --o is set).
 
-        @todo: Check overwrite flag before overwrite. Throw AnalysisFileExists,
-        inherit from FileExists exception.
         """
         if self.is_redirected_stdout() and self.is_append():
             fn = self._make_filename(rep)
-            try:
-                os.remove(fn)
-            except (IOError, OSError):
-                pass
+            if os.path.exists(fn): 
+                if config.get_config().overwrite_flag:
+                    os.remove(fn)
+                else:
+                    raise AnalysisOutputFileExists(fn)
 
     def _fill_in_map_parameters(self,rep,p):
         ls_id = self.get_lifestage_id()
@@ -150,7 +150,7 @@ class Analysis:
             fn = self._make_filename(rep)
             # if generating a file for each time step then check file
             # doesn't exist
-            if not self.is_append() and os.exists(fn):
+            if not self.is_append() and os.path.exists(fn):
                 if not MDiGConfig().overwrite_flag:
                     raise AnalysisOutputFileExists()
                 else:
@@ -266,6 +266,6 @@ class Analysis:
         cmd.strip()
         return cmd
 
-class AnalysisOutputFileExists (Exception):
+class AnalysisOutputFileExists (OutputFileExistsException):
     pass
 

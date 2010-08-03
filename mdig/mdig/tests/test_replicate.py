@@ -8,6 +8,8 @@ from mdig import grass
 from mdig.model import DispersalModel
 from mdig.modelrepository import ModelRepository,RepositoryException
 from mdig.replicate import Replicate
+import mdig.lifestage
+import mdig.analysis
 
 class ReplicateTest(unittest.TestCase):
 
@@ -23,6 +25,14 @@ class ReplicateTest(unittest.TestCase):
         self.m_variables = DispersalModel(fn)
         fn = models['variables_complete']
         self.m_variables_complete = DispersalModel(fn)
+
+        # management
+        fn = models['management_alter_variable']
+        self.m_management = DispersalModel(fn)
+
+        #analysis
+        fn = models['analysis_example']
+        self.m_analysis = DispersalModel(fn)
 
     def tearDown(self):
         self.m_variables.remove_log_handler()
@@ -101,6 +111,34 @@ class ReplicateTest(unittest.TestCase):
         img_fn = i.replicates[0].get_img_filenames(gif = True)
         self.assertEqual(len(img_fn),125)
 
+    def test_get_initial_maps(self):
+        i = self.m_variables_complete.get_instances()[0]
+        r = i.replicates[0]
+        self.assertEqual(r.get_initial_map('all'),None)
+        r.initial_maps = self.m_variables.get_initial_maps(i.r_id)
+        self.assertNotEqual(r.get_initial_map('all'),None)
+
+    def test_reset(self):
+        i = self.m_variables_complete.get_instances()[0]
+        r = i.replicates[0]
+        old_xml_node = r.node
+        r.reset()
+        self.assertNotEqual(old_xml_node, r.node)
+
+    def test_record_maps(self):
+        i = self.m_variables_complete.get_instances()[0]
+        r = i.replicates[0]
+        r.grass_i = Mock()
+        r.record_maps()
+        r.active = True
+        r.temp_map_names['all'] = [ 'tmap1', 'tmap2' ]
+        r.record_maps()
+        self.assertEqual(r.grass_i.copy_map.call_count, 1)
+        r.record_maps(remove_null=True)
+        self.assertEqual(r.grass_i.copy_map.call_count, 2)
+        self.assertEqual(r.grass_i.null_bitmask.call_count, 1)
+        self.assertTrue('all' in r.get_previous_map('all'))
+        
     def test_previous_maps(self):
         i = self.m_variables_complete.get_instances()[0]
         r = i.replicates[0]
@@ -119,6 +157,71 @@ class ReplicateTest(unittest.TestCase):
         r.push_previous_map('all','freaky')
         a_map = r.get_previous_map('all')
         self.assertEqual(a_map, 'freaky')
+
+    def init_mock_grass(self,g):
+        g.return_value.init_map.return_value = ('mockstring',Mock())
+        g.return_value.get_mapset.return_value = 'mock_mapset'
+        g.return_value.generate_map_name.return_value = 'tempmapname'
+        g.return_value.get_range.return_value = ['thisr=10']*10
+        g.return_value.raster_value_freq.return_value = [(1,1), (2,1), (3,1)]
+        g.return_value.raster_to_ascii.return_value = ('file1','file2')
+
+    @patch('mdig.lifestage.Lifestage')
+    @patch('mdig.grass.get_g')
+    def test_run(self,m_g,m_ls):
+        self.init_mock_grass(m_g)
+        i = self.m_variables_complete.get_instances()[0]
+        r = i.replicates[0]
+        r.grass_i = Mock()
+        r.instance.experiment.save_model = Mock()
+        r.run()
+
+    @patch('mdig.lifestage.Lifestage')
+    @patch('mdig.grass.get_g')
+    def test_run_w_lifestage(self,m_g,m_ls):
+        self.init_mock_grass(m_g)
+        i = self.m_lifestage.get_instances()[0]
+        r = i.replicates[0]
+        r.grass_i = Mock()
+        r.instance.experiment.save_model = Mock()
+        r.instance.experiment.get_lifestage_transitions = Mock()
+        r.instance.experiment.get_lifestage_transitions.return_value = [Mock()]
+        r.run()
+
+    @patch('mdig.lifestage.Lifestage')
+    @patch('mdig.grass.get_g')
+    def test_run_w_management(self,m_g,m_ls):
+        self.init_mock_grass(m_g)
+        i = self.m_management.get_instances()[1]
+        r = Replicate(None,i)
+        r.grass_i = Mock()
+        r.instance.experiment.save_model = Mock()
+        r.run()
+        
+    @patch('mdig.lifestage.Lifestage')
+    @patch('mdig.grass.get_g')
+    def test_run_w_analysis(self,m_g,m_ls):
+        self.init_mock_grass(m_g)
+        m = self.m_analysis
+        i = m.get_instances()[0]
+        r = Replicate(None,i)
+        r.grass_i = Mock()
+        r.instance.experiment.save_model = Mock()
+        r.run()
+
+        # Run again to ensure 
+        self.assertRaises(mdig.analysis.AnalysisOutputFileExists,r.run)
+
+    def test_get_time_stamp(self):
+        i = self.m_variables_complete.get_instances()[0]
+        r = i.replicates[0]
+        import time
+        import datetime
+        self.assertTrue(r.get_time_stamp() < datetime.datetime.now())
+        t = time.time()
+        r.node.attrib['ts'] = str(t)
+        self.assertEqual(r.get_time_stamp(),
+                datetime.datetime.fromtimestamp(float(str(t))))
 
 
 get_save_count = 0

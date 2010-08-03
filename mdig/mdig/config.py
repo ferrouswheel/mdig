@@ -234,6 +234,7 @@ class MDiGConfig(ConfigObj):
         # setup msys directory if necessary
         if sys.platform == 'win32' and self.has_key("MSYS_BIN"):
             os.environ["PATH"] += ";" + self["MSYS_BIN"]
+        self.output_level = 'normal'
 
     def updates(self):
         """ This function does a variety of things to try to gracefully

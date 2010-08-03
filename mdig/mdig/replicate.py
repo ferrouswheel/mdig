@@ -265,7 +265,8 @@ class Replicate:
         maps.append(map_name)
         
     def get_initial_map(self,ls_id):
-        return self.initial_maps[ls_id]
+        if ls_id in self.initial_maps:
+            return self.initial_maps[ls_id]
     
     def reset(self):
         # Map are removed/overwritten automatically
@@ -276,13 +277,15 @@ class Replicate:
         self.set_seed(self.instance.experiment.next_random_value())
 
     def record_maps(self, remove_null=False):
+        # If not active, then there are no temp_map_names to copy
+        if not self.active: return
         for ls_id in self.instance.experiment.get_lifestage_ids():
-            self.push_previous_map(ls_id,grass.get_g().generate_map_name(ls_id))
-            #if first_year:
-                #self.grass_i.copy_map(self.initial_maps[ls_id].get_map_filename(),self.get_previous_map(ls_id),True)
-            #else:
-            self.grass_i.copy_map(self.temp_map_names[ls_id][0],self.get_previous_map(ls_id),True)
+            new_map = grass.get_g().generate_map_name(ls_id)
+            self.grass_i.copy_map(self.temp_map_names[ls_id][0],new_map,True)
+            self.push_previous_map(ls_id,new_map)
             if remove_null:
+                # Remove the null bitmask which is uncompressed, so saves space
+                # at the expense of cpu time
                 self.grass_i.null_bitmask(self.get_previous_map(ls_id),generate=False)
 
     def run(self,remove_null=False):
@@ -420,21 +423,7 @@ class Replicate:
         filename = os.path.basename(result[1])
         destination_path = os.path.join(self.instance.experiment.base_dir, mdig_config.analysis_dir)
         
-        # move filename to analysis directory
-        if current_dir != destination_path:
-            # if file exists and overwrite_flag is specified then overwrite
-            if os.path.isfile( os.path.join(destination_path,filename) ):
-                if mdig_config.overwrite_flag:
-                    os.remove( os.path.join(destination_path,filename) )
-                else:
-                    self.log.error( "Can't add analysis because filename %s already exists and "\
-                     "overwrite_flag is not set." % filename)
-                    return
-            
-            shutil.move(result[1], destination_path)
-        
         filename = os.path.basename(filename)
-        
         all_ls = self.node.xpath("lifestage")
         
         ls_node = None
@@ -454,7 +443,6 @@ class Replicate:
         
         # get analysis nodes
         all_a = analyses.xpath("analysis")
-        
         a = None
         for i_a in all_a:
             # check for existing analysis command node
@@ -464,7 +452,7 @@ class Replicate:
             # check filename isn't used in another analysis
             elif i_a.text == filename:
                 self.log.warning("Removing analysis node that uses same output file")
-                # Remove analysis node
+                raise AnalysisOutputFileExists(filename)
         
         # add new node if it doesn't exist
         if a is None:
