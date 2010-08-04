@@ -23,7 +23,7 @@ Instance <a href="/models/{{m_name}}/instances/{{ti}}">{{ti}}</a> -
 %end
 %end
 %if 'approx_q_pos' in u:
- Position {{u['approx_q_pos']}} in queue.
+ Position {{u['approx_q_pos']+1}} in queue.
 %end
 %end # error
 %if 'status' in u: 

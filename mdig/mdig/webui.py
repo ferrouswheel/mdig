@@ -363,9 +363,10 @@ def show_instance(model,instance):
             envelopes_present.append((ls_id, None))
 
     # Scan output dir to see if map_packs have been generated for this instance
+    pdb.set_trace()
     map_packs_present=[]
     for ls_id in instance.experiment.get_lifestage_ids():
-        fn = instance.get_occ_envelope_img_filenames(ls=ls_id,extension=False,gif=True) + '.zip'
+        fn = instance.get_occ_envelope_img_filenames(ls=ls_id,extension=False,gif=True)[:-5] + '.zip'
         if os.path.isfile(fn):
             # get creation time
             ctime = datetime.datetime.fromtimestamp(os.stat(fn).st_ctime)
@@ -413,7 +414,7 @@ def show_replicate(model,instance,replicate):
     # Scan output dir to see if map_packs have been generated for this instance
     map_packs_present=[]
     for ls_id in instance.experiment.get_lifestage_ids():
-        fn = rep.get_img_filenames(ls=ls_id,extension=False,gif=True) + '.zip'
+        fn = rep.get_img_filenames(ls=ls_id,extension=False,gif=True)[:-5] + '.zip'
         if os.path.isfile(fn):
             # get creation time
             ctime = datetime.datetime.fromtimestamp(os.stat(fn).st_ctime)
@@ -663,6 +664,7 @@ class Worker_InstanceListener():
         model = instance.experiment
         start, end = model.get_period()
         percent = float(int(t) - start) / (end - start)
+        percent = percent * 100.0
         msg = {'action': 'OCCUPANCY_GIF', 'model':model.get_name(), 'status': {
                     "active_instance": model.get_instances().index(instance),
                     "percent_done":percent} }
@@ -675,6 +677,7 @@ class Worker_InstanceListener():
         start, end = model.get_period()
         # bad bad t is a string, this should be fixed
         percent = float(int(t) - start) / (end - start)
+        percent = percent * 100.0
         if replicate:
             msg = {'action': 'REPLICATE_GIF', 'model':model.get_name(),
                     'status': {
@@ -695,6 +698,7 @@ class Worker_InstanceListener():
         start, end = model.get_period()
         # bad bad t is a string, this should be fixed
         percent = float(int(t) - start) / (end - start)
+        percent = percent * 100.0
         if replicate:
             msg = {'action': 'REPLICATE_MAP_PACK', 'model':model.get_name(),
                     'status': {

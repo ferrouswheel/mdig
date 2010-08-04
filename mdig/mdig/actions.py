@@ -160,7 +160,7 @@ class RepositoryAction(Action):
             sys.exit(1)
         if not os.path.isdir(os.path.join(self.repo_dir,'PERMANENT')):
             self.log.error("LOCATION '%s' doesn't have a PERMANENT mapset." + \
-                    " Is this path a proper GRASS database?", location)
+                    " Is this path a proper location within a GRASS database?", location)
             sys.exit(1)
         c['GRASS']['GISDBASE'] = gisdbase
         c['GRASS']['LOCATION_NAME'] = location
