@@ -83,10 +83,10 @@ def process_options(argv):
     if the_action is not None:
         the_action.parse_options(argv)
     else:
-        if the_action and action_keyword != "--help" and \
+        if action_keyword != "--help" and \
             action_keyword != "-h" and \
             action_keyword != "help":
-            print "Unknown action %s" % mdig_config.action_keyword
+            print "Unknown action '%s'" % action_keyword
         usage(mdig_config["GRASS"]["GISDBASE"])
         sys.exit(mdig.mdig_exit_codes["ok"])
     return the_action

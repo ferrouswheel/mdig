@@ -84,6 +84,10 @@ class WebServiceTest(tools.ServerTestBase):
         self.assertStatus(404,'/models/lifestage_test/instances/0/replicates/10101')
         self.assertStatus(404,'/models/lifestage_test/instances/0/replicates/-111')
 
+    def test_handle_alternate_location(self):
+        r = self.urlopen('/models/other_loc_model')
+        r = self.urlopen('/models/other_loc_model/instances/0')
+
     def test_process_tasks(self):
         now = datetime.datetime.now() 
         webui.models_in_queue = {

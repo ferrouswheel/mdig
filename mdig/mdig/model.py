@@ -680,7 +680,6 @@ class DispersalModel(object):
         nodes = self.xml_model.xpath('/model/random/offset')
         if len(nodes) < 1:
             random_node = self.xml_model.xpath('/model/random')
-            #pdb.set_trace()
             ls_node = lxml.etree.SubElement(random_node[0],'offset')
             ls_node.text = "0"
         else:
@@ -1248,10 +1247,8 @@ class DispersalModel(object):
             self.log.warning("Location %s in model definition for '%s' but should have been removed on addition to the db." % (loc,self.get_name()))
         loc = self.infer_location()
         if not g.check_location(loc):
-            self.log.error("Location %s in model definition does not exist" % loc)
+            self.log.error("Location %s for model does not exist" % loc)
             return False
-        g.grass_vars['LOCATION_NAME'] = loc
-        g.set_gis_env()
         result = False
         if g.check_mapset(self.get_name(),location=loc):
             result=g.change_mapset(self.get_name(),location=loc)

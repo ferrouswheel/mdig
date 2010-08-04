@@ -30,6 +30,8 @@ from analysis import Analysis
 from event import Event
 import grass
 
+import lxml.etree
+
 class Lifestage:
     
     def __init__(self, node):
@@ -81,9 +83,11 @@ class Lifestage:
         init_map_nodes=self.xml_node.xpath('initialDistribution')
         for i_node in init_map_nodes:
             r_id=i_node.attrib["region"]
-            # This should never happen:
-            #if r_id not in self.initial_maps.keys():
-            self.initial_maps[r_id]=GrassMap(i_node[0])
+            # stupid way of ignoring comments
+            for i in i_node.iter(tag=lxml.etree.Element):
+                if i == i_node: continue
+                m_node = i; break;
+            self.initial_maps[r_id]=GrassMap(m_node)
         
         # Init phenology bins
         self.initPhenologyBins()

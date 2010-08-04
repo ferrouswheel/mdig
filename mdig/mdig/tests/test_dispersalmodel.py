@@ -34,12 +34,25 @@ class DispersalModelTest(unittest.TestCase):
     def test_model_constructor(self):
         dm = DispersalModel(the_action = RunAction())
         dm = DispersalModel(the_action = RunAction(), setup=False)
+
+    def test_get_weird_resources(self):
+        mdig.repository = self.repo = ModelRepository()
+        models = mdig.repository.get_models()
+        # this model has a comment that messed up initial map creation
+        fn = models['test_weird_map_resource']
+        m = DispersalModel(fn)
+        res = m.get_resources()
+        self.assertEqual(len(res),0)
+        m.remove_log_handler()
     
     @patch('mdig.lifestagetransition.LifestageTransition.xml_to_param')
     def test_get_resources(self,m_xml):
         m_xml.return_value={}
         mdig.repository = self.repo = ModelRepository()
         models = mdig.repository.get_models()
+        # in other test
+        del models['test_weird_map_resource']
+        ###
         fn = models['lifestage_test']
         m = DispersalModel(fn)
         res = m.get_resources()
