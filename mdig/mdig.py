@@ -92,12 +92,17 @@ def process_options(argv):
     return the_action
 
 def do_migration(args):
+    help_str = "Use 'mdig.py migrate old_repo_dir grassdb' to manually migrate a separate mdig/GISDBASE repository"
+    help_str += "or 'mdig.py migrate repo_dir' to manually migrate an already merged repository"
+    if len(args) == 1 and args[0] in ['-h','--help']:
+        print help_str
+        sys.exit(0)
     if len(args) == 0:
         config.MDiGConfig.migration_is_allowed = True
         mdig_config = config.get_config()
         if not mdig_config.migration_occurred:
             print "Nothing to migrate within mdig.conf"
-            print "Use 'mdig.py migrate old_repo_dir grassdb' to manually migrate a repository"
+            print help_str
     elif len(args) == 1:
         import mdig.migrate
         print "Migrating repository %s" % args[0]
