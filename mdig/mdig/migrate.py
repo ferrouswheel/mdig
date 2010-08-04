@@ -10,6 +10,7 @@ from mdig.modelrepository import ModelRepository,RepositoryException
 def split_instances_into_own_mapsets(dm):
     instances = dm.get_instances()
     dm_mapset = dm.get_mapset()
+    total_instances = len(instances)
     print "Splitting instances from model %s" % dm.get_name()
     for i in instances:
         try:
@@ -20,8 +21,8 @@ def split_instances_into_own_mapsets(dm):
             pass
         i_mapset = dm.create_instance_mapset_name()
         i.set_mapset(i_mapset)
-        sys.stdout.write("Moving instance %d into mapset %s... reps: " %
-                (i.get_index(),i_mapset))
+        sys.stdout.write("Moving instance %d into mapset %s... reps out of %d: " %
+                (i.get_index(),i_mapset,total_instances))
         sys.stdout.flush()
         
         # Avoid loading/looking for maps (since they'd be in the main mapset)
