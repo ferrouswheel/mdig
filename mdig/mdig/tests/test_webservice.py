@@ -252,3 +252,21 @@ class WebServiceTest(tools.ServerTestBase):
         r = self.urlopen('/models/lifestage_test/run',method='POST',post='rerun=true')
         self.assertTrue('RUN' in webui.models_in_queue['lifestage_test']) 
 
+    def test_add_model_to_repo(self):
+        import tempfile
+        fn = self.repo.get_models()['variables']
+        dm = DispersalModel(fn)
+        temp_fn = tempfile.mktemp(suffix='.xml')
+        dm.set_name('variable_test')
+        dm.set_location('grass_location')
+        dm.save_model(temp_fn)
+        f = open(temp_fn,'r')
+        data = f.read()
+        f.close()
+        webui.add_model_to_repo(data)
+        os.remove(temp_fn)
+        self.assertTrue('variable_test' in self.repo.get_models())
+        self.repo.remove_model('variable_test',force=True)
+
+
+

@@ -363,7 +363,6 @@ def show_instance(model,instance):
             envelopes_present.append((ls_id, None))
 
     # Scan output dir to see if map_packs have been generated for this instance
-    pdb.set_trace()
     map_packs_present=[]
     for ls_id in instance.experiment.get_lifestage_ids():
         fn = instance.get_occ_envelope_img_filenames(ls=ls_id,extension=False,gif=True)[:-5] + '.zip'
