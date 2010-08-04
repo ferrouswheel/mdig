@@ -128,7 +128,7 @@ class ModelRepository:
             loc = dm.get_location()
             if loc == None: loc = dm.infer_location()
             if not os.path.isdir(os.path.join(self.db,loc,"PERMANENT")):
-                raise RepositoryException("Model defines a GIS Location " + loc + " that doesn't exist in " + self.db)
+                raise RepositoryException("Model is in a GIS Location " + loc + " that doesn't exist in " + self.db)
             g.change_mapset("PERMANENT",loc)
             # remove ALL associated instance mapsets first (because we need the
             # model file to tell us which once are associated)

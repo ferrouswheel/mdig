@@ -70,7 +70,7 @@ class ServerTestBase(unittest.TestCase):
         return result
         
     def postmultipart(self, path, fields, files):
-        return self.urlopen(path, multipart_environ(env), method='POST')
+        return self.urlopen(path, env=multipart_environ(fields,files), method='POST')
 
     def tearDown(self):
         bottle.app.pop()

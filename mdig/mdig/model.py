@@ -216,8 +216,8 @@ class DispersalModel(object):
             if hasattr(e,"error_log"):
                 log = e.error_log.filter_levels(lxml.etree.ErrorLevels.FATAL)
                 print log
-            sys.exit(3)
-        
+            sock.close()
+            raise ValidationError()
         sock.close()
         return xmltree
 
@@ -234,11 +234,11 @@ class DispersalModel(object):
         except lxml.etree.XMLSyntaxError, e:
             log = e.error_log
             self.log.error(log)
-            raise e
+            raise ValidationError()
         except lxml.etree.XMLSchemaParseError, e:
             log = e.error_log
             self.log.error(log)
-            raise e
+            raise ValidationError()
             
         if not self.xml_schema.validate(self.xml_model):
             self.log.error("%s not valid according to Schema %s",

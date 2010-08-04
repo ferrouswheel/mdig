@@ -252,6 +252,12 @@ class WebServiceTest(tools.ServerTestBase):
         r = self.urlopen('/models/lifestage_test/run',method='POST',post='rerun=true')
         self.assertTrue('RUN' in webui.models_in_queue['lifestage_test']) 
 
+    def test_run_instance(self):
+        webui.mdig_worker_process = Mock()
+        webui.models_in_queue = {}
+        r = self.urlopen('/models/lifestage_test/run',method='POST',post='instance=0&rerun=true')
+        self.assertTrue('RUN' in webui.models_in_queue['lifestage_test']) 
+
     def test_add_model_to_repo(self):
         import tempfile
         fn = self.repo.get_models()['variables']
@@ -267,6 +273,96 @@ class WebServiceTest(tools.ServerTestBase):
         os.remove(temp_fn)
         self.assertTrue('variable_test' in self.repo.get_models())
         self.repo.remove_model('variable_test',force=True)
+
+    def test_add_and_delete_model(self):
+        import tempfile
+        fn = self.repo.get_models()['variables']
+        dm = DispersalModel(fn)
+        temp_fn = tempfile.mktemp(suffix='.xml')
+        dm.set_name('variable_test')
+        dm.set_location('grass_location')
+        dm.save_model(temp_fn)
+        f = open(temp_fn,'r')
+        data = f.read()
+        f.close()
+        webui.add_model_to_repo(data)
+        os.remove(temp_fn)
+        self.assertTrue('variable_test' in self.repo.get_models())
+        r = self.urlopen('/models/variable_test/del',method='POST')
+
+    def test_delete_unknown_model(self):
+        count = len(self.repo.get_models())
+        r = self.urlopen('/models/fibllle/del',method='POST')
+        self.assertEqual(count,len(self.repo.get_models()))
+
+    def test_submit_model(self):
+        import tempfile
+        fn = self.repo.get_models()['variables']
+        dm = DispersalModel(fn)
+        temp_fn = tempfile.mktemp(suffix='.xml')
+        dm.set_name('variable_test')
+        dm.set_location('grass_location')
+        dm.save_model(temp_fn)
+        f= open(temp_fn)
+        import os.path
+        self.postmultipart('/models/',fields={},files=[('new_model',temp_fn,f.read())])
+        f.close()
+        os.remove(temp_fn)
+        self.assertTrue('variable_test' in self.repo.get_models())
+        r = self.urlopen('/models/variable_test/del',method='POST')
+
+    def test_submit_model_already_exists(self):
+        import tempfile
+        fn = self.repo.get_models()['variables']
+        dm = DispersalModel(fn)
+        temp_fn = tempfile.mktemp(suffix='.xml')
+        dm.set_location('grass_location')
+        dm.save_model(temp_fn)
+        f= open(temp_fn)
+        import os.path
+        count=len(self.repo.get_models())
+        self.postmultipart('/models/',fields={},files=[('new_model',temp_fn,f.read())])
+        f.close()
+        os.remove(temp_fn)
+        self.assertEqual(count,len(self.repo.get_models()))
+        self.assertTrue('variables' in self.repo.get_models())
+
+    def test_submit_model_missing_files(self):
+        import tempfile
+        fn = self.repo.get_models()['lifestage_test']
+        dm = DispersalModel(fn)
+        temp_fn = tempfile.mktemp(suffix='.xml')
+        dm.set_name('lifestage_test2')
+        dm.set_location('grass_location')
+        dm.save_model(temp_fn)
+        f= open(temp_fn)
+        import os.path
+        r = self.postmultipart('/models/',fields={},files=[('new_model',temp_fn,f.read())])
+        f.close()
+        os.remove(temp_fn)
+        self.assertTrue('error' in r['body'])
+        self.assertTrue('lifestage_test2' not in self.repo.get_models())
+
+    def test_submit_model_bad_xml(self):
+        import tempfile
+        fn = self.repo.get_models()['lifestage_test']
+        dm = DispersalModel(fn)
+        temp_fn = tempfile.mktemp(suffix='.xml')
+        dm.set_name('lifestage_test2')
+        dm.set_location('grass_location')
+        dm.save_model(temp_fn)
+        f= open(temp_fn)
+        import os.path
+        data=f.read()
+        data += "</berg>"
+        r = self.postmultipart('/models/',fields={},files=[('new_model',temp_fn,data)])
+        f.close()
+        os.remove(temp_fn)
+        self.assertTrue('error' in r['body'])
+        self.assertTrue('lifestage_test2' not in self.repo.get_models())
+
+
+
 
 
 

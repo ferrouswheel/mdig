@@ -116,12 +116,10 @@ def submit_model():
         model_name = add_model_to_repo(data)
     except ValidationError, e:
         return {"error":"Error parsing model xml. Validation said: %s" % str(e)}
-    except ModelRepository.RepositoryException, e:
+    except modelrepository.RepositoryException, e:
+        if "already exists" in str(e):
+            return {"error":"Model already exists in repository."}
         return {"error":"Error adding model to repository: %s" % str(e)}
-    except Exception, e:
-        if "Model exists" in str(e):
-            return {"error":"Model already exists in staging area"}
-        raise e
     dm = mdig.repository.get_models()[model_name]
     redirect('/')
 
@@ -214,8 +212,10 @@ from mdig.modelrepository import RepositoryException
 def del_model(model):
     try:
         mdig.repository.remove_model(model, force=True)
-    except RepositoryException:
-        pass
+    except RepositoryException, e:
+        if "doesn't exist in the repository" in str(e):
+            abort(404, "No such model")
+        abort(500, "Repository Error")
     redirect('/')
 
 @route('/models/:model/run',method='POST')
