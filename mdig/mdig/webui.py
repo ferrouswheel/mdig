@@ -287,7 +287,7 @@ def index():
             dm = DispersalModel(models[m],setup=False)
             desc = dm.get_description()
             desc = re.sub("[\\s\\t]+"," ",desc)
-            m_list.append((m,desc))
+            m_list.append((m,desc,dm.infer_location()))
         except mdig.model.ValidationError, e:
             log.error(str(e))
 

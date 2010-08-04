@@ -185,10 +185,9 @@ class DispersalInstance:
         if "mapset" in self.node.attrib:
             return self.node.attrib["mapset"].strip()
         else:
-            raise DispersalInstanceException('MDiG no longer supports instances sharing one mapset')
-            # For old style system of keeping all instances in one mapset
-            # as well as for experiments with only one instance
-            #return self.experiment.get_mapset()
+            raise DispersalInstanceException('MDiG no longer supports instances'+\
+                    ' sharing one mapset, do you need to migrate the mdig' +
+                    ' repository?')
 
     def set_mapset(self, mapset):
         if "mapset" in self.node.attrib:

@@ -23,7 +23,7 @@
 </form>
 <h3> Existing models </h3>
 <table>
-<thead><th>Model name</th><th>Description</th><th>Delete</th></thead>
+<thead><th>Model name</th><th>Description</th><th>Location</th><th>Delete</th></thead>
 <tbody>
 <FORM ACTION="/models/" METHOD="POST" NAME="del" id="del">
 <INPUT TYPE="HIDDEN" NAME="confirm" VALUE="false" id="del_confirm">
@@ -41,7 +41,9 @@ if (answer)
 </script>
 %for m in models:
 <tr>
-    <td><a href="models/{{m[0]}}"><strong>{{m[0]}}</strong></a></td><td>{{m[1]}}</td>
+    <td><a href="models/{{m[0]}}"><strong>{{m[0]}}</strong></a></td>
+    <td>{{m[1]}}</td>
+    <td>{{m[2]}}</td>
     <td><a href="models/{{m[0]}}" onClick="delete_model('{{m[0]}}'); return false;">x<a></td>
 </tr>
 %end
