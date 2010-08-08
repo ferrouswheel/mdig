@@ -22,3 +22,4 @@ test/repository/variables/model.xml.bak
 test/repository/variables/model.xml.bak1
 test/repository/variables/model.xml.bak2
 ../test/grass_location/PERMANENT/.bashrc
+*.pyc
