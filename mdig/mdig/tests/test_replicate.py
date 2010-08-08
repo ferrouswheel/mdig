@@ -109,7 +109,7 @@ class ReplicateTest(unittest.TestCase):
         self.assertEqual(len(img_fns),6)
         # return a single filename
         img_fn = i.replicates[0].get_img_filenames(gif = True)
-        self.assertEqual(len(img_fn),125)
+        self.assertTrue('variables_complete_region_a_i0_rep_0_ls_all_anim.gif' in img_fn)
 
     def test_get_initial_maps(self):
         i = self.m_variables_complete.get_instances()[0]

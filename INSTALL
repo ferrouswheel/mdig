@@ -11,13 +11,51 @@ newer versions from osgeo4w.
 2. Get the MDiG source code so that you can compile the r.mdig.* modules
 2a. Install Bazaar from http://wiki.bazaar.canonical.com/WindowsDownloads
 2b. Download the source from the repository at lp:mdig
-2c. mkdir c:/osgeo4w/src/mdig && cd c:/osgeo4w/src/mdig && bzr branch lp:mdig
---- possibly unneeded ---
+2c. mkdir /usr/src && cd /usr/src && bzr branch lp:mdig
+2d. cd grass-modules && make MODULE_TOPDIR=/usr/src/grass-6.4.0RC6
+2e. copy r.mdig.* from dist
+
+==== These are for dropping in Python26 into osgeo4w ====
+3. Install Python2.6 to osgeo4w/apps/Python26, cp python26.dll to osgeo4w/bin
+3a. Edit python.bat and grass.bat in osgeo4w/etc/ini to reflect new paths/exes.
+Also add python26/Scripts to path
+3b. download and install setuptools
+3c. download and install things via easy_install:
+easy_install python-dateutil ipython simplejson nose coverage mock pil
+3e. Download and install matplotlib:
+https://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-1.0/matplotlib-1.0.0.win32-py2.6.exe/download
+3f. Download and install numpy:
+https://sourceforge.net/projects/numpy/files/NumPy/1.4.1/numpy-1.4.1-win32-superpack-python2.6.exe/download
+3i. Download and install pywin32 
+https://sourceforge.net/projects/pywin32/files/pywin32/Build%20214/pywin32-214.win32-py2.6.exe/download
+copy site-packages/pywin32_system32/*.dll to osgeo4w/bin
+3j. http://downloads.sourceforge.net/wxpython/wxPython2.8-win32-unicode-2.8.11.0-py26.exe
+3k. install lxml package
+
+===
+
+5. Allow py files to run directly:
+assoc .py=python.file
+ftype python.file="C:\OSGeo4W\bin\python.exe" "%1" %~ 2 
+6. change osgeo4w environ to run grass6.5, by changing these lines in
+c:\osgeo4w\etc\ini\grass.bat:
+set GISBASE=%OSGEO4W_ROOT%\apps\grass\grass-6.5.svn
+set WINGISBASE=%OSGEO4W_ROOT%\apps\grass\grass-6.5.svn
+
+Install scipy?
+Gracefully fail when paste isn't installed
+
+==== Possibly needed?
+4. Add "\a \c bash" to the end of the line in the osgeo4w shell launcher that fires
+up cmd.exe
+
+=================================
+Obsolete instructions:
+
+--- unneeded --- Instead, compile switch removes libgslcblas link ---
 3. Get GSL from: http://sourceforge.net/projects/gnuwin32/files/ 
 3a. Download gsl-1.8-lib.zip (in gsl/1.8 folder)
 3b. Unzip to c:/osgeo4w
----
-Instead, compile switch removes libgslcblas link
 ---
 
 ===== These are for 2.5 python ====
@@ -44,48 +82,4 @@ python easy_install-2.5-script.py ipython
 Get py2.5 version from:
 http://www.lfd.uci.edu/~gohlke/pythonlibs/#matplotlib
 =====================================
-
-==== These are for dropping in Python27 into osgeo4w ====
-3. Install Python2.6 to osgeo4w/apps/Python26, cp python26.dll to osgeo4w/bin
-3a. Edit python.bat and grass.bat in osgeo4w/etc/ini to reflect new paths/exes
-3b. Install setuptools: download, extract, python setup.py build, python
-setup.py install
-3c. download python-dateutil from:
-http://labix.org/download/python-dateutil/python-dateutil-1.5.tar.gz
-python setup.py build
-python setup.py install
-3d. Download and install ipython:
-easy_install ipython
-3e. Download and install matplotlib:
-Get py2.6 version from:
-https://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-1.0/matplotlib-1.0.0.win32-py2.6.exe/download
-3f. Download and install numpy:
-https://sourceforge.net/projects/numpy/files/NumPy/1.4.1/numpy-1.4.1-win32-superpack-python2.6.exe/download
-3g. Download and install simplejson:
-easy_install simplejson
-3h. Download and install testing tools:
-easy_install nose coverage
-3i. Download and install pywin32 
-https://sourceforge.net/projects/pywin32/files/pywin32/Build%20214/pywin32-214.win32-py2.6.exe/download
-copy site-packages/pywin32_system32/*.dll to osgeo4w/bin
-3j. http://downloads.sourceforge.net/wxpython/wxPython2.8-win32-unicode-2.8.11.0-py26.exe
-3k. easy_install pil ... to get imagetk module
-
-
-
-
-
-
-Note this will probably mean that GRASS needs to be rebuilt.
-
-4. Add "\a \c bash" to the end of the line in the osgeo4w shell launcher that fires
-up cmd.exe
-5. Allow py files to run directly:
-assoc .py=python.file
-ftype python.file="C:\OSGeo4W\bin\python.exe" "%1" %~ 2 
-
-TODO: link mdig distribution with the python distribution within GRASS.
-
-Install scipy?
-Gracefully fail when paste isn't installed
 

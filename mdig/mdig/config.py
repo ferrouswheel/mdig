@@ -305,7 +305,6 @@ values. Push any key to continue, or CTRL-C to abort. """
         if section in MDiGConfig.required \
                 and k in MDiGConfig.required[section]:
             guess = MDiGConfig.required[section][k]
-	import pdb;pdb.set_trace()
         if guess: guess = guess() # guess should be a callable
         if not fresh:
             print "While setting up config, required parameter %s:%s was missing" % (section,k)

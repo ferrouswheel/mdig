@@ -80,7 +80,7 @@ class DispersalModel(object):
         self.action = the_action
         
         self.log = logging.getLogger("mdig.model")
-	self.log_handler=None
+        self.log_handler=None
 
         self.model_file = model_file
         self.backup_filename = None
@@ -539,7 +539,9 @@ class DispersalModel(object):
         
         # check that the event commands exist or are supported.
         for cmd in self.get_all_commands():
-            if grass.get_g().check_for_executable(cmd) is None:
+            f_cmd = grass.get_g().check_for_executable(cmd) 
+            print "command found: " + str(f_cmd)
+            if f_cmd is None:
                 raise CheckModelException(
                         "Model depends on missing executable: %s" % cmd)
         

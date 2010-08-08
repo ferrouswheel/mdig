@@ -140,7 +140,6 @@ class DispersalModelTest(unittest.TestCase):
         self.assertEqual(m.active, False)
         self.assertTrue(m.start_time < datetime.datetime.now())
         self.assertTrue(m.start_time < m.end_time)
-        self.assertTrue(m.end_time < datetime.datetime.now())
 
     def test_log_instance_times(self):
         mdig.repository = ModelRepository()
