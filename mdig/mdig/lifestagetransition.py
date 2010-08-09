@@ -182,8 +182,7 @@ class ParamGenerator():
                 p = Popen(cmd, shell=True, stdout=subprocess.PIPE)
                 map_ascii = p.communicate()[0]
                 if map_ascii.find('*') != -1:
-                    self.log.error("Null values in parameter map %s not allowed" % self.map_name) 
-                    sys.exit(mdig.mdig_exit_codes['null_map'])
+                    raise Exception("Null values in parameter map %s not allowed" % self.map_name) 
                 self.mat = numpy.matrix(map_ascii)
                 self.mat = self.mat.reshape((n_rows,n_cols))
             elif source == 'CODA':
@@ -310,9 +309,16 @@ class LifestageTransition:
         self.log.debug("Converting index file...")
         ascii_indexes = grass.get_g().index_to_ascii(index_raster)
 
+        # TODO temp ascii files are currently cleaned up by process rows,
+        # but should probably be removed outside of the function as they
+        # generated above.
+
         # apply matrix multiplication
         self.process_rows(ls_ids, ascii_indexes, ascii_pop_rasters, ascii_out_rasters,
                 destination_maps) 
+
+        # remove temporary ascii files
+        for i in ascii_indexes: os.remove(i)
 
         processingTime = time.time() - start_time
         self.log.debug('Transition matrix application completed. ' + \

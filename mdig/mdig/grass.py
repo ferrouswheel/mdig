@@ -142,7 +142,7 @@ class GRASSInterface:
         self.backup_region()
 
     def backup_region(self):
-        self.log.log(logging.INFO, "Saving existing GRASS region")
+        self.log.debug("Saving existing GRASS region")
         result=0
         try:
             self.run_command('g.region --o save='+self.old_region)
@@ -183,7 +183,7 @@ class GRASSInterface:
             self.old_location = self.grass_vars['LOCATION_NAME']
             self.old_gisdbase = self.grass_vars['GISDBASE']
         else:
-            self.log.log(logging.INFO,"GRASS Environment incomplete, missing: %s" \
+            self.log.debug("GRASS Environment incomplete, missing: %s" \
                     % str([x for x in self.grass_vars if not self.grass_vars[x]]))
         return okay
 
@@ -241,7 +241,7 @@ class GRASSInterface:
         os.environ["GIS_LOCK"]=pid
         # TODO this should detect the correct version
         #export GRASS_VERSION="7.0.svn"
-        os.environ["GIS_VERSION"]="6.4.svn"
+        os.environ["GIS_VERSION"]="6.4.0svn"
         #setup GISRC file
         tmp=os.path.join(tempfile.gettempdir(),"grass6-mdig-" + pid)
         os.mkdir(tmp)
@@ -941,21 +941,22 @@ class GRASSInterface:
         return None
 
     def clean_up(self):
-        self.log.log(logging.INFO,'Restoring region')
-        
-        self.grass_vars['MAPSET'] = self.old_mapset 
-        self.grass_vars['LOCATION_NAME']= self.old_location
-        self.grass_vars['GISDBASE']= self.old_gisdbase
-        self.set_gis_env()
-        output = subprocess.Popen("g.region " + self.old_region, shell=True,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         if self.blank_map is not None:
             self.destruct_map(self.blank_map)
+        if self.in_grass_shell:
+            self.log.debug('Restoring old mapset and location')
+            self.grass_vars['MAPSET'] = self.old_mapset 
+            self.grass_vars['LOCATION_NAME']= self.old_location
+            self.grass_vars['GISDBASE']= self.old_gisdbase
+            self.set_gis_env()
+            self.log.debug('Restoring old region')
+            output = subprocess.Popen("g.region " + self.old_region, shell=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         # TODO remove all other temporary maps
         self.close_display()
         # remove PID dir
-        #if self.pid_dir and os.path.isdir(self.pid_dir):
-        #    shutil.rmtree(self.pid_dir)
+        if self.pid_dir and os.path.isdir(self.pid_dir):
+            shutil.rmtree(self.pid_dir)
 
     def get_blank_map(self):
         blank_map_name = "_____mdig_blank_map"

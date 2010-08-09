@@ -225,7 +225,7 @@ def setupLogger(color = "false"):
 
     # create handlers for each stream
     ch = logging.StreamHandler()
-    ch.setLevel(logging.WARNING)
+    ch.setLevel(logging.INFO)
     #add formatter to ch
     if color == "true":
         ch.setFormatter(color_formatter)

@@ -27,15 +27,15 @@ app = None
 log = logging.getLogger('mdig.web')
 
 reloader = False
+root_dir = sys.path[0]
 if True:
     bottle.debug(True)
-    sys.path.insert(0, os.path.join(sys.path[0],'mdig'))
+    sys.path.insert(0, os.path.join(root_dir,'mdig'))
     # reloader is nice, but it loads all module code twice and this
     # confuses the GRASS module.
     #reloader = True
-# TODO - make this based on where mdig executable is
-bottle.TEMPLATE_PATH = ['./mdig/views/', './mdig/' ]
-# needed for error template to find bottle
+# needed for error template to find bottle...
+bottle.TEMPLATE_PATH = [ os.path.join(root_dir,'mdig/views/'), os.path.join(root_dir,'mdig/') ]
 
 @route('/models')
 @route('/models/')
@@ -940,6 +940,9 @@ class MDiGWorker():
                 if 'status' not in s: s['status'] = {}
                 s['status']['error'] = str(e)
                 self.results_q.put(s)
+        self.clean_up()
+
+    def clean_up(self):
         g = grass.get_g()
         g.clean_up()
 
@@ -952,7 +955,11 @@ def mdig_worker_start(work_q,results_q):
     g.set_gis_env()
 
     worker = MDiGWorker(work_q,results_q)
-    worker.run()
+    try:
+        worker.run()
+    except KeyboardInterrupt, e:
+        worker.running = False
+        worker.clean_up()
 
 class ResultMonitor(Thread):
     def __init__ (self, result_q):
@@ -1053,5 +1060,4 @@ def shutdown_webapp():
     log.debug("Removing temporary mapsets")
     global mapsets
     for loc in mapsets: g.remove_mapset(mapsets[loc],loc,force=True)
-    log.warning("TODO: delete temporary webservice files")
 
