@@ -96,8 +96,10 @@ def find_grass_base_dir():
     # TODO find from GRASS environment if it exists
     # find from guessing /usr/local/grass*
     import glob
+    opts = []
     if sys.platform == "win32":
-        opts = glob.glob(os.path.join(os.environ['OSGEO4W_ROOT'],'apps\\grass\\grass-*'))
+        if 'OSGEO4W_ROOT' in os.environ:
+            opts = glob.glob(os.path.join(os.environ['OSGEO4W_ROOT'],'apps\\grass\\grass-*'))
     else:
         opts = glob.glob('/usr/local/grass-*')
     if len(opts) > 0: return opts[-1]
@@ -108,8 +110,9 @@ def find_grassdb_dir():
     # find from guessing /home/user/src/mdig/test
     my_path = os.path.normpath(os.path.join(home_dir, '..', 'src/mdig/test'))
     if os.path.isdir(my_path): return my_path
-    my_path = os.path.normpath(os.path.join(os.environ['OSGEO4W_ROOT'], 'src/mdig/test'))
-    if os.path.isdir(my_path): return my_path
+    if 'OSGEO4W_ROOT' in os.environ:
+        my_path = os.path.normpath(os.path.join(os.environ['OSGEO4W_ROOT'], 'src/mdig/test'))
+        if os.path.isdir(my_path): return my_path
     return None
 
 def find_location_dir():

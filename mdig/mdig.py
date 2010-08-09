@@ -201,7 +201,7 @@ def exit_cleanup():
     from mdig.webui import shutdown_webapp
     shutdown_webapp()
         
-    logger.info("Finished at %s" % repr(datetime.now().ctime()))
+    logger.debug("Finished at %s" % repr(datetime.now().ctime()))
 
 def setupLogger(color = "false"):
     logger = logging.getLogger("mdig")

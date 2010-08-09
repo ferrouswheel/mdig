@@ -20,8 +20,8 @@ __all__ = ["analysis","instance","model","displayer","event",
         "grass","grassmap","imageshow","lifestage","config",
         "outputformats","region","replicate","management","webui","bottle"]
 
-version = "0.2.9"
-version_name = "Spade"
+version = "0.3.0"
+version_name = "Digger"
 version_string = "MDiG " + version + " - \"" + version_name + "\""
 
 def compare_version(first,second):
