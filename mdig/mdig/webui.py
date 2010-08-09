@@ -7,6 +7,7 @@ from threading import Thread
 import Queue as q
 
 import os
+import os.path
 import sys
 import re
 import tempfile
@@ -28,7 +29,7 @@ log = logging.getLogger('mdig.web')
 reloader = False
 if True:
     bottle.debug(True)
-    sys.path.insert(0, './mdig/')
+    sys.path.insert(0, os.path.join(sys.path[0],'mdig'))
     # reloader is nice, but it loads all module code twice and this
     # confuses the GRASS module.
     #reloader = True
@@ -357,8 +358,8 @@ def show_instance(model,instance):
         fn = instance.get_occ_envelope_img_filenames(ls=ls_id,gif=True)
         if os.path.isfile(fn):
             # get creation time
-            ctime = datetime.datetime.fromtimestamp(os.stat(fn).st_ctime)
-            envelopes_present.append((ls_id, ctime))
+            mtime = datetime.datetime.fromtimestamp(os.stat(fn).st_mtime)
+            envelopes_present.append((ls_id, mtime))
         else:
             envelopes_present.append((ls_id, None))
 
@@ -368,9 +369,9 @@ def show_instance(model,instance):
         fn = instance.get_occ_envelope_img_filenames(ls=ls_id,extension=False,gif=True)[:-5] + '.zip'
         if os.path.isfile(fn):
             # get creation time
-            ctime = datetime.datetime.fromtimestamp(os.stat(fn).st_ctime)
+            mtime = datetime.datetime.fromtimestamp(os.stat(fn).st_mtime)
             # add to list
-            map_packs_present.append((ls_id, ctime))
+            map_packs_present.append((ls_id, mtime))
         else: map_packs_present.append((ls_id, None))
 
     task_order, task_updates = process_tasks()
@@ -405,8 +406,8 @@ def show_replicate(model,instance,replicate):
         fn = rep.get_img_filenames(ls=ls_id,gif=True)
         if os.path.isfile(fn):
             # get creation time
-            ctime = datetime.datetime.fromtimestamp(os.stat(fn).st_ctime)
-            gifs_present.append((ls_id, ctime))
+            mtime = datetime.datetime.fromtimestamp(os.stat(fn).st_mtime)
+            gifs_present.append((ls_id, mtime))
         else:
             gifs_present.append((ls_id, None))
 
@@ -416,9 +417,9 @@ def show_replicate(model,instance,replicate):
         fn = rep.get_img_filenames(ls=ls_id,extension=False,gif=True)[:-5] + '.zip'
         if os.path.isfile(fn):
             # get creation time
-            ctime = datetime.datetime.fromtimestamp(os.stat(fn).st_ctime)
+            mtime = datetime.datetime.fromtimestamp(os.stat(fn).st_mtime)
             # add to list
-            map_packs_present.append((ls_id, ctime))
+            map_packs_present.append((ls_id, mtime))
         else: map_packs_present.append((ls_id, None))
 
     task_order, task_updates = process_tasks()
@@ -722,6 +723,7 @@ class MDiGWorker():
         self.listener = Worker_InstanceListener(self.results_q)
 
     def run_model(self, m_name, instances, rerun=False):
+        
         model_file = mdig.repository.get_models()[m_name]
         dm = DispersalModel(model_file)
         if rerun:
@@ -886,6 +888,12 @@ class MDiGWorker():
 	# (of course, this only works in *nix)
         #import pdb;
         #pdb.Pdb(stdin=open('/dev/stdin', 'r+'), stdout=open('/dev/stdout', 'r+')).set_trace()
+
+        # Hack to fix errant Windows behaviour (should inherit from parent process)
+        import mdig
+        if mdig.repository is None:
+            import mdig.modelrepository
+            mdig.repository = mdig.modelrepository.ModelRepository()
         while self.running:
             s = None
             try:
@@ -1019,7 +1027,8 @@ def start_web_service():
     # too slow if there are lots of replicates
     if "replicate" not in c: c["replicate"] = {}
     c["replicate"]["check_complete"] = "false"
-    bottle.run(app=myapp, host=c["WEB"]["host"], port=c["WEB"]["port"], reloader=reloader)
+    c["WEB"]["port"] = 8080
+    bottle.run(app=myapp, host=c["WEB"]["host"], port=int(c["WEB"]["port"]), reloader=reloader)
 
 # Store the web mapsets that have been created so that we can tidy up afterwards
 # indexed by location, since webservice can potentially move around locations

@@ -239,14 +239,27 @@ class GRASSInterface:
         #export GIS_LOCK=$$
         pid = str(os.getpid())
         os.environ["GIS_LOCK"]=pid
+        # TODO this should detect the correct version
         #export GRASS_VERSION="7.0.svn"
         os.environ["GIS_VERSION"]="6.4.svn"
         #setup GISRC file
         tmp=os.path.join(tempfile.gettempdir(),"grass6-mdig-" + pid)
-        self.pid_dir = tmp
-        os.environ["GISRC"]=os.path.join(tmp,"gisrc")
         os.mkdir(tmp)
-        shutil.copyfile(os.path.join(os.environ["HOME"],".grassrc6"),os.environ["GISRC"])
+        self.pid_dir = tmp
+        gisrc_fn = os.path.join(tmp,"gisrc")
+        self._create_gis_rc_file(gisrc_fn)
+        os.environ["GISRC"]=gisrc_fn
+
+    def _create_gis_rc_file(self, rc_fn):
+        if os.path.isfile(rc_fn):
+            shutil.copyfile(os.path.join(os.environ["HOME"],".grassrc6"),rc_fn)
+        else:
+            f = open(rc_fn,'w')
+            f.write("GISDBASE: %s\n" % str(self.grass_vars["GISDBASE"]))
+            f.write("LOCATION_NAME: %s\n" % str(self.grass_vars["LOCATION_NAME"]))
+            f.write("MAPSET: %s\n" % str(self.grass_vars["MAPSET"]))
+            f.write("GRASS_GUI: %s\n" % 'text')
+            f.close()
 
     def check_paths(self):
         """ Check paths that should exist with the current GRASS environment,
@@ -664,7 +677,13 @@ class GRASSInterface:
             
     def mapcalc(self,map_name,expression):
         map_name='"' + map_name + '"' 
-        self.run_command("r.mapcalc '%s=%s'" % (map_name, expression));
+        self.run_command("r.mapcalc", to_input="%s = %s\nend\n"%(map_name,expression))
+#p = Popen("r.mapcalc", shell=True,
+#stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+#output,stderr = p.communicate("%s = %s"%(map_name,expression))[0]
+#self.log.debug("exec: r.mapcalc %s = %s"%(map_name,expression))
+
+#self.run_command("r.mapcalc '%s=%s'" % (map_name, expression));
     
     def make_mask(self,mask_name):
         if mask_name is None:
@@ -724,7 +743,7 @@ class GRASSInterface:
         loc_str = ""
         if location:
             loc_str = " location=%s" % location
-        output = subprocess.Popen("g.mapset -l "+loc_str, shell=True,
+        output = Popen("g.mapset -l "+loc_str, shell=True,
                 stdout=subprocess.PIPE).communicate()[0]
         mapsets = output.split()
         if mapset_name in mapsets:
@@ -835,8 +854,10 @@ class GRASSInterface:
                 # check the map name isn't already being used
                 while reclass_map in reclass_to_occupancy_maps:
                     reclass_map = self.generate_map_name();
-                self.run_command("echo \"* = 1\nend\" | r.reclass "
-                        "input=%s output=%s" % (maps_to_combine[i],reclass_map))
+                p = Popen("r.reclass input=%s output=%s" % \
+                        (maps_to_combine[i],reclass_map), shell=True,
+                        stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                output = p.communicate("* = 1\nend\n")[0]
                 reclass_to_occupancy_maps.append(reclass_map)
             map_str = ','.join(reclass_to_occupancy_maps)
             index = index+max_maps
@@ -874,20 +895,17 @@ class GRASSInterface:
         return filename
         
     
-    def run_command(self, commandstring, log_level=logging.DEBUG):
+    def run_command(self, commandstring, log_level=logging.DEBUG, to_input=""):
         self.log.log(log_level, "exec: " + commandstring)
         ret = None
         
         lvl = logging.WARNING
         if len(logging.getLogger("mdig").handlers) > 0:
             lvl = logging.getLogger("mdig").handlers[0].level
-        #if lvl >= logging.INFO:
         p = Popen(commandstring, shell=True, stdout=subprocess.PIPE, \
-                stderr=subprocess.PIPE)
-        #else:
-        #    p = Popen(commandstring, shell=True, stdout=subprocess.PIPE)
+                stdin=subprocess.PIPE,stderr=subprocess.PIPE)
         
-        self.stdout, self.stderr = p.communicate()
+        self.stdout, self.stderr = p.communicate(to_input)
         if len(self.stdout) > 0:
             self.log.debug("stdout: " + self.stdout)
         if lvl >= logging.INFO and self.stderr is not None and len(self.stderr) > 0:
