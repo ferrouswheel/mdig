@@ -140,12 +140,17 @@ def main(argv):
         mdig_config["GRASS"]["GISDBASE"] = the_action.repository
     if the_action.location is not None:
         mdig_config["GRASS"]["LOCATION_NAME"] = the_action.location
-    if the_action.init_repository:
-        mdig.repository = modelrepository.ModelRepository()
-        models = mdig.repository.get_models()
-    if the_action.init_grass:
-        # Check for grass environment and set up interface
-        grass_interface = grass.get_g()
+    try:
+        if the_action.init_repository:
+            mdig.repository = modelrepository.ModelRepository()
+            models = mdig.repository.get_models()
+        if the_action.init_grass:
+            # Check for grass environment and set up interface
+            grass_interface = grass.get_g()
+    except grass.EnvironmentException, e:
+        logger.error("Failed to initialize due to environment error.")
+        logger.error("Perhaps check your config file? (%s)" % mdig_config.cf_full_path )
+        sys.exit(1)
         
     if the_action.preload == True:
         # Load model definition
