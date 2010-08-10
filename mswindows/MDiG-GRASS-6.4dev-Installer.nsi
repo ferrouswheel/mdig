@@ -581,7 +581,7 @@ Section "GRASS" SecGRASS
 
         ; Create the MDiG Desktop Shortcuts
 	CreateShortCut "$DESKTOP\MDiG ${MDIG_VERSION} Webserver.lnk" \
-            "$INSTALL_DIR\${MDIG_COMMAND}.bat" "mdig.py web" \ 
+            "$INSTALL_DIR\${MDIG_COMMAND}.bat" "python mdig.py web" \ 
             "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWMINIMIZED \
             "" "Launch MDiG ${MDIG_VERSION} webserver"
 	CreateShortCut "$DESKTOP\MDiG ${MDIG_VERSION} command line.lnk" \
@@ -626,7 +626,7 @@ Section "GRASS" SecGRASS
 	
         ; Create the MDiG Program File Shortcuts
 	CreateShortCut "$SMPROGRAMS\${GRASS_BASE}\MDiG ${MDIG_VERSION} Webserver.lnk" \
-            "$INSTALL_DIR\${MDIG_COMMAND}.bat" "mdig.py web" \ 
+            "$INSTALL_DIR\${MDIG_COMMAND}.bat" "python mdig.py web" \ 
             "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWMINIMIZED \
             "" "Launch MDiG ${MDIG_VERSION} webserver"
 	CreateShortCut "$SMPROGRAMS\${GRASS_BASE}\MDiG ${MDIG_VERSION} command line.lnk" \
@@ -857,11 +857,11 @@ Function WriteMDiGConf
 	ClearErrors
 	FileOpen $0 $APPDATA\mdig\mdig.conf w
 	IfErrors done_create_mdig_conf
-	FileWrite $0 'version = ${MDIG_VERSION}'
-	FileWrite $0 '[GRASS]'
-	FileWrite $0 'GISBASE = $INSTALL_DIR'
-	FileWrite $0 'GISDBASE = $GIS_DATABASE'
-	FileWrite $0 'LOCATION_NAME = demolocation'
+	FileWrite $0 'version = ${MDIG_VERSION}$\r$\n'
+	FileWrite $0 '[GRASS]$\r$\n'
+	FileWrite $0 'GISBASE = $INSTALL_DIR$\r$\n'
+	FileWrite $0 'GISDBASE = $GIS_DATABASE$\r$\n'
+	FileWrite $0 'LOCATION_NAME = demolocation$\r$\n'
         FileClose $0
         done_create_mdig_conf:
 
