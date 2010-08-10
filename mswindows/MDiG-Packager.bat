@@ -188,7 +188,7 @@ xcopy %OSGEO4W_DIR%\apps\%PYVER%\Scripts %PACKAGE_DIR%\%PYVER%\Tools /S/V/F/I
 @echo -----------------------------------------------------------------------------------------------------------------------
 @echo.
 
-xcopy %OSGEO4W_DIR%\apps\mdig %PACKAGE_DIR%\mdig /S/V/F/I
+xcopy %OSGEO4W_DIR%\apps\mdig %PACKAGE_DIR%\mdig /S/V/F/I/E
 
 @echo.
 @echo -----------------------------------------------------------------------------------------------------------------------

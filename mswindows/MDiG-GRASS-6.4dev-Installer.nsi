@@ -42,6 +42,7 @@
 
 !define MDIG_VERSION "0.3.0"
 !define MDIG_NAME "MDiG"
+!define MDIG_COMMAND "mdiglaunch"
 
 ;Don't modify the following lines
 
@@ -577,6 +578,16 @@ Section "GRASS" SecGRASS
 
 	CreateShortCut "$DESKTOP\GRASS ${VERSION_NUMBER} with MSYS.lnk" "$INSTALL_DIR\msys\msys.bat" "/grass/bin/${GRASS_COMMAND} -wxpython"\
 	"$INSTALL_DIR\icons\GRASS_MSys.ico" "" SW_SHOWNORMAL "" "Launch GRASS ${VERSION_NUMBER} with the new wxPython GUI and a MSYS UNIX terminal"
+
+        ; Create the MDiG Desktop Shortcuts
+	CreateShortCut "$DESKTOP\MDiG ${MDIG_VERSION} Webserver.lnk" \
+            "$INSTALL_DIR\${MDIG_COMMAND}.bat" "mdig.py web"\ 
+            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWMINIMIZED\
+            "" "Launch MDiG ${MDIG_VERSION} webserver"
+	CreateShortCut "$DESKTOP\MDiG ${MDIG_VERSION} command line.lnk" \
+            "$INSTALL_DIR\${MDIG_COMMAND}.bat" ""\ 
+            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWNORMAL\
+            "" "Launch command line with suitable environment to run MDiG ${MDIG_VERSION} commands"
  
 	;Create the Windows Start Menu Shortcuts
 	SetShellVarContext all
@@ -610,8 +621,19 @@ Section "GRASS" SecGRASS
 	!endif
 	
 	CreateShortCut "$SMPROGRAMS\${GRASS_BASE}\Uninstall GRASS.lnk" "$INSTALL_DIR\Uninstall-GRASS.exe" ""\
-	"$INSTALL_DIR\Uninstall-GRASS.exe" "" SW_SHOWNORMAL "" "Uninstall GRASS ${VERSION_NUMBER}"
+	"$INSTALL_DIR\Uninstall-GRASS.exe" "" SW_SHOWNORMAL ""\
+        "Uninstall MDiG ${MDIG_VERSION} and GRASS ${VERSION_NUMBER}"
 	
+        ; Create the MDiG Program File Shortcuts
+	CreateShortCut "$SMPROGRAMS\${GRASS_BASE}\MDiG ${MDIG_VERSION} Webserver.lnk" \
+            "$INSTALL_DIR\${MDIG_COMMAND}.bat" "mdig.py web"\ 
+            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWMINIMIZED\
+            "" "Launch MDiG ${MDIG_VERSION} webserver"
+	CreateShortCut "$SMPROGRAMS\${GRASS_BASE}\MDiG ${MDIG_VERSION} command line.lnk" \
+            "$INSTALL_DIR\${MDIG_COMMAND}.bat" ""\ 
+            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWNORMAL\
+            "" "Launch command line with suitable environment to run MDiG ${MDIG_VERSION} commands"
+ 
 	;Create the grass_command.bat
 	ClearErrors
 	FileOpen $0 $INSTALL_DIR\${GRASS_COMMAND}.bat w
@@ -652,6 +674,8 @@ Section "GRASS" SecGRASS
 	${If} $R_HKCU_INSTALL_PATH != ""
 	FileWrite $0 'set PATH=$R_HKCU_INSTALL_PATH\bin;%PATH%$\r$\n'
 	${EndIf}
+	FileWrite $0 'rem Add python to path$\r$\n'
+	FileWrite $0 'set PATH=%GRASSDIR%\Python26;%GRASSDIR%\Python26\Scripts;%PATH%$\r$\n'
 	FileWrite $0 '$\r$\n'
 	FileWrite $0 'rem Set Path to default web browser$\r$\n'	
 	FileWrite $0 'set GRASS_HTML_BROWSER=explorer$\r$\n'
@@ -755,6 +779,7 @@ Section "GRASS" SecGRASS
 	FileWrite $0 '# Set the PATH variable$\r$\n'
 	FileWrite $0 'PATH="$$GISBASE/extrabin:$$GISBASE/extralib:$$PATH"$\r$\n'
 	FileWrite $0 'PATH="$$GISBASE/tcl-tk/bin:$$GISBASE/sqlite/bin:$$GISBASE/gpsbabel:$$PATH"$\r$\n'
+        FileWrite $0 'PATH="$$GISBASE/Python26:$$GISBASE/Python26/Scripts:$$PATH"'
 	FileWrite $0 'export PATH$\r$\n'
 	FileWrite $0 '# Set the PYTHONPATH variable$\r$\n'
 	FileWrite $0 'PYTHONPATH="$$GISBASE/etc/python:$$GISBASE/Python26:$$PYTHONPATH"$\r$\n'
@@ -810,15 +835,81 @@ Section "GRASS" SecGRASS
                  
 SectionEnd
 
-Section "ImageMagick" SECIM
+Section "ImageMagick" SecIM
   File "ImageMagick-6.6.3-2-Q16-windows-dll.exe"
-  IfFileExists $PROGRAMFILES\ImageMagick-6.6.3-Q16\convert.exe endInstallIM beginInstallIM
+  IfFileExists $PROGRAMFILES\ImageMagick-6.6.3-Q16\convert.exe 0 beginInstallIM
+    MessageBox MB_OK "ImageMagick appears to already be installed"
     Goto endInstallIM
     beginInstallIM:
       ExecWait '"ImageMagick-6.6.3-2-Q16-windows-dll.exe"  /SP- /SILENT'
+      Goto endInstallIM
     endInstallIM:
 SectionEnd
 
+Function WriteMDiGCommand
+
+	;Create mdiglaunch.bat
+	ClearErrors
+	FileOpen $0 $INSTALL_DIR\${MDIG_COMMAND}.bat w
+	IfErrors done_create_mdig_command.bat
+	FileWrite $0 '@echo off$\r$\n'
+	FileWrite $0 'rem #########################################################################$\r$\n'
+	FileWrite $0 'rem #$\r$\n'
+	FileWrite $0 'rem # File dynamically created by NSIS installer script;$\r$\n'
+	FileWrite $0 'rem # Written by Marco Pasetti;$\r$\n'
+	FileWrite $0 'rem # Adapted by Joel Pitt for MDiG;$\r$\n'
+	FileWrite $0 'rem #$\r$\n'
+	FileWrite $0 'rem #########################################################################$\r$\n'
+	FileWrite $0 'rem #$\r$\n'
+	FileWrite $0 'rem # GRASS Initialization$\r$\n'
+	FileWrite $0 'rem #$\r$\n'
+	FileWrite $0 'rem #########################################################################$\r$\n'
+	FileWrite $0 '$\r$\n'
+	FileWrite $0 'rem *******Environment variables***********$\r$\n'
+	FileWrite $0 '$\r$\n'
+	FileWrite $0 'rem Set GRASS Installation Directory Variable$\r$\n'
+	FileWrite $0 'set GRASSDIR=$INSTALL_DIR$\r$\n'
+	FileWrite $0 '$\r$\n'
+	FileWrite $0 'rem Directory where your .grassrc6 file will be stored$\r$\n'
+	FileWrite $0 'set HOME=%USERPROFILE%$\r$\n'
+	FileWrite $0 '$\r$\n'
+	FileWrite $0 'rem Name of the wish (Tk) executable$\r$\n'	
+	FileWrite $0 'set GRASS_WISH=wish.exe$\r$\n'
+	FileWrite $0 '$\r$\n'
+	FileWrite $0 'rem Path to the shell command$\r$\n'	 
+	FileWrite $0 'set GRASS_SH=%GRASSDIR%\msys\bin\sh.exe$\r$\n'
+	FileWrite $0 '$\r$\n'
+	FileWrite $0 'rem Set Path to utilities (libraries and bynaries) used by GRASS$\r$\n'
+	FileWrite $0 'set PATH=%GRASSDIR%\msys\bin;%PATH%$\r$\n'
+	FileWrite $0 'set PATH=%GRASSDIR%\extrabin;%GRASSDIR%\extralib;%PATH%$\r$\n'
+	FileWrite $0 'set PATH=%GRASSDIR%\tcl-tk\bin;%GRASSDIR%\sqlite\bin;%GRASSDIR%\gpsbabel;%PATH%$\r$\n'
+	${If} $R_HKLM_INSTALL_PATH != ""
+	FileWrite $0 'set PATH=$R_HKLM_INSTALL_PATH\bin;%PATH%$\r$\n'
+	${EndIf}
+	${If} $R_HKCU_INSTALL_PATH != ""
+	FileWrite $0 'set PATH=$R_HKCU_INSTALL_PATH\bin;%PATH%$\r$\n'
+	${EndIf}
+	FileWrite $0 'rem Add python to path$\r$\n'
+	FileWrite $0 'set PATH=%GRASSDIR%\Python26;%GRASSDIR%\Python26\Scripts;%PATH%$\r$\n'
+	FileWrite $0 '$\r$\n'
+	FileWrite $0 'rem Set Path to default web browser$\r$\n'	
+	FileWrite $0 'set GRASS_HTML_BROWSER=explorer$\r$\n'
+	FileWrite $0 '$\r$\n'
+	FileWrite $0 'rem Path to the proj files (notably the epsg projection list)$\r$\n'	
+	FileWrite $0 'set GRASS_PROJSHARE=%GRASSDIR%\proj$\r$\n'
+	FileWrite $0 '$\r$\n'
+	FileWrite $0 'rem Path to the python directory$\r$\n'
+	FileWrite $0 'set PYTHONHOME=%GRASSDIR%\Python26$\r$\n'
+	FileWrite $0 'if "x%GRASS_PYTHON%" == "x" set GRASS_PYTHON=python$\r$\n'
+	FileWrite $0 '$\r$\n'
+	FileWrite $0 'set WINGISBASE=%GRASSDIR%$\r$\n'
+	FileWrite $0 'cd %GRASSDIR%$\r$\n'
+	FileWrite $0 'cmd.exe /K %*'
+	FileClose $0
+	done_create_mdig_command.bat:
+	
+        
+FunctionEnd
 
 Function DownloadDataSet
 
@@ -975,6 +1066,8 @@ Section "Uninstall"
 	SetShellVarContext current
 	Delete "$DESKTOP\GRASS ${VERSION_NUMBER}.lnk"
 	Delete "$DESKTOP\GRASS ${VERSION_NUMBER} with MSYS.lnk"
+	Delete "$DESKTOP\MDiG ${MDIG_VERSION} Webserver.lnk"
+	Delete "$DESKTOP\MDiG ${MDIG_VERSION} command line.lnk"
 	
 	;remove the Programs Start ShortCuts
 	SetShellVarContext all
@@ -983,6 +1076,7 @@ Section "Uninstall"
 	;remove the .grassrc6 file
 	SetShellVarContext current
 	Delete "$PROFILE\.grassrc6"
+        ;remove the mdig config file 
 	RMDir /r "$APPDATA\mdig"
 
 	;remove the Registry Entries
@@ -996,8 +1090,11 @@ SectionEnd
 ;Installer Section Descriptions
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecGRASS} "Install GRASS ${VERSION_NUMBER}"
-	!insertmacro MUI_DESCRIPTION_TEXT ${SECIM} "Install MDiG dependency ImageMagick"
-	!insertmacro MUI_DESCRIPTION_TEXT ${SecNZTM} "Download and install New Zealand Transverse Mercator template location"
+	!insertmacro MUI_DESCRIPTION_TEXT ${SecIM} "Install the MDiG \
+            dependency ImageMagick. Required in order to export spread animations."
+	!insertmacro MUI_DESCRIPTION_TEXT ${SecNZTM} "Download and install a \
+            template mapset for the New Zealand Transverse Mercator \
+            projection. Includes a 250m resolution DEM."
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecNorthCarolinaSDB} "Download and install the North Carolina (Wake County) sample data set"
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecSpearfishSDB} "Download and install the South Dakota (Spearfish County) sample data set"
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
