@@ -581,12 +581,12 @@ Section "GRASS" SecGRASS
 
         ; Create the MDiG Desktop Shortcuts
 	CreateShortCut "$DESKTOP\MDiG ${MDIG_VERSION} Webserver.lnk" \
-            "$INSTALL_DIR\${MDIG_COMMAND}.bat" "mdig.py web"\ 
-            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWMINIMIZED\
+            "$INSTALL_DIR\${MDIG_COMMAND}.bat" "mdig.py web" \ 
+            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWMINIMIZED \
             "" "Launch MDiG ${MDIG_VERSION} webserver"
 	CreateShortCut "$DESKTOP\MDiG ${MDIG_VERSION} command line.lnk" \
-            "$INSTALL_DIR\${MDIG_COMMAND}.bat" ""\ 
-            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWNORMAL\
+            "$INSTALL_DIR\${MDIG_COMMAND}.bat" "" \ 
+            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWNORMAL \
             "" "Launch command line with suitable environment to run MDiG ${MDIG_VERSION} commands"
  
 	;Create the Windows Start Menu Shortcuts
@@ -626,12 +626,12 @@ Section "GRASS" SecGRASS
 	
         ; Create the MDiG Program File Shortcuts
 	CreateShortCut "$SMPROGRAMS\${GRASS_BASE}\MDiG ${MDIG_VERSION} Webserver.lnk" \
-            "$INSTALL_DIR\${MDIG_COMMAND}.bat" "mdig.py web"\ 
-            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWMINIMIZED\
+            "$INSTALL_DIR\${MDIG_COMMAND}.bat" "mdig.py web" \ 
+            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWMINIMIZED \
             "" "Launch MDiG ${MDIG_VERSION} webserver"
 	CreateShortCut "$SMPROGRAMS\${GRASS_BASE}\MDiG ${MDIG_VERSION} command line.lnk" \
-            "$INSTALL_DIR\${MDIG_COMMAND}.bat" ""\ 
-            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWNORMAL\
+            "$INSTALL_DIR\${MDIG_COMMAND}.bat" "" \ 
+            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWNORMAL \
             "" "Launch command line with suitable environment to run MDiG ${MDIG_VERSION} commands"
  
 	;Create the grass_command.bat
@@ -691,6 +691,8 @@ Section "GRASS" SecGRASS
 	FileWrite $0 '"%WINGISBASE%\etc\Init.bat" %*'
 	FileClose $0
 	done_create_grass_command.bat:
+
+        Call WriteMDiGCommand
 	
 	;Set the UNIX_LIKE GRASS Path
 	Var /GLOBAL UNIX_LIKE_DRIVE
@@ -832,6 +834,8 @@ Section "GRASS" SecGRASS
 	done_create_.grassrc6:
 	
 	CopyFiles $PROFILE\.grassrc6 $INSTALL_DIR\msys\home\$USERNAME
+
+        Call WriteMDiGConf
                  
 SectionEnd
 
@@ -845,6 +849,23 @@ Section "ImageMagick" SecIM
       Goto endInstallIM
     endInstallIM:
 SectionEnd
+
+Function WriteMDiGConf
+	CreateDirectory "$APPDATA\mdig"
+
+	;Create mdig.conf
+	ClearErrors
+	FileOpen $0 $APPDATA\mdig\mdig.conf w
+	IfErrors done_create_mdig_conf
+	FileWrite $0 'version = ${MDIG_VERSION}'
+	FileWrite $0 '[GRASS]'
+	FileWrite $0 'GISBASE = $INSTALL_DIR'
+	FileWrite $0 'GISDBASE = $GIS_DATABASE'
+	FileWrite $0 'LOCATION_NAME = demolocation'
+        FileClose $0
+        done_create_mdig_conf:
+
+FunctionEnd
 
 Function WriteMDiGCommand
 
@@ -903,7 +924,10 @@ Function WriteMDiGCommand
 	FileWrite $0 'if "x%GRASS_PYTHON%" == "x" set GRASS_PYTHON=python$\r$\n'
 	FileWrite $0 '$\r$\n'
 	FileWrite $0 'set WINGISBASE=%GRASSDIR%$\r$\n'
-	FileWrite $0 'cd %GRASSDIR%$\r$\n'
+        FileWrite $0 'rem Set up .py files with Python interpretor$\r$\n'
+        ;FileWrite $0 'assoc .py=python.file'
+        ;FileWrite $0 'ftype python.file="%PYTHONHOME%\python.exe" "%%1" %%~2'
+	FileWrite $0 'cd %GRASSDIR%\mdig\mdig$\r$\n'
 	FileWrite $0 'cmd.exe /K %*'
 	FileClose $0
 	done_create_mdig_command.bat:
