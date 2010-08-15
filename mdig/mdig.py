@@ -190,17 +190,22 @@ def exit_cleanup():
     
     logger.debug("Cleaning up")
     
+    # clean up simulations and save changes
     for exp in simulations:
         exp.clean_up()
         exp.save_model()
+
+    # clean up web server 
+    from mdig.webui import shutdown_webapp
+    shutdown_webapp()
+
+    # clean up GRASS environment
     if grass.get_g(False) is not None:
         grass.get_g().clean_up()
 
+    # save config changes
     config.get_config().write()
 
-    from mdig.webui import shutdown_webapp
-    shutdown_webapp()
-        
     logger.debug("Finished at %s" % repr(datetime.now().ctime()))
 
 def setupLogger(color = "false"):
