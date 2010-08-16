@@ -645,6 +645,11 @@ class ExportAction(Action):
                 action="store",
                 type="int",
                 dest="height")
+        self.parser.add_option("-d","--dir",
+                help="Output dir to export to (default is model_mapset/mdig/output)",
+                action="store",
+                dest="outdir",
+                type="string")
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
@@ -658,6 +663,9 @@ class ExportAction(Action):
             self.options.height = c["OUTPUT"]["output_height"]
         if self.options.background is None:
             self.options.background = c["OUTPUT"]["background_map"]
+        if self.options.outdir is not None:
+            if not os.path.isdir(self.options.outdir):
+                sys.exit("No such output dir: %s" % self.options.outdir)
     
     def do_me(self,mdig_model):
         output_images = self.options.output_gif or self.options.output_image 
@@ -730,7 +738,8 @@ class ExportAction(Action):
 
         times = saved_maps.keys()
         times.sort(key=lambda x: float(x))
-        rep_filenames = r.get_img_filenames(ls, extension=False) 
+        rep_filenames = r.get_img_filenames(ls, extension=False,
+                dir=self.options.outdir) 
         output_images = self.options.output_gif or self.options.output_image 
         output_maps = self.options.output_map_pack
         for t in times:
@@ -807,9 +816,9 @@ class ExportAction(Action):
             times = env[ls].keys()
             times.sort(key=lambda x: float(x))
             if output_maps:
-                img_filenames = i.get_occ_envelope_img_filenames(ls, extension=False) 
+                img_filenames = i.get_occ_envelope_img_filenames(ls, extension=False,dir=self.options.outdir) 
             elif output_images:
-                img_filenames = i.get_occ_envelope_img_filenames(ls) 
+                img_filenames = i.get_occ_envelope_img_filenames(ls,dir=self.options.outdir) 
             for t in times:
                 m = env[ls][t]
                 if output_maps:
@@ -817,11 +826,13 @@ class ExportAction(Action):
                     self.update_listeners_map_pack(i, None, ls, t)
                 elif output_images:
                     map_list.append(self.create_frame(m,img_filenames[t],model_name, t, ls))
+                    if self.options.output_image:
+                        self.log.info("Saved png to " + img_filenames[t])
                     self.update_listeners(i, None, ls, t)
             if self.options.output_gif:
-                self.create_gif(map_list,i.get_occ_envelope_img_filenames(ls,gif=True) )
+                self.create_gif(map_list,i.get_occ_envelope_img_filenames(ls,gif=True,dir=self.options.outdir) )
             elif output_maps:
-                zip_fn = i.get_occ_envelope_img_filenames(ls, extension=False, gif=True)[:-5]
+                zip_fn = i.get_occ_envelope_img_filenames(ls, extension=False, gif=True,dir=self.options.outdir)[:-5]
                 self.zip_maps(map_list, zip_fn)
             all_maps.extend(map_list)
         # If the user wanted an animated gif, then clean up the images
@@ -852,7 +863,8 @@ class ExportAction(Action):
             # losing precision on export
             if "Precision loss" in e.stderr:
                 self.float64 = True
-            out_fn = self.export_map(map,out_fn,envelope)
+                out_fn = self.export_map(map,out_fn,envelope)
+            else: raise e
         finally:
             g.set_region(old_region) 
         return out_fn
@@ -861,6 +873,8 @@ class ExportAction(Action):
         import zipfile
         import os.path
         zip_fn += ".zip"
+        if os.path.isfile(zip_fn) and not self.options.overwrite_flag:
+            raise OSError("Zip file %s exists, use -o flag to overwrite" % zip_fn)
         try: 
             z = zipfile.ZipFile(zip_fn,mode='w',compression=zipfile.ZIP_DEFLATED)
         except RuntimeError:
@@ -869,6 +883,7 @@ class ExportAction(Action):
             z = zipfile.ZipFile(zip_fn,mode='w')
         for m in maps: z.write(m, os.path.basename(m))
         z.close()
+        self.log.info("Maps were stored in zip file %s" % zip_fn)
 
     def update_listeners(self,instance,replicate,ls,t):
         if instance:
@@ -893,16 +908,19 @@ class ExportAction(Action):
     def create_gif(self,maps,fn):
         from subprocess import Popen, PIPE
         gif_fn = fn
+        if os.path.isfile(gif_fn) and not self.overwrite_flag:
+            raise OSError("Gif file %s exists, use -o flag to overwrite" % zip_fn)
         self.log.info("Creating animated gif with ImageMagick's convert utility.")
         output = Popen("convert -delay 100 " + " ".join(maps)
             + " " + gif_fn, shell=True, stdout=PIPE).communicate()[0]
-        if len(output) > 0:
-            self.log.info("Convert output:" + output)
-        self.log.debug("Saved animated gif to " + gif_fn)
+        if len(output) > 0: self.log.debug("Convert output:" + output)
+        self.log.info("Saved animated gif to " + gif_fn)
         return gif_fn
 
     def create_frame(self, map_name, output_name, model_name, year, ls, the_range = None):
         g = grass.get_g()
+        if os.path.isfile(output_name) and not self.overwrite_flag:
+            raise OSError("Gif file %s exists, use -o flag to overwrite" % zip_fn)
         g.set_output(filename = output_name, \
                 width=self.options.width, height=self.options.height, display=None)
         g.run_command("d.erase")
