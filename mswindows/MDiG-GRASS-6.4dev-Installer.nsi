@@ -839,7 +839,7 @@ Section "GRASS" SecGRASS
     Call WriteMDiGConf
 SectionEnd
 
-Section "Associate Python with py files" SecPy
+Section "Associate .py file with Python" SecPy
 
     ; register .py files with python
     ${RegisterExtension} "$INSTALL_DIR\Python26\python.exe" ".py" "Python script"
@@ -1125,11 +1125,9 @@ SectionEnd
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecGRASS} "Install GRASS ${VERSION_NUMBER}"
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecIM} "Install the MDiG \
             dependency ImageMagick. Required in order to export spread animations."
-	!insertmacro MUI_DESCRIPTION_TEXT ${SecPy} "Associate .py python scripts \
-        with the installed Python. This lets you run mdig.py directly without \
-        prefixing with 'python'. e.g. 'mdig.py run my_model' instead of 'python \
-        mdig.py run my_model'. Note, this could break other Python programs if \
-        they rely on other depencies or don't run with Python ${PYTHON_VERSION}."
+	!insertmacro MUI_DESCRIPTION_TEXT ${SecPy} "Associate included Python with .py scripts. \
+            This lets you run mdig.py directly without \
+            prefixing it with 'python'. "
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecNZTM} "Download and install a \
             template mapset for the New Zealand Transverse Mercator \
             projection. Includes a 250m resolution DEM."
