@@ -700,7 +700,6 @@ class ExportAction(Action):
             except InvalidReplicateException, e:
                 sys.exit(mdig.mdig_exit_codes["invalid_replicate_index"])
             except NoOccupancyEnvelopesException, e:
-                self.log.error(str(e))
                 sys.exit(mdig.mdig_exit_codes["missing_envelopes"])
             except Exception, e:
                 import traceback
@@ -766,7 +765,12 @@ class ExportAction(Action):
             self.log.debug("Fetching occupancy envelopes")
             env = i.get_occupancy_envelopes()
             if env is None:
-                raise NoOccupancyEnvelopesException("No occupancy envelopes available.")
+                i.update_occupancy_envelope()
+                env = i.get_occupancy_envelopes()
+                if env is None:
+                    err_str = "Error creating occupancy envelopes."
+                    self.log.error(err_str)
+                    raise NoOccupancyEnvelopesException(err_str)
             map_list = []
             times = env[ls].keys()
             times.sort(key=lambda x: float(x))
@@ -881,8 +885,12 @@ class ExportAction(Action):
             self.log.debug("Fetching occupancy envelopes")
             env = i.get_occupancy_envelopes()
             if env is None:
-                self.log.error("No occupancy envelopes available.")
-                raise NoOccupancyEnvelopesException("No occupancy envelopes available.")
+                i.update_occupancy_envelope()
+                env = i.get_occupancy_envelopes()
+                if env is None:
+                    err_str = "Error creating occupancy envelopes."
+                    self.log.error(err_str)
+                    raise NoOccupancyEnvelopesException(err_str)
             map_list = []
             times = env[ls].keys()
             times.sort(key=lambda x: float(x))
