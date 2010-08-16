@@ -1034,7 +1034,8 @@ def start_web_service():
     # too slow if there are lots of replicates
     if "replicate" not in c: c["replicate"] = {}
     c["replicate"]["check_complete"] = "false"
-    c["WEB"]["port"] = 8080
+    # for testing ports available in windows
+    #c["WEB"]["port"] = 8080
     bottle.run(app=myapp, host=c["WEB"]["host"], port=int(c["WEB"]["port"]), reloader=reloader)
 
 # Store the web mapsets that have been created so that we can tidy up afterwards

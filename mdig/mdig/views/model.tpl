@@ -100,6 +100,7 @@ variable <i>{{params[p][1]}}</i> has values {{vars[params[p][1]]}}
 <th>Variables</th>
 %end
 <th>Replicates</th>
+<th>Occ. envelope</th>
 <th>Active</th>
 </thead>
 %if len(vars) > 0:
@@ -108,7 +109,7 @@ variable <i>{{params[p][1]}}</i> has values {{vars[params[p][1]]}}
 %for v in vars.keys():
 <th>{{v}}</th>
 %end
-<th></th><th></th>
+<th></th><th></th><th></th>
 </tr>
 %end
 % i=0
@@ -126,7 +127,7 @@ variable <i>{{params[p][1]}}</i> has values {{vars[params[p][1]]}}
 %if instance.strategy is not None:
 {{instance.strategy}}
 %else:
-None
+-
 %end
 </td>
 %if instance.var_keys is not None:
@@ -138,13 +139,20 @@ None
 %end
     <td>{{len([x for x in instance.replicates if x.complete])}}/{{model.get_num_replicates()}}</td>
     <td> \\
+%if instance.get_occupancy_envelopes() is None:
+-
+%else:
+Yes
+%end
+    </td>
+    <td> \\
 %if i in active_instances:
 Yes
 %else:
 No
 %end
 </td>
-    </tr>
+</tr>
 % i=i+1
 %end
 </table>
