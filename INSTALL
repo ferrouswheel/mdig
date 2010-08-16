@@ -16,7 +16,9 @@ newer versions from osgeo4w.
 2e. copy r.mdig.* from dist
 
 ==== These are for dropping in Python26 into osgeo4w ====
-3. Install Python2.6 to osgeo4w/apps/Python26, cp python26.dll to osgeo4w/bin
+3. Install Python2.6 *for local user* to osgeo4w/apps/Python26, this ensures
+python26.dll and other dlls (such as the win32api dll) are bundled as they stay
+in the Python26 dir instead of in Windows/System32.
 3a. Edit python.bat and grass.bat in osgeo4w/etc/ini to reflect new paths/exes.
 Also add python26/Scripts to path
 3b. download and install setuptools
