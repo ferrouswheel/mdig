@@ -281,7 +281,12 @@ void calc(void* x, void* out, int col, int row, float limit_min) {
 void remove_temp_map() {
     int return_val;
     char buffer[512];
+#if defined(WIN32) || defined(_WIN32)
+    // Doesn't support /dev/null
+    sprintf(buffer, "g.remove --q rast=%s", TEMP_MAP);
+#else
     sprintf(buffer, "g.remove --q rast=%s 2> /dev/null", TEMP_MAP);
+#endif
     return_val = system(buffer);
     if (return_val != 0)
         G_fatal_error ("Error removing temp map <%s>",TEMP_MAP);
@@ -476,6 +481,7 @@ main(int argc, char *argv[]) {
     out_fd = open_output_map(result);
     // ... and add jumps destinations
     process_jumps(out_fd);
+    G_close_cell (infd);
     G_close_cell (out_fd);
     G_free(inrast);
     G_free(outrast);
@@ -512,7 +518,11 @@ int open_output_map(char* map_name) {
         if ( is_overwrite == TRUE) {
             int return_val;
             char buffer[512];
+#if defined(WIN32) || defined(_WIN32)
+            sprintf(buffer, "g.remove --q rast=%s", map_name);
+#else
             sprintf(buffer, "g.remove --q rast=%s 2> /dev/null", map_name);
+#endif
             return_val = system(buffer);
             if (return_val != 0)
                 G_fatal_error ("Error removing existing output map <%s>",map_name);
