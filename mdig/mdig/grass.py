@@ -241,14 +241,28 @@ class GRASSInterface:
         os.environ["GIS_LOCK"]=pid
         # TODO this should detect the correct version
         #export GRASS_VERSION="7.0.svn"
-        os.environ["GIS_VERSION"]="6.4.0svn"
+        os.environ["GIS_VERSION"]=self.get_version_from_dir()
         #setup GISRC file
-        tmp=os.path.join(tempfile.gettempdir(),"grass6-mdig-" + pid)
-        os.mkdir(tmp)
-        self.pid_dir = tmp
-        gisrc_fn = os.path.join(tmp,"gisrc")
+        self.pid_dir=tempfile.mkdtemp(prefix="grass6-mdig-" + str(pid) + "-")
+        if self.pid_dir is None:
+            raise EnvironmentException("Failed to create temporary directory")
+        gisrc_fn = os.path.join(self.pid_dir,"gisrc")
         self._create_gis_rc_file(gisrc_fn)
         os.environ["GISRC"]=gisrc_fn
+
+    def get_version_from_dir(self):
+        import re
+        if sys.platform == 'win32':
+            # TODO - place this in config and make NSIS script write it
+            self.grass_version = "6.4.0svn"
+        else:
+            end_bit = os.path.split(self.grass_vars['GISBASE'])[1]
+            try:
+                x=re.match(r'grass-(\d\.\d\.[\d\w]+)', end_bit)
+                self.grass_version = x.groups()[0]
+            except IndexError, e:
+                self.grass_version = "6.4.0svn"
+        return self.grass_version
 
     def _create_gis_rc_file(self, rc_fn):
         if os.path.isfile(rc_fn):
@@ -955,7 +969,7 @@ class GRASSInterface:
         # TODO remove all other temporary maps
         self.close_display()
         # remove PID dir
-        if self.pid_dir and os.path.isdir(self.pid_dir):
+        if self.pid_dir is not None and os.path.isdir(self.pid_dir):
             shutil.rmtree(self.pid_dir)
 
     def get_blank_map(self):
