@@ -129,7 +129,7 @@ fi
 if [ ! $GIS_OPT_SEED ]
 then
  echo "Setting seed from date"
- GIS_OPT_seed=`date +%s`
+ GIS_OPT_SEED=`date +%s`
 fi
 
 #check if input file exists
@@ -229,6 +229,7 @@ fi # GIS_OPT_MAX is defined
 
 # NOTE: null values in category reclass map will mean that input is unchanged...
 export GRASS_RND_SEED=$GIS_OPT_SEED
+#echo "seed is `g.gisenv get=GRASS_RND_SEED`"
 r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
 unset GRASS_RND_SEED
 #g.remove rast=$TEMP_FILE_NAME > /dev/null
