@@ -540,7 +540,7 @@ class DispersalModel(object):
         # check that the event commands exist or are supported.
         for cmd in self.get_all_commands():
             f_cmd = grass.get_g().check_for_executable(cmd) 
-            print "command found: " + str(f_cmd)
+            self.log.debug("Required command found: " + str(f_cmd))
             if f_cmd is None:
                 raise CheckModelException(
                         "Model depends on missing executable: %s" % cmd)

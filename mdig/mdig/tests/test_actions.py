@@ -26,29 +26,29 @@ class ExportActionTest(unittest.TestCase):
         self.assertRaises(SystemExit,ea.do_me,m)
 
         ea.options.output_map_pack = True
-        ea.do_instance_map_pack = Mock()
+        ea.do_instance = Mock()
         ea.do_me(m)
-        self.assertEqual(ea.do_instance_map_pack.call_count, 6)
+        self.assertEqual(ea.do_instance.call_count, 6)
 
-        ea.do_instance_map_pack.call_count = 0
+        ea.do_instance.call_count = 0
         ea.options.instances = [0]
         ea.do_me(m)
-        self.assertEqual(ea.do_instance_map_pack.call_count, 1)
+        self.assertEqual(ea.do_instance.call_count, 1)
 
-        ea.do_instance_map_pack.call_count = 0
+        ea.do_instance.call_count = 0
         ea.options.instances = [1231]
         self.assertRaises(SystemExit,ea.do_me,m)
 
-        ea.do_instance_map_pack.call_count = 0
+        ea.do_instance.call_count = 0
         ea.options.instances = ['monkey']
         self.assertRaises(SystemExit,ea.do_me,m)
 
         ea.options.output_image = True
-        ea.do_instance_images = Mock()
+        ea.do_instance = Mock()
         ea.options.instances = None
         ea.do_me(m)
-        self.assertEqual(ea.do_instance_map_pack.call_count, 6)
-	m.remove_log_handler()
+        self.assertEqual(ea.do_instance.call_count, 6)
+        m.remove_log_handler()
 
     @patch('mdig.grass.get_g')
     @patch('os.remove')

@@ -685,14 +685,12 @@ class ExportAction(Action):
         show_output = config.get_config().output_level == "normal"
         for i in instances:
             try:
-                if self.options.output_map_pack:
-                    if show_output:
+                if show_output:
+                    if self.options.output_map_pack:
                         print "Creating map pack for instance %d" % i.get_index()
-                    self.do_instance_map_pack(i)
-                if output_images:
-                    if show_output:
+                    elif output_images:
                         print "Creating images for instance %d" % i.get_index()
-                    self.do_instance_images(i)
+                self.do_instance(i)
             except InvalidLifestageException, e:
                 sys.exit(mdig.mdig_exit_codes["invalid_lifestage"])
             except InstanceIncompleteException, e:
@@ -707,28 +705,75 @@ class ExportAction(Action):
                 traceback.print_exc()
                 sys.exit(mdig.mdig_exit_codes["unknown"])
 
-    def do_instance_map_pack(self,i):
+    def check_lifestage(self,i,ls):
+        if ls not in i.experiment.get_lifestage_ids():
+            self.log.error("No such lifestage called %s in model." % str(ls))
+            raise InvalidLifestageException()
+
+    def check_background_map(self):
+        g = grass.get_g()
+        if self.options.background and not g.check_map(self.options.background):
+            self.log.error("Couldn't find background map %s" % self.options.background)
+            self.options.background = None
+            #raise grass.MapNotFoundException(self.options.background)
+
+    def do_rep(self,i,r):
+        ls = self.options.output_lifestage
+        map_list = []
+        saved_maps = r.get_saved_maps(ls)
+        model_name = i.experiment.get_name()
+
+        # Normalise the color scale so that the lgend and range doesn't
+        # keep changing for map to map
+        self.log.info("Normalising colours")
+        the_range = grass.get_g().normalise_map_colors(saved_maps.values())
+
+        times = saved_maps.keys()
+        times.sort(key=lambda x: float(x))
+        rep_filenames = r.get_img_filenames(ls, extension=False) 
+        output_images = self.options.output_gif or self.options.output_image 
+        output_maps = self.options.output_map_pack
+        for t in times:
+            m = saved_maps[t]
+            if output_images:
+                map_list.append(self.create_frame(m,rep_filenames[t],model_name, t, ls, the_range))
+                self.update_listeners(None, r, ls, t)
+            elif output_maps:
+                map_list.append(self.export_map(m,rep_filenames[t]))
+                self.update_listeners_map_pack(None, r, ls, t)
+        if self.options.output_gif:
+            self.create_gif(map_list,r.get_img_filenames(ls,gif=True))
+        elif output_maps:
+            zip_fn = r.get_img_filenames(ls, extension=False, gif=True)[:-5]
+            self.zip_maps(map_list, zip_fn)
+        return map_list
+
+    def do_instance(self,i):
         # TODO: only overwrite files if -o flag is set
         import outputformats
         model_name = i.experiment.get_name()
         ls = self.options.output_lifestage
-        if ls not in i.experiment.get_lifestage_ids():
-            self.log.error("No such lifestage called %s in model." % str(ls))
-            raise InvalidLifestageException()
+        self.check_lifestage(i, ls)
         all_maps = []
         # check that background map exists
-        g = grass.get_g()
+        output_images = self.options.output_gif or self.options.output_image 
+        output_maps = self.options.output_map_pack
+        if output_images: self.check_background_map()
         if self.options.reps:
-            if len(self.options.reps) > 1:
-                self.log.info("Exporting maps of reps: %s" % str(self.options.reps))
+            if len(self.options.reps) > 1 and output_maps:
+                    self.log.info("Exporting maps of reps: %s" % str(self.options.reps))
             # Run on replicates
             rs = i.replicates
+            i.set_region()
             if len(rs) == 0:
                 self.log.error("No replicates for instance %d. Have you run the model first?" \
                                 % i.experiment.get_instances().index(i))
                 raise InvalidReplicateException("No replicates available")
             for r_index in self.options.reps:
-                self.log.info("Exporting maps of rep %d" % r_index)
+                if output_images:
+                    self.log.info("Creating images for maps of rep %d" % r_index)
+                elif output_maps:
+                    self.log.info("Exporting maps of rep %d" % r_index)
                 if r_index < 0 or r_index >= len(rs):
                     self.log.error("Invalid replicate index." +
                             " Have you 'run' the model first or are you "
@@ -737,34 +782,21 @@ class ExportAction(Action):
                         self.log.error("Valid replicate range is 0-%d." % (len(rs)-1))
                     raise InvalidReplicateException(r_index)
                 r = rs[r_index]
-                map_list = []
-                saved_maps = r.get_saved_maps(ls)
-
-                # Normalise the color scale so that the lgend and range doesn't
-                # keep changing for map to map
-                self.log.info("Normalising colours")
-                the_range = grass.get_g().normalise_map_colors(saved_maps.values())
-
-                times = saved_maps.keys()
-                times.sort(key=lambda x: float(x))
-                rep_filenames = r.get_img_filenames(ls, extension=False) 
-                for t in times:
-                    m = saved_maps[t]
-                    map_list.append(self.export_map(m,rep_filenames[t]))
-                    self.update_listeners_map_pack(None, r, ls, t)
-                zip_fn = r.get_img_filenames(ls, extension=False, gif=True)[:-5]
-                self.zip_maps(map_list, zip_fn)
-                all_maps.extend(map_list)
+                all_maps.extend(self.do_rep(i,r))
         else:
             if not i.is_complete():
                 self.log.error("Instance " + repr(i) + " not complete")
                 raise InstanceIncompleteException()
             i.change_mapset()
             # Run on occupancy envelopes
-            self.log.info("Exporting occupancy envelope maps")
+            if output_maps:
+                self.log.info("Exporting occupancy envelope maps")
+            elif output_images:
+                self.log.info("Creating images for occupancy envelopes")
             self.log.debug("Fetching occupancy envelopes")
             env = i.get_occupancy_envelopes()
             if env is None:
+                self.log.info("Couldn't find occupancy envelopes, so trying to generate...")
                 i.update_occupancy_envelope()
                 env = i.get_occupancy_envelopes()
                 if env is None:
@@ -774,17 +806,29 @@ class ExportAction(Action):
             map_list = []
             times = env[ls].keys()
             times.sort(key=lambda x: float(x))
-            img_filenames = i.get_occ_envelope_img_filenames(ls, extension=False) 
+            if output_maps:
+                img_filenames = i.get_occ_envelope_img_filenames(ls, extension=False) 
+            elif output_images:
+                img_filenames = i.get_occ_envelope_img_filenames(ls) 
             for t in times:
                 m = env[ls][t]
-                map_list.append(self.export_map(m,img_filenames[t],envelope=True))
-                self.update_listeners_map_pack(i, None, ls, t)
-            zip_fn = i.get_occ_envelope_img_filenames(ls, extension=False, gif=True)[:-5]
-            self.zip_maps(map_list, zip_fn)
+                if output_maps:
+                    map_list.append(self.export_map(m,img_filenames[t],envelope=True))
+                    self.update_listeners_map_pack(i, None, ls, t)
+                elif output_images:
+                    map_list.append(self.create_frame(m,img_filenames[t],model_name, t, ls))
+                    self.update_listeners(i, None, ls, t)
+            if self.options.output_gif:
+                self.create_gif(map_list,i.get_occ_envelope_img_filenames(ls,gif=True) )
+            elif output_maps:
+                zip_fn = i.get_occ_envelope_img_filenames(ls, extension=False, gif=True)[:-5]
+                self.zip_maps(map_list, zip_fn)
             all_maps.extend(map_list)
-        # Remove the non-zipped maps
-        for m in all_maps:
-            os.remove(m)
+        # If the user wanted an animated gif, then clean up the images
+        # Also clean up exported ASCII maps outside of zip file
+        if not self.options.output_image or output_maps:
+            for m in all_maps:
+                os.remove(m)
 
     def export_map(self,map,out_fn,envelope=False):
         old_region = "ExportActionBackupRegion"
@@ -825,87 +869,6 @@ class ExportAction(Action):
             z = zipfile.ZipFile(zip_fn,mode='w')
         for m in maps: z.write(m, os.path.basename(m))
         z.close()
-
-    def do_instance_images(self,i):
-        # TODO: only overwrite files if -o flag is set
-        import outputformats
-        model_name = i.experiment.get_name()
-        ls = self.options.output_lifestage
-        if ls not in i.experiment.get_lifestage_ids():
-            self.log.error("No such lifestage called %s in model." % str(ls))
-            raise InvalidLifestageException()
-        all_maps = []
-        # check that background map exists
-        g = grass.get_g()
-        if self.options.background and not g.check_map(self.options.background):
-            self.log.error("Couldn't find background map %s" % self.options.background)
-            self.options.background = None
-            #raise grass.MapNotFoundException(self.options.background)
-        if self.options.reps:
-            # Run on replicates
-            rs = i.replicates
-            for r_index in self.options.reps:
-                self.log.info("Creating images for maps of rep %d" % r_index)
-                if len(rs) == 0:
-                    self.log.error("No replicates. Have you run the model first?")
-                if r_index < 0 or r_index >= len(rs):
-                    self.log.error("Invalid replicate index." +
-                            " Have you 'run' the model first or are you "
-                            "specifying an invalid replicate index?")
-                    if len(rs) > 0:
-                        self.log.error("Valid replicate range is 0-%d." % (len(rs)-1))
-                    raise InvalidReplicateException(r_index)
-                r = rs[r_index]
-                map_list = []
-                i.set_region()
-                saved_maps = r.get_saved_maps(ls)
-
-                # Normalise the color scale so that the lgend and range doesn't
-                # keep changing for map to map
-                self.log.info("Normalising colours")
-                the_range = grass.get_g().normalise_map_colors(saved_maps.values())
-
-                times = saved_maps.keys()
-                times.sort(key=lambda x: float(x))
-                rep_filenames = r.get_img_filenames(ls) 
-                for t in times:
-                    m = saved_maps[t]
-                    map_list.append(self.create_frame(m,rep_filenames[t],model_name, t, ls, the_range))
-                    self.update_listeners(None, r, ls, t)
-                if self.options.output_gif:
-                    self.create_gif(map_list,r.get_img_filenames(ls,gif=True))
-                all_maps.extend(map_list)
-        else:
-            if not i.is_complete():
-                self.log.error("Instance " + repr(i) + " not complete")
-                raise InstanceIncompleteException()
-            i.change_mapset()
-            # Run on occupancy envelopes
-            self.log.info("Creating images for occupancy envelopes")
-            self.log.debug("Fetching occupancy envelopes")
-            env = i.get_occupancy_envelopes()
-            if env is None:
-                i.update_occupancy_envelope()
-                env = i.get_occupancy_envelopes()
-                if env is None:
-                    err_str = "Error creating occupancy envelopes."
-                    self.log.error(err_str)
-                    raise NoOccupancyEnvelopesException(err_str)
-            map_list = []
-            times = env[ls].keys()
-            times.sort(key=lambda x: float(x))
-            img_filenames = i.get_occ_envelope_img_filenames(ls) 
-            for t in times:
-                m = env[ls][t]
-                map_list.append(self.create_frame(m,img_filenames[t],model_name, t, ls))
-                self.update_listeners(i, None, ls, t)
-            if self.options.output_gif:
-                self.create_gif(map_list,i.get_occ_envelope_img_filenames(ls,gif=True) )
-            all_maps.extend(map_list)
-        # If the user just wanted an animated gif, then clean up the images
-        if not self.options.output_image:
-            for m in all_maps:
-                os.remove(m)
 
     def update_listeners(self,instance,replicate,ls,t):
         if instance:

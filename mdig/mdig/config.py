@@ -98,6 +98,8 @@ def find_grass_base_dir():
     import glob
     opts = []
     if sys.platform == "win32":
+        if 'WINGISBASE' in os.environ:
+            opts = [os.environ['WINGISBASE']]
         if 'OSGEO4W_ROOT' in os.environ:
             opts = glob.glob(os.path.join(os.environ['OSGEO4W_ROOT'],'apps\\grass\\grass-*'))
     else:

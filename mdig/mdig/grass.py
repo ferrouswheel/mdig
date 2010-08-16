@@ -201,7 +201,7 @@ class GRASSInterface:
     def init_environment(self):
         for var in self.grass_vars:
             if self.config['GRASS'].has_key(var):
-                if len(self.config['GRASS'][var]) == 0:
+                if self.config['GRASS'][var] is None or len(self.config['GRASS'][var]) == 0:
                     self.log.error("GRASS variable %s is empty, check your mdig.conf" % (var))
                     raise EnvironmentException()
                 self.grass_vars[var]=self.config['GRASS'][var]
