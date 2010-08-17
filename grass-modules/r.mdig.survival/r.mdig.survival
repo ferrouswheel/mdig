@@ -116,12 +116,12 @@ program=`basename $0`
 #test:
 if [ ! $GIS_OPT_INPUT ]
 then
- echo "Please provide an input name"
+ echo "Please provide an input name" 1>&2
  exit 1
 fi
 if [ ! $GIS_OPT_OUTPUT ]
 then
- echo "Please provide an output name"
+ echo "Please provide an output name" 1>&2
  exit 1
 fi
 
@@ -135,15 +135,27 @@ fi
 #check if input file exists
 #if test -f $LOCATION/cell/$GIS_OPT_input
 if [ -z `g.findfile elem=cell file="$GIS_OPT_INPUT" | grep ^file | cut -f2 -d=` ] ; then
-    echo "<$GIS_OPT_INPUT> does not exist! Aborting."
+    echo "<$GIS_OPT_INPUT> does not exist! Aborting." 1>&2
     exit 1
 fi
 
 #Check if survival parameter is a map or value
 SURVIVAL_VALUE=0
 if [ -z `g.findfile elem=cell file="$GIS_OPT_SURVIVAL" | grep ^file | cut -f2 -d=` ] ; then
-    #TODO use a proper check for int 0-100 instead of assuming that no map found
-    # means a correct single value.
+    if [ $GIS_OPT_SURVIVAL ]
+    then
+        if [ ! $(echo "$GIS_OPT_SURVIVAL" | grep -E "^[0-9]+\.[0-9]+$") ]
+        then
+            echo "$GIS_OPT_SURVIVAL is not a valid map or number for 'survival'." 1>&2
+            exit 1
+        else
+        if ! [ $GIS_OPT_SURVIVAL -ge 0 ] || ! [ $GIS_OPT_SURVIVAL -le 100 ]
+        then
+            echo "$GIS_OPT_SURVIVAL is an invalid survival value. Range is [0-100]." 1>&2
+            exit 1
+        fi
+        fi
+    fi
     SURVIVAL_VALUE=1
 fi
 
