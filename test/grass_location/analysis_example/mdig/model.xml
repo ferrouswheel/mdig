@@ -58,22 +58,27 @@
       </event>
       <analyses>
           <analysis name='r.stats'>
+              <param name="input"><currentMap/></param>
               <flag name='c'/>
               <output><file>cellcount</file></output>
           </analysis>
           <analysis name='r.stats'>
+              <param name="input"><currentMap/></param>
               <flag name='c'/>
               <output><file date="false">nodate</file></output>
           </analysis>
           <analysis name='r.stats'>
+              <param name="input"><currentMap/></param>
               <flag name='c'/>
               <output><file generate="false">cellcount2</file></output>
           </analysis>
           <analysis name='r.stats'>
+              <param name="input"><currentMap/></param>
               <flag name='c'/>
               <output><file ext='.blah'>extension</file></output>
           </analysis>
           <analysis name='r.stats'>
+              <param name="input"><currentMap/></param>
               <flag name='c'/>
               <output><file append="false">noappend</file></output>
           </analysis>

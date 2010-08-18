@@ -97,7 +97,7 @@ class Analysis:
                 else:
                     raise AnalysisOutputFileExists(fn)
 
-    def _fill_in_map_parameters(self,rep,p):
+    def _fill_in_map_parameters(self,rep,p,map_name):
         ls_id = self.get_lifestage_id()
         # fill in map parameters
         for p_name,val_tuple in p.items():
@@ -108,7 +108,7 @@ class Analysis:
                 a = None
                 
             if value == "currentMap":
-                p[p_name]=in_name
+                p[p_name]=map_name
             elif value == "previousMap":
                 # TODO currently get_previous_maps is broken
                 if a is not None:
@@ -138,14 +138,14 @@ class Analysis:
         #if rawCommand in analysis.inbuiltCommands:
         #    cmd = analysis.inbuiltCommands[rawCommand].create_cmd_string(in_name,rep)
         #else
-        p=self._fill_in_map_parameters(rep,self.get_params())
+        p=self._fill_in_map_parameters(rep,self.get_params(),in_name)
         # put all the parameters and command into a command string
         cmd=self.create_cmd_string(p)
         
         fn = ""
         # base_cmd has the input map parameter removed for recording
         # in xml.
-        base_cmd = ""
+        base_cmd = cmd 
         if self.is_redirected_stdout():
             fn = self._make_filename(rep)
             # if generating a file for each time step then check file
