@@ -20,6 +20,13 @@ class RegionTest(unittest.TestCase):
         r.set_resolution(1)
         self.assertEqual(r.get_resolution(), 1)
 
+        xml = """ <region id='a' name='test_region@test_mapset'/> """
+        tree = etree.parse(StringIO(xml))
+        r_node = tree.getroot()
+        r = Region(r_node)
+        self.assertEqual(r.get_name(), 'test_region')
+        self.assertEqual(r.get_mapset(), 'test_mapset')
+
         xml = """ <region id='a'></region> """
         tree = etree.parse(StringIO(xml))
         r_node = tree.getroot()

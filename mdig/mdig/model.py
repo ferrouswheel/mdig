@@ -212,14 +212,21 @@ class DispersalModel(object):
             parser = lxml.etree.XMLParser(remove_blank_text=True)
             xmltree = lxml.etree.parse(sock,parser)
         except lxml.etree.XMLSyntaxError, e:
-            self.log.error("Error parsing %s", model_file)
-            if hasattr(e,"error_log"):
-                log = e.error_log.filter_levels(lxml.etree.ErrorLevels.FATAL)
-                print log
+            #self.log.error("Error parsing %s", model_file)
+            #if log: print log
             sock.close()
-            raise ValidationError()
+            raise ValidationError(str(e))
         sock.close()
         return xmltree
+
+    def extract_xml_error_str(self,e):
+        # Redundant?
+        log = None
+        pdb.set_trace()
+        if hasattr(e,"error_log"):
+            log = e.error_log.filter_levels(lxml.etree.ErrorLevels.FATAL)
+            e.error_log.clear()
+        return log
 
     def load_xml(self, model_file):
         """load mdig model file"""
@@ -232,13 +239,13 @@ class DispersalModel(object):
             self.schema_doc = lxml.etree.parse(schema_file)
             self.xml_schema = lxml.etree.XMLSchema(self.schema_doc)
         except lxml.etree.XMLSyntaxError, e:
-            log = e.error_log
-            self.log.error(log)
-            raise ValidationError()
+            #log = self.extract_xml_error_str(e)
+            #if log: self.log.error(log)
+            raise ValidationError(str(e))
         except lxml.etree.XMLSchemaParseError, e:
-            log = e.error_log
-            self.log.error(log)
-            raise ValidationError()
+            #log = self.extract_xml_error_str(e)
+            #if log: self.log.error(log)
+            raise ValidationError(str(log))
             
         if not self.xml_schema.validate(self.xml_model):
             self.log.error("%s not valid according to Schema %s",
@@ -249,7 +256,7 @@ class DispersalModel(object):
                 log = self.xml_schema.error_log
                 errors = log.filter_from_errors()
                 print errors
-            raise ValidationError()
+            raise ValidationError(errors)
         
         self.schema_file=schema_file
             
@@ -411,8 +418,6 @@ class DispersalModel(object):
         containing the mapset it exists in (or None if the map can't be found)
         """
         maps = []
-        # get background maps for each region (...now in config file)
-        #regions = [r.get_name() for r in self.get_regions().values() if r.get_name() is not None]
         # get parameters that are maps
 
         # in lifestages
@@ -1113,7 +1118,10 @@ class DispersalModel(object):
         else:
             nodes = self.xml_model.xpath('/model/regions/region[@id="%s"]' % r_id)
             if len(nodes) == 1:
-                self.regions[r_id]=Region(nodes[0])
+                r = Region(nodes[0])
+#TODO find
+                self.regions[r_id]= r
+                
                 return self.regions[r_id]
             else:
                 self.log.error("Could not get unique region from id '%s'" % r_id)

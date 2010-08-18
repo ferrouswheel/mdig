@@ -764,9 +764,12 @@ class GRASSInterface:
             return True
         return False
 
-    def change_mapset(self, mapset_name = None, location = None, create=False):
+    def change_mapset(self, mapset_name = None, location = None, create=False,
+            in_path=[]):
         """
-        Change to specified mapset. If create is True than create it if necessary       
+        Change to specified mapset. If create is True than create it if necessary.
+        Mapsets in in_path are added to mapset search path, but must be in same
+        location obviously.
         """
         if mapset_name is None:
             mapset_name = "PERMANENT"
@@ -790,6 +793,8 @@ class GRASSInterface:
                 self.set_gis_env()
             self.update_grass_vars()
             self.log.debug("Change to mapset %s@%s" % (mapset_name, self.grass_vars["LOCATION_NAME"] ))
+        for m in in_path:
+            self.run_command("g.mapsets addmapset=%s" % m)
         return True
 
     def create_mdig_subdir(self,mapset):

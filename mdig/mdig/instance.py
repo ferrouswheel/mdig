@@ -205,7 +205,7 @@ class DispersalInstance:
         mapset = self.get_mapset()
         # Create new mapset and link back to experiment's original mapset
         if g.check_mapset(mapset,loc):
-            g.change_mapset(mapset,loc)
+            g.change_mapset(mapset,loc,in_path=[self.experiment.get_mapset()])
         else:
             if not g.change_mapset(mapset,loc,True):
                 raise MapsetError("Failure to create mapset %s" % mapset)

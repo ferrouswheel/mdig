@@ -207,12 +207,14 @@ class Replicate:
         fn += "_rep_" + str(i.replicates.index(self))
         return fn
     
-    def get_img_filenames(self, ls="all", extension=True, gif=False):
+    def get_img_filenames(self, ls="all", extension=True, gif=False, dir=None):
         """ Get a dict of time:image_filename pairs for outputting maps to.
         Warning, this doesn't check that ls is an actual lifestage.
         If gif is true, then returns a single string
         """
-        output_dir = os.path.join(self.instance.experiment.base_dir,"output")
+        if dir is None:
+            output_dir = os.path.join(self.instance.experiment.base_dir,"output")
+        else: output_dir = os.path.normpath(dir)
         fn = outputformats.create_filename(self)
         if gif:
             result = os.path.join(output_dir,fn + "_ls_" + ls + "_anim")

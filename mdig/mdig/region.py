@@ -36,7 +36,18 @@ class Region:
     
     def get_name(self):
         if "name" in self.xml_node.attrib.keys():
-            return self.xml_node.attrib["name"]
+            index = self.xml_node.attrib["name"].find('@')
+            if index == -1:
+                return self.xml_node.attrib["name"]
+            return self.xml_node.attrib["name"][:index]
+        else:
+            return None
+
+    def get_mapset(self):
+        if "name" in self.xml_node.attrib.keys():
+            index = self.xml_node.attrib["name"].find('@')
+            if index == -1: return None
+            return self.xml_node.attrib["name"][index+1:]
         else:
             return None
         
@@ -81,5 +92,18 @@ class Region:
         for i in ext:
             ext_node.attrib[i] = str(ext[i])
         
+
+    def __str__(self):
+        x = "mdig.Region "
+        name = self.get_name()
+        e = self.get_extents()
+        r = self.get_resolution()
+        if name is not None:
+            x += "saved region '%s' " % name 
+        if e is not None:
+            x += "extents %s " % str(e) 
+        if r is not None:
+            x += "resolution %f " % float(r) 
+
     def update_xml(self):
         pass
