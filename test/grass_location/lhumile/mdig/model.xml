@@ -1,0 +1,67 @@
+<model>
+  <user>
+    <email>joel@fruitionnz.com</email>
+  </user>
+  <name> lhumile </name>
+  <description> A demo model for Argentine ant. </description>
+  <random>
+    <initialSeed> 1 </initialSeed>
+    <replicates> 2 </replicates>
+    <offset>279</offset>
+  </random>
+  <regions>
+    <region id="a">
+      <resolution>1</resolution>
+      <extents north="10" south="-10" west="-10" east="10"/>
+    </region>
+  </regions>
+  <period>
+    <startTime> 1990 </startTime>
+    <endTime> 2000 </endTime>
+  </period>
+  <output>
+    <raster>
+      <interval>1</interval>
+      <lifestage>all</lifestage>
+    </raster>
+  </output>
+  <lifestages>
+    <lifestage name="all">
+      <initialDistribution region="a">
+        <sites>
+          <s x="0" y="0"/>
+          <s x="0" y="2"/>
+          <s x="2" y="5"/>
+        </sites>
+      </initialDistribution>
+      <phenology region="a">
+        <value> 1 </value>
+      </phenology>
+      <event name="r.mdig.localspread">
+        <param name="spread">
+          <value>2</value>
+        </param>
+        <flag name="b"/>
+      </event>
+      <event name="r.mdig.kernel">
+        <param name="kernel">
+          <value>cauchy</value>
+        </param>
+        <param name="d_b">
+          <value>4</value>
+        </param>
+        <param name="frequency">
+          <value>0.29</value>
+        </param>
+        <flag name="b"/>
+      </event>
+      <event name="r.mdig.survival">
+        <param name="survival">
+          <value>80</value>
+        </param>
+        <flag name="b"/>
+      </event>
+    </lifestage>
+  </lifestages>
+</model>
+
