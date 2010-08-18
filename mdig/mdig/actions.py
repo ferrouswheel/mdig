@@ -125,7 +125,7 @@ class Action:
         pass
 
 class RepositoryAction(Action):
-    description = "Set/modify the current MDiG repository"
+    description = "Set/modify the current MDiG repository and location"
 
     def __init__(self):
         Action.__init__(self)
@@ -146,8 +146,9 @@ class RepositoryAction(Action):
             self.repo_dir = args[0]
             self.log.debug("Repo dir specified is " + self.repo_dir)
         else:
-            self.log.error("No directory specified as repository/location.")
-            sys.exit(1)
+            c = config.get_config()
+            print "Current repository: " + c['GRASS']['GISDBASE']
+            sys.exit(0)
 
     def do_me(self, mdig_model):
         c = config.get_config()
@@ -738,10 +739,13 @@ class ExportAction(Action):
 
         times = saved_maps.keys()
         times.sort(key=lambda x: float(x))
-        rep_filenames = r.get_img_filenames(ls, extension=False,
-                dir=self.options.outdir) 
         output_images = self.options.output_gif or self.options.output_image 
         output_maps = self.options.output_map_pack
+        if output_maps:
+            rep_filenames = r.get_img_filenames(ls, extension=False,
+                dir=self.options.outdir) 
+        elif output_images:
+            rep_filenames = r.get_img_filenames(ls, dir=self.options.outdir) 
         for t in times:
             m = saved_maps[t]
             if output_images:
@@ -751,9 +755,9 @@ class ExportAction(Action):
                 map_list.append(self.export_map(m,rep_filenames[t]))
                 self.update_listeners_map_pack(None, r, ls, t)
         if self.options.output_gif:
-            self.create_gif(map_list,r.get_img_filenames(ls,gif=True))
+            self.create_gif(map_list,r.get_img_filenames(ls,gif=True,dir=self.options.outdir))
         elif output_maps:
-            zip_fn = r.get_img_filenames(ls, extension=False, gif=True)[:-5]
+            zip_fn = r.get_img_filenames(ls, extension=False, gif=True,dir=self.options.outdir)[:-5]
             self.zip_maps(map_list, zip_fn)
         return map_list
 
@@ -918,13 +922,14 @@ class ExportAction(Action):
         return gif_fn
 
     def create_frame(self, map_name, output_name, model_name, year, ls, the_range = None):
+        import os
         g = grass.get_g()
         if os.path.isfile(output_name) and not self.overwrite_flag:
             raise OSError("Gif file %s exists, use -o flag to overwrite" % zip_fn)
         g.set_output(filename = output_name, \
                 width=self.options.width, height=self.options.height, display=None)
         g.run_command("d.erase")
-        import os; os.environ['GRASS_PNG_READ']="TRUE"
+        os.environ['GRASS_PNG_READ']="TRUE"
         if self.options.background:
             bg = self.options.background.split('@')
             if len(bg) > 1: map_ok = g.check_map(bg[0], bg[1])

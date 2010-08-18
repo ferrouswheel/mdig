@@ -5,7 +5,7 @@
     <title>MDiG - {{instance.experiment.get_name()}} - Instance {{idx}} -
     Replicate {{rep_num}}</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <!--<link rel="stylesheet" href="css/style.css" type="text/css" /> -->
+    <link rel="stylesheet" href="/resources/style.css" type="text/css" />
 %include css
 </head>
 <body>
@@ -30,6 +30,7 @@ Sorry, there's been an error :-(<br/>
 <h3> Lifestage "{{ls_id}}" </h3>
 %if gif_exists is not None: # show animation!
 <img class="gifanimation" src="{{rep_num}}/{{ls_id}}/spread.gif"/>
+<!--prototype image slideshow... %include replicate_slideshow.tpl-->
 <form action="{{rep_num}}/{{ls_id}}/spread.gif" method="post">
 <input type="hidden" name="gif" value="{{ls_id}}"/></td>
 <p>If you believe this animation doesn't reflect the latest simulations: <input type="submit"

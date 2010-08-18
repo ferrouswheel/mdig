@@ -34,6 +34,8 @@ if True:
     # reloader is nice, but it loads all module code twice and this
     # confuses the GRASS module.
     #reloader = True
+# where js, css, and more are kept
+resource_dir = os.path.join(root_dir,'mdig/views/resources/')
 # needed for error template to find bottle...
 bottle.TEMPLATE_PATH = [ os.path.join(root_dir,'mdig/views/'), os.path.join(root_dir,'mdig/') ]
 
@@ -108,6 +110,7 @@ def validate_replicate(instance, rep_num):
     return True
 
 @route('/models/',method="POST")
+@view('submit.tpl')
 def submit_model():
     model_file = request.POST.get('new_model')
     data = model_file.file.read()
@@ -116,11 +119,12 @@ def submit_model():
     try:
         model_name = add_model_to_repo(data)
     except ValidationError, e:
-        return {"error":"Error parsing model xml. Validation said: %s" % str(e)}
+        return {"name":mdig.version_string,
+            "error":"Error parsing model xml. Validation said:\n%s" % str(e)}
     except modelrepository.RepositoryException, e:
         if "already exists" in str(e):
-            return {"error":"Model already exists in repository."}
-        return {"error":"Error adding model to repository: %s" % str(e)}
+            return {"name":mdig.version_string,"error":"Model already exists in repository."}
+        return {"name":mdig.version_string,"error":"Error adding model to repository: %s" % str(e)}
     dm = mdig.repository.get_models()[model_name]
     redirect('/')
 
@@ -645,6 +649,11 @@ def replicate_map_pack(model, instance, replicate, ls_id):
         send_file(os.path.basename(fn),root=root_dir)
     abort(404, "No map pack generated")
 
+@route('/resources/:filename#.*#')
+def static_resources(filename):
+   bottle.send_file(filename, root=resource_dir)
+    
+
 class Worker_InstanceListener():
 
     def __init__(self, results_q):
@@ -774,8 +783,7 @@ class MDiGWorker():
                 'status':{ 'active_instance': instance_idx,
                     'description':"Generating images"} }
         self.results_q.put(msg)
-        try: ea.do_instance_images(instance)
-        except: raise
+        ea.do_instance(instance)
         dm.save_model()
         msg = {'model': m_name,'action': action, 'status':{
             'complete':datetime.datetime.now() } }
@@ -812,7 +820,7 @@ class MDiGWorker():
                 'status':{ 'active_instance': instance_idx,
                     'description':"Exporting maps"} }
         self.results_q.put(msg)
-        try: ea.do_instance_map_pack(instance)
+        try: ea.do_instance(instance)
         except: raise
         msg = {'model': m_name,'action': action, 'status':{
             'complete':datetime.datetime.now() } }
@@ -841,7 +849,7 @@ class MDiGWorker():
         ea.options.output_image = True
         ea.options.output_lifestage = ls
         ea.options.reps = [ replicate ]
-        try: ea.do_instance_images(instance)
+        try: ea.do_instance(instance)
         except: raise
         msg = {'model': m_name,'action': action,
                 'status':{ 
@@ -873,7 +881,7 @@ class MDiGWorker():
         ea.options.output_map_pack = True
         ea.options.output_lifestage = ls
         ea.options.reps = [ replicate ]
-        try: ea.do_instance_images(instance)
+        try: ea.do_instance(instance)
         except: raise
         msg = {'model': m_name,'action': action,
                 'status':{ 
