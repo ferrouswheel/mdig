@@ -144,7 +144,7 @@ SURVIVAL_VALUE=0
 if [ -z `g.findfile elem=cell file="$GIS_OPT_SURVIVAL" | grep ^file | cut -f2 -d=` ] ; then
     if [ $GIS_OPT_SURVIVAL ]
     then
-        if [ ! $(echo "$GIS_OPT_SURVIVAL" | grep -E "^[0-9]+\.[0-9]+$") ]
+        if [ ! $(echo "$GIS_OPT_SURVIVAL" | grep -E "^[0-9]+(\.[0-9]+)?$") ]
         then
             echo "$GIS_OPT_SURVIVAL is not a valid map or number for 'survival'." 1>&2
             exit 1
