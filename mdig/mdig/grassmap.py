@@ -72,9 +72,11 @@ class GrassMap:
         node = self.xml_node
         # If node is "sites" then it contains a list of coordinates
         if node.tag == "sites":
+            from lxml import etree
             self.xml_map_type = "sites"
             self.value=[]
-            for s in node:
+            # only iterate over elements, not comments or entities
+            for s in node.iterchildren(tag=etree.Element):
                 x=int(s.attrib["x"])
                 y=int(s.attrib["y"])
                 if "count" in s.attrib.keys():

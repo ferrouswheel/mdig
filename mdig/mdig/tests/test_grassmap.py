@@ -52,6 +52,23 @@ class GrassMapTest(unittest.TestCase):
         self.assertEqual(self.gmap.mapset, "a_mapset")
 
     @patch('mdig.grass.get_g')
+    def test_create_sites_map_w_comment(self,get_g):
+        from lxml import etree
+        xml = """<sites>
+          <!--<s x="1" y="0" count="100"/>-->
+          <s x="2" y="0"/>
+          <s x="3" y="0"/>
+          <s x="4" y="0"/>
+          <s x="5" y="0"/>
+          <s x="0" y="-5"/>
+        </sites>"""
+        import pdb;pdb.set_trace()
+        tree = etree.parse(StringIO(xml))
+        map_node = tree.getroot()
+        self.gmap = GrassMap(xml_node = map_node)
+        self.assertEqual(len(self.gmap.value), 5)
+
+    @patch('mdig.grass.get_g')
     def test_create_name_map(self,get_g):
         from lxml import etree
         xml = "<map>nz_DEM</map>"
