@@ -833,6 +833,15 @@ Section "GRASS" SecGRASS
 	FileWrite $0 'MAPSET: PERMANENT$\r$\n'
 	FileClose $0	
 	done_create_.grassrc6:
+
+        ;create BATCH File
+	ClearErrors
+	FileOpen $0 $INSTALL_DIR\mdig\mdig\mdig.bat w
+	IfErrors done_create_mdigbat
+	FileWrite $0 '@python mdig.py %*$\r$\n'
+	FileClose $0
+	done_create_mdigbat:
+
 	
 	CopyFiles $PROFILE\.grassrc6 $INSTALL_DIR\msys\home\$USERNAME
 
@@ -840,7 +849,6 @@ Section "GRASS" SecGRASS
 SectionEnd
 
 Section "Associate .py file with Python" SecPy
-
     ; register .py files with python
     ${RegisterExtension} "$INSTALL_DIR\Python26\python.exe" ".py" "Python script"
 SectionEnd
