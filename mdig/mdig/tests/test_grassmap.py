@@ -62,7 +62,6 @@ class GrassMapTest(unittest.TestCase):
           <s x="5" y="0"/>
           <s x="0" y="-5"/>
         </sites>"""
-        import pdb;pdb.set_trace()
         tree = etree.parse(StringIO(xml))
         map_node = tree.getroot()
         self.gmap = GrassMap(xml_node = map_node)

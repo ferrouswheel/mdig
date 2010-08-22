@@ -797,9 +797,11 @@ class GRASSInterface:
             self.run_command("g.mapsets addmapset=%s" % m)
         return True
 
-    def create_mdig_subdir(self,mapset):
+    def create_mdig_subdir(self,mapset,overwrite=False):
         env = self.get_gis_env()
         dest_dir = os.path.join(env["GISDBASE"],env["LOCATION_NAME"],mapset,"mdig")
+        if os.path.isdir(dest_dir) and overwrite:
+            shutil.rmtree(dest_dir)
         os.mkdir(dest_dir)
         return dest_dir
 
@@ -836,7 +838,15 @@ class GRASSInterface:
             ans = raw_input("Remove mapset at %s? [y/N] " % mapset_dir)
             if ans.upper() == "Y": force = True
         if force:
-            self.run_command("rm -rf %s" % mapset_dir)
+            try:
+                # Catch errors that just indicate the mapset doesn't exist
+                shutil.rmtree(mapset_dir)
+            except WindowsError, e:
+                if "cannot find the path specified" in str(e): return False
+                else: raise e
+            except OSError, e:
+                if "No such file or directory" in str(e): return False
+                else: raise e
             return True 
         return False
 

@@ -215,6 +215,7 @@ def process_tasks():
 from mdig.modelrepository import RepositoryException
 @route('/models/:model/del',method='POST')
 def del_model(model):
+    # TODO ensure the model isn't running or in the job queue!
     try:
         mdig.repository.remove_model(model, force=True)
     except RepositoryException, e:
@@ -653,6 +654,9 @@ def replicate_map_pack(model, instance, replicate, ls_id):
 def static_resources(filename):
    bottle.send_file(filename, root=resource_dir)
     
+@route('/favicon.ico')
+def static_resources():
+   bottle.send_file("favicon.ico", root=resource_dir)
 
 class Worker_InstanceListener():
 

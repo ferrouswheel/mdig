@@ -48,19 +48,34 @@ class ModelRepository:
             raise RepositoryException("Model doesn't define GIS Location for simulation")
         if not os.path.isdir(os.path.join(self.db,loc,"PERMANENT")):
             raise RepositoryException("Model defines a GIS Location " + loc + " that " + "doesn't exist in " + self.db)
+        models = self.get_models()
+        c = config.get_config()
+        if dm.get_name() in models:
+            if c.overwrite_flag:
+                # remove instance mapsets and replace model.xml
+                self.log.info("Remove instances of old version of model %s"%dm.get_name())
+                dm_old = model.DispersalModel(models[dm.get_name()],setup=False)
+                dm_old.hard_reset()
+                del dm_old
+            else:
+                raise RepositoryException("The model '" + dm.get_name() + \
+                    "' already exists in the repository. Replace with -o.")
         g.change_mapset("PERMANENT",loc)
         # create model mapset
-        self.log.info("Creating mapset for model %s"%dm.get_mapset())
-        if g.check_mapset(dm.get_name()):
-            raise RepositoryException("Couldn't create mapset %s, it already exists in location %s." \
-                    % (dm.get_mapset(),g.get_mapset_full_path(dm.get_mapset()) ))
-        if not g.change_mapset(dm.get_name(),loc,True):
-            raise RepositoryException("Couldn't create mapset %s." % dm.get_mapset())
-        self.log.info("Created mapset for model " + dm.get_name())
-
+        if not g.check_mapset(dm.get_name()):
+            self.log.info("Creating mapset for model %s"%dm.get_mapset())
+#           raise RepositoryException("Couldn't create mapset %s, it already exists in location %s." \
+#               % (dm.get_mapset(),g.get_mapset_full_path(dm.get_mapset()) ))
+            if not g.change_mapset(dm.get_name(),loc,True):
+                raise RepositoryException("Couldn't create mapset %s." % dm.get_mapset())
+            self.log.info("Created mapset for model " + dm.get_name())
+        else: 
+            self.log.warning("Using existing mapset with same name as model %s"%dm.get_mapset())
+            if not g.change_mapset(dm.get_name(),loc):
+                raise RepositoryException("Couldn't change into mapset %s." % dm.get_mapset())
         # create mdig dir in mapset
         try:
-            dest_dir = g.create_mdig_subdir(dm.get_mapset())
+            dest_dir = g.create_mdig_subdir(dm.get_mapset(),c.overwrite_flag)
         except OSError, e:
             g.remove_mapset(dm.get_mapset(),force=True)
             raise RepositoryException("Error creating mdig dir in mapset. %s" % str(e))
@@ -135,8 +150,18 @@ class ModelRepository:
             for i in dm.get_instances():
                 i_mapset = i.get_mapset()
                 if i_mapset != model_name:
-                    grass.get_g().remove_mapset(i_mapset, loc, force)
-            grass.get_g().remove_mapset(model_name, loc, force)
+                    try:
+                        grass.get_g().remove_mapset(i_mapset, loc, force)
+                    except WindowsError, e:
+                        pass
+                    except OSError, e:
+                        pass
+            try:
+                grass.get_g().remove_mapset(model_name, loc, force)
+            except WindowsError, e:
+                pass
+            except OSError, e:
+                pass
             print "Model removed"
 
     def get_models(self):

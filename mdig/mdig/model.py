@@ -139,46 +139,46 @@ class DispersalModel(object):
             rollover=True
         count=0
         fh = None
-	# next two lines are hack to avoid using RotatingFileHandler in
-	# Windows
-	if sys.platform == "win32":
-	    # Windows isn't a real operating system and when there a multiple
-	    # threads it complains about renaming files that are open by another
-	    # thread... so instead, we have to create another name...
-	    base_fn = self.log_file
-	    try:
-		if rollover: self.backup_file(self.log_file)
-	    except OSError, e:
-		# If we couldn't backup file then we need to find a free file
-		self.log_file = os.path.join(self.base_dir, "model_process_%d.log" % count)
-	    while fh is None and count < 10:
-		try:
-		    fh = logging.FileHandler(self.log_file)
-		except OSError, e:
-		    count += 1
-		    self.log_file = os.path.join(self.base_dir, "model_process_%d.log" % count)
-	    # TODO, delete the file
-	else:
-	    fh = logging.handlers.RotatingFileHandler(self.log_file,maxBytes=0,backupCount=5)
-	    if rollover: fh.doRollover()
+        # next two lines are hack to avoid using RotatingFileHandler in
+        # Windows
+        if sys.platform == "win32":
+            # Windows isn't a real operating system and when there a multiple
+            # threads it complains about renaming files that are open by another
+            # thread... so instead, we have to create another name...
+            base_fn = self.log_file
+            try:
+                if rollover: self.backup_file(self.log_file)
+            except OSError, e:
+                # If we couldn't backup file then we need to find a free file
+                self.log_file = os.path.join(self.base_dir, "model_process_%d.log" % count)
+            while fh is None and count < 10:
+                try:
+                    fh = logging.FileHandler(self.log_file)
+                except OSError, e:
+                    count += 1
+                    self.log_file = os.path.join(self.base_dir, "model_process_%d.log" % count)
+            # TODO, delete the file
+        else:
+            fh = logging.handlers.RotatingFileHandler(self.log_file,maxBytes=0,backupCount=5)
+            if rollover: fh.doRollover()
         fh.setFormatter(logformat)
         # If we start having multiple simulations at once, then this should be
         # changed (and also areas that are not under mdig.model)
         logging.getLogger("mdig").addHandler(fh)
-	self.log_handler=fh
+        self.log_handler=fh
 
     def __del__(self):
-	self.remove_log_handler()
+        self.remove_log_handler()
 
     def remove_log_handler(self):
-	""" Manually clean up logs since Windows can't handler renaming an
-	open file and things get messed up
-	"""
-	if self.log_handler:
+        """ Manually clean up logs since Windows can't handler renaming an
+        open file and things get messed up
+        """
+        if self.log_handler:
             logging.getLogger("mdig").removeHandler(self.log_handler)
-	    self.log_handler.close()
-	    self.log_handler=None
-	    self.log_file=None
+            self.log_handler.close()
+            self.log_handler=None
+            self.log_file=None
 
     def set_base_dir(self, dir=None):
         # Set up base directory for output
@@ -350,6 +350,10 @@ class DispersalModel(object):
             ms_dir = os.path.join(db,location,mapset)
             try:
                 shutil.rmtree(ms_dir)
+            except WindowsError, e:
+                # Windows just has to be "special" about it's error conditions. :-/
+                if "cannot find the path specified" in str(e): pass
+                else: raise e
             except OSError, e:
                 # it's okay if the directories don't actually exist, as we want
                 # to want to remove them anyhow
@@ -1445,8 +1449,8 @@ class DispersalModel(object):
             for id in ls_ids:
                 self.get_lifestage(id).clean_up_maps()
 
-	# remove the log handler
-	self.remove_log_handler()
+        # remove the log handler
+        self.remove_log_handler()
 
     def _indent_xml(self, elem, level=0):
         """ in-place prettyprint formatter - used because lxml one
@@ -1470,10 +1474,10 @@ class DispersalModel(object):
         if filename is None: filename = self.model_file
         try:
             if os.path.isfile(filename):
-		 if self.backup_filename is None:
-	             self.backup_filename = self.backup_file(filename)
-		 else:
-	             self.backup_file(filename,self.backup_filename)
+                 if self.backup_filename is None:
+                     self.backup_filename = self.backup_file(filename)
+                 else:
+                     self.backup_file(filename,self.backup_filename)
             fo = open(filename,'w')
 #print >>fo, self._indent_xml(self.xml_model)
             print >>fo, lxml.etree.tostring(self.xml_model,pretty_print=True)
@@ -1484,30 +1488,30 @@ class DispersalModel(object):
             self.log.error(e)
 
     def backup_file(self, filename, backup_filename=None):
-	""" Backup filename and return the name of the backup file """
-	if backup_filename is None:
-	    count = 0
-	    fn = filename + "." + repr(count)
-	    # If model filename exists then try rotate the backups
-	    # (keeps 4 backups by default, but original is preserved 
-	    # from the initial add to repository) 
-	    while os.path.isfile(fn) and count < 5:
-		# count files
-		count += 1
-		fn = filename + "." + repr(count)
-	    count -= 1
-	    if count == 4:
-		fn = filename + "." + repr(count)
-		os.remove(fn)
-	    while count > 0:
-		# rotate files
-		fn = filename + "." + repr(count)
-		os.remove(fn)
-		count -= 1
-		shutil.move(filename + "." + repr(count), fn)
-	    backup_filename = filename + ".0"
-	shutil.move(filename, backup_filename)
-	return backup_filename
+        """ Backup filename and return the name of the backup file """
+        if backup_filename is None:
+            count = 0
+            fn = filename + "." + repr(count)
+            # If model filename exists then try rotate the backups
+            # (keeps 4 backups by default, but original is preserved 
+            # from the initial add to repository) 
+            while os.path.isfile(fn) and count < 5:
+                # count files
+                count += 1
+                fn = filename + "." + repr(count)
+            count -= 1
+            if count == 4:
+                fn = filename + "." + repr(count)
+                os.remove(fn)
+            while count > 0:
+                # rotate files
+                fn = filename + "." + repr(count)
+                os.remove(fn)
+                count -= 1
+                shutil.move(filename + "." + repr(count), fn)
+            backup_filename = filename + ".0"
+        shutil.move(filename, backup_filename)
+        return backup_filename
             
     def __repr__(self):
         # Prefixes attributes that are not None     

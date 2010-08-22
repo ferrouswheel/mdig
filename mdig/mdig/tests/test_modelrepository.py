@@ -127,7 +127,7 @@ class ModelRepositoryTest(unittest.TestCase):
         m.add_model(temp_model_fn)
         m.remove_model('variables')
 
-        m.add_model(temp_model_fn)
+        self.assertRaises(RepositoryException,m.add_model,temp_model_fn)
         m_in.return_value.upper.return_value = 'Y'
         m.remove_model('variables')
 
@@ -189,11 +189,11 @@ class ModelRepositoryTest(unittest.TestCase):
 
         # test when mapset already exists with the name of model
         get_g.return_value.check_mapset.return_value = True
-        self.create_mock_location(self.temp_dir)
+        m.get_models = Mock()
+        m.get_models.return_value = {'variables':'blreerger'}
         self.assertRaises(mdig.modelrepository.RepositoryException,m.add_model,temp_model_fn)
-        #self.assertTrue("it already exists" in str(e))
-        self.remove_mock_location(self.temp_dir)
         get_g.return_value.check_mapset.return_value = False
+        m = ModelRepository(self.temp_dir)
 
         # test what happens if we can't create new mapset
         get_g.return_value.change_mapset.return_value = False

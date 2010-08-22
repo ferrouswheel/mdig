@@ -289,10 +289,13 @@ class WebServiceTest(tools.ServerTestBase):
         os.remove(temp_fn)
         self.assertTrue('variable_test' in self.repo.get_models())
         r = self.urlopen('/models/variable_test/del',method='POST')
+        self.assertEqual(r['code'],303)
+        self.assertTrue('variable_test' not in self.repo.get_models())
 
     def test_delete_unknown_model(self):
         count = len(self.repo.get_models())
         r = self.urlopen('/models/fibllle/del',method='POST')
+        self.assertEqual(r['code'],404)
         self.assertEqual(count,len(self.repo.get_models()))
 
     def test_submit_model(self):
