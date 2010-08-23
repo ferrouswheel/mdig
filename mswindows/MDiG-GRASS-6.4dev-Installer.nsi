@@ -583,11 +583,11 @@ Section "GRASS" SecGRASS
         ; Create the MDiG Desktop Shortcuts
 	CreateShortCut "$DESKTOP\MDiG ${MDIG_VERSION} Webserver.lnk" \
             "$INSTALL_DIR\${MDIG_COMMAND}.bat" "python mdig.py web" \ 
-            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWMINIMIZED \
+            "$INSTALL_DIR\mdig\doc\favicon.ico" "" SW_SHOWMINIMIZED \
             "" "Launch MDiG ${MDIG_VERSION} webserver"
 	CreateShortCut "$DESKTOP\MDiG ${MDIG_VERSION} command line.lnk" \
             "$INSTALL_DIR\${MDIG_COMMAND}.bat" "" \ 
-            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWNORMAL \
+            "$INSTALL_DIR\mdig\doc\favicon.ico" "" SW_SHOWNORMAL \
             "" "Launch command line with suitable environment to run MDiG ${MDIG_VERSION} commands"
  
 	;Create the Windows Start Menu Shortcuts
@@ -628,11 +628,11 @@ Section "GRASS" SecGRASS
         ; Create the MDiG Program File Shortcuts
 	CreateShortCut "$SMPROGRAMS\${GRASS_BASE}\MDiG ${MDIG_VERSION} Webserver.lnk" \
             "$INSTALL_DIR\${MDIG_COMMAND}.bat" "python mdig.py web" \ 
-            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWMINIMIZED \
+            "$INSTALL_DIR\mdig\doc\favicon.ico" "" SW_SHOWMINIMIZED \
             "" "Launch MDiG ${MDIG_VERSION} webserver"
 	CreateShortCut "$SMPROGRAMS\${GRASS_BASE}\MDiG ${MDIG_VERSION} command line.lnk" \
             "$INSTALL_DIR\${MDIG_COMMAND}.bat" "" \ 
-            "$INSTALL_DIR\icons\MDiG.ico" "" SW_SHOWNORMAL \
+            "$INSTALL_DIR\mdig\doc\favicon.ico" "" SW_SHOWNORMAL \
             "" "Launch command line with suitable environment to run MDiG ${MDIG_VERSION} commands"
  
 	;Create the grass_command.bat
@@ -782,7 +782,7 @@ Section "GRASS" SecGRASS
 	FileWrite $0 '# Set the PATH variable$\r$\n'
 	FileWrite $0 'PATH="$$GISBASE/extrabin:$$GISBASE/extralib:$$PATH"$\r$\n'
 	FileWrite $0 'PATH="$$GISBASE/tcl-tk/bin:$$GISBASE/sqlite/bin:$$GISBASE/gpsbabel:$$PATH"$\r$\n'
-        FileWrite $0 'PATH="$$GISBASE/Python26:$$GISBASE/Python26/Scripts:$$PATH"'
+    FileWrite $0 'PATH="$$GISBASE/Python26:$$GISBASE/Python26/Scripts:$$PATH"$\r$\n'
 	FileWrite $0 'export PATH$\r$\n'
 	FileWrite $0 '# Set the PYTHONPATH variable$\r$\n'
 	FileWrite $0 'PYTHONPATH="$$GISBASE/etc/python:$$GISBASE/Python26:$$PYTHONPATH"$\r$\n'
