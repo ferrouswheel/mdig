@@ -277,14 +277,14 @@ class RunAction(Action):
         mdig_model.log_instance_times()
         print "Total time taken: %s" % time_taken
 
-class analysisAction(Action):
+class AnalysisAction(Action):
     description = "Perform analysis on a model and create occupancy envelopes"
 
     def __init__(self):
         Action.__init__(self)
         # Default is to run analysis on all timesteps with maps available.
         self.parser = OptionParser(version=mdig.version_string,
-                description = analysisAction.description,
+                description = AnalysisAction.description,
                 usage = "%prog analysis [options] model_name")
         self.add_options()
 
@@ -389,7 +389,7 @@ class analysisAction(Action):
                 sys.exit(mdig.mdig_exit_codes["cmdline_error"])
             
         if not self.options.prob_envelope_only:
-            print "Running analysis command"
+            self.log.info("Running analysis command")
             
             commands_to_run = []
             
@@ -411,6 +411,146 @@ class analysisAction(Action):
                     # -1 specifies the last time step
                     mdig_model.run_command_on_maps(cmd[1], ls, [-1],
                             prob=self.options.combined_analysis)
+
+class StatsAction(Action):
+    description = "Calculate univariate statistics for maps."
+
+    def __init__(self):
+        Action.__init__(self)
+        # Default is to run analysis on all timesteps with maps available.
+        self.parser = OptionParser(version=mdig.version_string,
+                description = StatsAction.description,
+                usage = "%prog stats [options] model_name")
+        self.add_options()
+
+    def add_options(self):
+        Action.add_options(self)
+        self.parser.add_option("-l","--lifestage",
+                help="Lifestage to analyse (lifestage name or default='all')",
+                action="store",
+                dest="analysis_lifestage",
+                default="all",
+                type="string")
+        self.parser.add_option("-c","--occupancy",
+                help="Run analysis on occupancy maps instead of replicate " +
+                "maps. Will generate them if necessary.",
+                action="store_true",
+                dest="combined_analysis")
+        self.parser.add_option("-f","--out-file",
+                help="Specify output filename (will be appended with rep " +
+                    "number and the model instance)",
+                action="store",
+                dest="analysis_filename_base",
+                type="string",
+                default="stats_")
+        self.parser.add_option("-o","--overwrite",
+                help="Overwrite existing files",
+                action="store_true",
+                dest="overwrite_flag")
+        self.parser.add_option("-s","--step",
+                help="The interval at which to run analysis on ('all' or " +
+                    "'final')",
+                action="store",
+                dest="analysis_step",
+                type="choice",
+                choices=("all","final"),
+                default="all")
+        self.parser.add_option("-x","--no-xml",
+                help="Do not record analysis in xml file (don't manage " +
+                "output with MDiG)",
+                action="store_false",
+                dest="analysis_add_to_xml")
+
+    def act_on_options(self,options):
+        Action.act_on_options(self,options)
+        c = config.get_config()
+        c.analysis_add_to_xml = self.options.analysis_add_to_xml
+        c.analysis_filename_base = self.options.analysis_filename_base
+        c.overwrite_flag = self.options.overwrite_flag
+
+    def do_me(self,mdig_model):
+        ls = self.options.analysis_lifestage
+        
+        # If a combined analysis is being run (or a prob. envelope is being
+        # created) then generate the combined maps.
+        if self.options.combined_analysis:
+            self.log.info("Updating probability envelopes")
+            
+            # force parameter for update_occupancy_envelope means that
+            # probability envelopes will be made regardless of whether they
+            # already exist.
+            if self.options.analysis_step == "all":
+                mdig_model.update_occupancy_envelope([ls])
+            elif self.options.analysis_step == "final":
+                # -1 specifies the last time step
+                mdig_model.update_occupancy_envelope([ls], -1)
+            else:
+                self.log.error("Unknown analysis step : %s" %
+                        self.options.analysis_step)
+                sys.exit(mdig.mdig_exit_codes["cmdline_error"])
+            mdig_model.save_model()
+            
+        self.log.info("Calculating area...")
+        
+        g=grass.get_g()
+        if self.options.combined_analysis:
+            if self.options.analysis_step == "all":
+                for i in mdig_model.get_instances():
+                    self.log.info("Calculating stats for instance %d" % i.get_index())
+                    maps = i.get_occupancy_envelopes()[ls]
+                    i.change_mapset()
+                    stats=g.get_univariate_stats(maps)
+                    fn = os.path.split(i.get_occ_envelope_img_filenames(ls=ls,
+                            extension=False,gif=True))[:-5]
+                    fn = os.path.join(fn[0],self.options.analysis_filename_base + fn[1])
+                    self.write_stats_to_file(stats,fn)
+            else:
+                # just run on last map
+                raise NotImplementedError("only supports running all maps current")
+        else:
+            if self.options.analysis_step == "all":
+                for i in mdig_model.get_instances():
+                    i.change_mapset()
+                    for r in i.replicates:
+                        self.log.info("Calculating stats for instance %d, rep %d" % \
+                                (i.get_index(), r.r_index))
+                        maps = r.get_saved_maps(ls)
+                        stats = g.get_univariate_stats(maps)
+                        fn = os.path.split(r.get_img_filenames(ls=ls, extension=False,
+                                gif=True))[:-5]
+                        fn = os.path.join(fn[0],self.options.analysis_filename_base + fn[1])
+                        self.write_stats_to_file(stats,fn)
+            else:
+                # just run on last map
+                raise NotImplementedError("only supports running all maps current")
+
+        self.log.info("Output is in: %s" % \
+                os.path.join(mdig_model.base_dir,"output"))
+
+    def write_stats_to_file(self,stats,fn):
+        c = config.get_config()
+        if os.path.isfile(fn):
+            if c.overwrite_flag:
+                os.remove(fn)
+            else:
+                raise Exception("File %s already exists, -o to overwrite" % fn)
+        expected=['n','null_cells','cells','min','max','range','mean', \
+                 'mean_of_abs', 'stddev', 'variance', 'coeff_var', 'sum']
+        f = open(fn,'w')
+        f.write('time,' + ','.join(expected))
+        f.write('\r\n')
+        times = stats.keys()
+        times.sort()
+        for t in times:
+            f.write(str(t))
+            for stat_name in expected:
+                if stat_name in stats[t]:
+                    f.write(',%f' % stats[t][stat_name])
+                else:
+                    # value missing
+                    f.write(',')
+            f.write('\r\n')
+        f.close()
 
 class ResetAction(Action):
     description = "Reset the model. Delete all prior instances/replicates."
@@ -1187,7 +1327,8 @@ class ClientAction(Action):
 
 mdig_actions = {
     "run": RunAction,
-    "analysis": analysisAction,
+    "analysis": AnalysisAction,
+    "stats": StatsAction,
     "add": AddAction,
     "list": ListAction,
     "admin": AdminAction,

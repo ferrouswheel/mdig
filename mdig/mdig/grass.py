@@ -345,6 +345,17 @@ class GRASSInterface:
         self.run_command('d.rast map=%s -x -o bg=white' % map_name, logging.DEBUG)
         os.environ['GRASS_PNG_READ']="TRUE"
 
+    def get_univariate_stats(self, maps):
+        results={}
+        for t,m in maps.items():
+            cmd = "r.univar -g map=%s" % m
+            p=Popen(cmd, shell=True, stdout=subprocess.PIPE)
+            output,stderr=p.communicate()
+            if p.returncode != 0:
+                raise GRASSCommandException(cmd, stderr, p.returncode)
+            res=re.findall("(\w+)=([\d.]+(e-?[\d]+)?)\n",output)
+            results[t] = dict([(x[0],float(x[1])) for x in res])
+        return results
 
     def normalise_map_colors(self, maps):
         min_val = None; max_val = None
