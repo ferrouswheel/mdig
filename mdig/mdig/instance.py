@@ -471,10 +471,11 @@ class DispersalInstance:
             self.set_mapset(self.experiment.create_instance_mapset_name())
 
     
-    def get_occupancy_envelopes(self):
+    def get_occupancy_envelopes(self,nolog=False):
         prob_env = {}
         if not self.is_complete():
-            self.log.error("Trying to obtain probability envelope for incomplete instance")
+            if not nolog:
+                self.log.error("Trying to obtain probability envelope for incomplete instance")
             return None
         
         ls_nodes = self.node.xpath('envelopes/lifestage')

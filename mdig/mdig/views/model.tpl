@@ -139,7 +139,7 @@ variable <i>{{params[p][1]}}</i> has values {{vars[params[p][1]]}}
 %end
     <td>{{len([x for x in instance.replicates if x.complete])}}/{{model.get_num_replicates()}}</td>
     <td> \\
-%if instance.get_occupancy_envelopes() is None:
+%if instance.get_occupancy_envelopes(nolog=True) is None:
 -
 %else:
 Yes
