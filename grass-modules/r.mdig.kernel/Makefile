@@ -1,7 +1,7 @@
 MODULE_TOPDIR = ../../..
 
 PGM = r.mdig.kernel
-ifneq (a,$(findstring mingw,$(ARCH)))
+ifeq ($(findstring mingw,$(ARCH)),mingw)
 	LIBES = -L/mingw/GnuWin32/lib/ $(DISPLAYLIB) $(RASTERLIB) $(GISLIB) -lm -lgsl
 else
 	LIBES = -L/mingw/GnuWin32/lib/ $(DISPLAYLIB) $(RASTERLIB) $(GISLIB) -lm -lgsl -lgslcblas
