@@ -20,8 +20,9 @@ from scipy import *
 from scipy import optimize
 from scipy import stats
 from pylab import *
-from Numeric import *
-from LinearAlgebra import *
+from numpy import *
+from numpy.linalg import *
+#from LinearAlgebra import *
 import pdb
 
 cauchy_pdf = lambda p,x: [stats.cauchy.pdf(i,scale=p[0]) for i in x]
@@ -154,7 +155,7 @@ class DispersalFit:
         p,orig_val=histogram(d,bins=self.n_bins,normed=True,new=True)
         if self.verbose:
             print "done."
-        # calculate centre:
+        # calculate centres:
         val=[]
         for i in range(0,len(orig_val)-1):
             val.append((orig_val[i] + orig_val[i+1]) / 2.0)

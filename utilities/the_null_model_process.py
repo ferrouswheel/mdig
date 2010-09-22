@@ -8,8 +8,8 @@ from dextractor import Occurrences
 from dextractor import DispersalFit
 
 # data file for NZ occurrences:
-nz_occ_file = "/home/joel/network/projects/beatingweeds/bdavidii/bdavidii_sites_nz_w_est_prob.csv"
-eu_occ_file = "/home/joel/network/projects/beatingweeds/bdavidii/bdavidii_sites_europe_w_est_prob.csv" 
+nz_occ_file = "/home/joel/projects/beatingweeds/bdavidii/bdavidii_sites_nz_w_est_prob.csv"
+eu_occ_file = "/home/joel/projects/beatingweeds/bdavidii/bdavidii_sites_europe_w_est_prob.csv" 
 
 # _survival = False is important because this a the homogeneous
 # landscape model

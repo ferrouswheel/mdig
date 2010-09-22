@@ -21,6 +21,7 @@ import pdb
 import csv
 from scipy import *
 from pylab import *
+import dateutil.parser
 
 class Occurrences(object):
 
@@ -83,8 +84,7 @@ class Occurrences(object):
         return ((pi*x/180)+pi) % (2*pi)
     degrees_to_rad = staticmethod(degrees_to_rad)
 
-    def load_file(self, _filename, x=1, y=2, year=3, survival=4, header=True,
-            speciesName=None):
+    def load_file(self, _filename, header=True, x=1, y=2, year=3, survival=4, precision=5):
         """ load occurrence data from file, automatically filters sites
             with missing data.
         """
@@ -97,16 +97,18 @@ class Occurrences(object):
                 continue
             easting=0
             northing=0
-            year=0
-            # second and third cols are easting, northing
+            year_value=0
+            # extract location
             if self.latlong:
                 if len(r[x]) > 0: easting = Occurrences.degrees_to_rad(float(r[x]))
                 if len(r[y]) > 0: northing = Occurrences.degrees_to_rad(float(r[y]))
             else:
                 if len(r[x]) > 0: easting = float(r[x])
                 if len(r[y]) > 0: northing = float(r[y])
-            # fourth is the year
-            if len(r[year]) > 0: year = int(r[year])
+            # extract year
+            if len(r[year]) > 0:
+                site_date = dateutil.parser.parse(r[year])
+                year_value = site_date.year
             survival_percent = 100;
             if survival is not None:
                 if len(r[survival]) > 0:
@@ -115,8 +117,8 @@ class Occurrences(object):
                     # just make 1 to avoid divide by zero errors.
                     if survival_percent == 0: survival_percent = 100;
 
-            if (easting or northing) and year:
-                self.occurrences.append([year,easting,northing,survival])
+            if (easting or northing) and year_value:
+                self.occurrences.append([year_value,easting,northing,survival])
                 # used to store in a dict...
                 #if year in occurrences:
                 #    occurrences[year].append([easting,northing])
