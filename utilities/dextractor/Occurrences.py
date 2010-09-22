@@ -36,18 +36,30 @@ class Occurrences(object):
     # used by random and exponential distance calculations
     _sample_size = 100 
 
-    def __init__ (self, _filename=None, _latlong=False, _survival = True):
+    # Columns with None are optional
+    columns = { 'x':1, 'y':2, 'year':3, 'survival': None,
+            'precision': None}
+
+    def __init__ (self, filename=None, latlong=False, columns=None):
+        """
+        @filename is the file to load occurrences from
+        @latlong is whether the x,y coordinates are latitude,longitude rather
+        than easting/westing
+        @columns a dictionary indicating the column numbers of inputs
+        """
         self.delimiter=Occurrences._delimiter
         self.occurrences=[]
         self.distances = {}
         self.distances_type=None  
-        self.latlong = _latlong
-        self.use_survival = _survival
-        self.filename = _filename 
+        self.latlong = latlong
+        self.filename = filename 
+        self.columns = Occurrences.columns
+        if columns is not None:
+            self.columns.update(columns)
         # Set this before calculating distances to scale by this factor
         self.scale_factor = 1
         if self.filename:
-            self.load_file(self.filename)
+            self.load_file(self.filename,**self.columns)
 
     def dist_ll(lat1,lon1,lat2,lon2): 
         if lat1 == lat2 and lon1 == lon2:
@@ -71,7 +83,7 @@ class Occurrences(object):
         return ((pi*x/180)+pi) % (2*pi)
     degrees_to_rad = staticmethod(degrees_to_rad)
 
-    def load_file(self, _filename, xcol=1, ycol=2, year_col=3, est_col=4, header=True,
+    def load_file(self, _filename, x=1, y=2, year=3, survival=4, header=True,
             speciesName=None):
         """ load occurrence data from file, automatically filters sites
             with missing data.
@@ -88,20 +100,20 @@ class Occurrences(object):
             year=0
             # second and third cols are easting, northing
             if self.latlong:
-                if len(r[xcol]) > 0: easting = Occurrences.degrees_to_rad(float(r[xcol]))
-                if len(r[ycol]) > 0: northing = Occurrences.degrees_to_rad(float(r[ycol]))
+                if len(r[x]) > 0: easting = Occurrences.degrees_to_rad(float(r[x]))
+                if len(r[y]) > 0: northing = Occurrences.degrees_to_rad(float(r[y]))
             else:
-                if len(r[xcol]) > 0: easting = float(r[xcol])
-                if len(r[ycol]) > 0: northing = float(r[ycol])
+                if len(r[x]) > 0: easting = float(r[x])
+                if len(r[y]) > 0: northing = float(r[y])
             # fourth is the year
-            if len(r[year_col]) > 0: year = int(r[year_col])
-            survival = 100;
-            if self.use_survival:
-                if len(r[est_col]) > 0:
-                    survival = float(r[est_col])
+            if len(r[year]) > 0: year = int(r[year])
+            survival_percent = 100;
+            if survival is not None:
+                if len(r[survival]) > 0:
+                    survival_percent = float(r[survival])
                     # survival zero, and yet there is a site here?
                     # just make 1 to avoid divide by zero errors.
-                    if survival == 0: survival = 100;
+                    if survival_percent == 0: survival_percent = 100;
 
             if (easting or northing) and year:
                 self.occurrences.append([year,easting,northing,survival])
@@ -301,7 +313,7 @@ class Occurrences(object):
                 t = self.occurrences[i][0] 
                 count = 0
                 scaled_count = 0
-            if self.use_survival:
+            if self.columns['survival'] is not None:
                 scaled_count += 1/(self.occurrences[i][3]/100.0)
             else:
                 scaled_count += 1
