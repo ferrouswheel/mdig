@@ -152,7 +152,7 @@ class DispersalFit:
             print "Binning data...",
 
         # plot histogram of distances without truncation
-        p,orig_val=histogram(d,bins=self.n_bins,normed=True,new=True)
+        p,orig_val=histogram(d,bins=self.n_bins,normed=True)
         if self.verbose:
             print "done."
         # calculate centres:
