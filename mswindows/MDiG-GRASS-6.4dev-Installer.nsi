@@ -18,9 +18,13 @@
 
 !define MSYS_BATCH "${GRASS_SRC_DIR}\mswindows\osgeo4w\msys.bat"
 
-;Select if you are building a "Development Version" or a "Release Version" of the GRASS Installer
+;Select if you are building a "Development Version" or a "Release Version" of the GRASS Installer. Note "dev64" is version 6.4, not 64bit
 
 !define INSTALLER_TYPE "Dev64"
+
+;What is the filename of the ImageMagick installer?
+
+!define IMAGE_MAGICK_INSTALLER "ImageMagick-6.6.6-4-Q16-windows-dll.exe"
 
 ;----------------------------------------------------------------------------------------------------------------------------
 
@@ -854,7 +858,7 @@ Section "Associate .py file with Python" SecPy
 SectionEnd
 
 Section "ImageMagick" SecIM
-  File "ImageMagick-6.6.3-2-Q16-windows-dll.exe"
+  File "${IMAGE_MAGICK_INSTALLER}"
   IfFileExists $PROGRAMFILES\ImageMagick-6.6.3-Q16\convert.exe 0 beginInstallIM
     MessageBox MB_OK "ImageMagick appears to already be installed"
     Goto endInstallIM
@@ -1074,6 +1078,8 @@ Section "Uninstall"
 	Delete "$INSTDIR\contributors.csv"	
 	Delete "$INSTDIR\translators.csv"	
 	
+	Delete "$INSTDIR\${MDIG_COMMAND}.bat"
+
 	;remove folders
 	RMDir /r "$INSTDIR\bin"
 	RMDir /r "$INSTDIR\bwidget"

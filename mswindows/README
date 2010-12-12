@@ -1,0 +1,31 @@
+This file outlines the steps for building the Windows distributable.
+It assumes you already have the development environment and all files
+compiled correctly from GRASS and MDiG.
+
+-
+
+1. You need to download the ImageMagick installer from:
+
+http://www.imagemagick.org/script/binary-releases.php
+
+Then you need to update the variable IMAGE_MAGICK_INSTALLER
+with the name of the installer file.
+
+2. You need to install the NullSoft Installer System:
+
+http://nsis.sourceforge.net/Download
+
+and download the untar and unzip plugin:
+
+http://nsis.sourceforge.net/UnTGZ_plug-in
+
+(place the dll into the NSIS plugins directory)
+
+3. Then run the batch file MDiG-Packager.bat - this will collect all
+the needed files and build up the directory structure that's installed
+on the enduser's system.
+
+4. Open the nsi MDiG-GRASS-6.4dev-Installer inside the NSIS system
+and compile.
+
+5. If it successfully compiles you should now have a setup exe!
