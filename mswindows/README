@@ -29,3 +29,8 @@ on the enduser's system.
 and compile.
 
 5. If it successfully compiles you should now have a setup exe!
+
+Note: For older versions of windows, such as Windows XP, you may need to get
+the user to install vcredist_x86.exe for 2008:
+
+http://www.microsoft.com/downloads/en/details.aspx?FamilyID=9b2da534-3e03-4391-8a4d-074b9f2bc1bf&displaylang=en
