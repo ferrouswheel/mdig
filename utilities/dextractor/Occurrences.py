@@ -20,8 +20,10 @@ import DispersalFit
 import pdb
 import csv
 from scipy import *
+import numpy
 from pylab import *
 import dateutil.parser
+from pyproj import Proj
 
 class Occurrences(object):
 
@@ -38,10 +40,11 @@ class Occurrences(object):
     _sample_size = 100 
 
     # Columns with None are optional
-    columns = { 'x':1, 'y':2, 'year':3, 'survival': None,
+    columns = { 'country':0, 'x':1, 'y':2, 'year':3, 'survival': None,
             'precision': None}
 
-    def __init__ (self, filename=None, latlong=False, columns=None):
+    def __init__ (self, filename=None, latlong=False, columns=None,
+            limiter={}):
         """
         @filename is the file to load occurrences from
         @latlong is whether the x,y coordinates are latitude,longitude rather
@@ -54,13 +57,18 @@ class Occurrences(object):
         self.distances_type=None  
         self.latlong = latlong
         self.filename = filename 
+        self.noise = False
         self.columns = Occurrences.columns
         if columns is not None:
             self.columns.update(columns)
         # Set this before calculating distances to scale by this factor
         self.scale_factor = 1
+        if self.latlong:
+            # this projection is for europe
+            self.p = Proj('+proj=utm +zone=30U +ellps=WGS84 +units=m')
+            self.scale_factor = .001
         if self.filename:
-            self.load_file(self.filename,**self.columns)
+            self.load_file(self.filename,limiter=limiter,**self.columns)
 
     def dist_ll(lat1,lon1,lat2,lon2): 
         if lat1 == lat2 and lon1 == lon2:
@@ -84,7 +92,8 @@ class Occurrences(object):
         return ((pi*x/180)+pi) % (2*pi)
     degrees_to_rad = staticmethod(degrees_to_rad)
 
-    def load_file(self, _filename, header=True, x=1, y=2, year=3, survival=4, precision=5):
+    def load_file(self, _filename, header=True, limiter={}, x=1, y=2, year=3, survival=4,
+            precision=5,country=1):
         """ load occurrence data from file, automatically filters sites
             with missing data.
         """
@@ -99,16 +108,25 @@ class Occurrences(object):
             northing=0
             year_value=0
             # extract location
-            if self.latlong:
-                if len(r[x]) > 0: easting = Occurrences.degrees_to_rad(float(r[x]))
-                if len(r[y]) > 0: northing = Occurrences.degrees_to_rad(float(r[y]))
-            else:
-                if len(r[x]) > 0: easting = float(r[x])
-                if len(r[y]) > 0: northing = float(r[y])
+            #if self.latlong:
+                ## don't convert to radians anymore
+                #if len(r[x]) > 0: easting = float(r[x]) # Occurrences.degrees_to_rad(float(r[x]))
+                #if len(r[y]) > 0: northing = float(r[y]) # Occurrences.degrees_to_rad(float(r[y]))
+            #else:
+            skip_this_one = False
+            for f in limiter:
+                if f == 'country':
+                    if limiter[f] != r[country]:
+                        skip_this_one = True
+                        break
+            if skip_this_one: continue
+            if len(r[x]) > 0: easting = float(r[x])
+            if len(r[y]) > 0: northing = float(r[y])
             # extract year
             if len(r[year]) > 0:
                 site_date = dateutil.parser.parse(r[year])
                 year_value = site_date.year
+            # extract survival
             survival_percent = 100;
             if survival is not None:
                 if len(r[survival]) > 0:
@@ -116,9 +134,13 @@ class Occurrences(object):
                     # survival zero, and yet there is a site here?
                     # just make 1 to avoid divide by zero errors.
                     if survival_percent == 0: survival_percent = 100;
+            # extract precision
+            precision_value = 0
+            if precision is not None:
+                if len(r[precision]) > 0: precision_value = float(r[precision])
 
             if (easting or northing) and year_value:
-                self.occurrences.append([year_value,easting,northing,survival])
+                self.occurrences.append([year_value,easting,northing,survival,precision_value])
                 # used to store in a dict...
                 #if year in occurrences:
                 #    occurrences[year].append([easting,northing])
@@ -150,7 +172,7 @@ class Occurrences(object):
         writer.writerows(self.occurrences)
 
     def get_site_distances(self):
-        if not len(self.distances):
+        if not len(self.distances) or self.noise:
             self.calc_distances(self.calc_distance_nn)
         return self.distances
 
@@ -158,37 +180,89 @@ class Occurrences(object):
         d = self.get_site_distances()
         return [x for x in d if x]
 
+    def add_noise(self,sites):
+        result = []
+        for s in sites:
+            # what to do about sites with no precision info?
+            if s[4] == 0: pass
+            precision = 5000#s[4]
+            r_x = numpy.random.uniform(-precision,precision)
+            r_y = numpy.random.uniform(-precision,precision)
+            temp_site = s[1],s[2]
+            if self.latlong: temp_site = self.p(s[1],s[2])
+            temp_site = temp_site[0] + r_x, temp_site[1] + r_y
+            result.append((s[0],temp_site[0],temp_site[1],s[3],s[4]))
+        return result
+
     def calc_distances(self,distance_method):
         print "Calc distances for " + repr(len(self.occurrences)) + " sites "
         self.distances = []
         self.distances_type = None
-        for site in range(0,len(self.occurrences)):
+        # add jiggle to site position if required
+        old_latlong = self.latlong
+        if self.noise:
+            print "adding noise"
+            sites_temp = self.add_noise(self.occurrences)
+            self.latlong=False
+        else:
+            sites_temp = self.occurrences
+        # calculate distance to existing sites for each site
+        for site in range(0,len(sites_temp)):
             if site % 100 == 0:
                 print ".",
                 sys.stdout.flush()
-            d = distance_method(self.occurrences,site)
+            d = distance_method(sites_temp,site)
             if d is not None:
                 self.distances.append(d*self.scale_factor)
             else:
                 self.distances.append(None)
         print ""
+        self.latlong=old_latlong
         self.distances_type = distance_method.__doc__
         return self.distances
 
     def calc_all_distances(self,sites,index):
         """ Distances to all pre-existing """
         pos = sites[index][1:3]
+        if self.latlong: pos = self.p(pos[0],pos[1])
         t = sites[index][0]
         dists = []
         for i in range(0,index):
             if sites[i][0] >= t:
                 break
             if self.latlong:
-                dist = Occurrences.dist_ll(pos[0],pos[1],sites[i][1],sites[i][2])
+                # now we use proj4
+                xy = self.p(sites[i][1],sites[i][2])
+                dist = Occurrences.dist_xy(pos[0],pos[1],xy[0],xy[1])
+                #dist = Occurrences.dist_ll(pos[0],pos[1],sites[i][1],sites[i][2])
             else:
                 dist = Occurrences.dist_xy(pos[0],pos[1],sites[i][1],sites[i][2])
             dists.append(dist)
         return dists
+
+    def calc_distance_origin(self,sites,index):
+        """ Distance from origin """
+        pos = sites[index][0:2]
+        if self.latlong: pos = self.p(pos[0],pos[1])
+        t = sites[index][2]
+        dist = inf
+        arrival_year = sites[0][0]
+        if t > arrival_year:
+            for i in range(0,index):
+                if sites[i][0] > arrival_year:
+                    break
+                if self.latlong:
+                    # now we use proj4
+                    xy = self.p(sites[i][1],sites[i][2])
+                    dist = Occurrences.dist_xy(pos[0],pos[1],xy[0],xy[1]) / 1000.0
+                else:
+                    diff = Occurrences.dist_xy(pos[0],pos[1],sites[i][1],sites[i][2])
+                if diff < dist:
+                    dist = diff
+        if dist is inf:
+            return None
+        else:
+            return dist
 
     def calc_distance_nn(self,sites,index):
         """ Nearest Neighbour distance """
@@ -199,27 +273,6 @@ class Occurrences(object):
             return min(dist)
         else:
             return None
-
-    def calc_distance_origin(self,sites,index):
-        """ Distance from origin """
-        pos = sites[index][0:2]
-        t = sites[index][2]
-        dist = inf
-        arrival_year = sites[0][0]
-        if t > arrival_year:
-            for i in range(0,index):
-                if sites[i][0] > arrival_year:
-                    break
-                if self.latlong:
-                    diff = Occurrences.dist_ll(pos[0],pos[1],sites[i][1],sites[i][2])
-                else:
-                    diff = Occurrences.dist_xy(pos[0],pos[1],sites[i][1],sites[i][2])
-                if diff < dist:
-                    dist = diff
-        if dist is inf:
-            return None
-        else:
-            return dist
 
     def calc_distance_mean(self,sites,index):
         """ Mean distance to all existing """
