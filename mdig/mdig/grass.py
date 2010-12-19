@@ -302,7 +302,7 @@ class GRASSInterface:
         """ Use g.gisenv to update gisrc file from environment variables """
         var_list = [ "GISDBASE", "LOCATION_NAME", "MAPSET" ]
         for v in var_list:
-            output = subprocess.Popen("g.gisenv set=%s=%s" % (v,self.grass_vars[v]),
+            output = subprocess.Popen("g.gisenv set=%s=\"%s\"" % (v,self.grass_vars[v]),
                     shell=True, stdout=subprocess.PIPE).communicate()[0]
 
     def get_gis_env(self):
