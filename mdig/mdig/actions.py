@@ -166,6 +166,8 @@ class RepositoryAction(Action):
         c['GRASS']['GISDBASE'] = gisdbase
         c['GRASS']['LOCATION_NAME'] = location
         c.write()
+        print "Set repository to: " + c['GRASS']['GISDBASE']
+        print "Set default location to: " + c['GRASS']['LOCATION_NAME']
 
 class RunAction(Action):
     description = "Run a model"
