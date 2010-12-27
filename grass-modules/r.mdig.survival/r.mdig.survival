@@ -87,6 +87,7 @@
 #% description: boolean (does nothing, only for MDiG support)
 #%end
 
+#DEBUG=1
 
 if test "$GISBASE" = ""; then
  echo "You must be in GRASS GIS to run this program." >&2
@@ -99,7 +100,7 @@ fi
      
 eval `g.gisenv`
 : ${GISBASE?} ${GISDBASE?} ${LOCATION_NAME?} ${MAPSET?}
-LOCATION=$GISDBASE/$LOCATION_NAME/$MAPSET
+LOCATION="$GISDBASE/$LOCATION_NAME/$MAPSET"
 
 # what to do in case of user break:
 exitprocedure()
@@ -125,24 +126,35 @@ then
  exit 1
 fi
 
-#echo "Using seed value $GIS_OPT_seed"
+if [ $DEBUG ]; then
+    echo "Using seed value $GIS_OPT_seed"
+fi
 if [ ! $GIS_OPT_SEED ]
 then
- echo "Setting seed from date"
+    if [ $DEBUG ]; then
+         echo "Setting seed from date"
+    fi
  GIS_OPT_SEED=`date +%s`
 fi
 
 #check if input file exists
 #if test -f $LOCATION/cell/$GIS_OPT_input
-if [ -z `g.findfile elem=cell file="$GIS_OPT_INPUT" | grep ^file | cut -f2 -d=` ] ; then
+if [ $DEBUG ]; then
+     echo "Finding input"
+fi
+if [ -z "`g.findfile elem=cell file="$GIS_OPT_INPUT" | grep ^file | cut -f2 -d=`" ] ; then
     echo "<$GIS_OPT_INPUT> does not exist! Aborting." 1>&2
     exit 1
 fi
 
 #Check if survival parameter is a map or value
 SURVIVAL_VALUE=0
-if [ -z `g.findfile elem=cell file="$GIS_OPT_SURVIVAL" | grep ^file | cut -f2 -d=` ] ; then
-    if [ $GIS_OPT_SURVIVAL ]
+if [ $GIS_OPT_SURVIVAL ]
+then
+    if [ $DEBUG ]; then
+         echo "Finding survival map"
+    fi
+    if [ -z "`g.findfile elem=cell file="$GIS_OPT_SURVIVAL" | grep ^file | cut -f2 -d=`" ]
     then
         if [ ! $(echo "$GIS_OPT_SURVIVAL" | grep -E "^[0-9]+(\.[0-9]+)?$") ]
         then
@@ -155,13 +167,16 @@ if [ -z `g.findfile elem=cell file="$GIS_OPT_SURVIVAL" | grep ^file | cut -f2 -d
             exit 1
         fi
         fi
+        SURVIVAL_VALUE=1
     fi
-    SURVIVAL_VALUE=1
 fi
 
 # make temp reclass map as mask
 if [ $GIS_OPT_CATS ]
 then
+    if [ $DEBUG ]; then
+         echo "Make reclass map"
+    fi
   TEMP_RECLASS=mdig.survival
   if [ $GIS_FLAG_I -eq 1 ]; then
       echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
@@ -248,16 +263,31 @@ unset GRASS_RND_SEED
 
 # remove temp reclass if necessary
 if [ $GIS_OPT_CATS ]; then
-g.remove rast=$TEMP_RECLASS
+    if [ $DEBUG ]; then echo "Removing temp reclass map"; fi
+    g.remove rast=$TEMP_RECLASS
+    # -- begin stupid hack to deal with windows failing to remove reclassed_to file
+    # first we use sed to remove the the map from the file
+    buffer=`sed "/mdig\.survival@${MAPSET}/d" "$LOCATION/cell_misc/${GIS_OPT_INPUT}/reclassed_to"`
+    # then we remove any empty lines, just to be sure
+    buffer=`echo $buffer | sed "/$^/d"`
+    if [ -z $buffer ]; then
+        # if the buffer is now empty, delete the file!
+        rm "$LOCATION/cell_misc/${GIS_OPT_INPUT}/reclassed_to"
+    else
+        # otherwise write the buffer
+        echo $buffer > "$LOCATION/cell_misc/${GIS_OPT_INPUT}/reclassed_to"
+    fi
+    # --end stupid hack
 fi
 
 if [ $NEW_MEAN ]; then
-echo s
-g.remove rast=mdig.survival.newmean
+    if [ $DEBUG ]; then echo "Removing temp newmean map"; fi
+    g.remove rast=mdig.survival.newmean
 fi
 
 if [ $TEMP_RANDOM_SELECT ]; then
-g.remove rast=mdig.survival.randomselect
+    if [ $DEBUG ]; then echo "Removing temp random select map"; fi
+    g.remove rast=mdig.survival.randomselect
 fi
 
-#echo "Done."
+if [ $DEBUG ]; then echo "Done"; fi

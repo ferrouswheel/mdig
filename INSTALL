@@ -54,7 +54,7 @@ up cmd.exe
 =================================
 Obsolete instructions:
 
---- unneeded --- Instead, compile switch removes libgslcblas link ---
+--- unneeded --- Instead, compile switch in Makefile removes libgslcblas link ---
 3. Get GSL from: http://sourceforge.net/projects/gnuwin32/files/ 
 3a. Download gsl-1.8-lib.zip (in gsl/1.8 folder)
 3b. Unzip to c:/osgeo4w

@@ -319,7 +319,11 @@ class DispersalModel(object):
         maps = set([])
         instances = self.get_instances()
         for i in instances:
-            maps.add(i.get_mapset())
+            try:
+                maps.add(i.get_mapset())
+            except mdig.instance.DispersalInstanceException, e:
+                # short circuit exceptions about instances without mapsets
+                if "sharing one mapset" not in str(e): raise e
         # Also check GRASS DB for orphaned mapsets
         g = grass.get_g()
         db = g.grass_vars['GISDBASE']
@@ -379,7 +383,8 @@ class DispersalModel(object):
         # get maps
         maps = self.get_map_resources()
         # get saved regions
-        regions = [r.get_name() for r in self.get_regions().values() if r.get_name() is not None]
+        regions = [(r.get_name(),r.get_mapset()) 
+                for r in self.get_regions().values() if r.get_name() is not None]
         regions = set(regions)
         # get popmod files
         popmod_files = self.get_popmod_files()
@@ -393,13 +398,13 @@ class DispersalModel(object):
         if maps is not None:
             for m,mapset in maps:
                 resources.append(('map',m,mapset))
-        for r in regions:
+        for r_tuple in regions:
             # check where regions exist
-            r_mapset = None
+            r,r_mapset = r_tuple
             try:
                 import StringIO
                 # -u avoids changing region
-                ret = g.run_command('g.findfile element=windows file=%s' % r)
+                ret = g.run_command('g.findfile element=windows file=%s mapset=%s' % (r,r_mapset))
                 out_lines = StringIO.StringIO(g.stdout).readlines()
                 r_mapset = out_lines[1].split('=')[1].strip("\n'")
             except grass.GRASSCommandException, e:
@@ -498,6 +503,7 @@ class DispersalModel(object):
             # check and clean deprecated instances dir
             completed_node = self.xml_model.xpath("/model/instances")
             if len(completed_node) > 0:
+                # remove baseDir from old models
                 if "baseDir" in completed_node[0].attrib.keys():
                     del completed_node[0].attrib["baseDir"]
                     self.log.warning("Removed deprecated baseDir attribute")
