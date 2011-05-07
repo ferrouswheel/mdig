@@ -56,8 +56,6 @@ else:                                      # else on POSIX box
     if not os.path.isdir(home_dir):
         os.mkdir(home_dir)
         
-logging.getLogger("mdig.config").debug("MDIG config/working dir is " + home_dir)
-
 mdig_config = None
 
 def get_config():
@@ -272,7 +270,10 @@ class MDiGConfig(ConfigObj):
             # we only have to give a version here to allow other migration paths
             # to also run...
             self['version']='0'
-            version_change=True
+            version_change = True
+        elif self['version'] != mdig.version:
+            # Default: no particularly changes in format...
+            version_change = True
         if version_change:
             self['version']=mdig.version
             self.write()

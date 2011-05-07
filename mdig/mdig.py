@@ -68,7 +68,6 @@ model.xml is the file containing the simulation details.
 def process_options(argv):
     global logger
     
-    model_file = None
     mdig_config = config.get_config()
 
     # Remove action keyword first
@@ -129,9 +128,19 @@ def main(argv):
         do_migration(argv[1:])
 
     # Otherwise start up normally
+    # set up logger
+    logger, loghandler = setupLogger()
+    # get config
     mdig_config = config.get_config()
-    logger = setupLogger(mdig_config["LOGGING"]["ansi"])
+    # set ansi logging if enabled
+    ansi_bool_string = mdig_config["LOGGING"]["ansi"]
+    if ansi_bool_string == "true":
+        setLogFormatter(loghandler,True)
+
     the_action = process_options(argv)
+    # We can't rely on logging before this point as process_options
+    # determines whether to enable debug level messages
+    logging.getLogger("mdig.config").debug("Using MDIG config file " + mdig_config.cf_full_path)
     
     signal.signal(signal.SIGINT, exit_catcher)
     
@@ -208,38 +217,38 @@ def exit_cleanup():
 
     logger.debug("Finished at %s" % repr(datetime.now().ctime()))
 
-def setupLogger(color = "false"):
+def setupLogger():
     logger = logging.getLogger("mdig")
     logger.setLevel(logging.DEBUG)
-
-    #create ANSI color formatter
-    CSI = "\033["
-    TIME = CSI + "0m" + CSI + "32m"
-    RESET = CSI + "0m"
-    NAME = CSI + "1m" + CSI + "32m"
-    LEVEL = CSI + "0m" + CSI + "33m"
-
-    color_formatter = logging.Formatter(
-        TIME + "%(asctime)s" + RESET + NAME + " [%(name)s] " + RESET +
-        LEVEL + "%(levelname)s" + RESET + ": %(message)s", \
-        datefmt='%Y%m%d %H:%M:%S')
-
-    #create non ANSI formatter
-    ascii_formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s",
-        datefmt='%Y%m%d %H:%M:%S')
 
     # create handlers for each stream
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
-    #add formatter to ch
-    if color == "true":
-        ch.setFormatter(color_formatter)
-    else:
-        ch.setFormatter(ascii_formatter)
-    #add ch to logger
+    setLogFormatter(ch,False)
+
+    #add streamhandler to logger
     logger.addHandler(ch)
     
-    return logger
+    return logger, ch
+
+def setLogFormatter(stream_handler, color = False):
+    if color:
+        #create ANSI color formatter
+        CSI = "\033["
+        TIME = CSI + "0m" + CSI + "32m"
+        RESET = CSI + "0m"
+        NAME = CSI + "1m" + CSI + "32m"
+        LEVEL = CSI + "0m" + CSI + "33m"
+
+        formatter = logging.Formatter(
+            TIME + "%(asctime)s" + RESET + NAME + " [%(name)s] " + RESET +
+            LEVEL + "%(levelname)s" + RESET + ": %(message)s", \
+            datefmt='%Y%m%d %H:%M:%S')
+    else:
+        #create non ANSI formatter
+        formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+            datefmt='%Y%m%d %H:%M:%S')
+    stream_handler.setFormatter(formatter)
 
 # call graph
 #import pycallgraph
