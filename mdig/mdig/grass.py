@@ -958,6 +958,7 @@ class GRASSInterface:
         ret = p.returncode
 
         if (ret is not None) and ret != 0:
+            if lvl >= logging.DEBUG: import pdb; pdb.set_trace()
             raise GRASSCommandException(commandstring,self.stderr,ret)
         return ret
 
