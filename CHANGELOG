@@ -1,0 +1,5 @@
+MDiG 0.3.2
+- Start recording changes in CHANGELOG
+- Investigate problem with changing repository on Windows 7 (reported by Senait)
+- Misc other changes.
+

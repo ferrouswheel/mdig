@@ -1,5 +1,37 @@
-Windows
-=======
+Notes on development setup (mostly for Joel's long term memory):
+
+c:\mdig - is the test installation, the icons on the desktop probably
+          originated from this install.
+c:\mdig-dist - is for building a package to distribute using the nullsoft
+          installer and scripts.
+c:\OSGeo4W - is the development environment for building MDiG, Grass, and all
+          the dependencies. The below instructions outline the process.
+
+While hacking on mdig code:
+
+For Python parts - run c:\OSGeo4W\OSGeo4W.bat, navigate on command line to c:\OSGeo4W\apps\mdig\mdig,
+    run tests (nosetests -vs) or mdig.py
+
+For compiling modules - run c:\OSGeo4W\apps\msys\msys.bat
+    navigate on command line to c:\OSGeo4W\apps\mdig\grass-modules\,
+    run "make MODULE_TOPDIR=/src/grass64_release install"
+
+For testing modules in GRASS - 
+    run c:\OSGeo4W\OSGeo4W.bat, 
+    run grass: "grass64 -text",
+    and then e.g. "r.mdig.kernel --help"
+
+Need to make some c-module tests for nosetests. MDiG magically sets up the GRASS
+environment from mdig.conf, so this should be possible... but the question is,
+where does nosetests get it's details from? There is a mdig.conf in the test
+directory so we need to check when this is used. Generally nosetests should be
+using the osgeo4w directory for GRASS and MDiG's grass modules.
+
+Using PivotalTracker to track tasks that need doing.
+    
+
+Windows build environment
+=========================
 
 1. Follow instructions from here:
 http://trac.osgeo.org/grass/wiki/CompileOnWindows#CreatingaWinGRASSInstaller 
@@ -12,6 +44,7 @@ newer versions from osgeo4w.
 2a. Install Bazaar from http://wiki.bazaar.canonical.com/WindowsDownloads
 2b. Download the source from the repository at lp:mdig
 2c. mkdir /usr/src && cd /usr/src && bzr branch lp:mdig
+2cc. Run /osgeo4w/apps/msys/msys.bat to get environment for building mdig grass modules
 2d. cd grass-modules && make MODULE_TOPDIR=/usr/src/grass-6.4.0RC6
 2e. copy r.mdig.* from dist
 

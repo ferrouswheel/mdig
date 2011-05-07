@@ -185,14 +185,6 @@ void calc(void* x, void* out, int col, int row, float limit_min) {
 
         // If the distance is too small to leave the main cell:
         if (rint(a) == 0 && rint(b) == 0) {
-            /*if (fabs(a) > fabs(b))
-            {
-                if (a > 0) a = ewres;
-                else a = -1;
-            } else{
-                if (b > 0) b = nsres;
-                else b = -1;
-            }*/
             existing_counter++;
             continue;
 
@@ -245,20 +237,22 @@ void calc(void* x, void* out, int col, int row, float limit_min) {
 
     }
 
+    // At this point, existing_counter only has those events
+    // that haven't dispersed from their origin cell
     if (is_conserved) {
         switch (data_type) {
         case CELL_TYPE:
-            ((CELL*)out)[col] = cpop - events;
+            ((CELL*)out)[col] = cpop - events + existing_counter;
             if (make_lt_zero_null && ((CELL*)out)[col] < 1)
                 G_set_c_null_value( ((CELL*)out) + col, 1 );
             break;
         case FCELL_TYPE:
-            ((FCELL*)out)[col] = fpop - events;
+            ((FCELL*)out)[col] = fpop - events + existing_counter;
             if (make_lt_zero_null && ((FCELL*)out)[col] < 1.0f)
                 G_set_f_null_value( ((FCELL*)out) + col, 1 );
             break;
         case DCELL_TYPE:
-            ((DCELL*)out)[col] = dpop - events;
+            ((DCELL*)out)[col] = dpop - events + existing_counter;
             if (make_lt_zero_null && ((DCELL*)out)[col] < 1.0)
                 G_set_d_null_value( ((DCELL*)out) + col, 1 );
             break;
