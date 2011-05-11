@@ -276,6 +276,7 @@ class Treatment:
                               "_area_t_" + str(self.index)
         # What operation should we use to merge maps? Should be 'and' or 'or'
         if 'combine' not in self.area_node.attrib:
+            # default
             operation = "and"
         else:
             operation = self.area_node.attrib['combine']
@@ -328,7 +329,7 @@ class Treatment:
         affectsVarable, for the specific regions withing get_treatment_area.
         Returns None if this treatment does not affect var_key.
         """
-#if self.strategy.instance is None:
+#       if self.strategy.instance is None:
 #            self.log.error("Not connected to a instance.")
 #            return None
         if not self.affects_var(var_key):

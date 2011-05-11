@@ -28,7 +28,11 @@ directory so we need to check when this is used. Generally nosetests should be
 using the osgeo4w directory for GRASS and MDiG's grass modules.
 
 Using PivotalTracker to track tasks that need doing.
-    
+
+Solution to the ocassional inability to remove the misc dir:
+http://osgeo-org.1803224.n2.nabble.com/Error-while-removing-file-td6169235.html
+Newer versions of GRASS might have this fixed, but any new setup needs to check libs/gis/reclass.c
+and ensure the file opened in G_is_reclassed_to is closed.
 
 Windows build environment
 =========================

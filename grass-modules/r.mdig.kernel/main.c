@@ -278,6 +278,11 @@ void remove_temp_map() {
 #if defined(WIN32) || defined(_WIN32)
     // Doesn't support /dev/null
     sprintf(buffer, "g.remove --q rast=%s", TEMP_MAP);
+    // Note there was some weird bug where the misc file for
+    // TEMP_MAP can't be removed. This SHOULD be fixed because it was due to
+    // a GRASS bug in:
+    // lib/gis/reclass.c - method G_is_reclassed_to
+    // where a file handle wasn't being closed.
 #else
     sprintf(buffer, "g.remove --q rast=%s 2> /dev/null", TEMP_MAP);
 #endif
@@ -475,8 +480,8 @@ main(int argc, char *argv[]) {
     out_fd = open_output_map(result);
     // ... and add jumps destinations
     process_jumps(out_fd);
-    G_close_cell (infd);
     G_close_cell (out_fd);
+    G_close_cell (infd);
     G_free(inrast);
     G_free(outrast);
 

@@ -698,9 +698,9 @@ class GRASSInterface:
         map_type = self.check_map(map_name)
         if map_type: self.log.debug("Removing %s map %s", map_type, map_name)
         if map_type == 'raster':
-            self.run_command('g.remove rast=%s' % map_name, logging.DEBUG);      
+            self.run_command('g.remove rast=%s' % map_name, logging.DEBUG)
         elif map_type == 'vector':
-            self.run_command('g.remove vect=%s' % map_name, logging.DEBUG);
+            self.run_command('g.remove vect=%s' % map_name, logging.DEBUG)
         # change back to original mapset
         if old_mapset:
             self.change_mapset(old_mapset)
@@ -958,7 +958,24 @@ class GRASSInterface:
         ret = p.returncode
 
         if (ret is not None) and ret != 0:
-            if lvl >= logging.DEBUG: import pdb; pdb.set_trace()
+            if lvl >= logging.DEBUG:
+                import traceback
+                dump_filename = "mdig.command_dump"
+                f = open(dump_filename,"w")
+                f.write("MDiG Trace after running command:\n")
+                f.write(commandstring+"\n\n")
+                f.write("input:\n")
+                f.write(to_input + "\n\n")
+                f.write("stdout:\n")
+                f.write(self.stdout + "\n\n")
+                f.write("stderr:\n")
+                f.write(self.stderr + "\n\n")
+                f.write("stack trace:\n")
+                traceback.print_stack(file=f)
+                f.close()
+                self.log.error("GRASS command exception - details written to file %s. Dropping to Python Debugger." % dump_filename)
+                self.log.error("You can try to continue by entering c<enter>, or quit with q<enter>.")
+                import pdb; pdb.set_trace()
             raise GRASSCommandException(commandstring,self.stderr,ret)
         return ret
 
