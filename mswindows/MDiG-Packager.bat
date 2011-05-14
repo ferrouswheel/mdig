@@ -13,7 +13,7 @@ rem ----------------------------------------------------------------------------
 rem Set the script variables
 rem --------------------------------------------------------------------------------------------------------------------------
 
-set PACKAGE_DIR=.\mdig-0.3.1-w-GRASS-6.4.0svn-package
+set PACKAGE_DIR=.\mdig-0.3.2-w-GRASS-6.4.0svn-package
 
 set OSGEO4W_DIR=c:\osgeo4w
 

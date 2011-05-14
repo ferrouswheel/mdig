@@ -1,5 +1,17 @@
+
+Guide to updating version number:
+- Update changelog
+- replace version numbers in the follow places:
+   - mdig/mdig/tests/mdig.conf:version = 0.3.2
+   - mdig/mdig/__init__.py:version = "0.3.2"
+   - mswindows/MDiG-GRASS-6.4dev-Installer.nsi:!define MDIG_VERSION "0.3.2"
+   - mswindows/MDiG-Packager.bat:set PACKAGE_DIR=.\mdig-0.3.2-w-GRASS-6.4.0svn-package
+   
+
 MDiG 0.3.2
 - Start recording changes in CHANGELOG
 - Investigate problem with changing repository on Windows 7 (reported by Senait)
-- Misc other changes.
+- Fix unit tests that relied on datetime.now() but would fail with the low
+resolution of a VM clock.
+
 

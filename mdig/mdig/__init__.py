@@ -20,7 +20,7 @@ __all__ = ["analysis","instance","model","displayer","event",
         "grass","grassmap","imageshow","lifestage","config",
         "outputformats","region","replicate","management","webui","bottle"]
 
-version = "0.3.1"
+version = "0.3.2"
 version_name = "Digger"
 version_string = "MDiG " + version + " - \"" + version_name + "\""
 

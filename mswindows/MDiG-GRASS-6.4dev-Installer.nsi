@@ -44,7 +44,7 @@
 
 ;----------------------------------------------------------------------------------------------------------------------------
 
-!define MDIG_VERSION "0.3.1"
+!define MDIG_VERSION "0.3.2"
 !define MDIG_NAME "MDiG"
 !define MDIG_COMMAND "mdiglaunch"
 
@@ -83,7 +83,7 @@
 	!define INSTALLER_NAME "MDiG-${MDIG_VERSION}-GRASS-${VERSION_NUMBER}-${BINARY_REVISION}-Setup.exe"
 	!define DISPLAYED_NAME "MDiG-${MDIG_VERSION}"
 	!define CHECK_INSTALL_NAME "MDiG"
-	!define PACKAGE_FOLDER ".\mdig-0.3.1-w-GRASS-6.4.0svn-package"
+	!define PACKAGE_FOLDER ".\mdig-${MDIG_VERSION}-w-GRASS-6.4.0svn-package"
 !endif
 
 ;----------------------------------------------------------------------------------------------------------------------------
