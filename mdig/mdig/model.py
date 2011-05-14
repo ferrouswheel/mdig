@@ -403,8 +403,10 @@ class DispersalModel(object):
             r,r_mapset = r_tuple
             try:
                 import StringIO
-                # -u avoids changing region
-                ret = g.run_command('g.findfile element=windows file=%s mapset=%s' % (r,r_mapset))
+                if r_mapset is None:
+                    ret = g.run_command('g.findfile element=windows file=%s' % r)
+                else:
+                    ret = g.run_command('g.findfile element=windows file=%s mapset=%s' % (r,r_mapset))
                 out_lines = StringIO.StringIO(g.stdout).readlines()
                 r_mapset = out_lines[1].split('=')[1].strip("\n'")
             except grass.GRASSCommandException, e:

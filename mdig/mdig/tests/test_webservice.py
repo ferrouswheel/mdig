@@ -119,6 +119,9 @@ class WebServiceTest(tools.ServerTestBase):
     def test_process_tasks_errors(self):
         # test errors
         now = datetime.datetime.now() 
+        # We have to remove at least a little bit of time because
+        # webui.last_notice will match now on a VM (while testing Windows)
+        webui.last_notice -= datetime.timedelta(milliseconds=100)
         webui.models_in_queue = {
             "lifestage_test": {
                 "RUN" : { 
@@ -221,17 +224,19 @@ class WebServiceTest(tools.ServerTestBase):
         # test replace none with date
         webui.add_to_map_pack_lfu('test2')
         self.assertNotEqual(webui.map_pack_lfu[1][1],None)
-        print webui.map_pack_lfu
+        #print webui.map_pack_lfu
 
         # test replace with none 
         webui.add_to_map_pack_lfu('test1',nodate=True)
-        print webui.map_pack_lfu
+        #print webui.map_pack_lfu
         self.assertEqual(webui.map_pack_lfu[1][1],None)
 
         # test update date
         old_date = webui.map_pack_lfu[0][1]
+        # force clock to move forward
+        while old_date == datetime.datetime.now(): pass
         webui.add_to_map_pack_lfu('test2')
-        print webui.map_pack_lfu
+        #print webui.map_pack_lfu
         self.assertTrue(webui.map_pack_lfu[1][1]>old_date)
 
     def test_run_model(self):

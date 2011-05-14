@@ -138,8 +138,9 @@ class DispersalModelTest(unittest.TestCase):
         m.pre_run()
         m.run()
         self.assertEqual(m.active, False)
-        self.assertTrue(m.start_time < datetime.datetime.now())
-        self.assertTrue(m.start_time < m.end_time)
+        # These are less than or equal because of VM clock being weird
+        self.assertTrue(m.start_time <= datetime.datetime.now())
+        self.assertTrue(m.start_time <= m.end_time)
 
     def test_log_instance_times(self):
         mdig.repository = ModelRepository()
