@@ -857,9 +857,6 @@ class GRASSInterface:
             try:
                 # Catch errors that just indicate the mapset doesn't exist
                 shutil.rmtree(mapset_dir)
-            except WindowsError, e:
-                if "cannot find the path specified" in str(e): return False
-                else: raise e
             except OSError, e:
                 if "No such file or directory" in str(e): return False
                 else: raise e

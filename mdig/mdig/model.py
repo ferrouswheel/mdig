@@ -354,10 +354,6 @@ class DispersalModel(object):
             ms_dir = os.path.join(db,location,mapset)
             try:
                 shutil.rmtree(ms_dir)
-            except WindowsError, e:
-                # Windows just has to be "special" about it's error conditions. :-/
-                if "cannot find the path specified" in str(e): pass
-                else: raise e
             except OSError, e:
                 # it's okay if the directories don't actually exist, as we want
                 # to want to remove them anyhow
