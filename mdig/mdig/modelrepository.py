@@ -146,22 +146,18 @@ class ModelRepository:
                 raise RepositoryException("Model is in a GIS Location " + loc + " that doesn't exist in " + self.db)
             g.change_mapset("PERMANENT",loc)
             # remove ALL associated instance mapsets first (because we need the
-            # model file to tell us which once are associated)
+            # model file to tell us which ones are associated)
             for i in dm.get_instances():
                 i_mapset = i.get_mapset()
                 if i_mapset != model_name:
                     try:
                         grass.get_g().remove_mapset(i_mapset, loc, force)
-                    except WindowsError, e:
-                        pass
                     except OSError, e:
-                        pass
+                        self.log.warn("Failed to remove mapset %s@%s" % (i_mapset,loc))
             try:
                 grass.get_g().remove_mapset(model_name, loc, force)
-            except WindowsError, e:
-                pass
             except OSError, e:
-                pass
+                self.log.warn("Failed to remove mapset %s@%s" % (model_name,loc))
             print "Model removed"
 
     def get_models(self):
