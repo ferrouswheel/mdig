@@ -97,6 +97,8 @@
 DEBUG=1
 # BC_SCALE determines the precision of calculations made with BC
 BC_SCALE=10
+# Part of the script uses r.mask, so we should backup 
+MASK_BACKUP_MAP=mdig.survival.mask
 
 if test "$GISBASE" = ""; then
  echo "You must be in GRASS GIS to run this program." >&2
@@ -199,10 +201,9 @@ then
               r.reclass input=$GIS_OPT_INPUT output=$TEMP_RECLASS
   fi
 else
-  # we make a copy because GRASS 6.4 has crappy record handling and long map
-  # names result in things breaking :-(
+  # We need to copy the map, because later we may need to remember how it's
+  # affected by any MASK that is present (is we need to use r.mask for stat creation).
   g.copy rast=$GIS_OPT_INPUT,$TEMP_RECLASS
-  #TEMP_RECLASS=$GIS_OPT_INPUT
 fi
 
 MAP_AREA_TEMP="0.0"
@@ -262,6 +263,8 @@ else
             echo "NEW SURVIVAL CHANCE = $GIS_OPT_SURVIVAL"
         elif [ $SURVIVAL_VALUE -eq 0 ]; then 
             echo for survival maps
+            # backup any mask that may be present
+            g.rename rast=MASK,$MASK_BACKUP_MAP
             # mask with population
             r.mask $TEMP_RECLASS
             # get min/max/mean from r.univar in shell script mode
@@ -287,6 +290,8 @@ else
 #            echo "After rescaling mean: $mean"
             fi
             r.mask -r
+            # restore any mask that may have been present
+            r.mask $MASK_BACKUP_MAP
         fi
     fi # POP_AREA != 0
 fi # GIS_FLAG_E 1 or 0

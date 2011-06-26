@@ -25,5 +25,8 @@ These change the variable over the entire region specified in the <area> element
 AREA_REMOVED=[difference in area before and after]
 AREA_EVALUATED=equal to the area in the <area> element, although this could change dynamically.
 
+==
+Discovered a major bug in management working with r.mdig.survival.
 
+Since r.mdig.survival uses r.mask, the use of r.mask to set the treatment area will not work!
 
