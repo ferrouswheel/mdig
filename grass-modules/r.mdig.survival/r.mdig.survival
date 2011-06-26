@@ -52,7 +52,7 @@
 #%option
 #% key: max
 #% type: integer
-#% description: Maximum amount of area that will be removed. 
+#% description: Maximum amount of area that will be removed 
 #% required: no
 #% answer:  
 #%end
@@ -66,7 +66,14 @@
 #%option
 #% key: cats
 #% type: string 
-#% description: comma separated categories to experience chance mortality.
+#% description: comma separated categories to experience chance mortality
+#% required: no
+#% answer:
+#%end
+#%option
+#% key: statfile
+#% type: string 
+#% description: report the area evaluated AND the area that doesn't survive in the given file
 #% required: no
 #% answer:
 #%end
@@ -87,7 +94,9 @@
 #% description: boolean (does nothing, only for MDiG support)
 #%end
 
-#DEBUG=1
+DEBUG=1
+# BC_SCALE determines the precision of calculations made with BC
+BC_SCALE=10
 
 if test "$GISBASE" = ""; then
  echo "You must be in GRASS GIS to run this program." >&2
@@ -172,12 +181,12 @@ then
 fi
 
 # make temp reclass map as mask
+TEMP_RECLASS=mdig.survival
 if [ $GIS_OPT_CATS ]
 then
     if [ $DEBUG ]; then
          echo "Make reclass map"
     fi
-  TEMP_RECLASS=mdig.survival
   if [ $GIS_FLAG_I -eq 1 ]; then
       echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
               if ("2" in parts) { print parts[1],"thru",parts[2],"= NULL" } else { \
@@ -190,8 +199,16 @@ then
               r.reclass input=$GIS_OPT_INPUT output=$TEMP_RECLASS
   fi
 else
-  TEMP_RECLASS=$GIS_OPT_INPUT
+  # we make a copy because GRASS 6.4 has crappy record handling and long map
+  # names result in things breaking :-(
+  g.copy rast=$GIS_OPT_INPUT,$TEMP_RECLASS
+  #TEMP_RECLASS=$GIS_OPT_INPUT
 fi
+
+MAP_AREA_TEMP="0.0"
+get_map_area() {
+    MAP_AREA_TEMP=`r.stats -cni input=$1 | awk 'BEGIN {a=0} {a=a+$2} END {print a}'`
+}
 
 if [ -n "$GIS_OPT_MAX" ]
 then
@@ -201,26 +218,47 @@ if [ $GIS_FLAG_E -eq 1 ]; then
     TEMP_RANDOM_SELECT=mdig.survival.randomselect
     TEMP_STDERR_OUT=mdig.survival.stderr
     eval `g.region -pg`
-    POINTS=`echo "scale=4; $GIS_OPT_MAX / ($nsres * $ewres)" | bc`
+    # convert the maximum area into the number of points
+    # WARNING: this won't be exact as surface area is dependent on geodetic datum
+    # and projection... this is just a simple hack that should do for our purposes
+    POINTS=`echo "scale = ${BC_SCALE}; $GIS_OPT_MAX / ($nsres * $ewres)" | bc`
+    #if [ $SURVIVAL_VALUE -eq 1 -a \
+    echo "Area of $GIS_OPT_MAX equals $POINTS points"
+
     r.random input=$TEMP_RECLASS raster_output=$TEMP_RANDOM_SELECT n=$POINTS \
                    --o 2> ${TEMP_STDERR_OUT}
+    echo r.random input=$TEMP_RECLASS raster_output=$TEMP_RANDOM_SELECT n=$POINTS \
+                   --o 2\> ${TEMP_STDERR_OUT}
+    cat ${TEMP_STDERR_OUT}
     # Catch the case where there are less cells in raster than the max 
     # r.random is stupid and gives error instead of just selecting what's there
     if [ -n "`sed -ne "/There aren't \[.*\] non-NULL cells/p" ${TEMP_STDERR_OUT}`" ]; then
         # so we have to copy it manually
         g.copy rast=$TEMP_RECLASS,$TEMP_RANDOM_SELECT   
     fi
+    if [ -n "$GIS_OPT_statfile" ]
+    then
+        # get the area of the map...
+        get_map_area $TEMP_RANDOM_SELECT
+        AREA_EVALUATED=$MAP_AREA_TEMP
+    fi
     r.mapcalc "${TEMP_RANDOM_SELECT}=if(isnull(${TEMP_RANDOM_SELECT}),100,${GIS_OPT_SURVIVAL})"
     GIS_OPT_SURVIVAL=${TEMP_RANDOM_SELECT}
 else
 # Treat maximum as maximum area that is successfully removed, not just evaluated
-    POP_AREA=`r.stats -ani input=$TEMP_RECLASS | awk 'BEGIN {a=0} {a=a+$2} END {print a}'`
+    get_map_area $TEMP_RECLASS
+    POP_AREA=$MAP_AREA_TEMP
+    if [ -n "$GIS_OPT_statfile" ]
+    then
+        # get the area of the map...
+        AREA_EVALUATED=$POP_AREA
+    fi
     echo "total area of input map = ${POP_AREA}"
     if [ $POP_AREA -ne 0 ]; then
         if [ $SURVIVAL_VALUE -eq 1 -a \
             `echo "(1.0 - (${GIS_OPT_SURVIVAL}/100.0)) * ${POP_AREA} > $GIS_OPT_MAX" | bc` ]; then
             echo for single survival value
-            GIS_OPT_SURVIVAL=`echo "scale = 4; 100 - (100.0 * ($GIS_OPT_MAX / $POP_AREA))" | bc`
+            GIS_OPT_SURVIVAL=`echo "scale = ${BC_SCALE}; 100 - (100.0 * ($GIS_OPT_MAX / $POP_AREA))" | bc`
             echo "NEW SURVIVAL CHANCE = $GIS_OPT_SURVIVAL"
         elif [ $SURVIVAL_VALUE -eq 0 ]; then 
             echo for survival maps
@@ -233,7 +271,7 @@ else
             echo "Before rescaling mean: $mean"
             if [ `echo "(1.0 - (${mean}/100.0)) * ${POP_AREA} > $GIS_OPT_MAX" | bc` ]; then
                 # rescale doing linear transform of below and above mean
-                NEW_MEAN=`echo "scale = 4; 100 - (100.0 * $GIS_OPT_MAX / $POP_AREA)" | bc`
+                NEW_MEAN=`echo "scale = ${BC_SCALE}; 100 - (100.0 * $GIS_OPT_MAX / $POP_AREA)" | bc`
                 echo "NEW MEAN = $NEW_MEAN"
 #TEMP_RESCALE_ABOVE=mdig.survival.newmean.above
                 TEMP_RESCALE=mdig.survival.newmean
@@ -256,7 +294,6 @@ fi # GIS_OPT_MAX is defined
 
 # NOTE: null values in category reclass map will mean that input is unchanged...
 export GRASS_RND_SEED=$GIS_OPT_SEED
-#echo "seed is `g.gisenv get=GRASS_RND_SEED`"
 r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
 unset GRASS_RND_SEED
 #g.remove rast=$TEMP_FILE_NAME > /dev/null
@@ -289,5 +326,12 @@ if [ $TEMP_RANDOM_SELECT ]; then
     if [ $DEBUG ]; then echo "Removing temp random select map"; fi
     g.remove rast=mdig.survival.randomselect
 fi
+
+if [ -n "$GIS_OPT_statfile" ]
+then
+    if [ $DEBUG ]; then echo "Writing area evaluated to $GIS_OPT_statfile"; fi
+    echo "AREA_EVALUATED=$AREA_EVALUATED" > $GIS_OPT_statfile
+fi
+
 
 if [ $DEBUG ]; then echo "Done"; fi
