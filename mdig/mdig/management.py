@@ -226,6 +226,10 @@ class Treatment:
         return False
 
     def get_ls(self):
+        """
+        Return the lifestage the treatment affects or None if there
+        is no lifestage specified
+        """ 
         ls_node = self.node.xpath("event")
         if len(ls_node) > 0:
             assert len(ls_node) == 1
@@ -242,8 +246,8 @@ class Treatment:
             self.area_node = self.area_node[0]
             self.area_ls = self.area_node.attrib['ls']
             for a in self.area_node:
+                # Ignore comment nodes
                 if isinstance(a.tag, basestring):
-                    # Ignore comment nodes
                     self.areas.append(TreatmentArea(a,self,len(self.areas)))
         return self.areas
 
@@ -262,11 +266,14 @@ class Treatment:
             Merge all the TreatmentArea maps based on the combine attribute
             ("and" or "or" them)
         """
-        generate = False
         # Check whether the component Areas change between calls
         if self.area_temp is not None:
+            # Whether we need to regenerate the merged area map
+            generate = False
             for a in self.areas:
                 if a.is_dynamic():
+                    # if just one component area is dynamic, we have to regenerate
+                    # the merged treatment area.
                     generate = True
                     break
             if not generate:
@@ -274,6 +281,7 @@ class Treatment:
         else:
             self.area_temp = "x_t___strategy_"  + self.strategy.get_name() + \
                               "_area_t_" + str(self.index)
+
         # What operation should we use to merge maps? Should be 'and' or 'or'
         if 'combine' not in self.area_node.attrib:
             # default
@@ -283,7 +291,14 @@ class Treatment:
         assert(operation == "and" or operation == "or")
 
         g = grass.get_g()
+        # remove previous map
         g.remove_map(self.area_temp)
+        merge_str = self.get_area_merge_mapcalc_expression(replicate,operation);
+        g.mapcalc(self.area_temp,merge_str)
+        return self.area_temp
+
+    def get_area_merge_mapcalc_expression(self,replicate,operation):
+        # generate ourselves a mapcalc expression
         merge_str = "if("
         for a in self.areas:
             if operation == "and":
@@ -294,8 +309,7 @@ class Treatment:
                 merge_str += " || "
         # remove trailing operator
         merge_str = merge_str[:-4] + ",1,null())" 
-        g.mapcalc(self.area_temp,merge_str)
-        return self.area_temp
+        return merge_str
         
     def get_event(self):
         """
@@ -356,10 +370,7 @@ class Treatment:
         """
         if not self.affects_var(var_key):
             return None
-        #if self.strategy.instance is None:
-            #self.log.error("Not connected to a instance.")
-            #return None
-        orig_value = var_val #self.strategy.instance.get_var(var_key)
+        orig_value = var_val 
         # handle decrease, increase, ratio
         av_node = self.node.xpath("affectVariable")
         # should only be one affectVariable element, and only one child indicating
@@ -375,26 +386,27 @@ class Treatment:
         new_value=None
         if orig_value is not None:
             new_value = float(orig_value)
-        if effect == "decrease":
-            if new_value is not None:
+
+        # if the variable is originally None
+        # the only acceptable change is for exact value
+        # to be specified
+        if new_value is None:
+            if effect == "value":
+                new_value = float(effect_amount)
+            else:
+                raise InvalidAlterationException()
+
+        # the alternative is that the original value is altered
+        try:
+            if effect == "decrease":
                 new_value -= float(effect_amount)
-            else:
-                raise InvalidAlterationException()
-        elif effect == "increase":
-            if new_value is not None:
+            elif effect == "increase":
                 new_value += float(effect_amount)
-            else:
-                raise InvalidAlterationException()
-        elif effect == "ratio":
-            if new_value is not None:
+            elif effect == "ratio":
                 new_value *= float(effect_amount)
             else:
-                raise InvalidAlterationException()
-        elif effect == "value":
-            new_value = float(effect_amount)
-        else:
-            self.log.error("Unknown management effect: " + str(effect) )
-            sys.exit(mdig.mdig_exit_codes["treatment_effect"])
+                self.log.error("Unknown management effect: " + str(effect) )
+                sys.exit(mdig.mdig_exit_codes["treatment_effect"])
         return new_value
 
 class TreatmentArea:
