@@ -1,0 +1,29 @@
+
+plan:
+
+We need to get data that is internal to certain modules, which means we cannot simply place all the logic in the mdig controller. The "treatments" need to support reporting the area treated.
+
+For mdig modules, this shouldn't be too difficult (although mdig scripts that use GRASS modules may be more challenging. An environment variable set in the subprocess/module wouldn't work, because the environment is local to that process.
+
+Instead, the details should be sent to a temporary file. This file could also include additional things statistics if needed later.
+
+= 
+event treatments
+
+r.mdig.survival
+
+if the -e and max parameters specified, then the number of cells evaluated and actually removed are different. 
+
+AREA_REMOVED=[difference in area before and after]
+AREA_EVALUATED=[maximum of cells in population being evaluated and the "max" parameter (converted to cells instead of area]
+
+==
+affect variable treatments
+
+These change the variable over the entire region specified in the <area> element.
+
+AREA_REMOVED=[difference in area before and after]
+AREA_EVALUATED=equal to the area in the <area> element, although this could change dynamically.
+
+
+
