@@ -248,13 +248,10 @@ if [ $GIS_FLAG_E -eq 1 ]; then
     GIS_OPT_SURVIVAL=${TEMP_RANDOM_SELECT}
 else
 # Treat maximum as maximum area that is successfully removed, not just evaluated
+    # get the area of the map...
     get_map_area $TEMP_RECLASS
     POP_AREA=$MAP_AREA_TEMP
-    if [ -n "$GIS_OPT_statfile" ]
-    then
-        # get the area of the map...
-        AREA_EVALUATED=$POP_AREA
-    fi
+    AREA_EVALUATED=$POP_AREA
     echo "total area of input map = ${POP_AREA}"
     if [ $POP_AREA -ne 0 ]; then
         if [ $SURVIVAL_VALUE -eq 1 -a \
@@ -262,6 +259,7 @@ else
             echo for single survival value
             GIS_OPT_SURVIVAL=`echo "scale = ${BC_SCALE}; 100 - (100.0 * ($GIS_OPT_MAX / $POP_AREA))" | bc`
             echo "NEW SURVIVAL CHANCE = $GIS_OPT_SURVIVAL"
+
         elif [ $SURVIVAL_VALUE -eq 0 ]; then 
             echo for survival maps
             # backup any mask that may be present
