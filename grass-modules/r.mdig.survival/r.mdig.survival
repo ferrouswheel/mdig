@@ -147,6 +147,7 @@ then
     fi
  GIS_OPT_SEED=`date +%s`
 fi
+export GRASS_RND_SEED=$GIS_OPT_SEED
 
 #check if input file exists
 #if test -f $LOCATION/cell/$GIS_OPT_input
@@ -298,9 +299,7 @@ fi # GIS_FLAG_E 1 or 0
 fi # GIS_OPT_MAX is defined
 
 # NOTE: null values in category reclass map will mean that input is unchanged...
-export GRASS_RND_SEED=$GIS_OPT_SEED
 r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
-unset GRASS_RND_SEED
 #g.remove rast=$TEMP_FILE_NAME > /dev/null
 
 # remove temp reclass if necessary
@@ -338,5 +337,6 @@ then
     echo "AREA_EVALUATED=$AREA_EVALUATED" > $GIS_OPT_statfile
 fi
 
+unset GRASS_RND_SEED
 
 if [ $DEBUG ]; then echo "Done"; fi

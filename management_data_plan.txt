@@ -30,3 +30,11 @@ Discovered a major bug in management working with r.mdig.survival.
 
 Since r.mdig.survival uses r.mask, the use of r.mask to set the treatment area will not work!
 
+Have committed a fix, but it is untested. I really need to come up with a series of test scenarios for r.mdig.survival because the script is getting complex!
+
+- with and without seed value. test would ensure that a certain seed always produced the same result... this would be great for testing everything actually!
+
+- ensure that survival 0 means nothing is shown
+- survival 100+ means everything survives
+- survival with map 50% means that mask 
+
