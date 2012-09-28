@@ -22,22 +22,12 @@ Management module. Part of MDiG - Modular Dispersal in GIS
 """
 
 import lxml.etree
-import random
+import sys
 import logging
-import shutil
-import string
-import os
-import time
-import pdb
 
 import mdig
 import grass 
-import config
-import outputformats
-import grass
 from grassmap import GrassMap
-from grass import SetRegionException, MapNotFoundException
-import model
 from event import Event
 
 class ManagementStrategy:
@@ -397,16 +387,15 @@ class Treatment:
                 raise InvalidAlterationException()
 
         # the alternative is that the original value is altered
-        try:
-            if effect == "decrease":
-                new_value -= float(effect_amount)
-            elif effect == "increase":
-                new_value += float(effect_amount)
-            elif effect == "ratio":
-                new_value *= float(effect_amount)
-            else:
-                self.log.error("Unknown management effect: " + str(effect) )
-                sys.exit(mdig.mdig_exit_codes["treatment_effect"])
+        if effect == "decrease":
+            new_value -= float(effect_amount)
+        elif effect == "increase":
+            new_value += float(effect_amount)
+        elif effect == "ratio":
+            new_value *= float(effect_amount)
+        else:
+            self.log.error("Unknown management effect: " + str(effect) )
+            sys.exit(mdig.mdig_exit_codes["treatment_effect"])
         return new_value
 
 class TreatmentArea:
@@ -475,10 +464,3 @@ class TreatmentArea:
                 "START_MAP": replicate.initial_maps[self.treatment.area_ls].get_map_filename()
             }
             return self.area.get_map_filename(replacements)
-        
-
-
-
-
-
-
