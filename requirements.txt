@@ -1,0 +1,10 @@
+configobj
+lxml
+simplejson
+python-dateutil<2.0
+numpy
+scipy
+matplotlib
+imagetk
+paste
+
