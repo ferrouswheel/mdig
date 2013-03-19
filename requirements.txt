@@ -5,6 +5,8 @@ python-dateutil<2.0
 numpy
 scipy
 matplotlib
-imagetk
+pillow
+nose
+coverage
 paste
-
+mock

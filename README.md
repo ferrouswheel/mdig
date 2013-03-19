@@ -1,36 +1,27 @@
-# MDiG - Modular Dispersal in GIS
+# mdig - Modular Dispersal in GIS
 
-## Requirements
+## Setup
 
-- [**GRASS 6.4RC5**](http://grass.itc.it/download/index.php) or later, hasn't been tested with the new GRASS 7.0.
-  In particular, we recommend an SVN snapshot as RC5 has an annoying
-  g.region issue that can be confusing for new users.
-- [**GDAL 1.6.0**](http://trac.osgeo.org/gdal/wiki/DownloadingGdalBinaries) or later (earlier versions have bugs)
-  Although it is a GRASS requirement instead of a direct MDiG one, stuff can
-  break if you have earlier buggy versions.
+    sudo apt-get install grass grass-dev
+    sudo apt-get install libxml2 libxml2-dev gsl-bin libgsl0-dev imagemagick bc
 
-- ImageMagick's convert utility (imagemagick)
-- [lxml](http://codespeak.net/lxml/) and its dependency, the [Gnome XML library](http://xmlsoft.org/)
-- GNU Scientific Library (libgsl, libgsl0-dev) http://www.gnu.org/software/gsl/
-
-    sudo apt-get install \
-       gsl-bin libgsl0-dev bc libxml2 libxml2-dev python-lxml python-imaging-tk \
-       python-scipy python-matplotlib python-numpy python-configobj python-paste \
-       python-simplejson imagemagick
-
-- Python dependencies 
-
+    # Numpy and scipy are potentially finicky, so safest to install them separate
+    # and in order:
+    mkvirtualenv mdig
+    pip install numpy
+    pip install scipy
+    # Rest of python dependencies should be fine, ensure you are in mdig root dir
     pip install -r requirements.txt
 
-## Compile modules
+That's the core mdig simulation manager, but to install the custom GRASS
+modules that are particularly useful for people modelling dispersal:
 
-Change into MDiG's grass-module dir
+    cd grass-modules
+    sudo make MODULE_TOPDIR=/usr/lib/grass64
 
-    cd mdig/grass-modules
+Or if you installed GRASS from source, you can do something like:
 
-and run:
-
-    export GRASS_SRC=~/src/grass63_release
+    export GRASS_SRC=~/src/grass64_release
     make -S MODULE_TOPDIR=$GRASS_SRC
     cd $GRASS_SRC
     make install
@@ -41,3 +32,9 @@ These are the requests that I've had for MDiG to support:
 
 * [PRIORITY] Keep track of area treated by management strategies.
 
+## Troubleshooting
+
+Older versions of requirements have some bugs to be aware of:
+
+* GRASS 6.4RC5 has an annoying g.region issue that can be confusing for new users.
+* GDAL &lt;1.6.0 or later, earlier versions can run into segfaults.

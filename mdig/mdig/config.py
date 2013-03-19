@@ -102,18 +102,20 @@ def find_grass_base_dir():
             opts = glob.glob(os.path.join(os.environ['OSGEO4W_ROOT'],'apps\\grass\\grass-*'))
     else:
         opts = glob.glob('/usr/local/grass-*')
-    if len(opts) > 0: return opts[-1]
-    else: return None
+        opts.extend(glob.glob('/usr/lib/grass*'))
+    if len(opts) > 0:
+        return opts[-1]
 
 def find_grassdb_dir():
     # TODO find from GRASS environment if it exists
     # find from guessing /home/user/src/mdig/test
     my_path = os.path.normpath(os.path.join(home_dir, '..', 'src/mdig/test'))
-    if os.path.isdir(my_path): return my_path
+    if os.path.isdir(my_path):
+        return my_path
     if 'OSGEO4W_ROOT' in os.environ:
         my_path = os.path.normpath(os.path.join(os.environ['OSGEO4W_ROOT'], 'src/mdig/test'))
-        if os.path.isdir(my_path): return my_path
-    return None
+        if os.path.isdir(my_path):
+            return my_path
 
 def find_location_dir():
     # TODO find from GRASS environment if it exists
@@ -127,7 +129,6 @@ def find_location_dir():
             if os.path.isdir(d) and \
                     os.path.isdir(os.path.join(d,'PERMANENT')):
                 return os.path.basename(d)
-    return None
  
 class MDiGConfig(ConfigObj):
     
@@ -311,7 +312,8 @@ values. Push any key to continue, or CTRL-C to abort. """
         if section in MDiGConfig.required \
                 and k in MDiGConfig.required[section]:
             guess = MDiGConfig.required[section][k]
-        if guess: guess = guess() # guess should be a callable
+        if guess:
+            guess = guess() # guess should be a callable
         if not fresh:
             print "While setting up config, required parameter %s:%s was missing" % (section,k)
         is_done = False

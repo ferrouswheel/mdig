@@ -19,6 +19,7 @@ def setup():
     # Copy test repository
     c = config.get_config()
     c['GRASS']['GISBASE'] = config.find_grass_base_dir()
+    assert c['GRASS']['GISBASE'], "Couldn't find GRASS GISBASE"
     global test_dir
     test_dir = tempfile.mkdtemp(prefix="mdig_test_")
     end_part = os.path.split(c['GRASS']['GISDBASE'])[1]

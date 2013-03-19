@@ -24,8 +24,6 @@ import shutil
 import logging
 import random
 import re
-import signal
-import pdb
 import subprocess
 from subprocess import Popen
 import StringIO
@@ -251,7 +249,6 @@ class GRASSInterface:
         os.environ["GISRC"]=gisrc_fn
 
     def get_version_from_dir(self):
-        import re
         if sys.platform == 'win32':
             # TODO - place this in config and make NSIS script write it
             self.grass_version = "6.4.0svn"
@@ -260,7 +257,7 @@ class GRASSInterface:
             try:
                 x=re.match(r'grass-(\d\.\d\.[\d\w]+)', end_bit)
                 self.grass_version = x.groups()[0]
-            except IndexError, e:
+            except (IndexError, AttributeError):
                 self.grass_version = "6.4.0svn"
         return self.grass_version
 
