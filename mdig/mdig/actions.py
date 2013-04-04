@@ -1,6 +1,7 @@
 import sys
 import os
 import logging
+import re
 
 from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
@@ -656,8 +657,6 @@ class ListAction(Action):
 
     def do_me(self,mdig_model):
         from textwrap import TextWrapper
-        import re
-        indent_amount = 30
         models = mdig.repository.get_models()
         title_str = "Models in MDiG GRASS db @ " + mdig.repository.db
         print "-"*len(title_str)
@@ -682,8 +681,8 @@ class ListAction(Action):
                 if not loc:
                     loc = "unknown"
                 print "%s [%s]:\n%s" % (m,loc,desc)
-            except mdig.model.ValidationError, e:
-                pass
+            except mdig.model.ValidationError:
+                print "%s [ERROR]" % (m,)
         sys.exit(0)
 
 class InfoAction(Action):

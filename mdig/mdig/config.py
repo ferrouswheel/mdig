@@ -37,8 +37,6 @@ import logging
 # python... (package python-configobj in Ubuntu)
 from mdig.contrib.configobj import ConfigObj
 
-import mdig
-
 if sys.platform == "win32": #pragma: no cover
     # on a Windows port
     try:
@@ -227,9 +225,10 @@ class MDiGConfig(ConfigObj):
             self.config_path=home_dir
         self.cf_full_path = os.path.join(self.config_path,self.config_file)
         self.prompt_user = False
-        if not os.path.isfile(self.cf_full_path): self.prompt_user = True
+        if not os.path.isfile(self.cf_full_path):
+            self.prompt_user = True
         # Initialise parent, and create the config file if it doesn't exist
-        ConfigObj.__init__(self,self.cf_full_path, create_empty=True)
+        super(MDiGConfig, self).__init__(self.cf_full_path, create_empty=True)
         self.updates()
         self.add_missing_defaults()
         self.setup()
@@ -241,8 +240,8 @@ class MDiGConfig(ConfigObj):
         self.output_level = 'normal'
 
     def updates(self):
-        """ This function does a variety of things to try to gracefully
-        update config files.
+        """
+        Do a variety of things to try to gracefully update config files.
         """
         import mdig
         version_change = False

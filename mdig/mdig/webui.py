@@ -438,7 +438,6 @@ def submit_occupancy_envelope_job(dm,idx,ls_id,action):
     added = False
     m_name = dm.get_name()
     if dm.is_complete():
-        import pdb; pdb.set_trace()
         if m_name not in models_in_queue:
             models_in_queue[m_name] = {}
         else:
@@ -743,15 +742,25 @@ class MDiGWorker():
         dm = DispersalModel(model_file)
         if rerun:
             dm.reset_instances()
-        msg = {'model': m_name,'action': "RUN",
-                'status':{ 'started': datetime.datetime.now() } }
+        msg = {
+                'model': m_name,
+                'action': "RUN",
+                'status': {
+                    'started': datetime.datetime.now()
+                    }
+              }
         self.results_q.put(msg)
         i_objs = dm.get_instances()
         for instance in instances:
             i = i_objs[instance]
             i.listeners.append(self.listener)
-            msg = {'model': m_name,'action': "RUN",
-                'status':{ 'active_instance': instance } }
+            msg = {
+                    'model': m_name,
+                    'action': "RUN",
+                    'status': {
+                        'active_instance': instance
+                        }
+                  }
             i.run()
         msg = {'model': m_name,'action': "RUN",
                 'status':{ 'complete': datetime.datetime.now() } }
@@ -759,40 +768,70 @@ class MDiGWorker():
 
     def create_occupancy_gif(self, m_name, instance_idx=None, ls=None):
         action = "OCCUPANCY_GIF"
+
         model_file = mdig.repository.get_models()[m_name]
         dm = DispersalModel(model_file)
+
         instance = dm.get_instances()[instance_idx]
         # Tell web interface we've started
-        msg = {'model': m_name,'action': action,
-                'status':{ 'started': datetime.datetime.now() } }
+        msg = {
+                'model': m_name,
+                'action': action,
+                'status': {
+                    'started': datetime.datetime.now()
+                    }
+                }
         self.results_q.put(msg)
+
         self.log.debug("Checking/creating envelopes")
         # Tell web interface what we're doing
-        msg = {'model': m_name,'action': action,
-                'status':{ 'active_instance': instance_idx, 'description':"Creating occupancy envelopes"} }
+        msg = {
+                'model': m_name,
+                'action': action,
+                'status': {
+                    'active_instance': instance_idx,
+                    'description': "Creating occupancy envelopes"
+                    }
+                }
         self.results_q.put(msg)
+
         # Add listener so that we have progress updates
         instance.listeners.append(self.listener)
-        # Now actually create the envelopes if necessary
+
+        # ...now actually create the envelopes if necessary
         instance.update_occupancy_envelope(ls_list=[ls])
-        # also convert occupancy envelopes into images
-        # via ExportAction
+
+        # ...now convert occupancy envelopes into images via ExportAction
         from actions import ExportAction
         ea=ExportAction()
         ea.parse_options([])
         ea.options.output_gif = True
         ea.options.output_image = True
         ea.options.output_lifestage = ls
+        ea.options.overwrite_flag = True
         ea.listeners.append(self.listener)
         self.log.debug("Generating images")
-        msg = {'model': m_name,'action': action,
-                'status':{ 'active_instance': instance_idx,
-                    'description':"Generating images"} }
+
+        msg = { 
+                'model': m_name,
+                'action': action,
+                'status': {
+                    'active_instance': instance_idx,
+                    'description':"Generating images"
+                    }
+                }
         self.results_q.put(msg)
+
         ea.do_instance(instance)
+
         dm.save_model()
-        msg = {'model': m_name,'action': action, 'status':{
-            'complete':datetime.datetime.now() } }
+        msg = {
+                'model': m_name,
+                'action': action,
+                'status': {
+                    'complete':datetime.datetime.now()
+                    }
+                }
         self.results_q.put(msg)
 
     def create_occupancy_map_pack(self, m_name, instance_idx=None, ls=None):
@@ -820,6 +859,7 @@ class MDiGWorker():
         ea.parse_options([])
         ea.options.output_map_pack = True
         ea.options.output_lifestage = ls
+        ea.options.overwrite_flag = True
         ea.listeners.append(self.listener)
         self.log.debug("Exporting maps")
         msg = {'model': m_name,'action': action,
@@ -854,6 +894,7 @@ class MDiGWorker():
         ea.options.output_gif = True
         ea.options.output_image = True
         ea.options.output_lifestage = ls
+        ea.options.overwrite_flag = True
         ea.options.reps = [ replicate ]
         try: ea.do_instance(instance)
         except: raise
@@ -886,6 +927,7 @@ class MDiGWorker():
         ea.parse_options([])
         ea.options.output_map_pack = True
         ea.options.output_lifestage = ls
+        ea.options.overwrite_flag = True
         ea.options.reps = [ replicate ]
         try: ea.do_instance(instance)
         except: raise
