@@ -1,5 +1,4 @@
-from bottle import route, validate, request, redirect, abort
-from bottle import view
+from bottle import route, validate, request, redirect, abort, view, send_file
 import bottle
 
 from multiprocessing import Process, Queue, JoinableQueue
@@ -7,7 +6,6 @@ from threading import Thread
 import Queue as q
 
 import os
-import os.path
 import sys
 import re
 import tempfile
@@ -15,13 +13,12 @@ import shutil
 import datetime
 import logging
 
-import pdb
-
 import mdig
 from model import DispersalModel, ValidationError
 import config
 import grass
 import modelrepository
+from mdig.instance import InstanceIncompleteException
 
 app = None
 log = logging.getLogger('mdig.web')
@@ -167,10 +164,10 @@ def add_to_map_pack_lfu(fn,nodate=False):
     else: map_pack_lfu.append((fn,datetime.datetime.now()))
 
 def process_tasks():
-    """ go through all the tasks in models_in_queue and when they were
-    completed.
-    return those that have been completed since last time this method was
-    called.
+    """
+    Go through all the tasks in models_in_queue and when they were completed.
+
+    Return those that have been completed since last time this method was called.
     """
     global last_notice
     new_last_notice = last_notice
@@ -434,10 +431,6 @@ def show_replicate(model,instance,replicate):
             map_packs_present = map_packs_present,
             task_order=task_order, task_updates = task_updates, error=error)
 
-from bottle import send_file
-from mdig import outputformats
-from mdig.instance import InstanceIncompleteException
-
 # Following methods are for getting and creating occupancy envelopes 
 
 def submit_occupancy_envelope_job(dm,idx,ls_id,action):
@@ -445,6 +438,7 @@ def submit_occupancy_envelope_job(dm,idx,ls_id,action):
     added = False
     m_name = dm.get_name()
     if dm.is_complete():
+        import pdb; pdb.set_trace()
         if m_name not in models_in_queue:
             models_in_queue[m_name] = {}
         else:
@@ -458,10 +452,18 @@ def submit_occupancy_envelope_job(dm,idx,ls_id,action):
             error="Invalid lifestage ID"
         else:
             qsize=work_q.qsize()
-            models_in_queue[m_name][action] = {"approx_q_pos":qsize,
-                    "last_update":datetime.datetime.now()}
-            job_details = { "instance_idx": idx, "lifestage": ls_id }
-            work_q.put({'action':action,'model':dm.get_name(),'parameters':job_details})
+            models_in_queue[m_name][action] = {
+                    "approx_q_pos":qsize,
+                    "last_update":datetime.datetime.now()
+                    }
+            work_q.put({
+                "action": action,
+                "model": dm.get_name(),
+                "parameters": {
+                    "instance_idx": idx,
+                    "lifestage": ls_id
+                    }
+                })
             added=True
     else:
         # if instance isn't complete, then we can't create an
@@ -652,11 +654,11 @@ def replicate_map_pack(model, instance, replicate, ls_id):
 
 @route('/resources/:filename#.*#')
 def static_resources(filename):
-   bottle.send_file(filename, root=resource_dir)
+   send_file(filename, root=resource_dir)
     
 @route('/favicon.ico')
 def static_resources():
-   bottle.send_file("favicon.ico", root=resource_dir)
+   send_file("favicon.ico", root=resource_dir)
 
 class Worker_InstanceListener():
 
@@ -949,9 +951,10 @@ class MDiGWorker():
                 traceback.print_exc()
                 # Send error notice back to web interface
                 s = s.copy()
-                if 'status' not in s: s['status'] = {}
+                s.setdefault('status', {})
                 s['status']['error'] = str(e)
                 self.results_q.put(s)
+                self.work_q.task_done()
         self.clean_up()
 
     def clean_up(self):

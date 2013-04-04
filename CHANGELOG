@@ -13,5 +13,3 @@ MDiG 0.3.2
 - Investigate problem with changing repository on Windows 7 (reported by Senait)
 - Fix unit tests that relied on datetime.now() but would fail with the low
 resolution of a VM clock.
-
-

@@ -1,20 +1,14 @@
 import sys
 import os
 import logging
-import getopt
+
+from datetime import datetime, timedelta
+from subprocess import Popen, PIPE
 from optparse import OptionParser
 
 import mdig
 from mdig import config
 from mdig import grass
-from mdig import roc
-#if sys.platform != "win32":
-#    print sys.platform
-#    from mdig import ROCanalysis
-#    roc_on = True
-#else:
-#    roc_on = False
-#    print "ROC analysis not supported on Windows"
 
 from mdig import displayer
 from mdig.model import DispersalModel
@@ -22,7 +16,6 @@ from mdig.model import DispersalModel
 from mdig.instance import InvalidLifestageException, \
         InstanceIncompleteException, InvalidReplicateException, NoOccupancyEnvelopesException
 
-from datetime import datetime, timedelta
 
 class Action:
 
@@ -238,7 +231,7 @@ class RunAction(Action):
                 self.log.info("Directory %s doesn't exist, attemping to" +
                         " create\n",options.output_dir)
                 c.output_dir = \
-                    MDiGConfig.makepath(options.output_dir)
+                    config.makepath(options.output_dir)
             else:
                 c.output_dir = options.output_dir
         c.overwrite_flag = self.options.overwrite_flag
@@ -250,7 +243,7 @@ class RunAction(Action):
     def do_me(self, mdig_model):
         if self.time is not None:
             self.start_time = datetime.now()
-            self.end_time = self.start_time + timedelta(hours=time)
+            self.end_time = self.start_time + timedelta(hours=self.time)
             self.log.debug("Start time %s", self.start_time.ctime())
             self.log.debug("Maximum end time %s", self.end_time.ctime())
         self.log.debug("Executing simulation")
@@ -905,15 +898,18 @@ class ExportAction(Action):
 
     def do_instance(self,i):
         # TODO: only overwrite files if -o flag is set
-        import outputformats
         model_name = i.experiment.get_name()
         ls = self.options.output_lifestage
         self.check_lifestage(i, ls)
         all_maps = []
-        # check that background map exists
+
         output_images = self.options.output_gif or self.options.output_image 
         output_maps = self.options.output_map_pack
-        if output_images: self.check_background_map()
+
+        # check that background map exists
+        if output_images:
+            self.check_background_map()
+
         if self.options.reps:
             if len(self.options.reps) > 1 and output_maps:
                     self.log.info("Exporting maps of reps: %s" % str(self.options.reps))
@@ -976,9 +972,10 @@ class ExportAction(Action):
                         self.log.info("Saved png to " + img_filenames[t])
                     self.update_listeners(i, None, ls, t)
             if self.options.output_gif:
-                self.create_gif(map_list,i.get_occ_envelope_img_filenames(ls,gif=True,dir=self.options.outdir) )
+                self.create_gif(map_list,
+                        i.get_occ_envelope_img_filenames(ls, gif=True, dir=self.options.outdir) )
             elif output_maps:
-                zip_fn = i.get_occ_envelope_img_filenames(ls, extension=False, gif=True,dir=self.options.outdir)[:-5]
+                zip_fn = i.get_occ_envelope_img_filenames(ls, extension=False, gif=True, dir=self.options.outdir)[:-5]
                 self.zip_maps(map_list, zip_fn)
             all_maps.extend(map_list)
         # If the user wanted an animated gif, then clean up the images
@@ -987,7 +984,7 @@ class ExportAction(Action):
             for m in all_maps:
                 os.remove(m)
 
-    def export_map(self,map,out_fn,envelope=False):
+    def export_map(self, map, out_fn, envelope=False):
         old_region = "ExportActionBackupRegion"
         g = grass.get_g()
         g.run_command('g.region --o save='+old_region)
@@ -1006,18 +1003,18 @@ class ExportAction(Action):
             out_fn += ".tif"
         except grass.GRASSCommandException, e:
             # This swaps to 64 bit floats if GRASS complains about
-            # losing precision on export
+            # losing precision on export.
             if "Precision loss" in e.stderr:
                 self.float64 = True
                 out_fn = self.export_map(map,out_fn,envelope)
-            else: raise e
+            else:
+                raise e
         finally:
             g.set_region(old_region) 
         return out_fn
 
     def zip_maps(self,maps,zip_fn):
         import zipfile
-        import os.path
         zip_fn += ".zip"
         if os.path.isfile(zip_fn) and not self.options.overwrite_flag:
             raise OSError("Zip file %s exists, use -o flag to overwrite" % zip_fn)
@@ -1052,10 +1049,9 @@ class ExportAction(Action):
                     l.export_map_pack_complete(None, replicate, ls,t)
 
     def create_gif(self,maps,fn):
-        from subprocess import Popen, PIPE
         gif_fn = fn
-        if os.path.isfile(gif_fn) and not self.overwrite_flag:
-            raise OSError("Gif file %s exists, use -o flag to overwrite" % zip_fn)
+        if os.path.isfile(gif_fn) and not self.options.overwrite_flag:
+            raise OSError("Gif file %s exists, use -o flag to overwrite" % gif_fn)
         self.log.info("Creating animated gif with ImageMagick's convert utility.")
         output = Popen("convert -delay 100 " + " ".join(maps)
             + " " + gif_fn, shell=True, stdout=PIPE).communicate()[0]
@@ -1064,26 +1060,29 @@ class ExportAction(Action):
         return gif_fn
 
     def create_frame(self, map_name, output_name, model_name, year, ls, the_range = None):
-        import os
         g = grass.get_g()
-        if os.path.isfile(output_name) and not self.overwrite_flag:
-            raise OSError("Gif file %s exists, use -o flag to overwrite" % zip_fn)
+        if os.path.isfile(output_name) and not self.options.overwrite_flag:
+            raise OSError("Gif file %s exists, use -o flag to overwrite" % output_name)
         g.set_output(filename = output_name, \
                 width=self.options.width, height=self.options.height, display=None)
         g.run_command("d.erase")
         os.environ['GRASS_PNG_READ']="TRUE"
+
+        # Check the background map exists
         if self.options.background:
             bg = self.options.background.split('@')
-            if len(bg) > 1: map_ok = g.check_map(bg[0], bg[1])
-            else: map_ok = g.check_map(bg)
+            if len(bg) > 1:
+                map_ok = g.check_map(bg[0], bg[1])
+            else:
+                map_ok = g.check_map(bg)
             g.run_command("r.colors color=grey map=" + self.options.background)
             g.run_command("d.rast " + self.options.background)
+
         # This is code for setting the color table of each map manually
         # hasn't been easily integrated into interface, but easy for hacking
         # custom map output
         custom_color = False
         if custom_color:
-            from subprocess import Popen, PIPE
             pcolor= Popen('r.colors map=%s rules=-' % map_name, \
                     shell=True, stdout=PIPE, stdin=PIPE)
             rule_string = "0%% %d:%d:%d\n" % (255,255,0)
@@ -1203,7 +1202,7 @@ class ROCAction(Action):
             if not os.path.isdir(options.output_dir):
                 self.log.info("Directory %s doesn't exist, attemping to" +
                         " create\n",options.output_dir)
-                MDiGConfig.makepath(options.output_dir)
+                config.makepath(options.output_dir)
         else:
             self.options.output_dir = "."
         if self.options.model_tags is not None:
@@ -1215,7 +1214,12 @@ class ROCAction(Action):
             self.options.model_tags = tags
     
     def do_me(self,mdig_model):
-        self.ROC = ROCanalysis.ROCanalysis(self.model_names,self.options)
+        # TODO move this to roc module
+        if "linux" not in sys.platform:
+           print "ROC analysis not supported on platforms other than Linux"
+           sys.exit(1)
+        from mdig.roc import ROCAnalysis
+        self.ROC = ROCAnalysis(self.model_names,self.options)
         self.ROC.run()
 
 
@@ -1248,7 +1252,7 @@ class AdminAction(Action):
                 action="store_true",
                 dest="check_maps")
         self.parser.add_option("-m","--move-mapset",
-                help="Check all maps for the model are present",
+                help="Move model to a new mapset",
                 action="store",
                 type="string",
                 dest="move_mapset")
@@ -1263,7 +1267,7 @@ class AdminAction(Action):
 
     def do_me(self,mdig_model):
         if self.options.move_mapset:
-            mdig_model.move_mapset(move_mapset)
+            mdig_model.move_mapset(self.options.move_mapset)
         if self.options.remove_null:
             mdig_model.null_bitmask( False )
         if self.options.generate_null:
@@ -1284,7 +1288,6 @@ class AdminAction(Action):
                 instances[i].enabled = not instances[i].enabled
                 print( "%d: %s" % (i, str(instances[i]) ))
                 instances[i].update_xml()
-            #mdig_model.save_model()
 
 class WebAction(Action):
     description = "Run a webserver that allows interaction with MDiG"

@@ -17,13 +17,11 @@
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
 #
-"""
-Management module. Part of MDiG - Modular Dispersal in GIS
-"""
 
-import lxml.etree
 import sys
 import logging
+
+import lxml.etree
 
 import mdig
 import grass 

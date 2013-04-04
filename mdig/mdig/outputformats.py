@@ -16,13 +16,9 @@
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-import sys
 import logging
-import pdb
 
 import grass
-import model
 from instance import DispersalInstance
 from replicate import Replicate
 
@@ -93,7 +89,6 @@ class PngOutput:
         
 
 class RasterOutput:
-    
     _tag="RasterOutput"
     
     def __init__(self,node):
@@ -123,5 +118,3 @@ class RasterOutput:
             self.last_output = t
             
         return [ self.lifestage, fn ]
-            
-        

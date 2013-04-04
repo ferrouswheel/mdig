@@ -18,7 +18,7 @@ import random
 class IncompleteModelException(Exception):
     pass
 
-class ROCanalysis:
+class ROCAnalysis:
     """ Carries out ROC analysis.
 
     Works out ROC curves for occupancy envelopes, calculates AUC for each
@@ -118,14 +118,14 @@ class ROCanalysis:
         self.do_vuc = options.calc_vuc
 
         # Set up times
-        self.start_time = ROCanalysis.min_time
-        self.end_time = ROCanalysis.max_time
+        self.start_time = self.min_time
+        self.end_time = self.max_time
         if options.start_time is not None:
             self.start_time = options.start_time
         if options.start_time is not None:
             self.end_time = options.start_time
         # Bootstraps
-        self.n_bootstraps = ROCanalysis.n_bootstraps
+        self.n_bootstraps = self.n_bootstraps
         if options.bootstraps is not None:
             self.n_bootstraps = int(options.bootstraps)
 
@@ -168,35 +168,37 @@ class ROCanalysis:
         self.g.run_command(cmd)
 
     def add_new_random_absences(self, source_map, presence_map):
-        N = ( ROCanalysis.start_sites_N + (self.g.count_sites(presence_map) * \
-                    ROCanalysis.multiplier_N) ) - self.g.count_sites(ROCanalysis.temp_vect_name)
+        N = ( self.start_sites_N + (
+                self.g.count_sites(presence_map) *
+                self.multiplier_N)
+            ) - self.g.count_sites(self.temp_vect_name)
         if N < 1:
             return
         self.log.debug("Adding %d random absences." % N)
         # find random points
         self.g_run("r.random --o input=%s vector_output=%s n=%d" %
-            (source_map, ROCanalysis.temp_vect_name_new, N) )
+            (source_map, self.temp_vect_name_new, N) )
         # set random points to have 0 value
         self.g_run("v.db.update map=%s column=value value=0" %
-            ROCanalysis.temp_vect_name_new)
+            self.temp_vect_name_new)
         # add column for distance
         self.g_run("v.db.addcol map=%s columns=\"dist double precision\"" %
-            ROCanalysis.temp_vect_name_new)
+            self.temp_vect_name_new)
         # join with existing random absences
-        self.g_run("g.rename vect=%s,xxxxxxxxxx" % ROCanalysis.temp_vect_name )
+        self.g_run("g.rename vect=%s,xxxxxxxxxx" % self.temp_vect_name )
         self.g_run("v.patch -e input=xxxxxxxxxx,%s output=%s" % 
-            (ROCanalysis.temp_vect_name_new, ROCanalysis.temp_vect_name) )
+            (self.temp_vect_name_new, self.temp_vect_name) )
         self.g_run("g.remove vect=xxxxxxxxxx")
         # remove any random points that are within certain distance of an actual
         # presence
-        self.g_run("g.remove vect=%s" % ROCanalysis.temp_vect_name_new)
+        self.g_run("g.remove vect=%s" % self.temp_vect_name_new)
         self.g_run("v.distance from=%s to=%s upload=dist column=dist" %
-                (ROCanalysis.temp_vect_name, presence_map) )
+                (self.temp_vect_name, presence_map) )
         self.g_run("v.extract input=%s output=%s where=\"dist>%d\"" %
-                ( ROCanalysis.temp_vect_name, ROCanalysis.temp_vect_name_new, \
-                ROCanalysis.absence_min_dist ) )
-        self.g_run("g.remove vect=%s" % ROCanalysis.temp_vect_name)
-        self.g_run("g.rename vect=%s,%s" % (ROCanalysis.temp_vect_name_new,ROCanalysis.temp_vect_name) )
+                ( self.temp_vect_name, self.temp_vect_name_new, \
+                self.absence_min_dist ) )
+        self.g_run("g.remove vect=%s" % self.temp_vect_name)
+        self.g_run("g.rename vect=%s,%s" % (self.temp_vect_name_new,self.temp_vect_name) )
 
     def merge_sites(self, presences, absences, result):
         # join vectors and then assess envelope values
@@ -529,7 +531,7 @@ class ROCanalysis:
         p.communicate('\n'.join(sites_to_use))
         for t in range(self.start_time,self.end_time+1):
             self.log.info("Creating vector comparison map for year " + str(t))
-            self.yearly_vectors[t] = ROCanalysis.temp_yearly_basename + repr(t) \
+            self.yearly_vectors[t] = self.temp_yearly_basename + repr(t) \
                 + "@" + current_mapset
             self.g_run("v.extract --q input=" + temp_rep_vector + " output=" +
                     self.yearly_vectors[t] + " where=\"year>=" + repr(self.start_time)
@@ -729,22 +731,22 @@ class ROCanalysis:
         r_S = {}
         # make initial random points map to add to
         self.g_run( "r.random input=" + self.area_mask + 
-            " vector_output=" + ROCanalysis.temp_vect_name + " n=1000" )
+            " vector_output=" + self.temp_vect_name + " n=1000" )
         # set random points to have 0 value
-        self.g_run("v.db.update map=" + ROCanalysis.temp_vect_name + " column=value value=0")
+        self.g_run("v.db.update map=" + self.temp_vect_name + " column=value value=0")
         self.g_run("v.db.addcol map=%s columns=\"dist double precision\"" %
-           ROCanalysis.temp_vect_name)
+           self.temp_vect_name)
         for t in range(self.start_time,self.end_time+1):
             # make new random absences with r.random
             # (filtered by suitability > 0) and output vector map
             self.add_new_random_absences(self.area_mask, self.yearly_vectors[t])
-            self.merge_sites(self.yearly_vectors[t],ROCanalysis.temp_vect_name,ROCanalysis.temp_vect_name_new)
+            self.merge_sites(self.yearly_vectors[t],self.temp_vect_name,self.temp_vect_name_new)
             # convert joined vector to rast
-            self.g_run("v.to.rast --o input=" + ROCanalysis.temp_vect_name_new +
-                    " output=" + ROCanalysis.temp_rast_name + " column=year use=attr")
+            self.g_run("v.to.rast --o input=" + self.temp_vect_name_new +
+                    " output=" + self.temp_rast_name + " column=year use=attr")
 
             (presences, absences) = \
-                self.run_stats_across_models(t,ROCanalysis.temp_rast_name)
+                self.run_stats_across_models(t,self.temp_rast_name)
             thresholds =  [-0.01 + (i*0.01) for i in range(0,102)]
             areas = self.calculate_thresholded_areas(t,thresholds)
             
@@ -786,9 +788,9 @@ class ROCanalysis:
                         self.models, presences, absences, t)
 
         # remove temp maps
-        self.g_run("g.remove vect=" + ROCanalysis.temp_vect_name)
-        self.g_run("g.remove vect=" + ROCanalysis.temp_vect_name_new)
-        self.g_run("g.remove rast=" + ROCanalysis.temp_rast_name)
+        self.g_run("g.remove vect=" + self.temp_vect_name)
+        self.g_run("g.remove vect=" + self.temp_vect_name_new)
+        self.g_run("g.remove rast=" + self.temp_rast_name)
 
         return r_S
 
@@ -827,7 +829,3 @@ class ROCanalysis:
             f.write(create_star_format_row(row))
             f.write("\n")
         f.close()
-
-
-
-
