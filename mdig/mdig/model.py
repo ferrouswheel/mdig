@@ -38,21 +38,16 @@ import logging.handlers
 import string
 import os
 import shutil
-import re
 
 from datetime import datetime
-from UserDict import UserDict
 
 import outputformats
 import grass
 import config
 
 from region import Region
-from instance import DispersalInstance
-from event import Event
+from instance import DispersalInstance, DispersalInstanceException
 from lifestage import Lifestage
-from analysis import Analysis
-from replicate import Replicate
 from grassmap import GrassMap
 from lifestagetransition import LifestageTransition
 from management import ManagementStrategy
@@ -72,8 +67,9 @@ class MissingFileException(Exception):
 class UpgradeRequired(Exception): pass
 
 class DispersalModel(object):
-    """ DispersalModel keeps track of general model data and allows high level
-        control of running simulations and analysis.
+    """
+    DispersalModel keeps track of general model data and allows high level
+    control of running simulations and analysis.
     """
 
     def __init__(self, model_file=None, the_action = None, setup=True):
@@ -245,7 +241,7 @@ class DispersalModel(object):
         except lxml.etree.XMLSchemaParseError, e:
             #log = self.extract_xml_error_str(e)
             #if log: self.log.error(log)
-            raise ValidationError(str(log))
+            raise ValidationError(str(e))
             
         if not self.xml_schema.validate(self.xml_model):
             self.log.error("%s not valid according to Schema %s",
@@ -288,10 +284,12 @@ class DispersalModel(object):
         return min_instance
 
     def create_instance_mapset_name(self):
-        """ To be called by Dispersal instances when they want a mapset to do
-        their simulations in - this may use the suffix # which is the same the
+        """
+        To be called by Dispersal instances when they want a mapset to do their
+        simulations in - this may use the suffix # which is the same the
         instance's index, but it's not guaranteed (depends what mapsets already
-        exist) """
+        exist)
+        """
         base_mapset_name = self.get_mapset()
         counter=0
         mapset_exists = True
@@ -312,16 +310,17 @@ class DispersalModel(object):
             i.reset()
 
     def get_instance_mapsets(self):
-        """ Get instance mapsets by directly obtaining the xml references and
-        mapsets that refer to the model's main mapset """
-
+        """
+        Get instance mapsets by directly obtaining the xml references and
+        mapsets that refer to the model's main mapset.
+        """
         # Get directly from instances
         maps = set([])
         instances = self.get_instances()
         for i in instances:
             try:
                 maps.add(i.get_mapset())
-            except mdig.instance.DispersalInstanceException, e:
+            except DispersalInstanceException, e:
                 # short circuit exceptions about instances without mapsets
                 if "sharing one mapset" not in str(e): raise e
         # Also check GRASS DB for orphaned mapsets
@@ -341,14 +340,20 @@ class DispersalModel(object):
         return maps
 
     def hard_reset(self):
-        """ A hard reset actually deletes entire instance mapsets and removes
-        any xml traces of prior runs. This is probably preferable in most
-        cases... but reset_instances was appropriate for when everything was
-        in a single mapset """
+        """
+        A hard reset actually deletes entire instance mapsets and removes
+        any xml traces of prior runs.
+        
+        This is probably preferable in most cases, as it is faster than individually
+        removing maps, but reset_instances was necessary for when everything
+        was in a single mapset.
+        """
         g = grass.get_g()
         for mapset in self.get_instance_mapsets():
             # Don't let the core mapset disappear
-            if self.get_name() == mapset: continue
+            if self.get_name() == mapset:
+                continue
+
             db = g.grass_vars['GISDBASE']
             location = self.infer_location()
             ms_dir = os.path.join(db,location,mapset)
@@ -357,21 +362,25 @@ class DispersalModel(object):
             except OSError, e:
                 # it's okay if the directories don't actually exist, as we want
                 # to want to remove them anyhow
-                if "No such file or directory" in str(e): pass
-                else: raise e
+                if "No such file or directory" in str(e):
+                    pass
+                else:
+                    raise e
         instances_node = self.xml_model.xpath('/model/instances')
         if len(instances_node) > 0:
             i = instances_node[0]
             i.getparent().remove(i)
 
     def get_resources(self):
-        """ Aggregate all the files the simulation depends on.
-        returns a list of 3-tuples:
-        (type,name,location) ...
-        type is one of 'map','region','popmod','coda'
-        name is the name of resource
-        location is None if resource is missing, otherwise it's a filename or
-        mapset
+        """
+        Aggregate all the files the simulation depends on.
+        Returns a list of 3-tuples:
+
+            (type,name,location) ...
+
+        type: one of 'map','region','popmod','coda'
+        name: the name of resource
+        location: None if resource is missing, otherwise it's a filename or mapset
         """
         # change into appropriate mapset
         g = grass.get_g()
@@ -405,7 +414,7 @@ class DispersalModel(object):
                     ret = g.run_command('g.findfile element=windows file=%s mapset=%s' % (r,r_mapset))
                 out_lines = StringIO.StringIO(g.stdout).readlines()
                 r_mapset = out_lines[1].split('=')[1].strip("\n'")
-            except grass.GRASSCommandException, e:
+            except grass.GRASSCommandException:
                 # none
                 pass
             resources.append(('region',r,r_mapset))
@@ -419,10 +428,12 @@ class DispersalModel(object):
         return resources
 
     def get_map_resources(self):
-        """ Aggregate all the maps that this model depends on.
-        Returns a list of 2-tuples, the first part being the name
-        of the map as specified in the model definition, and the second
-        containing the mapset it exists in (or None if the map can't be found)
+        """
+        Aggregate all the maps that this model depends on.
+
+        Returns a list of 2-tuples, the first part being the name of the map as
+        specified in the model definition, and the second containing the mapset
+        it exists in (or None if the map can't be found)
         """
         maps = []
         # get parameters that are maps

@@ -25,8 +25,11 @@ version_name = "Digger"
 version_string = "MDiG " + version + " - \"" + version_name + "\""
 
 def compare_version(first,second):
-    """ returns < 0 if first is earlier than second,
-    0 if equal, > 0 if first is older than second
+    """
+    returns:
+    < 0 if first is earlier than second,
+    0 if equal,
+    > 0 if first is older than second
     """
     bits1=[int(x) for x in first.split('.')]
     bits2=[int(x) for x in second.split('.')]
@@ -65,13 +68,12 @@ mdig_exit_codes = {
     "grass_setup": 90, # grass setup error
     "unknown":101 # who knows?
 }
+
 repository = None
 
-class NotEnoughHistoryException (Exception): pass
+class NotEnoughHistoryException (Exception):
+    pass
 
 class OutputFileExistsException (Exception):
     def __init__(self, filename):
         self.filename = filename
-
-
-

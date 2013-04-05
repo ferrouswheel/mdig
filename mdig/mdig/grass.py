@@ -51,7 +51,6 @@ class GRASSCommandException (Exception):
         result += " stderr: '" + self.stderr.strip() + "'"
         return result
 
-import model
 import config
 
 grass_i = None
@@ -151,8 +150,11 @@ class GRASSInterface:
         if result != 0:
             output = subprocess.Popen("env", shell=True, stdout=subprocess.PIPE).communicate()[0]
             self.log.error("Couldn't backup region, is GRASS environment set up correctly?")
-            self.log.error("GISDBASE='%s' LOCATION_NAME='%s' MAPSET='%s'" % \
-                    (self.grass_vars['GISDBASE'],self.grass_vars['LOCATION_NAME'],self.grass_vars['MAPSET']))
+            self.log.error("GISDBASE='%s' LOCATION_NAME='%s' MAPSET='%s'" % (
+                self.grass_vars['GISDBASE'],
+                self.grass_vars['LOCATION_NAME'],
+                self.grass_vars['MAPSET']
+                ))
             raise EnvironmentException()
     
     def check_environment(self):
@@ -826,9 +828,10 @@ class GRASSInterface:
             return True
         return False
 
-    def get_mapset_full_path(self, mapset):
-        dir = os.path.join(self.grass_vars["GISDBASE"],self.grass_vars["LOCATION_NAME"],mapset)
-        return dir
+    def get_mapset_full_path(self, mapset=None):
+        return os.path.join(self.grass_vars["GISDBASE"],
+                            self.grass_vars["LOCATION_NAME"],
+                            mapset or self.grass_vars["MAPSET"])
 
     def remove_mapset(self, mapset_name, location=None, force=False):
         """
@@ -861,16 +864,15 @@ class GRASSInterface:
         return False
 
     def occupancy_envelope(self, maps_to_combine, filename):
-        """ Generates an occupancy envelope from boolean,
-            population, or age of population maps.
-
-            @param maps_to_combine is a list of maps to merge to generate the
-            occupancy envelope.
-            @param filename is the output map.
-
-            @todo create equivalent for average populations/age
         """
-        
+        Generates an occupancy envelope from boolean, population, or age of
+        population maps.
+
+        maps_to_combine is a list of maps to merge to generate the occupancy envelope.
+        filename is the output map.
+
+        TODO: create equivalent for average populations/age
+        """
         if len(maps_to_combine) > 10000:
             self.log.warning("Probability envelope not designed for more than 10000 maps")
             return None
@@ -932,7 +934,6 @@ class GRASSInterface:
         self.run_command("r.colors map=%s color=gyr --quiet" % (filename))
         
         return filename
-        
     
     def run_command(self, commandstring, log_level=logging.DEBUG, to_input=""):
         self.log.log(log_level, "exec: " + commandstring)
@@ -964,6 +965,8 @@ class GRASSInterface:
                 f.write(self.stdout + "\n\n")
                 f.write("stderr:\n")
                 f.write(self.stderr + "\n\n")
+                f.write("mapset:\n")
+                f.write(self.get_mapset_full_path() + "\n\n")
                 f.write("stack trace:\n")
                 traceback.print_stack(file=f)
                 f.close()
@@ -1129,6 +1132,3 @@ class GRASSInterface:
                 stdout=subprocess.PIPE)
         output = p3.communicate()[0]
         return int(output)
-        
-#   def exists(self,mapname):
-

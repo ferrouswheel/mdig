@@ -71,7 +71,7 @@ away with:
 
 ### Setup mdig simulation manager
 
-    sudo apt-get install libxml2 libxml2-dev gsl-bin libgsl0-dev imagemagick bc
+    sudo apt-get install libxml2 libxml2-dev gsl-bin libgsl0-dev imagemagick bc python-tk
 
     # Numpy and scipy are potentially finicky, so safest to install them separate
     # and in order:

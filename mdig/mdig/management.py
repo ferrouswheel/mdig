@@ -28,13 +28,20 @@ import grass
 from grassmap import GrassMap
 from event import Event
 
+
+class ManagementStrategyException(Exception):
+
+    def __init__(self, *args, **kwargs):
+        super(ManagementStrategyException, self).__init__(*args, **kwargs)
+
+
 class ManagementStrategy:
     """
     ManagementStrategy is a class for representing the strategies taken
     by environmental authorities to control the dispersal of a species.
     
-    Each "strategy" element within the "management" element of the
-    DispersalModel creates a ManagementStrategy class.
+    In the XML model defition, each "strategy" element within the "management"
+    element will create a ManagementStrategy instance.
     """
 
     def __init__(self,node,experiment,instance=None):
@@ -58,9 +65,7 @@ class ManagementStrategy:
         self.instance = instance
 
     def init_strategy(self, model):
-        """ Initialise the xml structure that represents a
-            ManagementStrategy.
-        """
+        """ Initialise the xml structure that represents a ManagementStrategy.  """
         raise NotImplementedError()
 
     def get_name(self):
@@ -108,7 +113,8 @@ class ManagementStrategy:
     def _load_treatments(self):
         """
         Initialise treatments list
-        @TODO sort according to treatment index
+
+        TODO: sort according to treatment index
         """
         self.treatments = []
         self.log.debug("Parsing management strategies")
@@ -331,15 +337,12 @@ class Treatment:
         affectsVarable, for the specific regions withing get_treatment_area.
         Returns None if this treatment does not affect var_key.
         """
-#       if self.strategy.instance is None:
-#            self.log.error("Not connected to a instance.")
-#            return None
         if not self.affects_var(var_key):
             return None
         area_mask_map = self.get_treatment_area_map(replicate)
         if area_mask_map is None:
-            # This means the treatment is applied globally, no need to return a
-            # map
+            # This means the treatment is applied globally, no need to return
+            # a map
             return None
         altered_value = self.get_altered_variable_value(var_key,var_val)
         if altered_value is None:
@@ -372,36 +375,42 @@ class Treatment:
                 break
         assert(effect is not None)
         new_value=None
-        if orig_value is not None:
-            new_value = float(orig_value)
+        try:
+            effect_amount = float(effect_amount)
+            if orig_value is not None:
+                new_value = float(orig_value)
+        except ValueError, e:
+            raise ManagementStrategyException('Invalid value for altering variable %s' % str(e))
 
         # if the variable is originally None
         # the only acceptable change is for exact value
         # to be specified
         if new_value is None:
             if effect == "value":
-                new_value = float(effect_amount)
+                new_value = effect_amount
             else:
-                raise InvalidAlterationException()
+                raise ManagementStrategyException('Invalid variable alteration')
 
         # the alternative is that the original value is altered
         if effect == "decrease":
-            new_value -= float(effect_amount)
+            new_value -= effect_amount
         elif effect == "increase":
-            new_value += float(effect_amount)
+            new_value += effect_amount
         elif effect == "ratio":
-            new_value *= float(effect_amount)
+            new_value *= effect_amount
+        elif effect == "value":
+            new_value = effect_amount
         else:
-            self.log.error("Unknown management effect: " + str(effect) )
-            sys.exit(mdig.mdig_exit_codes["treatment_effect"])
+            raise ManagementStrategyException("Unknown management effect: " + str(effect))
         return new_value
 
 class TreatmentArea:
 
     def __init__(self, node, treatment, a_index):
-        """ Node is the xml node defining the TreatmentArea.
-            treatment is the parent Treatment this area is for.
-            a_index is the area index used to create the temp map name.
+        """
+        node is the xml node defining the TreatmentArea.
+        treatment is the parent Treatment this area is for.
+        a_index is the area index used to create the temp map name.
         """
         self.treatment = treatment
         self.node = node
@@ -425,12 +434,16 @@ class TreatmentArea:
             self.area = GrassMap(self.node)
 
     def is_dynamic(self):
-        """ Return whether this Area changes each timestep or not
-            (Due to using a filter or mapcalc)
         """
-        if isinstance(self.area, Event): return True
-        elif isinstance(self.area, GrassMap): return self.area.refresh
-        else: raise Exception("Unknown area type")
+        Return whether this TreatmentArea changes each timestep or not. An area
+        if dynamic if it uses a filter or mapcalc.
+        """
+        if isinstance(self.area, Event):
+            return True
+        elif isinstance(self.area, GrassMap):
+            return self.area.refresh
+        else:
+            raise Exception("Unknown area type")
 
     def get_map_resources(self):
         maps = []

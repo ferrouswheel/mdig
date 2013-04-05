@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.4
-#
 #  Copyright (C) 2006,2008 Joel Pitt, Fruition Technology
 #
 #  This file is part of Modular Dispersal In GIS.
@@ -16,23 +14,19 @@
 #
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
-#
-""" 
-Event module. Part of MDiG - Modular Dispersal in GIS
-"""
 
 import logging
 import string
-import pdb
 
 import grass
 
+
 class Event:
     """
-    The Event class represents the use of a singular module or command
-    within the MDiG simulation. It is used for running events in the lifestage
-    loop, calculating treatment areas, and applying treatments as part of
-    management strategies.
+    The Event class represents the use of a singular module or command within
+    the MDiG simulation. It is used for running events in the lifestage loop,
+    calculating treatment areas, and applying treatments as part of management
+    strategies.
     """
 
     def __init__(self, node):
@@ -55,14 +49,12 @@ class Event:
         return i
 
     def get_input_name(self):
-        input = self._get_attrib("input",default="input")
-        if input == "": return None
-        return input
+        input_name = self._get_attrib("input",default="input")
+        return input_name if input_name else None
 
     def get_output_name(self):
         output = self._get_attrib("output",default="output")
-        if output == "": return None
-        return output
+        return output if output else None
 
     def uses_random_seed(self):
         """ Check if the module has a parameter that uses a random seed """
@@ -73,8 +65,10 @@ class Event:
 
     def get_params(self, is_pop=False, start_node=None):
         """
-        Get the parameters as a dictionary. This function is recursively called
-        when <if(Not)PopulationBased> nodes are encountered.
+        Get the parameters as a dictionary.
+        
+        This function is recursively called when <if(Not)PopulationBased> nodes
+        are encountered.
         """
         if start_node is None:
             nodes = self.xml_node.getchildren()
@@ -92,30 +86,30 @@ class Event:
                 params.update(params2)
             else:
                 if node.tag == "flag":
-                    a=("FLAG",None)
-                    params[node.attrib["name"]]=a
+                    a = ("FLAG", None)
+                    params[node.attrib["name"]] = a
                 elif node.tag == "param":
                     for v in node:
                         if v.tag == "value":
-                            a=("VALUE",string.strip(v.text))
+                            a = ("VALUE", string.strip(v.text))
                         if v.tag == "map":
-                            a=("MAP",string.strip(v.text))
+                            a = ("MAP", string.strip(v.text))
                         elif v.tag == "variable":
-                            a=("VAR",v.attrib["id"])
+                            a = ("VAR", v.attrib["id"])
                         elif v.tag == "seed":
-                            a=("SEED",None)
+                            a = ("SEED", None)
                     params[node.attrib["name"]]=a
                 elif node.tag == "input":
                     # Default input that doesn't change, only for Treatments
                     self.fixed_input = node.text.strip()
         return params
 
-    def run(self,in_name,out_name,rep,is_pop):
+    def run(self, in_name, out_name, rep, is_pop):
         """
-        Run the event using in_name as the input map and out_name as the output
-        map. 
+        Run the event using in_name as the input map and out_name as the output map. 
         """
-        p=self.get_params(is_pop,None)
+        template_p = self.get_params(is_pop,None)
+        p = {}
         
         # If this event has a fixed input specified
         if self.fixed_input is not None:
@@ -124,52 +118,51 @@ class Event:
         # Parameter names for input and output maps
         in_param = self.get_input_name()
         if in_param is not None:
-            p[in_param]=in_name
+            template_p[in_param] = ("IN", in_name)
         out_param = self.get_output_name()
         if out_param is not None:
-            p[out_param]=out_name
+            template_p[out_param] = ("OUT", out_name)
 
         s_name = rep.instance.strategy
         s = rep.instance.experiment.get_management_strategy(s_name)
         # TODO strategies should be pre initialised with instances
         if s is not None:
             s.set_instance(rep.instance)
-        for p_name,value in p.items():
-            if value[0] == "VAR":
-                instance_value = rep.instance.get_var(value[1])
+        for p_name, value in template_p.items():
+            p_type, p_value = value
+            # print 'name is', p_name,
+            # print 'value is', value
+            if p_type == "VAR":
+                instance_value = rep.instance.get_var(p_value)
                 treatments = []
                 if s is not None:
-                    treatments = s.get_treatments_for_param(value[1],rep.current_t)
-                    self.log.info("treatments is " + repr(treatments))
-                    # TODO support blending of multiple treatments on param
-                    # (move below operations from treatment to strategy)
+                    treatments = s.get_treatments_for_param(p_value,rep.current_t)
                     if len(treatments) > 0:
+                        self.log.info("treatments for variable %s are: %s" % (p_value, repr(treatments)))
+                        # TODO support blending of multiple treatments on param
+                        # (move below operations from treatment to strategy)
                         assert ( len(treatments) == 1 )
-                        instance_map = treatments[0].get_variable_map(value[1],
-                                instance_value, rep)
+                        instance_map = treatments[0].get_variable_map(p_value, instance_value, rep)
                         if instance_map is None:
-                            instance_value = treatments[0].get_altered_variable_value(value[1],instance_value)
+                            instance_value = treatments[0].get_altered_variable_value(p_value,instance_value)
                             assert( instance_value is not None )
                 if instance_value is not None:
                     p[p_name]=instance_value
                 else:
-                    self.log.info("Variable has None value for this instance")
-                    # remove from param list
-                    del p[p_name]
-            elif value[0] == "SEED":
-                p[p_name]=rep.random.randint(-2.14748e+09,2.14748e+09)
-            elif value[0] == "VALUE":
-                p[p_name]=value[1]
-            elif value[0] == "MAP":
-                p[p_name]=value[1]
-            elif value[0] == "FLAG":
-                p[p_name]="FLAG"
+                    self.log.info("Variable %s has None value for this instance" % p_name)
+            elif p_type == "SEED":
+                p[p_name] = rep.random.randint(-2.14748e+09,2.14748e+09)
+            elif p_type in ["VALUE", "MAP", "IN", "OUT"]:
+                p[p_name] = p_value
+            elif p_type == "FLAG":
+                p[p_name] = "FLAG"
+            else: 
+                raise Exception("Unknown parameter type %s" % p_type)
         
         cmd=self.create_cmd_string(p)
         
         grass.get_g().remove_map(out_name)
         grass.get_g().run_command(cmd)
-        #self.log.debug(cmd)
 
     def get_map_resources(self,model):
         var_maps = model.get_variable_maps()
@@ -188,10 +181,10 @@ class Event:
         """
         Create an actual command line string to run in GRASS
         """
-        cmd=self.get_command() + ' '
-        for p_name,value  in params.items():
+        cmd = self.get_command()
+        for p_name, value in params.items():
             if value == "FLAG":
-                cmd = cmd + "-" + p_name + " "
+                cmd += (" -" + p_name)
             else:
-                cmd = cmd + p_name + "=" + str(value) + " "
-        return cmd
+                cmd += (" " + p_name + "=" + str(value))
+        return cmd + " "

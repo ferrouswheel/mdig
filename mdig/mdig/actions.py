@@ -35,12 +35,6 @@ class Action:
         self.output_level = "normal"
         # maximum number of models that command expects
         self.model_limit = 1
-        # whether to overwrite files that already exist
-        # Moved to config
-        #self.overwrite_flag = False
-        # remove null bitmasks (saves disk space but takes time)
-        # Moved to config
-        #self.remove_null = False
         # Whether this action appears in the usage information
         self.hidden = False
         # Whether do_me expects a DispersalModel from self.model_name to be
@@ -168,7 +162,6 @@ class RunAction(Action):
 
     def __init__(self):
         Action.__init__(self)
-        self.time = None
 
         self.parser = OptionParser(version=mdig.version_string,
                 description = RunAction.description,
@@ -178,7 +171,7 @@ class RunAction(Action):
     def add_options(self):
         Action.add_options(self)
         self.parser.add_option("-t","--runtime",
-                help="Maximum real-time to run simulations for.",
+                help="Maximum minutes to run simulations for.",
                 action="store",
                 dest="time",
                 type="int")
@@ -206,7 +199,7 @@ class RunAction(Action):
         # as a single matrix. Latter is faster but results in fractional
         # population
         self.parser.add_option("-i","--by-individual",
-                help="Do lifestage transitions by individual (SLOW)",
+                help="Do lifestage transitions by individual (Warning: very slow)",
                 action="store_true",
                 dest="ls_trans_individual")
         self.parser.add_option("-z","--ignore-div-by-zero",
@@ -242,18 +235,18 @@ class RunAction(Action):
         return self.model_names[0]
 
     def do_me(self, mdig_model):
-        if self.time is not None:
+        if self.options.time is not None:
             self.start_time = datetime.now()
-            self.end_time = self.start_time + timedelta(hours=self.time)
+            self.end_time = self.start_time + timedelta(seconds=self.options.time * 60)
             self.log.debug("Start time %s", self.start_time.ctime())
-            self.log.debug("Maximum end time %s", self.end_time.ctime())
+            self.log.info("Will force stop at time %s", self.end_time.ctime())
         self.log.debug("Executing simulation")
         
         if self.options.show_monitor:
             mdig_model.add_listener(displayer.Displayer())
 
         if self.options.ls_trans_individual:
-            self.log.debug("Calculating lifestage transitions by individual. This is SLOW.")
+            self.log.debug("Calculating lifestage transitions by individual. This is slow.")
             for i in mdig_model.get_lifestage_transitions():
                 i.by_individual = True
         if self.options.ls_trans_ignore_div_by_zero:
@@ -293,8 +286,7 @@ class AnalysisAction(Action):
                 dest="analysis_cmd_file",
                 type="string")
         self.parser.add_option("-s","--step",
-                help="The interval at which to run analysis on ('all' or " +
-                    "'final')",
+                help="The interval at which to run analysis on ('all' or 'final')",
                 action="store",
                 dest="analysis_step",
                 type="choice",
@@ -347,8 +339,8 @@ class AnalysisAction(Action):
         
         # If only a probability envelope is to be created then don't prompt
         # for command
-        if not self.options.prob_envelope_only and \
-                self.options.analysis_cmd_file is None:
+        if (not self.options.prob_envelope_only and 
+                self.options.analysis_cmd_file is None):
             print '''
             ====================================
             analysis: You can use %0 to represent the current map being looked
