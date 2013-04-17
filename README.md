@@ -125,7 +125,11 @@ Note - currently only basic tests are run, more rigorous tests are needed
   should look like. For modules, create before and after maps and make sure they
   have no difference,implement as a shell script to be run within GRASS.
 
+## Use
+
+
 ## References
 
 [1]: http://dx.doi.org/10.1890/08-1777.1       "Predicting Argentine ant spread over the heterogeneous landscape using a spatially explicit stochastic model"
-[1]: http://dx.doi.org/10.1016/j.ecolmodel.2011.03.023      "Temporal limits to simulating the future spread pattern of invasive species: Buddleja davidii in Europe and New Zealand"
+[2]: http://dx.doi.org/10.1016/j.ecolmodel.2011.03.023      "Temporal limits to simulating the future spread pattern of invasive species: Buddleja davidii in Europe and New Zealand"
+[3]: http://www.reeis.usda.gov/web/crisprojectpages/0222253-modeling-and-controlling-the-spread-of-invasive-species-over-heterogeneous-landscapes-melaleuca-quinquenervia-and-mimosa-pellita-in-puerto-rico.html "MODELING AND CONTROLLING THE SPREAD OF INVASIVE SPECIES OVER HETEROGENEOUS LANDSCAPES: MELALEUCA QUINQUENERVIA AND MIMOSA PELLITA IN PUERTO RICO."
