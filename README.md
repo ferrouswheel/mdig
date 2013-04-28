@@ -127,8 +127,9 @@ Note - currently only basic tests are run, more rigorous tests are needed
 
 ## Use
 
-
-## References
+* [Recreating the invasion history of Argentine ant in New Zealand][1].
+* [Buddleia daviddi spread in New Zealand][2].
+* [Melaleuca quinquenervia and Mimosa pellita in Puerto Rico][3].
 
 [1]: http://dx.doi.org/10.1890/08-1777.1       "Predicting Argentine ant spread over the heterogeneous landscape using a spatially explicit stochastic model"
 [2]: http://dx.doi.org/10.1016/j.ecolmodel.2011.03.023      "Temporal limits to simulating the future spread pattern of invasive species: Buddleja davidii in Europe and New Zealand"
