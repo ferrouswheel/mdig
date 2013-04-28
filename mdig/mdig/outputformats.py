@@ -18,24 +18,33 @@
 #
 import logging
 
-import grass
-from instance import DispersalInstance
-from replicate import Replicate
+import mdig.grass as grass
 
-#TODO: move into classes
+from mdig.instance import DispersalInstance
+from mdig.replicate import Replicate
+
 def create_filename(rep):
     if isinstance(rep,Replicate):
-        return rep.get_map_name_base()
+        fn = rep.get_map_name_base()
     elif isinstance(rep,DispersalInstance):
         i = rep
-        return i.get_map_name_base()
+        fn = i.get_map_name_base()
     else:
         logging.getLogger('mdig').error("Unknown object to create filename for.")
-        return None
+        fn = None
+    return fn
         
+class BaseOutput(object):
 
-class PngOutput:
-    def __init__(self,node):
+    def replicate_update(self, rep, t):
+        return NotImplemented
+
+    def create_filename(self, rep):
+        return create_filename(rep)
+
+class PngOutput(BaseOutput):
+
+    def __init__(self, node):
         self.interval = 1
         self.show_year = False
         self.show_grid = False
@@ -55,15 +64,15 @@ class PngOutput:
         
         self.listeningTo = []
         
-    def replicate_update(self,rep,t):
+    def replicate_update(self, rep, t):
         g = grass.get_g()
         
         fn = None
         
         if rep.instance.experiment.interval_modulus(self.interval,t) == 0:
             
-            fn = create_filename(rep)
-            fn+="_"+repr(t)+".png"
+            fn = self.create_filename(rep)
+            fn += "_" + repr(t) + ".png"
             self.log.debug("Writing PNG %s" % fn)
             
             g.set_output(fn,display=None)
@@ -85,13 +94,13 @@ class PngOutput:
             self.last_output = t
             g.close_output()
             
-        return [ None, fn ]
+        return [None, fn]
         
 
-class RasterOutput:
+class RasterOutput(BaseOutput):
     _tag="RasterOutput"
     
-    def __init__(self,node):
+    def __init__(self, node):
         self.interval = 1
         self.lifestage = None
         self.log = logging.getLogger("mdig.RasterOutput")
@@ -104,17 +113,17 @@ class RasterOutput:
         
         self.listeningTo = []
         
-    def replicate_update(self,rep,t):
+    def replicate_update(self, rep, t):
         g = grass.get_g()
         fn = None
 
         if rep.instance.experiment.interval_modulus(self.interval,t) == 0:
             for l in rep.temp_map_names.keys():
                 if self.lifestage == l:
-                    fn = create_filename(rep)
+                    fn = self.create_filename(rep)
                     fn += "_ls_" + l + "_" + repr(t)
                     self.log.debug("Writing raster %s" % fn)
                     g.copy_map(rep.temp_map_names[l][0],fn,True)
             self.last_output = t
             
-        return [ self.lifestage, fn ]
+        return [self.lifestage, fn]
