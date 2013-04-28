@@ -1,9 +1,6 @@
 import os
-import sys
 import glob
-import pdb
 import logging
-import tempfile
 
 import mdig
 from mdig import config
@@ -35,7 +32,7 @@ class ModelRepository:
             if not os.path.isdir(gisdbase):
                 raise OSError("Bad GISDBASE")
             self.db = gisdbase 
-        self.log.info("Using GRASS DB location " + self.db)
+        self.log.info("Using GRASS DB directory" + self.db)
 
     def add_model(self, model_fn):
         import shutil
