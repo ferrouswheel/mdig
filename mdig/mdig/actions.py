@@ -18,7 +18,7 @@ from mdig.instance import InvalidLifestageException, \
         InstanceIncompleteException, InvalidReplicateException, NoOccupancyEnvelopesException
 
 
-class Action:
+class Action(object):
 
     def __init__(self):
         # The model name that the action is being performed on
@@ -63,13 +63,13 @@ class Action:
                 dest="output_level",
                 const="quiet")
         self.parser.add_option("-r","--repository",
-                help="Set model repository location (GISDBASE)",
+                help="Override GRASS database dir (GISDBASE)",
                 action="store",
                 type="string",
                 dest="repository",
                 default=None)
         self.parser.add_option("-k","--location",
-                help="Set model geo location (LOCATION_NAME)",
+                help="Override GRASS location (LOCATION_NAME)",
                 action="store",
                 type="string",
                 dest="location",
@@ -116,7 +116,7 @@ class RepositoryAction(Action):
     description = "Set/modify the current MDiG repository and location"
 
     def __init__(self):
-        Action.__init__(self)
+        super(RepositoryAction, self).__init__()
         self.check_model = False
         self.preload = False
         self.init_repository = False
@@ -161,7 +161,7 @@ class RunAction(Action):
     description = "Run a model"
 
     def __init__(self):
-        Action.__init__(self)
+        super(RunAction, self).__init__()
 
         self.parser = OptionParser(version=mdig.version_string,
                 description = RunAction.description,
@@ -270,7 +270,7 @@ class AnalysisAction(Action):
     description = "Perform analysis on a model and create occupancy envelopes"
 
     def __init__(self):
-        Action.__init__(self)
+        super(AnalysisAction, self).__init__()
         # Default is to run analysis on all timesteps with maps available.
         self.parser = OptionParser(version=mdig.version_string,
                 description = AnalysisAction.description,
@@ -404,7 +404,7 @@ class StatsAction(Action):
     description = "Calculate univariate statistics for maps."
 
     def __init__(self):
-        Action.__init__(self)
+        super(StatsAction, self).__init__()
         # Default is to run analysis on all timesteps with maps available.
         self.parser = OptionParser(version=mdig.version_string,
                 description = StatsAction.description,
@@ -544,7 +544,7 @@ class ResetAction(Action):
     description = "Reset the model. Delete all prior instances/replicates."
 
     def __init__(self):
-        Action.__init__(self)
+        super(ResetAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
                 description = ResetAction.description,
                 usage = "%prog reset <path/model.xml>")
@@ -581,7 +581,7 @@ class AddAction(Action):
     description = "Add a model to the repository based on an xml definition."
 
     def __init__(self):
-        Action.__init__(self)
+        super(AddAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
                 description = AddAction.description,
                 usage = "%prog add <path/model.xml>")
@@ -608,7 +608,7 @@ class RemoveAction(Action):
     description = "Remove a model from the repository and delete mapset."
 
     def __init__(self):
-        Action.__init__(self)
+        super(RemoveAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
                 description = RemoveAction.description,
                 usage = "%prog remove <model name>")
@@ -633,7 +633,7 @@ class ListAction(Action):
     description = "List the models currently in MDiG repository."
 
     def __init__(self):
-        Action.__init__(self)
+        super(ListAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
                 description = ListAction.description,
                 usage = "%prog list")
@@ -681,7 +681,7 @@ class InfoAction(Action):
     description = "Display information about a model in the MDiG repository."
 
     def __init__(self):
-        Action.__init__(self)
+        super(InfoAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
                 description = InfoAction.description,
                 usage = "%prog info <model_name>")
@@ -712,7 +712,7 @@ class ExportAction(Action):
     description = "Export images and movies of simulation."
 
     def __init__(self):
-        Action.__init__(self)
+        super(ExportAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
                 description = ExportAction.description,
                 usage = "%prog export [options] <model_name>")
@@ -1105,7 +1105,7 @@ class ROCAction(Action):
         "occupancy envelopes and calculate AUC."
 
     def __init__(self):
-        Action.__init__(self)
+        super(ROCAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
                 description = ROCAction.description,
                 usage = "%prog roc [options] <model_name1> <model_name2> ...")
@@ -1218,7 +1218,7 @@ class AdminAction(Action):
     description = "Perform miscellaneous administative tasks"
 
     def __init__(self):
-        Action.__init__(self)
+        super(AdminAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
                 description = AdminAction.description,
                 usage = "%prog admin [options] <model_name>")
@@ -1284,7 +1284,7 @@ class WebAction(Action):
     description = "Run a webserver that allows interaction with MDiG"
 
     def __init__(self):
-        Action.__init__(self)
+        super(WebAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
                 description = WebAction.description,
                 usage = "%prog web [options] <model_name>")
@@ -1304,7 +1304,7 @@ class ClientAction(Action):
     description = "Runs MDiG as a node in a distributed instance of MDiG"
 
     def __init__(self):
-        Action.__init__(self)
+        super(ClientAction, self).__init__()
 
     def get_usage(self):
         usage_str = mdig.version_string
