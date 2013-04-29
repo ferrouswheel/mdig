@@ -123,7 +123,7 @@ class RepositoryAction(Action):
         self.init_repository = False
         self.init_grass = False
         self.parser = OptionParser(version=mdig.version_string,
-                description = RepositoryAction.description,
+                description = self.description,
                 usage = "%prog repository [options] GISDBASE/LOCATION" )
         self.add_options()
         self.parser.remove_option('-k')
@@ -165,7 +165,7 @@ class RunAction(Action):
         super(RunAction, self).__init__()
 
         self.parser = OptionParser(version=mdig.version_string,
-                description = RunAction.description,
+                description = self.description,
                 usage = "%prog run [options] model_name" )
         self.add_options()
 
@@ -274,7 +274,7 @@ class AnalysisAction(Action):
         super(AnalysisAction, self).__init__()
         # Default is to run analysis on all timesteps with maps available.
         self.parser = OptionParser(version=mdig.version_string,
-                description = AnalysisAction.description,
+                description = self.description,
                 usage = "%prog analysis [options] model_name")
         self.add_options()
 
@@ -408,7 +408,7 @@ class StatsAction(Action):
         super(StatsAction, self).__init__()
         # Default is to run analysis on all timesteps with maps available.
         self.parser = OptionParser(version=mdig.version_string,
-                description = StatsAction.description,
+                description = self.description,
                 usage = "%prog stats [options] model_name")
         self.add_options()
 
@@ -547,7 +547,7 @@ class ResetAction(Action):
     def __init__(self):
         super(ResetAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
-                description = ResetAction.description,
+                description = self.description,
                 usage = "%prog reset <path/model.xml>")
         self.add_options()
 
@@ -584,7 +584,7 @@ class AddAction(Action):
     def __init__(self):
         super(AddAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
-                description = AddAction.description,
+                description = self.description,
                 usage = "%prog add <path/model.xml>")
         self.add_options()
         self.preload = False
@@ -611,7 +611,7 @@ class RemoveAction(Action):
     def __init__(self):
         super(RemoveAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
-                description = RemoveAction.description,
+                description = self.description,
                 usage = "%prog remove <model name>")
         self.add_options()
         self.preload = False
@@ -636,7 +636,7 @@ class ListAction(Action):
     def __init__(self):
         super(ListAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
-                description = ListAction.description,
+                description = self.description,
                 usage = "%prog list")
         self.add_options()
         self.preload = False
@@ -684,7 +684,7 @@ class InfoAction(Action):
     def __init__(self):
         super(InfoAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
-                description = InfoAction.description,
+                description = self.description,
                 usage = "%prog info <model_name>")
         self.check_model = False
         self.add_options()
@@ -715,8 +715,8 @@ class ExportAction(Action):
     def __init__(self):
         super(ExportAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
-                description = ExportAction.description,
-                usage = "%prog export [options] <model_name>")
+                description=self.description,
+                usage="%prog export [options] <model_name>")
         self.add_options()
         self.listeners = []
         self.float64 = False
@@ -1109,7 +1109,7 @@ class ROCAction(Action):
     def __init__(self):
         super(ROCAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
-                description = ROCAction.description,
+                description = self.description,
                 usage = "%prog roc [options] <model_name1> <model_name2> ...")
         # Can theoretically run on any number of models
         self.model_limit = None
@@ -1222,7 +1222,7 @@ class AdminAction(Action):
     def __init__(self):
         super(AdminAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
-                description = AdminAction.description,
+                description = self.description,
                 usage = "%prog admin [options] <model_name>")
         self.add_options()
 
@@ -1288,7 +1288,7 @@ class WebAction(Action):
     def __init__(self):
         super(WebAction, self).__init__()
         self.parser = OptionParser(version=mdig.version_string,
-                description = WebAction.description,
+                description = self.description,
                 usage = "%prog web [options] <model_name>")
         self.preload = False
         self.add_options()

@@ -1,6 +1,7 @@
 import os
 import glob
 import logging
+import shutil
 
 import mdig
 from mdig import config
@@ -35,46 +36,51 @@ class ModelRepository:
         self.log.info("Using GRASS DB directory" + self.db)
 
     def add_model(self, model_fn):
-        import shutil
         if not os.path.isfile(model_fn):
             raise RepositoryException("Model file %s is not a file."%model_fn)
         g = grass.get_g()
-        dm = model.DispersalModel(model_fn,setup=False)
+        c = config.get_config()
+
+        dm = model.DispersalModel(model_fn, setup=False)
+
         loc = dm.get_location()
         if loc == None:
             raise RepositoryException("Model doesn't define GIS Location for simulation")
-        if not os.path.isdir(os.path.join(self.db,loc,"PERMANENT")):
-            raise RepositoryException("Model defines a GIS Location " + loc + " that " + "doesn't exist in " + self.db)
+        if not os.path.isdir(os.path.join(self.db, loc, "PERMANENT")):
+            raise RepositoryException("Model defines a GIS Location %s that doesn't exist in %s" %
+                    (loc, self.db))
+
         models = self.get_models()
-        c = config.get_config()
         if dm.get_name() in models:
             if c.overwrite_flag:
                 # remove instance mapsets and replace model.xml
-                self.log.info("Remove instances of old version of model %s"%dm.get_name())
-                dm_old = model.DispersalModel(models[dm.get_name()],setup=False)
+                self.log.info("Remove instances of old version of model %s" % dm.get_name())
+                dm_old = model.DispersalModel(models[dm.get_name()], setup=False)
                 dm_old.hard_reset()
                 del dm_old
             else:
                 raise RepositoryException("The model '" + dm.get_name() + \
                     "' already exists in the repository. Replace with -o.")
         g.change_mapset("PERMANENT",loc)
-        # create model mapset
+
+        model_mapset = dm.get_mapset()
         if not g.check_mapset(dm.get_name()):
-            self.log.info("Creating mapset for model %s"%dm.get_mapset())
-#           raise RepositoryException("Couldn't create mapset %s, it already exists in location %s." \
-#               % (dm.get_mapset(),g.get_mapset_full_path(dm.get_mapset()) ))
-            if not g.change_mapset(dm.get_name(),loc,True):
-                raise RepositoryException("Couldn't create mapset %s." % dm.get_mapset())
+            # Create model mapset
+            self.log.info("Creating mapset for model %s" % model_mapset)
+            if not g.change_mapset(dm.get_name(), loc, True):
+                raise RepositoryException("Couldn't create mapset %s." % model_mapset)
             self.log.info("Created mapset for model " + dm.get_name())
         else: 
-            self.log.warning("Using existing mapset with same name as model %s"%dm.get_mapset())
+            # Use existing mapset which matches model name
+            self.log.warning("Using existing mapset with same name as model %s"
+                    % model_mapset)
             if not g.change_mapset(dm.get_name(),loc):
-                raise RepositoryException("Couldn't change into mapset %s." % dm.get_mapset())
+                raise RepositoryException("Couldn't change into mapset %s." % model_mapset)
         # create mdig dir in mapset
         try:
-            dest_dir = g.create_mdig_subdir(dm.get_mapset(),c.overwrite_flag)
+            dest_dir = g.create_mdig_subdir(model_mapset, c.overwrite_flag)
         except OSError, e:
-            g.remove_mapset(dm.get_mapset(),force=True)
+            g.remove_mapset(model_mapset, force=True)
             raise RepositoryException("Error creating mdig dir in mapset. %s" % str(e))
 
         # copy lifestage transition model file if it exists
@@ -101,22 +107,23 @@ class ModelRepository:
                     new_coda_files.append(os.path.basename(cf))
                 lt.set_coda_files_in_xml(new_coda_files)
         if len(missing_files) > 0:
-            g.remove_mapset(dm.get_mapset(),force=True)
+            g.remove_mapset(model_mapset,force=True)
             raise RepositoryException("Can't find lifestage transition files",
                     missing_files)
         for x in files_to_copy:
             shutil.copyfile(x,os.path.join(dest_dir,os.path.basename(x)))
 
-        # remove explicit location and rely on implicit location finding
-        dm.remove_location()
         # write dispersal model to new dir (original copy)
         dm.save_model(os.path.join(dest_dir,"model_original.xml"))
+
+        # make explicit location match loc
+        dm.set_location(loc)
         # write dispersal model to new dir (working copy)
         dm.save_model(os.path.join(dest_dir,"model.xml"))
 
         # set up model directory
         dm.set_base_dir() 
-        print "Successfully added model to mapset %s" % g.get_mapset_full_path(dm.get_mapset())
+        print "Successfully added model to mapset %s" % g.get_mapset_full_path(model_mapset)
         return dm.get_name()
 
     def remove_model(self, model_name, force=False):
@@ -134,7 +141,6 @@ class ModelRepository:
                 print "Not removing model " + model_name
 
         if force:
-            import shutil
             g = grass.get_g()
             dm = model.DispersalModel(models[model_name],setup=False)
             loc = dm.get_location()

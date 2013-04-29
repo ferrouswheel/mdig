@@ -301,7 +301,7 @@ class DispersalModel(object):
         while mapset_exists:
             i_mapset = base_mapset_name + "_i" + str(counter)
             if i_mapset not in self.instance_mapsets:
-                mapset_exists = g.check_mapset(i_mapset,self.infer_location())
+                mapset_exists = g.check_mapset(i_mapset, self.infer_location())
             counter+=1
         self.instance_mapsets.append(i_mapset)
         return i_mapset
@@ -358,7 +358,7 @@ class DispersalModel(object):
 
             db = g.grass_vars['GISDBASE']
             location = self.infer_location()
-            ms_dir = os.path.join(db,location,mapset)
+            ms_dir = os.path.join(db, location, mapset)
             try:
                 shutil.rmtree(ms_dir)
             except OSError, e:
@@ -607,11 +607,15 @@ class DispersalModel(object):
         model_node.remove(nodes[0])
         
     def infer_location(self):
-        """ Older model format didn't include GIS location name.
-
-        This method is to try to infer the location from the path. But obviously
-        won't work unless the model has actually been added to the in-GRASS repository.
+        """ Safe method for getting GRASS location name.
+        
+        Older model format didn't include location. So if it is missing, we try to   
+        infer the location from the path. But obviously won't work unless the
+        model has actually been added to the in-GRASS repository.
         """
+        l = self.get_location()
+        if l:
+            return l
         if not self.model_file or not os.path.isfile(self.model_file):
             return None
         the_dir = os.path.dirname(self.model_file)
@@ -1296,13 +1300,13 @@ class DispersalModel(object):
     def get_mapset(self):
         """ Get the mapset where this model's maps are contained.
 
-            Currently is the same as the model name. Not sure whether to change
-            this?
+        TODO: this should remove bad characters that can't be in a mapset name
         """
         return self.get_name()
 
     def get_mapsets(self, include_root=True):
         """ Return all the mapsets that instances refer to.
+
         @param include_root defines whether to include the root model mapset or
         whether the method only returns instance mapsets.
         """
@@ -1312,8 +1316,8 @@ class DispersalModel(object):
 
     def move_mapset(self, new_mapset):
         """
-        Moves all Grass related files to another mapset. Files that have mapset given
-        using map@mapset notation are not moved, but others are.
+        Moves all Grass related files to another mapset. Files that have mapset
+        given using map@mapset notation are not moved, but others are.
         """
         G = self.grass_i
 
@@ -1547,51 +1551,6 @@ class ValidationError(Exception): pass
 
 class InvalidXMLException(Exception): pass
 
-def open_anything(source):
-        """URI, filename, or string --> stream
-    
-        This function lets you define parsers that take any input source
-        (URL, pathname to local or network file, or actual data as a string)
-        and deal with it in a uniform manner.  Returned object is guaranteed
-        to have all the basic stdio read methods (read, readline, readlines).
-        Just .close() the object when you're done with it.
-        
-        Examples:
-        >>> from xml.dom import minidom
-        >>> sock = open_anything("http://localhost/kant.xml")
-        >>> doc = minidom.parse(sock)
-        >>> sock.close()
-        >>> sock = open_anything("c:\\inetpub\\wwwroot\\kant.xml")
-        >>> doc = minidom.parse(sock)
-        >>> sock.close()
-        >>> sock = open_anything("<ref id='conjunction'><text>and</text><text>or</text></ref>")
-        >>> doc = minidom.parse(sock)
-        >>> sock.close()
-        """
-        if hasattr(source, "read"):
-            return source
-    
-        if source == '-':
-            import sys
-            return sys.stdin
-    
-        # try to open with urllib (if source is http, ftp, or file URL)
-        import urllib
-        try:
-            return urllib.urlopen(source)
-        except (IOError, OSError):
-            pass
-        
-        # try to open with native open function (if source is pathname)
-        try:
-            return open(source)
-        except (IOError, OSError):
-            pass
-        
-        # treat source as string
-        import StringIO
-        return StringIO.StringIO(str(source)) 
-
 def usage():
     print __doc__
 
@@ -1620,7 +1579,6 @@ def main(argv):
     
     #print doc.getCompleted()
     #print doc.getIncomplete()
-    
     print doc.xml_model.xpath('/model/instances/completed[region[@id="%s"]][variable[@id="test"]="3"]' % "a")
     
     print "Number of replicates = " + repr(doc.get_num_replicates())
