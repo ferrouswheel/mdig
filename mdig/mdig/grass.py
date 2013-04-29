@@ -934,50 +934,57 @@ class GRASSInterface:
         self.run_command("r.colors map=%s color=gyr --quiet" % (filename))
         
         return filename
+
+    def debug_dump_command(self, command_string, to_input, log_lvl=logging.WARNING):
+        x = "GRASS command exception after running command:\n"
+        x += command_string + "\n\n"
+        x += "input:\n"
+        x += to_input + "\n\n"
+        x += "stdout:\n"
+        x += self.stdout + "\n\n"
+        x += "stderr:\n"
+        x += self.stderr + "\n\n"
+        x += "mapset:\n"
+        x += self.get_mapset_full_path() + "\n\n"
+        x += "stack trace:\n"
+
+        # Get traceback
+        import traceback
+        tb = traceback.format_stack(limit=10)
+
+        self.log.error(x + ''.join(tb))
+
+        if log_lvl <= logging.DEBUG:
+            print "Dropping to pdb.\nYou can try to continue by entering c<enter>, or quit with q<enter>."
+            import pdb; pdb.set_trace()
     
-    def run_command(self, commandstring, log_level=logging.DEBUG, to_input=""):
-        self.log.log(log_level, "exec: " + commandstring)
+    def run_command(self, command_string, log_level=logging.DEBUG, to_input=""):
+        self.log.log(log_level, "exec: " + command_string)
         ret = None
         
-        lvl = logging.WARNING
-        if len(logging.getLogger("mdig").handlers) > 0:
-            lvl = logging.getLogger("mdig").handlers[0].level
-        p = Popen(commandstring, shell=True, stdout=subprocess.PIPE, \
+        # lvl = logging.getLogger("mdig").getEffectiveLevel()
+        # Not sure why we do this, assuming the log level from the first handler is silly
+        #lvl = logging.WARNING
+        #if logging.getLogger("mdig").handlers:
+            #lvl = logging.getLogger("mdig").handlers[0].level
+        p = Popen(command_string, shell=True, stdout=subprocess.PIPE, \
                 stdin=subprocess.PIPE,stderr=subprocess.PIPE)
         
         self.stdout, self.stderr = p.communicate(to_input)
-        if len(self.stdout) > 0:
+        if self.stdout:
             self.log.debug("stdout: " + self.stdout)
-        if lvl >= logging.INFO and self.stderr is not None and len(self.stderr) > 0:
+        if log_level >= logging.INFO and self.stderr is not None and len(self.stderr) > 0:
             self.log.debug("stderr: " + self.stderr)
         ret = p.returncode
 
         if (ret is not None) and ret != 0:
-            if lvl >= logging.DEBUG:
-                import traceback
-                dump_filename = "mdig.command_dump"
-                f = open(dump_filename,"w")
-                f.write("MDiG Trace after running command:\n")
-                f.write(commandstring+"\n\n")
-                f.write("input:\n")
-                f.write(to_input + "\n\n")
-                f.write("stdout:\n")
-                f.write(self.stdout + "\n\n")
-                f.write("stderr:\n")
-                f.write(self.stderr + "\n\n")
-                f.write("mapset:\n")
-                f.write(self.get_mapset_full_path() + "\n\n")
-                f.write("stack trace:\n")
-                traceback.print_stack(file=f)
-                f.close()
-                self.log.error("GRASS command exception - details written to file %s. Dropping to Python Debugger." % dump_filename)
-                self.log.error("You can try to continue by entering c<enter>, or quit with q<enter>.")
-                import pdb; pdb.set_trace()
-            raise GRASSCommandException(commandstring,self.stderr,ret)
+            self.debug_dump_command(command_string, to_input, log_level)
+            raise GRASSCommandException(command_string, self.stderr, ret)
         return ret
 
     def check_for_executable(self, program):
         """ Cross platform way to find whether an exe exists in the path.
+
         Taken from:
         http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python/377028#377028
         """
@@ -990,14 +997,14 @@ class GRASSInterface:
             extensions.extend(os.environ["PATHEXT"].split(os.pathsep))
         if fpath:
             for ext in extensions:
-                if is_exe(program+ext):
-                    return program+ext
+                if is_exe(program + ext):
+                    return program + ext
         else:
             for path in os.environ["PATH"].split(os.pathsep):
                 for ext in extensions:
                     exe_file = os.path.join(path, program)
-                    if is_exe(exe_file+ext):
-                        return exe_file+ext
+                    if is_exe(exe_file + ext):
+                        return exe_file + ext
         return None
 
     def clean_up(self):
@@ -1010,7 +1017,7 @@ class GRASSInterface:
             self.grass_vars['GISDBASE']= self.old_gisdbase
             self.set_gis_env()
             self.log.debug('Restoring old region')
-            output = subprocess.Popen("g.region " + self.old_region, shell=True,
+            subprocess.Popen("g.region " + self.old_region, shell=True,
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         # TODO remove all other temporary maps
         self.close_display()

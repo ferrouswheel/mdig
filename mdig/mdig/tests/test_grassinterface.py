@@ -2,17 +2,9 @@ import unittest
 from mock import *
 
 import os
-import pdb
-import tempfile
-import shutil
-import datetime
+import logging
 
-import mdig
-from mdig import config
 from mdig import grass 
-from mdig.model import DispersalModel
-from mdig.modelrepository import ModelRepository,RepositoryException
-from mdig.actions import RunAction
 
 class MapNotFoundExceptionTest(unittest.TestCase):
 
@@ -58,7 +50,6 @@ class GRASSInterfaceTest(unittest.TestCase):
         g = self.g
         m_run = g.run_command = Mock()
         m_get_env = g.get_gis_env = Mock()
-        import os
         # backup vars to allow succesful cleanup
         old_python = g.grass_vars['GRASS_PYTHON']
         old_rc_file = g.grass_vars['GISRC']
@@ -140,10 +131,30 @@ class GRASSInterfaceTest(unittest.TestCase):
         pass
 
 
+    @patch('grass.Popen')
+    def test_run_command_w_error(self, m_popen):
+        g = self.g
+        lh = ListHandler()
+        logging.getLogger('mdig').addHandler(lh)
+        m_popen.return_value.communicate.return_value = ['','']
+        m_popen.return_value.returncode = 1
+        with self.assertRaises(grass.GRASSCommandException) as context:
+            g.run_command('test', log_level=logging.INFO)
+        self.assertTrue(any(['stack trace' in e for e in lh.error]))
+        self.assertEqual('test', context.exception.cmd)
 
+class ListHandler(logging.Handler):
 
+    debug = []
+    warning = []
+    info = []
+    error = []
 
+    def emit(self, record):
+        getattr(self.__class__, record.levelname.lower()).append(record.getMessage())
 
-    
-
-
+    @classmethod
+    def reset(cls):
+        for attr in dir(cls):
+            if isinstance(getattr(cls, attr), list):
+                setattr(cls, attr, [])

@@ -126,7 +126,8 @@ class DispersalModel(object):
                 self.check_model()
 
     def setup_logfile(self):
-        if self.log_file: return 
+        if self.log_file:
+            return 
         self.log_file = os.path.join(self.base_dir, "model.log")
         logformat = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s",
             datefmt='%Y%m%d %H:%M:%S')
@@ -143,22 +144,24 @@ class DispersalModel(object):
             # thread... so instead, we have to create another name...
             base_fn = self.log_file
             try:
-                if rollover: self.backup_file(self.log_file)
-            except OSError, e:
+                if rollover:
+                    self.backup_file(self.log_file)
+            except OSError:
                 # If we couldn't backup file then we need to find a free file
                 self.log_file = os.path.join(self.base_dir, "model_process_%d.log" % count)
             while fh is None and count < 10:
                 try:
                     fh = logging.FileHandler(self.log_file)
-                except OSError, e:
+                except OSError:
                     count += 1
                     self.log_file = os.path.join(self.base_dir, "model_process_%d.log" % count)
             # TODO, delete the file
         else:
-            fh = logging.handlers.RotatingFileHandler(self.log_file,maxBytes=0,backupCount=5)
-            if rollover: fh.doRollover()
+            fh = logging.handlers.RotatingFileHandler(self.log_file, maxBytes=0, backupCount=5)
+            if rollover:
+                fh.doRollover()
         fh.setFormatter(logformat)
-        # If we start having multiple simulations at once, then this should be
+        # If we start having multiple simulations running at once, then this should be
         # changed (and also areas that are not under mdig.model)
         logging.getLogger("mdig").addHandler(fh)
         self.log_handler=fh

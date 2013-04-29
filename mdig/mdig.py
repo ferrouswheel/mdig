@@ -17,18 +17,16 @@
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
 #
-''' MDiG - Modular Dispersal in GIS
+"""
+MDiG - Modular Dispersal in GIS
 Command line interface/launcher for MDiG.
-'''
+"""
 
 import sys
-import os
-import pdb
 import logging
-import random
 import signal
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import mdig
 from mdig import actions
@@ -37,7 +35,6 @@ from mdig import modelrepository
 
 from mdig import grass
 from mdig import model
-from mdig import displayer
 
 def usage(db):
     usage_line = mdig.version_string + "\n"
@@ -129,13 +126,13 @@ def main(argv):
 
     # Otherwise start up normally
     # set up logger
-    logger, loghandler = setupLogger()
+    logger, loghandler = setup_logger()
     # get config
     mdig_config = config.get_config()
     # set ansi logging if enabled
     ansi_bool_string = mdig_config["LOGGING"]["ansi"]
     if ansi_bool_string == "true":
-        setLogFormatter(loghandler,True)
+        set_log_formatter(loghandler, True)
 
     the_action = process_options(argv)
     # We can't rely on logging before this point as process_options
@@ -155,9 +152,9 @@ def main(argv):
             models = mdig.repository.get_models()
         if the_action.init_grass:
             # Check for grass environment and set up interface
-            grass_interface = grass.get_g()
+            grass.get_g()
     except grass.EnvironmentException, e:
-        logger.error("Failed to initialize due to environment error.")
+        logger.error("Failed to initialize due to environment error: %s" % str(e))
         logger.error("Perhaps check your config file? (%s)" % mdig_config.cf_full_path )
         sys.exit(1)
         
@@ -217,21 +214,21 @@ def exit_cleanup():
 
     logger.debug("Finished at %s" % repr(datetime.now().ctime()))
 
-def setupLogger():
+def setup_logger():
     logger = logging.getLogger("mdig")
     logger.setLevel(logging.DEBUG)
 
     # create handlers for each stream
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
-    setLogFormatter(ch,False)
+    set_log_formatter(ch,False)
 
     #add streamhandler to logger
     logger.addHandler(ch)
     
     return logger, ch
 
-def setLogFormatter(stream_handler, color = False):
+def set_log_formatter(stream_handler, color = False):
     if color:
         #create ANSI color formatter
         CSI = "\033["
@@ -257,5 +254,3 @@ def setLogFormatter(stream_handler, color = False):
 if __name__ == "__main__":
     main(sys.argv[1:])
     #pycallgraph.make_dot_graph('test.png')
-
-    
