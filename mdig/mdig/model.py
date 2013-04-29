@@ -302,7 +302,7 @@ class DispersalModel(object):
             i_mapset = base_mapset_name + "_i" + str(counter)
             if i_mapset not in self.instance_mapsets:
                 mapset_exists = g.check_mapset(i_mapset, self.infer_location())
-            counter+=1
+            counter += 1
         self.instance_mapsets.append(i_mapset)
         return i_mapset
     

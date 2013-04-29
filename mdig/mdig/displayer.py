@@ -17,23 +17,19 @@
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
 #
-""" Displayer class
-
-Displays the latest maps for each lifestage in a Grass display window.
-
-Copyright 2006, Joel Pitt
-
-"""
-
 from mdig import grass
 from mdig import config
 
 class Displayer:
+    """ Displayer class
+
+    Displays the latest maps for each lifestage in a Grass display window.
+    """
     
     def __init__(self):
         self.listeningTo = []
         
-    def replicate_update(self,rep,t):
+    def replicate_update(self, rep, t):
         g = grass.get_g()
         
         g.set_output()
@@ -48,6 +44,6 @@ class Displayer:
         
         layer_index = 0
         for l in rep.temp_map_names.keys():
-            g.paint_map(rep.temp_map_names[l][0],layer=layer_index)
-            layer_index+=1
+            g.paint_map(rep.temp_map_names[l][0], layer=layer_index)
+            layer_index += 1
         g.close_output()

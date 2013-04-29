@@ -69,7 +69,7 @@ class PngOutput(BaseOutput):
         
         fn = None
         
-        if rep.instance.experiment.interval_modulus(self.interval,t) == 0:
+        if rep.instance.experiment.interval_modulus(self.interval, t) == 0:
             
             fn = self.create_filename(rep)
             fn += "_" + repr(t) + ".png"
@@ -117,13 +117,13 @@ class RasterOutput(BaseOutput):
         g = grass.get_g()
         fn = None
 
-        if rep.instance.experiment.interval_modulus(self.interval,t) == 0:
+        if rep.instance.experiment.interval_modulus(self.interval, t) == 0:
             for l in rep.temp_map_names.keys():
                 if self.lifestage == l:
                     fn = self.create_filename(rep)
                     fn += "_ls_" + l + "_" + repr(t)
                     self.log.debug("Writing raster %s" % fn)
-                    g.copy_map(rep.temp_map_names[l][0],fn,True)
+                    g.copy_map(rep.temp_map_names[l][0], fn, True)
             self.last_output = t
             
         return [self.lifestage, fn]

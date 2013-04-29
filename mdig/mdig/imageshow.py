@@ -17,7 +17,6 @@
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
 #
-
 from Tkinter import *
 import os.path
 import sys
@@ -66,16 +65,14 @@ else:
             self.configure(width=image.size[0],height=image.size[1])
             self.pack(side=LEFT,fill=BOTH,expand=YES)
 
-# http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/82965
-# make a function that periodically checks file.
-# calls self.master.after(100, function)
+class PngView(object):
+    """
+    Launch the main part of the GUI and the worker thread.
+    
+    periodic_call and end_application could reside in the GUI part, but putting
+    them here means all the thread controls in a single place.
+    """
 
-class PngView:
-    """
-    Launch the main part of the GUI and the worker thread. periodicCall and
-    endApplication could reside in the GUI part, but putting them here
-    means that you have all the thread controls in a single place.
-    """
     def __init__(self, master, fname):
         """
         Start the GUI and the asynchronous threads. We are in the main
@@ -99,11 +96,14 @@ class PngView:
 
         # Start the periodic call in the GUI to check if the queue contains
         # anything
-        self.periodicCall()
+        self.periodic_call()
 
-    def periodicCall(self):
+    def periodic_call(self):
         """
         Check every 100 ms if png has changed
+
+        Make a function that periodically checks file, from here:
+        http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/82965
         """
         try:
             new_time = os.path.getmtime(self.fname)
@@ -118,18 +118,15 @@ class PngView:
             # This is the brutal stop of the system. You may want to do
             # some cleanup before actually shutting it down.
             sys.exit(1)
-        self.master.after(100, self.periodicCall)
+        self.master.after(100, self.periodic_call)
 
     def loadFile(self, fn):
         my_image = Image.open(fn)
         self.gui.setimage(my_image)
 
-    def endApplication(self):
+    def end_application(self):
         self.running = 0
 
 root = Tk()
-
 viewer = PngView(root,sys.argv[1])
 root.mainloop()
-
-# use subprocess module to create new process.

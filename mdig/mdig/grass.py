@@ -121,7 +121,9 @@ class GRASSInterface:
         self.displays = {}
         self.grass_vars = {}
         self.filename = None
-        self.outputIsTemporary = False
+        self.output_is_temporary = False
+
+        # pid_dir is only used if MDiG is not already being run in an existing GRASS shell.
         self.pid_dir = None
 
         self.old_mapset = None
@@ -148,7 +150,6 @@ class GRASSInterface:
             if e.exit_code not in [1,127]:
                 raise e
         if result != 0:
-            output = subprocess.Popen("env", shell=True, stdout=subprocess.PIPE).communicate()[0]
             self.log.error("Couldn't backup region, is GRASS environment set up correctly?")
             self.log.error("GISDBASE='%s' LOCATION_NAME='%s' MAPSET='%s'" % (
                 self.grass_vars['GISDBASE'],
@@ -235,20 +236,21 @@ class GRASSInterface:
         self.old_gisdbase = self.grass_vars['GISDBASE']
 
     def init_pid_specific_files(self):
-        import tempfile
-        #export GIS_LOCK=$$
         pid = str(os.getpid())
-        os.environ["GIS_LOCK"]=pid
+        os.environ["GIS_LOCK"] = pid
+
         # TODO this should detect the correct version
         #export GRASS_VERSION="7.0.svn"
-        os.environ["GIS_VERSION"]=self.get_version_from_dir()
-        #setup GISRC file
-        self.pid_dir=tempfile.mkdtemp(prefix="grass6-mdig-" + str(pid) + "-")
+        os.environ["GIS_VERSION"] = self.get_version_from_dir()
+
+        self.pid_dir = tempfile.mkdtemp(prefix="grass6-mdig-" + str(pid) + "-")
         if self.pid_dir is None:
             raise EnvironmentException("Failed to create temporary directory")
-        gisrc_fn = os.path.join(self.pid_dir,"gisrc")
+
+        # setup GISRC file
+        gisrc_fn = os.path.join(self.pid_dir, "gisrc")
         self._create_gis_rc_file(gisrc_fn)
-        os.environ["GISRC"]=gisrc_fn
+        os.environ["GISRC"] = gisrc_fn
 
     def get_version_from_dir(self):
         if sys.platform == 'win32':
@@ -277,7 +279,6 @@ class GRASSInterface:
     def check_paths(self):
         """ Check paths that should exist with the current GRASS environment,
         things like the GISDBASE, the LOCATION and MAPSET among others."""
-        # Check paths
         is_ok = True
         # check directories etc:
         if not os.path.isdir(self.grass_vars['GISDBASE']):
@@ -323,10 +324,11 @@ class GRASSInterface:
     def paint_map(self, map_name, layer=None):
         """ Draw map_name on to the currently active GRASS monitor """
         if layer != None:
-            colors = { 0: [(0,255,0), (0,50,0)],
-                 1: [(255,255,0), (50,50,0)],
-                 2: [(255,0,0), (50,0,0)],
-                 3: [(0,0,255), (0,0,50)]
+            colors = {
+                0: [(0,255,0), (0,50,0)],
+                1: [(255,255,0), (50,50,0)],
+                2: [(255,0,0), (50,0,0)],
+                3: [(0,0,255), (0,0,50)],
             }
             if layer in colors:
                 cmd_string = 'r.colors map=%s rules=-' % map_name
@@ -401,58 +403,57 @@ class GRASSInterface:
             self.run_command('r.null -r map=%s' % filename, logging.DEBUG);
     
     def set_output(self, filename=".png", width=480, height=480, display="default"):
-        # close output before setting new one, even if it's the same
-        # filename
+        # close output before setting new one, even if it's the same filename
         if self.filename:
             self.close_output()
         self.filename = filename
+
         if self.filename == ".png":
-            self.filename = repr(int(random.random()*1000)) + "_temp.png"
-            self.outputIsTemporary = True
+            # If .png is specified, we randomly generate a filename and treat as
+            # temporary
+            self.filename = tempfile.mkstemp(prefix='mdig_output', suffix='.png')
+            self.output_is_temporary = True
 
         # display must always check the same file
         # use a temporary png filename while constructing png
-        # (self.tempOutputFile)
+        # (self.temp_output_file)
         # also use a temporary filename for the file the display process
-        # monitors (pid_disp_filename.png)
-        # then, only copy self.tempOutputFile to pid_disp_filename.png and to .png
-        # once closeOutput is called.
+        # monitors (self.displays[display])
+        # then, only copy self.temp_output_file to ... and to .png
+        # once close_output is called.
 
         if display and display not in self.displays:
-            tempfilename = repr(os.getpid()) + "_disp_" + self.filename
-            self.displays[display] = (self.filename, tempfilename, None)
-            # start display process only when closeOutput is called
+            temp_filename = tempfile.mkstemp(prefix='mdig_display')
+            self.displays[display] = (self.filename, temp_filename, None)
+            # start display process only when close_output is called
         elif display:
-            # update the mapping from
-            # filename to tempfilename
+            # update the mapping from filename to temp filename
             oldd = self.displays[display]
             self.displays[display] = (self.filename, oldd[1], oldd[2])
             
-        self.tempOutputFile = repr(os.getpid()) + "_" + repr(int(random.random()*1000)) + os.path.basename(self.filename)
-        # TODO make getRandFilename function (or check python lib) that
-        # checks for existing files.
+        self.temp_output_file = tempfile.mkstemp(prefix='mdig_temp_output')
 
         # set variables
-        os.environ['GRASS_RENDER_IMMEDIATE']='TRUE'
-        os.environ['GRASS_TRUECOLOR']='TRUE'
-        os.environ['GRASS_PNGFILE']='TRUE'
-        os.environ['GRASS_WIDTH']=repr(width)
-        os.environ['GRASS_HEIGHT']=repr(height)
-        os.environ['GRASS_PNGFILE']=self.tempOutputFile
-        os.environ['GRASS_PNG_READ']="FALSE"
+        os.environ['GRASS_RENDER_IMMEDIATE'] = 'TRUE'
+        os.environ['GRASS_TRUECOLOR'] = 'TRUE'
+        os.environ['GRASS_PNGFILE'] = 'TRUE'
+        os.environ['GRASS_WIDTH'] = repr(width)
+        os.environ['GRASS_HEIGHT'] = repr(height)
+        os.environ['GRASS_PNGFILE'] = self.temp_output_file
+        os.environ['GRASS_PNG_READ'] = "FALSE"
 
         # update grass variables
         for i in self.grass_vars:
             if os.environ.has_key(i):
                 self.grass_vars[i] = os.environ[i]
 
-    def close_output(self,dest_dir=None):
-        # copy self.tempOutputFile to pid_disp_filename.png (check
+    def close_output(self, dest_dir=None):
+        # copy self.temp_output_file to pid_disp_filename.png (check
         # self.displays mapping between filename and temp display
         # filename) and to filename 
         
-        # copy from tempfilanem to filename
-        if self.filename and self.filename.find(".png") != -1 and not self.outputIsTemporary:
+        if self.filename and self.filename.find(".png") != -1 and not self.output_is_temporary:
+            # If output file is a .png and not temporary
             c = self.config
             if not dest_dir and os.path.isdir(os.path.dirname(self.filename)):
                 # use path in filename
@@ -460,19 +461,20 @@ class GRASSInterface:
                 file_name = os.path.basename(self.filename)
             else:
                 # use current dir if none specified
-                if not dest_dir: dest_dir = "."
+                if not dest_dir:
+                    dest_dir = "."
                 # check if dir in filename exists relative to .
-                if not os.path.isdir(os.path.dirname(os.path.join(dest_dir,self.filename))):
+                if not os.path.isdir(os.path.dirname(os.path.join(dest_dir, self.filename))):
                     raise OSError("Can't find output dir")
                 file_name = self.filename
-            shutil.copy(self.tempOutputFile, os.path.join(dest_dir,file_name))
+            shutil.copy(self.temp_output_file, os.path.join(dest_dir, file_name))
 
         for d_name in self.displays:
             d = self.displays[d_name]
 
             if d[0] == self.filename:
                 # copy temp to display temp
-                shutil.copy(self.tempOutputFile, d[1])
+                shutil.copy(self.temp_output_file, d[1])
             
             # create display process if necessary
             if d[2] is None:
@@ -480,13 +482,13 @@ class GRASSInterface:
                 self.displays[d_name] = d
             break
 
-        # delete tempOutputFile
-        os.remove(self.tempOutputFile)
+        # delete temp_output_file
+        os.remove(self.temp_output_file)
         self.filename = None
 
     def spawn_display(self, fileToWatch):
-        pid = Popen(["python",
-            os.path.join(os.path.dirname(sys.argv[0]), "mdig", "imageshow.py"), fileToWatch]).pid
+        watcher = os.path.join(os.path.dirname(sys.argv[0]), "mdig", "imageshow.py")
+        pid = Popen(["python", watcher, fileToWatch]).pid
         return pid
 
     def close_display(self, d_name=None):
@@ -498,34 +500,28 @@ class GRASSInterface:
             for i in d_keys:
                 self.close_display(i)
 
-        # delete self.displays[display][1]... i.e. tempfilename in
-        # setOutput
+        # delete self.displays[display][1]... i.e. temp_filename in
+        # set_output
         if d_name in self.displays:
             os.remove(self.displays[d_name][1])
             del self.displays[d_name]
             
-    #def initMaps(self,map_nodes):
-        #mapNames=[]
-        #for m in map_nodes:
-            #mapNames.append(self.init_map(m))
-        #return mapNames
-    
-    def init_map(self,bmap,map_replacements={"POP_MAP": None, "START_MAP": None}):
-        name=None
-        map_type=None
+    def init_map(self, bmap, map_replacements={"POP_MAP": None, "START_MAP": None}):
+        name = None
+        map_type = None
         if bmap.xml_map_type == "sites":
-            name=self.generate_map_name()
-            self.create_coord_map(name,bmap.value)
-            map_type="vector"
+            name = self.generate_map_name()
+            self.create_coord_map(name, bmap.value)
+            map_type = "vector"
         elif bmap.xml_map_type == "name":
             name = bmap.value
             map_type = self.check_map(name)
         elif bmap.xml_map_type == "value":
-            name=self.generate_map_name()
-            self.mapcalc(name,bmap.value)
-            map_type="raster"
+            name = self.generate_map_name()
+            self.mapcalc(name, bmap.value)
+            map_type = "raster"
         elif bmap.xml_map_type == "mapcalc":
-            name=self.generate_map_name()
+            name = self.generate_map_name()
             mapcalc_expr = bmap.value
             for k in map_replacements:
                 # Substitute k by the given map:
@@ -535,23 +531,21 @@ class GRASSInterface:
                                 + k + " variable in mapcalc expression")
                 else:
                     mapcalc_expr = mapcalc_expr.replace(k, map_replacements[k])
-            self.mapcalc(name,mapcalc_expr)
+            self.mapcalc(name, mapcalc_expr)
             map_type="raster"
         else:
             self.log.error("Unknown GrassMap type for initialisation")
         bmap.ready = True
         return name, map_type
     
-    def destruct_map(self,fn,mapset=None):
-        """ Remove a map
-        should really only be called from GrassMap
-        """
+    def destruct_map(self, fn, mapset=None):
+        """ Remove a map - should really only be called from GrassMap """
         self.remove_map(fn,mapset)
 
     def create_coord_map(self,name,value):
-        #v.in.ascii
-        #v.to.rast input=name output=name [use=string] [column=name] [layer=value] [value=value] [rows=value] [--overwrite]
-        
+        # v.in.ascii
+        # v.to.rast input=name output=name [use=string] [column=name]
+        #          [layer=value] [value=value] [rows=value] [--overwrite]
         self.log.log(logging.INFO, "Creating map %s using coordinates %s", name,repr(value))
         
         vector_prefix = "v____"
