@@ -16,77 +16,45 @@
 #
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
-#
-""" MDiGConfig class
-
-MDiGConfig contains config information for the command line options used and
-loads information from ~/.mdig/mdig.conf
-
-Copyright 2006, Joel Pitt
-
-"""
-
 import os
 import sys
-import pdb
 import logging
 
-# ConfigObj from http://www.voidspace.org.uk/python/configobj.html
-#sys.path.append(os.path.join(sys.path[0], 'support'))
-# was in support dir, but now expected to be installed as part of
-# python... (package python-configobj in Ubuntu)
-from mdig.contrib.configobj import ConfigObj
+try:
+    # ConfigObj from http://www.voidspace.org.uk/python/configobj.html
+    from configobj import ConfigObj
+except ImportError:
+    # backup in contrib dir
+    from mdig.contrib.configobj import ConfigObj
 
-if sys.platform == "win32": #pragma: no cover
-    # on a Windows port
-    try:
-        from win32com.shell import shellcon, shell
-        home_dir = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0);
-        # create mdig path if necessary
-        home_dir = os.path.join(home_dir,"mdig");
+def get_home_dir():
+    """ Platform-agnostic way to get user home directory """
+    if sys.platform == "win32": #pragma: no cover
+        # on Windows port
+        try:
+            from win32com.shell import shellcon, shell
+            home_dir = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0);
+            # create mdig path if necessary
+            home_dir = os.path.join(home_dir, "mdig");
+            if not os.path.isdir(home_dir):
+                os.mkdir(home_dir)
+        except ImportError:
+            raise ImportError, "The win32com module could not be found"
+    else:
+        # else on POSIX box
+        home_dir = os.path.join(os.path.expanduser("~"), ".mdig")
         if not os.path.isdir(home_dir):
             os.mkdir(home_dir)
-        
-    except ImportError:
-        raise ImportError, "The win32com module could not be found"
-else:                                      # else on POSIX box
-    home_dir = os.path.join(os.path.expanduser("~"), ".mdig")
-    if not os.path.isdir(home_dir):
-        os.mkdir(home_dir)
+    return home_dir
+home_dir = get_home_dir()
         
 mdig_config = None
-
 def get_config():
     global mdig_config
     if mdig_config is None:
         mdig_config = MDiGConfig()
         logging.getLogger("mdig.config").debug("Created new MDiGConfig instance")
     return mdig_config
-
-# Get Home dir regardless of OS and use sensible value within Windows
-#def getHomeDir() :
-    #if sys.platform != 'win32' :
-        #return os.path.expanduser( '~' )
-
-    #def valid(path) :
-        #if path and os.path.isdir(path) :
-            #return True
-        #return False
-    #def env(name) :
-        #return os.environ.get( name, '' )
-
-    #homeDir = env( 'USERPROFILE' )
-    #if not valid(homeDir) :
-        #homeDir = env( 'HOME' )
-        #if not valid(homeDir) :
-            #homeDir = '%s%s' % (env('HOMEDRIVE'),env('HOMEPATH'))
-            #if not valid(homeDir) :
-                #homeDir = env( 'SYSTEMDRIVE' )
-                #if homeDir and (not homeDir.endswith('\\')) :
-                    #homeDir += '\\'
-                #if not valid(homeDir) :
-                    #homeDir = 'C:\\'
-    #return homeDir
 
 def find_grass_base_dir():
     # TODO find from GRASS environment if it exists
@@ -129,6 +97,10 @@ def find_location_dir():
                 return os.path.basename(d)
  
 class MDiGConfig(ConfigObj):
+    """
+    MDiGConfig contains config information for the command line options used and
+    loads information from ~/.mdig/mdig.conf
+    """
     
     # These options are required and the user will be prompted for them
     required = {
@@ -185,9 +157,7 @@ class MDiGConfig(ConfigObj):
     ## These are the default directories
     # subdir for analysis results
     analysis_dir = "analysis"
-    # subdir for exported maps
-    maps_dir = "maps"
-    # subdir for other output (PNG, movies, none stored analysis)
+    # subdir for exported output (PNG, movies, geotif, unstored analysis)
     output_dir = "output"
 
     ## These are specific options for how MDiG should run,
@@ -330,23 +300,3 @@ values. Push any key to continue, or CTRL-C to abort. """
             else:
                 is_done = True
         return val
-    
-def makepath(path):
-    """ creates missing directories for the given path and
-        returns a normalized absolute version of the path.
-
-    - if the given path already exists in the filesystem
-      the filesystem is not modified.
-
-    - otherwise makepath creates directories along the given path
-      using the dirname() of the path. You may append
-      a '/' to the path if you want it to be a directory path.
-
-    from holger@trillke.net 2002/03/18
-    """
-    from os import makedirs
-    from os.path import normpath,dirname,exists,abspath
-
-    dpath = normpath(path)
-    if not exists(dpath): makedirs(dpath)
-    return normpath(abspath(path))

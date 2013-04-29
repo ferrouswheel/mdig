@@ -17,27 +17,20 @@
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
 #
-"""
-Replicate module. Part of MDiG - Modular Dispersal in GIS
-"""
-
 import lxml.etree
 import random
 import logging
-import shutil
 import string
 import os
-import time
 import pdb
 import datetime
-
-import mdig
 
 import grass 
 import config
 import outputformats
-from grass import MapNotFoundException, SetRegionException
 import model
+from mdig.grass import MapNotFoundException
+
 
 class Replicate:
     """
@@ -47,7 +40,7 @@ class Replicate:
     intended.
     """
 
-    def __init__(self,node,instance,r_index=0):
+    def __init__(self, node, instance, r_index=0):
         self.instance = instance
         self.log = logging.getLogger("mdig.replicate")
         
@@ -209,36 +202,40 @@ class Replicate:
     
     def get_img_filenames(self, ls="all", extension=True, gif=False, dir=None):
         """ Get a dict of time:image_filename pairs for outputting maps to.
-        Warning, this doesn't check that ls is an actual lifestage.
-        If gif is true, then returns a single string
+
+        If gif is true, then returns a single string.
+        Warning: doesn't check that ls is an actual lifestage.
         """
         if dir is None:
-            output_dir = os.path.join(self.instance.experiment.base_dir,"output")
-        else: output_dir = os.path.normpath(dir)
+            output_dir = os.path.join(self.instance.experiment.base_dir, "output")
+        else:
+            output_dir = os.path.normpath(dir)
         fn = outputformats.create_filename(self)
         if gif:
-            result = os.path.join(output_dir,fn + "_ls_" + ls + "_anim")
-            if extension: result += '.gif'
+            result = os.path.join(output_dir, fn + "_ls_" + ls + "_anim")
+            if extension:
+                result += '.gif'
         else: 
             result = {}
             env = self.get_saved_maps(ls)
             # If there are no occupancy envelopes return None
-            if env is None: return None
+            if env is None:
+                return None
             times = env.keys()
             times.sort(key=lambda x: float(x))
             for t in times:
                 result[t] = os.path.join(output_dir, fn + "_ls_" + ls + "_" + str(t))
-                if extension: result[t] += '.png'
+                if extension:
+                    result[t] += '.png'
         return result
         
     def set_seed(self,s):
-        seed_node=lxml.etree.SubElement(self.node,'seed')
+        seed_node = lxml.etree.SubElement(self.node, 'seed')
         seed_node.text = repr(s)
         self.seed = s
         
     def get_seed(self):
-        if "node" not in dir(self): pdb.set_trace()
-        seed_node=self.node.find('seed')
+        seed_node = self.node.find('seed')
         return int(seed_node.text)
     
     def get_previous_maps(self,ls_id):

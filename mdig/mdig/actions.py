@@ -10,6 +10,7 @@ from optparse import OptionParser
 import mdig
 from mdig import config
 from mdig import grass
+import mdig.utils as utils
 
 from mdig import displayer
 from mdig.model import DispersalModel
@@ -225,7 +226,7 @@ class RunAction(Action):
                 self.log.info("Directory %s doesn't exist, attemping to" +
                         " create\n",options.output_dir)
                 c.output_dir = \
-                    config.makepath(options.output_dir)
+                    utils.make_path(options.output_dir)
             else:
                 c.output_dir = options.output_dir
         c.overwrite_flag = self.options.overwrite_flag
@@ -875,15 +876,15 @@ class ExportAction(Action):
         for t in times:
             m = saved_maps[t]
             if output_images:
-                map_list.append(self.create_frame(m,rep_filenames[t],model_name, t, ls, the_range))
+                map_list.append(self.create_frame(m, rep_filenames[t], model_name, t, ls, the_range))
                 self.update_listeners(None, r, ls, t)
             elif output_maps:
-                map_list.append(self.export_map(m,rep_filenames[t]))
+                map_list.append(self.export_map(m, rep_filenames[t]))
                 self.update_listeners_map_pack(None, r, ls, t)
         if self.options.output_gif:
-            self.create_gif(map_list,r.get_img_filenames(ls,gif=True,dir=self.options.outdir))
+            self.create_gif(map_list, r.get_img_filenames(ls, gif=True, dir=self.options.outdir))
         elif output_maps:
-            zip_fn = r.get_img_filenames(ls, extension=False, gif=True,dir=self.options.outdir)[:-5]
+            zip_fn = r.get_img_filenames(ls, extension=False, gif=True, dir=self.options.outdir)[:-5]
             self.zip_maps(map_list, zip_fn)
         return map_list
 
@@ -917,14 +918,14 @@ class ExportAction(Action):
                 elif output_maps:
                     self.log.info("Exporting maps of rep %d" % r_index)
                 if r_index < 0 or r_index >= len(rs):
-                    self.log.error("Invalid replicate index." +
+                    self.log.error("Invalid replicate index."
                             " Have you 'run' the model first or are you "
                             "specifying an invalid replicate index?")
                     if len(rs) > 0:
                         self.log.error("Valid replicate range is 0-%d." % (len(rs)-1))
                     raise InvalidReplicateException(r_index)
                 r = rs[r_index]
-                all_maps.extend(self.do_rep(i,r))
+                all_maps.extend(self.do_rep(i, r))
         else:
             if not i.is_complete():
                 self.log.error("Instance " + repr(i) + " not complete")
@@ -978,7 +979,7 @@ class ExportAction(Action):
     def export_map(self, map, out_fn, envelope=False):
         old_region = "ExportActionBackupRegion"
         g = grass.get_g()
-        g.run_command('g.region --o save='+old_region)
+        g.run_command('g.region --o save=%s' % old_region)
         g.set_region(raster=map) 
         cmd = 'r.out.gdal input=%s output=%s.tif format=GTiff type=%s createopt="COMPRESS=PACKBITS,INTERLEAVE=PIXEL"'
         if envelope:
@@ -1004,7 +1005,7 @@ class ExportAction(Action):
             g.set_region(old_region) 
         return out_fn
 
-    def zip_maps(self,maps,zip_fn):
+    def zip_maps(self, maps, zip_fn):
         import zipfile
         zip_fn += ".zip"
         if os.path.isfile(zip_fn) and not self.options.overwrite_flag:
@@ -1015,7 +1016,8 @@ class ExportAction(Action):
             self.log.warning("No zlib available for compressing zip, " + \
                     "defaulting to plain storage")
             z = zipfile.ZipFile(zip_fn,mode='w')
-        for m in maps: z.write(m, os.path.basename(m))
+        for m in maps:
+            z.write(m, os.path.basename(m))
         z.close()
         self.log.info("Maps were stored in zip file %s" % zip_fn)
 
@@ -1193,7 +1195,7 @@ class ROCAction(Action):
             if not os.path.isdir(options.output_dir):
                 self.log.info("Directory %s doesn't exist, attemping to" +
                         " create\n",options.output_dir)
-                config.makepath(options.output_dir)
+                utils.make_path(options.output_dir)
         else:
             self.options.output_dir = "."
         if self.options.model_tags is not None:

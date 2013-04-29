@@ -41,16 +41,17 @@ import shutil
 
 from datetime import datetime
 
-import outputformats
-import grass
-import config
+import mdig.outputformats as outputformats
+import mdig.grass as grass
+import mdig.config as config
+import mdig.utils as utils
 
-from region import Region
-from instance import DispersalInstance, DispersalInstanceException
-from lifestage import Lifestage
-from grassmap import GrassMap
-from lifestagetransition import LifestageTransition
-from management import ManagementStrategy
+from mdig.region import Region
+from mdig.instance import DispersalInstance, DispersalInstanceException
+from mdig.lifestage import Lifestage
+from mdig.grassmap import GrassMap
+from mdig.lifestagetransition import LifestageTransition
+from mdig.management import ManagementStrategy
 
 _debug=0
 
@@ -195,11 +196,9 @@ class DispersalModel(object):
         assert( self.base_dir is not None )
         base_d = self.base_dir
         filename = os.path.join(base_d, c.analysis_dir)
-        config.makepath(filename)
-        filename = os.path.join(base_d, c.maps_dir)
-        config.makepath(filename)
+        utils.make_path(filename)
         filename = os.path.join(base_d, c.output_dir)
-        config.makepath(filename)
+        utils.make_path(filename)
 
     def _load(self, model_file):
         """load XML input source, return parsed XML document
