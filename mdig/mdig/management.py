@@ -17,14 +17,11 @@
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-import sys
 import logging
 
 import lxml.etree
 
-import mdig
-import grass 
+import grass
 from grassmap import GrassMap
 from event import Event
 
@@ -35,43 +32,44 @@ class ManagementStrategyException(Exception):
         super(ManagementStrategyException, self).__init__(*args, **kwargs)
 
 
-class ManagementStrategy:
+class ManagementStrategy(object):
     """
     ManagementStrategy is a class for representing the strategies taken
     by environmental authorities to control the dispersal of a species.
-    
+
     In the XML model defition, each "strategy" element within the "management"
     element will create a ManagementStrategy instance.
     """
 
-    def __init__(self,node,experiment,instance=None):
+    def __init__(self, node, experiment, instance=None):
         self.log = logging.getLogger("mdig.strategy")
-        
+
         self.grass_i = grass.get_g()
-        
-        self.temp_map_names={}
+
+        self.temp_map_names = {}
         self.active = False
         self.treatments = None
         # We save the experiment instead of the instance
         # because instances are only temporarily associated with strategies
         self.experiment = experiment
-        self.instance = instance 
+        self.instance = instance
 
         if node is None:
             self.node = self.init_strategy(experiment)
-        else: self.node = node
+        else:
+            self.node = node
 
     def set_instance(self, instance):
         self.instance = instance
 
     def init_strategy(self, model):
-        """ Initialise the xml structure that represents a ManagementStrategy.  """
+        """ Initialise the xml structure that represents a ManagementStrategy. """
         raise NotImplementedError()
 
     def get_name(self):
         return self.node.attrib["name"]
 
-    def set_name(self,name):
+    def set_name(self, name):
         self.node.attrib["name"] = name
 
     def get_region(self):
@@ -84,24 +82,24 @@ class ManagementStrategy:
         self.node.attrib["region"] = r_id
 
     def get_description(self):
-        desc_node=self.node.xpath("description")
+        desc_node = self.node.xpath("description")
         return desc_node[0].text
 
     def set_description(self, desc):
-        desc_node=self.node.xpath("description")
+        desc_node = self.node.xpath("description")
         desc_node[0].text = desc
 
     def get_delay(self):
-        desc_node=self.node.xpath("delay")
+        desc_node = self.node.xpath("delay")
         if len(desc_node) == 0:
             return 0
         return int(desc_node[0].text)
 
     def set_delay(self, delay):
-        delay_node=self.node.xpath("delay")
+        delay_node = self.node.xpath("delay")
         if len(delay_node) == 0:
-            delay_node = [lxml.etree.SubElement(self.node,'delay')]
-        delay_node[0].text = repr(int(delay)) # ensure it's an int
+            delay_node = [lxml.etree.SubElement(self.node, 'delay')]
+        delay_node[0].text = repr(int(delay))  # ensure it's an int
 
     def get_map_resources(self):
         maps = []
@@ -118,12 +116,12 @@ class ManagementStrategy:
         """
         self.treatments = []
         self.log.debug("Parsing management strategies")
-        treatment_nodes=self.node.xpath("treatments/t")
+        treatment_nodes = self.node.xpath("treatments/t")
         self.log.debug("%d treatments found for strategy %s (%s)" %
-                (len(treatment_nodes),self.get_name(),self.get_description()) )
+                      (len(treatment_nodes), self.get_name(), self.get_description()))
         index_counter = 0
         for t_node in treatment_nodes:
-            self.treatments.append(Treatment(self,t_node,index_counter))
+            self.treatments.append(Treatment(self, t_node, index_counter))
             index_counter += 1
 
     def get_treatments(self):
@@ -134,7 +132,7 @@ class ManagementStrategy:
             self._load_treatments()
         return self.treatments
 
-    def get_treatments_for_param(self,var_key,timestep):
+    def get_treatments_for_param(self, var_key, timestep):
         """
         Get any treatments that affect the parameter specified by var_key
         """
@@ -146,9 +144,9 @@ class ManagementStrategy:
         for t in self.get_treatments():
             if t.affects_var(var_key):
                 result.append(t)
-        return result # return an empty list if there are none
-        
-    def get_treatments_for_ls(self,ls_id,timestep):
+        return result  # return an empty list if there are none
+
+    def get_treatments_for_ls(self, ls_id, timestep):
         """
         Get any treatments that affect the lifestage specified by ls_id
         """
@@ -158,7 +156,8 @@ class ManagementStrategy:
         for t in self.get_treatments():
             if t.affects_ls(ls_id):
                 result.append(t)
-        return result # return an empty list if there are none
+        return result  # return an empty list if there are none
+
 
 class Treatment:
 
@@ -181,7 +180,8 @@ class Treatment:
         # temporary map name
         self.area_temp = None
         # temporary map name
-        self.var_temp = "x_t___strategy_" + self.strategy.get_name() + "_var_t_" + str(self.index)
+        self.var_temp = "x_t___strategy_" + \
+            self.strategy.get_name() + "_var_t_" + str(self.index)
 
     def __del__(self):
         if 'area_temp' in dir(self):
@@ -190,14 +190,11 @@ class Treatment:
             grass.get_g().remove_map(self.var_temp)
 
     def init_treatment(self):
-        # TODO create the required elements with a default global area
-        # and a dummy action
+        # Create the required elements with a default global area and a dummy action
         raise NotImplementedError()
 
     def affects_var(self, var_key):
-        """
-        Return whether the treatment modifies the variable specified by var_key
-        """
+        """ True if the treatment modifies the variable specified by var_key """
         av_node = self.node.xpath("affectVariable")
         if len(av_node) > 0:
             assert len(av_node) == 1
@@ -207,8 +204,8 @@ class Treatment:
         return False
 
     def affects_ls(self, ls_id):
-        """
-        Return whether this treatment affects a particular lifestage.
+        """ True if this treatment affects a particular lifestage.
+
         Note, this doesn't check whether a treatment that affects a variable, has
         that variable within the lifestage specified by ls_id.
 
@@ -223,7 +220,7 @@ class Treatment:
         """
         Return the lifestage the treatment affects or None if there
         is no lifestage specified
-        """ 
+        """
         ls_node = self.node.xpath("event")
         if len(ls_node) > 0:
             assert len(ls_node) == 1
@@ -235,30 +232,32 @@ class Treatment:
         if self.areas is None:
             self.areas = []
             self.area_node = self.node.xpath("area")
-            if len(self.area_node) == 0: return self.areas
+            if len(self.area_node) == 0:
+                return self.areas
             assert(len(self.area_node) == 1)
             self.area_node = self.area_node[0]
             self.area_ls = self.area_node.attrib['ls']
             for a in self.area_node:
                 # Ignore comment nodes
                 if isinstance(a.tag, basestring):
-                    self.areas.append(TreatmentArea(a,self,len(self.areas)))
+                    self.areas.append(TreatmentArea(a, self, len(self.areas)))
         return self.areas
 
     def get_treatment_area_map(self, replicate):
-        """ Ensure all TreatmentAreas are initialised and then return
-            a freshly merged version.
-            Returns none if there is no area specified (which means the
-            treatment is for the whole region)
+        """ Ensure all TreatmentAreas are initialised and return a merged map.
+
+        Returns None if there is no area specified. This would mean the treatment
+        is for the whole region.
         """
         areas = self.load_areas()
-        if len(areas) == 0: return None
+        if len(areas) == 0:
+            return None
         return self._merge_areas(replicate)
 
     def _merge_areas(self, replicate):
         """
-            Merge all the TreatmentArea maps based on the combine attribute
-            ("and" or "or" them)
+        Merge all the TreatmentArea maps based on the combine attribute
+        ("and" or "or" them)
         """
         # Check whether the component Areas change between calls
         if self.area_temp is not None:
@@ -271,28 +270,25 @@ class Treatment:
                     generate = True
                     break
             if not generate:
+                # We can just return the last area map we generated if it's not dynamic
                 return self.area_temp
         else:
             self.area_temp = "x_t___strategy_"  + self.strategy.get_name() + \
-                              "_area_t_" + str(self.index)
-
-        # What operation should we use to merge maps? Should be 'and' or 'or'
-        if 'combine' not in self.area_node.attrib:
-            # default
-            operation = "and"
-        else:
-            operation = self.area_node.attrib['combine']
-        assert(operation == "and" or operation == "or")
+                "_area_t_" + str(self.index)
 
         g = grass.get_g()
         # remove previous map
         g.remove_map(self.area_temp)
-        merge_str = self.get_area_merge_mapcalc_expression(replicate,operation);
-        g.mapcalc(self.area_temp,merge_str)
+        merge_str = self._get_area_merge_mapcalc_expression(replicate)
+        g.mapcalc(self.area_temp, merge_str)
         return self.area_temp
 
-    def get_area_merge_mapcalc_expression(self,replicate,operation):
-        # generate ourselves a mapcalc expression
+    def _get_area_merge_mapcalc_expression(self, replicate):
+        # What operation should we use to merge maps? Should be 'and' or 'or'
+        operation = self.area_node.attrib.get('combine', 'and')
+        assert(operation in ("and", "or"))
+
+        # build the mapcalc expression to merge the treatment areas
         merge_str = "if("
         for a in self.areas:
             if operation == "and":
@@ -302,9 +298,9 @@ class Treatment:
                 merge_str += "!isnull(%s)" % a.get_treatment_area(replicate)
                 merge_str += " || "
         # remove trailing operator
-        merge_str = merge_str[:-4] + ",1,null())" 
+        merge_str = merge_str[:-4] + ",1,null())"
         return merge_str
-        
+
     def get_event(self):
         """
         If the treatment runs an event at the end of the lifestage, create and
@@ -324,9 +320,11 @@ class Treatment:
         m = self.strategy.experiment
         e = self.get_event()
         maps = []
-        if e: maps.extend(e.get_map_resources(m))
+        if e:
+            maps.extend(e.get_map_resources(m))
         # get maps from within area specification
-        if self.areas is None: self.load_areas()
+        if self.areas is None:
+            self.load_areas()
         for a in self.areas:
             maps.extend(a.get_map_resources())
         return maps
@@ -334,7 +332,8 @@ class Treatment:
     def get_variable_map(self, var_key, var_val, replicate):
         """
         Get the map that represents a variable that is impacted by
-        affectsVarable, for the specific regions withing get_treatment_area.
+        affectsVarable, for the specific regions within get_treatment_area.
+
         Returns None if this treatment does not affect var_key.
         """
         if not self.affects_var(var_key):
@@ -344,24 +343,24 @@ class Treatment:
             # This means the treatment is applied globally, no need to return
             # a map
             return None
-        altered_value = self.get_altered_variable_value(var_key,var_val)
+        altered_value = self.get_altered_variable_value(var_key, var_val)
         if altered_value is None:
             altered_value = "null()"
         orig_value = var_val
         if orig_value is None:
             orig_value = "null()"
-        grass.get_g().mapcalc(self.var_temp, \
-                "if(" + area_mask_map + "==1," \
-                + str(altered_value) + "," + str(orig_value) + ")")
+        grass.get_g().mapcalc(self.var_temp,
+                              "if(" + area_mask_map + "==1,"
+                              + str(altered_value) + "," + str(orig_value) + ")")
         return self.var_temp
 
-    def get_altered_variable_value(self,var_key,var_val):
+    def get_altered_variable_value(self, var_key, var_val):
         """
         Get the value of the variable after it is altered by affectVariable
         """
         if not self.affects_var(var_key):
             return None
-        orig_value = var_val 
+        orig_value = var_val
         # handle decrease, increase, ratio
         av_node = self.node.xpath("affectVariable")
         # should only be one affectVariable element, and only one child indicating
@@ -374,13 +373,14 @@ class Treatment:
                 effect_amount = i.text
                 break
         assert(effect is not None)
-        new_value=None
+        new_value = None
         try:
             effect_amount = float(effect_amount)
             if orig_value is not None:
                 new_value = float(orig_value)
         except ValueError, e:
-            raise ManagementStrategyException('Invalid value for altering variable %s' % str(e))
+            raise ManagementStrategyException(
+                'Invalid value for altering variable %s' % str(e))
 
         # if the variable is originally None
         # the only acceptable change is for exact value
@@ -389,7 +389,8 @@ class Treatment:
             if effect == "value":
                 new_value = effect_amount
             else:
-                raise ManagementStrategyException('Invalid variable alteration')
+                raise ManagementStrategyException(
+                    'Invalid variable alteration')
 
         # the alternative is that the original value is altered
         if effect == "decrease":
@@ -401,8 +402,10 @@ class Treatment:
         elif effect == "value":
             new_value = effect_amount
         else:
-            raise ManagementStrategyException("Unknown management effect: " + str(effect))
+            raise ManagementStrategyException(
+                "Unknown management effect: " + str(effect))
         return new_value
+
 
 class TreatmentArea:
 
@@ -419,7 +422,7 @@ class TreatmentArea:
         self.index = a_index
         # temporary map name
         self.area_temp = "x_t___strategy_"  + self.treatment.strategy.get_name() + \
-            "_area_t_" + str(self.treatment.index) + "_" +  str(self.index)
+            "_area_t_" + str(self.treatment.index) + "_" + str(self.index)
         self.init_from_xml()
 
     def __del__(self):
@@ -436,7 +439,8 @@ class TreatmentArea:
     def is_dynamic(self):
         """
         Return whether this TreatmentArea changes each timestep or not. An area
-        if dynamic if it uses a filter or mapcalc.
+        if dynamic if it uses an event/mfilter or a GrassMap with refresh==True.
+        An example of the latter case is using r.mapcalc.
         """
         if isinstance(self.area, Event):
             return True
@@ -451,12 +455,13 @@ class TreatmentArea:
             m = self.treatment.strategy.experiment
             maps.extend(self.area.get_map_resources(m))
         elif isinstance(self.area, GrassMap):
-            if self.area.xml_map_type=="name":
+            if self.area.xml_map_type == "name":
                 g = grass.get_g()
-                maps.append((self.area.filename,g.find_mapset(self.area.filename)))
+                maps.append((self.area.filename, g.find_mapset(
+                    self.area.filename)))
         return maps
 
-    def get_treatment_area(self,replicate):
+    def get_treatment_area(self, replicate):
         """
         Get the map name representing the treatment area, generating it
         dynamically if necessary.
@@ -465,8 +470,7 @@ class TreatmentArea:
             if self.area_filter_output is not None:
                 grass.get_g().remove_map(self.area_filter_output)
             dist_map = replicate.temp_map_names[self.treatment.area_ls][0]
-            self.area.run( dist_map, \
-                    self.area_temp, replicate, False)
+            self.area.run(dist_map, self.area_temp, replicate, False)
             self.area_filter_output = self.area_temp
             return self.area_filter_output
         elif isinstance(self.area, GrassMap):

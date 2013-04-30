@@ -40,7 +40,7 @@
 <p><strong>Phenology:</strong> <ul>
 %for r_id in model.get_region_ids(): 
 <li>
-region {{r_id}}: {{ls.getPhenologyBins(r_id)}}
+region {{r_id}}: {{ls.get_phenology_bins(r_id)}}
 </li>
 %end
 </ul>

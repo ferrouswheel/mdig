@@ -1154,7 +1154,7 @@ class DispersalModel(object):
     def get_max_phenology_interval(self,region_id):
         maxInterval=-1
         for id in self.get_lifestage_ids():
-            intervals=self.get_lifestage(id).getPhenologyIntervals(region_id)
+            intervals=self.get_lifestage(id).get_phenology_intervals(region_id)
             if len(intervals) > 0:
                 maxInterval=max(maxInterval,max(intervals))
         return maxInterval
@@ -1176,7 +1176,7 @@ class DispersalModel(object):
         
         for ls_id in self.get_lifestage_ids():
             ls=self.get_lifestage(ls_id)
-            intervals = ls.getPhenologyIntervals(region_id)
+            intervals = ls.get_phenology_intervals(region_id)
             intervals = [i for i in intervals if i > from_interval]
             if len(intervals) == 0:
                 # No more intervals in this lifestage

@@ -1,5 +1,5 @@
-from bottle import route, validate, request, redirect, abort, view, send_file
-import bottle
+from contrib.bottle import route, validate, request, redirect, abort, view, send_file
+import contrib.bottle as bottle
 
 from multiprocessing import Process, Queue, JoinableQueue
 from threading import Thread
@@ -37,12 +37,6 @@ resource_dir = os.path.join(root_dir, 'mdig/views/resources/')
 bottle.TEMPLATE_PATH = [os.path.join(
     root_dir, 'mdig/views/'), os.path.join(root_dir, 'mdig/')]
 
-
-@route('/models')
-@route('/models/')
-def redirect_index():
-    redirect('/')
-
 # Which models are currently doing something.
 # Each item to have format: [ACTION, state]
 models_in_queue = {}
@@ -63,18 +57,18 @@ msg_template = {
     "model": "model_name",
     "action": "RUN|OCCUPANCY_GIF|REPLICATE_GIF",
     "status": {
-    "description": "status message to be displayed",
-    "complete": "true|false",
-    "percent_done": "percentage of work done",
-    "active_instance": "currently running instance",
-    "active_replicate": "current index of rep",
-    "error": "error message - implies task failed"
+        "description": "status message to be displayed",
+        "complete": "true|false",
+        "percent_done": "percentage of work done",
+        "active_instance": "currently running instance",
+        "active_replicate": "current index of rep",
+        "error": "error message - implies task failed"
     },
     "parameters": {
-    "instance_idx": "for instance specific tasks",
-    "lifestage": "for lifestage specific tasks",
-    "rerun": "for rerunning",
-    "etc": None
+        "instance_idx": "for instance specific tasks",
+        "lifestage": "for lifestage specific tasks",
+        "rerun": "for rerunning",
+        "etc": None
     }
 }
 
@@ -82,6 +76,12 @@ msg_template = {
 # the least frequently used
 # values are (fn,date) and sorted so that oldest at position 0
 map_pack_lfu = []
+
+
+@route('/models')
+@route('/models/')
+def redirect_index():
+    redirect('/')
 
 
 def validate_model_name(mname):

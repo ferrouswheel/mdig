@@ -494,7 +494,7 @@ class Replicate:
         try:
             ts = float(self.node.attrib['ts'])
             self.node.attrib['ts'] = datetime.datetime.fromtimestamp(ts).isoformat()
-        except ValueError, e:
+        except ValueError:
             pass
         ###
         return dateutil.parser.parse(self.node.attrib['ts'])

@@ -5,12 +5,9 @@ import os
 import datetime
 
 import mdig
-from mdig import config
-from mdig import grass 
 from mdig.model import DispersalModel
-from mdig.modelrepository import ModelRepository,RepositoryException
+from mdig.modelrepository import ModelRepository
 
-from StringIO import StringIO
 from mdig import webui
 
 class ResultsMonitorTest(unittest.TestCase):
@@ -36,8 +33,7 @@ class MDiGWorkTest(unittest.TestCase):
         self.assertEqual(m_g.return_value.grass_vars['MAPSET'],"PERMANENT")
         self.assertEqual(m_worker.call_args[0],('a','b'))
 
-from mdig.bottle import app, HTTPError, HTTPResponse, run
-import mdig.bottle
+import mdig.contrib.bottle
 import tools
 class WebServiceTest(tools.ServerTestBase):
 
