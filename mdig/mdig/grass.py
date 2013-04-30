@@ -341,7 +341,8 @@ class GRASSInterface:
                 if pcolor.returncode != 0:
                     raise GRASSCommandException(cmd_string, stderr,
                             pcolor.returncode)
-            else: raise ValueError("Unknown layer value '%s'" % str(layer))
+            else:
+                raise ValueError("Unknown layer value '%s'" % str(layer))
 
         self.run_command('d.rast map=%s -x -o bg=white' % map_name, logging.DEBUG)
         os.environ['GRASS_PNG_READ']="TRUE"
@@ -359,7 +360,8 @@ class GRASSInterface:
         return results
 
     def normalise_map_colors(self, maps):
-        min_val = None; max_val = None
+        min_val = None
+        max_val = None
         for m in maps:
             cmd = "r.info -r map=%s" % m
             p=Popen(cmd, shell=True, stdout=subprocess.PIPE)
@@ -373,7 +375,7 @@ class GRASSInterface:
         one_third = (min_val - max_val) / 3.0 + min_val
         two_third = 2 * (min_val - max_val) / 3.0 + min_val
         # create full-scale color table for first map
-        pcolor= subprocess.Popen('r.colors map=%s rules=-' % maps[0], \
+        pcolor = subprocess.Popen('r.colors map=%s rules=-' % maps[0], \
                 shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
         rule_string = "%f blue\n" % (min_val)
         rule_string += "%f cyan\n" % (one_third)
@@ -401,6 +403,12 @@ class GRASSInterface:
             self.run_command('r.null map=%s' % filename, logging.DEBUG);
         else:
             self.run_command('r.null -r map=%s' % filename, logging.DEBUG);
+
+    def _temp_filename(self, prefix, suffix):
+        """ mkstemp annoying opens a unix file descriptor instead of just creating a filename """
+        f, filename = tempfile.mkstemp(prefix=prefix, suffix=suffix)
+        os.close(f)
+        return filename
     
     def set_output(self, filename=".png", width=480, height=480, display="default"):
         # close output before setting new one, even if it's the same filename
@@ -411,7 +419,7 @@ class GRASSInterface:
         if self.filename == ".png":
             # If .png is specified, we randomly generate a filename and treat as
             # temporary
-            self.filename = tempfile.mkstemp(prefix='mdig_output', suffix='.png')
+            self.filename = self._temp_filename(prefix='mdig_output', suffix='.png')
             self.output_is_temporary = True
 
         # display must always check the same file
@@ -423,7 +431,7 @@ class GRASSInterface:
         # once close_output is called.
 
         if display and display not in self.displays:
-            temp_filename = tempfile.mkstemp(prefix='mdig_display')
+            temp_filename = self._temp_filename(prefix='mdig_display', suffix='.png')
             self.displays[display] = (self.filename, temp_filename, None)
             # start display process only when close_output is called
         elif display:
@@ -431,7 +439,7 @@ class GRASSInterface:
             oldd = self.displays[display]
             self.displays[display] = (self.filename, oldd[1], oldd[2])
             
-        self.temp_output_file = tempfile.mkstemp(prefix='mdig_temp_output')
+        self.temp_output_file = self._temp_filename(prefix='mdig_temp_output', suffix='.png')
 
         # set variables
         os.environ['GRASS_RENDER_IMMEDIATE'] = 'TRUE'
