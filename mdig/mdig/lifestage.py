@@ -17,13 +17,7 @@
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
 #
-""" 
-Lifestage module. Part of MDiG - Modular Dispersal in GIS
-Copyright 2006, Joel Pitt
-"""
-
 import logging
-import pdb
 
 from grassmap import GrassMap
 from analysis import Analysis
@@ -284,25 +278,9 @@ class Lifestage:
                 grass_i.copy_map(self.tempmap, temp_map_names[1], overwrite=True)
             temp_map_names.reverse()
     
-#   def setPopulationBased(self,value):
-#       if value == 0:
-#           self.xml_node.attrib["populationBased"] = "True"
-#       elif value == 1:
-#           self.xml_node.attrib["populationBased"] = "False"
-#       else:
-#           self.log.warning("Invalid value for lifestage attribute 'population based'")
-#       return value
-        
-#   def isPopulationBased(self):
-#       if "populationBased" in self.xml_node.attrib.keys():
-#           if self.xml_node.attrib["populationBased"].lower() == "true":
-#               return True
-#       return False
-    
     def analyses(self):
         if len(self.analysis_list) == 0:
             nodes = self.xml_node.xpath("analyses/analysis")
-            #pdb.set_trace()
             for node in nodes:
                 a=Analysis(node)
                 self.analysis_list.append(a)
@@ -311,9 +289,7 @@ class Lifestage:
     def clean_up_maps(self):
         for grassmap in self.initial_maps.values():
             del grassmap
-            #grass.get_g().destruct_map(grassmap)
             
     def update_xml(self):
         self.xml_node.attrib["name"] = self.name
         self.xml_node.attrib["populationBased"] = str(self.populationBased)
-

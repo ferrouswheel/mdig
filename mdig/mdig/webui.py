@@ -432,12 +432,11 @@ def show_replicate(model,instance,replicate):
             task_order=task_order, task_updates = task_updates, error=error)
 
 # Following methods are for getting and creating occupancy envelopes 
-
-def submit_occupancy_envelope_job(dm,idx,ls_id,action):
+def submit_occupancy_envelope_job(dm, idx, ls_id, action):
     instance = dm.get_instances()[idx]
     added = False
     m_name = dm.get_name()
-    if dm.is_complete():
+    if instance.is_complete():
         if m_name not in models_in_queue:
             models_in_queue[m_name] = {}
         else:
@@ -448,7 +447,7 @@ def submit_occupancy_envelope_job(dm,idx,ls_id,action):
             exists = True
         elif ls_id not in dm.get_lifestage_ids():
             # Invalid lifestage ID
-            error="Invalid lifestage ID"
+            error = "Invalid lifestage ID"
         else:
             qsize=work_q.qsize()
             models_in_queue[m_name][action] = {
@@ -482,9 +481,10 @@ def create_instance_occ_envelope_gif(model, instance, ls_id):
         abort(404, "No such instance")
     # submit a job to generate the occupancy envelope
     ls_id=request.POST['envelope']
+    print ls_id
     try:
-        submit_occupancy_envelope_job(dm,idx,ls_id,'OCCUPANCY_GIF')
-    except InstanceIncompleteException, e:
+        submit_occupancy_envelope_job(dm, idx, ls_id, 'OCCUPANCY_GIF')
+    except InstanceIncompleteException:
         redirect('/models/%s/instances/%s' % (model.get_name(),idx))
     redirect('/models/%s/instances/%s' % (model.get_name(),idx))
 
@@ -507,23 +507,23 @@ def instance_occ_envelope_gif(model, instance, ls_id):
 def create_instance_occ_envelope_map_pack(model, instance, ls_id):
     """ Create the occupancy envelopes for an instance and export to a map pack
     of GeoTIFFs """
-    dm=model
+    dm = model
     idx = int(instance)
     if not validate_instance(dm, idx):
         abort(404, "No such instance")
     instance = dm.get_instances()[idx]
     # submit a job to generate the occupancy envelope
-    ls_id=request.POST['map_pack']
+    ls_id = request.POST['map_pack']
     action = 'OCCUPANCY_MAP_PACK'
     try:
-        submit_occupancy_envelope_job(dm,idx,ls_id,action)
-    except InstanceIncompleteException, e:
-        redirect('/models/%s/instances/%s' % (model.get_name(),idx))
+        submit_occupancy_envelope_job(dm, idx, ls_id, action)
+    except InstanceIncompleteException:
+        redirect('/models/%s/instances/%s' % (model.get_name(), idx))
     purge_oldest_map_packs()
     fn = instance.get_occ_envelope_img_filenames(ls=ls_id, extension=False, gif=True)
     fn += '.zip'
-    add_to_map_pack_lfu(fn,nodate=True)
-    redirect('/models/%s/instances/%s' % (model.get_name(),idx))
+    add_to_map_pack_lfu(fn, nodate=True)
+    redirect('/models/%s/instances/%s' % (model.get_name(), idx))
 
 @route('/models/:model/instances/:instance/:ls_id/map_pack.zip')
 @validate(instance=int, model=validate_model_name)

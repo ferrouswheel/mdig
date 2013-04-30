@@ -22,7 +22,6 @@ import random
 import logging
 import string
 import os
-import pdb
 import datetime
 
 import grass 
