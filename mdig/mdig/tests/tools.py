@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 # from http://github.com/defnull/bottle/blob/master/test/tools.py 
-import mdig.bottle
-import threading
-import urllib
-import urllib2
-import sys
-import time
+import mdig.bottle as bottle
+
 import unittest
 import wsgiref
 import wsgiref.simple_server
@@ -15,9 +11,8 @@ import wsgiref.validate
 from StringIO import StringIO
 try:
     from io import BytesIO
-except:
+except ImportError:
     BytesIO = None
-    pass
 import mimetypes
 import uuid
 

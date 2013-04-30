@@ -1,5 +1,5 @@
-from contrib.bottle import route, validate, request, redirect, abort, view, send_file
-import contrib.bottle as bottle
+from bottle import route, validate, request, redirect, abort, view, send_file
+import bottle
 
 from multiprocessing import Process, Queue, JoinableQueue
 from threading import Thread
@@ -90,8 +90,8 @@ def validate_model_name(mname):
     if mname not in models.keys():
         abort(404, "No such model")
     try:
-        dm = DispersalModel(models[mname])  # ,setup=False)
-    except mdig.model.ValidationError, e:
+        dm = DispersalModel(models[mname])
+    except mdig.model.ValidationError:
         abort(500, "Model %s is badly formed" % mname)
     # Hack to get instances to initialise mapsets if they need to
     # and then save them
@@ -1160,7 +1160,7 @@ def start_web_service():
     try:
         import paste.evalexception
         myapp = paste.evalexception.middleware.EvalException(app)
-    except ImportError, e:
+    except ImportError:
         myapp = app
     myapp = RestoreMapset(myapp)
     c = config.get_config()

@@ -33,7 +33,7 @@ class MDiGWorkTest(unittest.TestCase):
         self.assertEqual(m_g.return_value.grass_vars['MAPSET'],"PERMANENT")
         self.assertEqual(m_worker.call_args[0],('a','b'))
 
-import mdig.contrib.bottle
+import mdig.bottle
 import tools
 class WebServiceTest(tools.ServerTestBase):
 
@@ -49,11 +49,11 @@ class WebServiceTest(tools.ServerTestBase):
         pass
 
     def test_404(self):
-        self.assertStatus(404,'/felgrul')
+        self.assertStatus(404, '/felgrul')
 
     def test_models_redirect(self):
-        self.assertStatus(303,'/models')
-        self.assertStatus(303,'/models/')
+        self.assertStatus(303, '/models')
+        self.assertStatus(303, '/models/')
 
     def test_handle_index(self):
         r = self.urlopen('/')

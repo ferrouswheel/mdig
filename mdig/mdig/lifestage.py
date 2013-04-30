@@ -187,11 +187,11 @@ class Lifestage:
             self.bin_masks[r_id] = {}
 
         if interval not in self.bin_masks[r_id].keys():
-            self.bin_masks[r_id][interval] = self._generateMask(interval, r_id)
+            self.bin_masks[r_id][interval] = self._generate_mask(interval, r_id)
 
         return self.bin_masks[r_id][interval]
 
-    def _generateMask(self, interval, r_id):
+    def _generate_mask(self, interval, r_id):
         """
         Actually generates a mask for a given interval and region (r_id)
         """
@@ -246,8 +246,7 @@ class Lifestage:
                 mask = self.get_phenology_mask(interval, rep.instance.r_id)
                 grass_i.make_mask(mask)
 
-            e.run(temp_map_names[0], temp_map_names[
-                  1], rep, self.populationBased)
+            e.run(temp_map_names[0], temp_map_names[1], rep, self.populationBased)
 
             if len(p_intervals) > 1:
                 # Remove mask because we can't access anything outside of it
@@ -258,8 +257,7 @@ class Lifestage:
                 grass_i.mapcalc(temp_map_names[0], "if(isnull(%s),%s,%s)" % (
                     mask, temp_map_names[0], temp_map_names[1]))
 
-                # Merge value outside of original mask, e.g. long distance
-                # jumps
+                # Merge value outside of original mask, e.g. long distance jumps
                 if self.populationBased:
                     grass_i.mapcalc(temp_map_names[1], "if(isnull(%s) && isnull(%s),%s,%s+%s)" % (
                         mask, temp_map_names[1], temp_map_names[0], temp_map_names[0], temp_map_names[1]))
@@ -269,20 +267,22 @@ class Lifestage:
 
             temp_map_names.reverse()
 
-        # Get management strategy treatments that affect
-        # this lifestage.
+        # Get management strategy treatments that affect this lifestage.
         treatments = []
         if strategy is not None:
-            treatments = strategy.get_treatments_for_ls(
-                self.name, rep.current_t)
+            treatments = strategy.get_treatments_for_ls(self.name, rep.current_t)
+
         for t in treatments:
             self.log.debug("Applying treatment %d for strategy %s" %
                           (t.index, strategy.get_name()))
+
             t_area = t.get_treatment_area_map(rep)
             self.log.debug("Treatment area map is %s" % t_area)
+
             # Mask so that only treatment area is affected
             grass_i.make_mask(t_area)
             t.get_event().run(temp_map_names[0], temp_map_names[1], rep, False)
+
             # Remove mask when done
             grass_i.make_mask(None)
             # Now we have to combine the unmasked region from the original map with the
