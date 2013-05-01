@@ -137,11 +137,11 @@ class Event:
                 treatments = []
                 if s is not None:
                     treatments = s.get_treatments_for_param(p_value,rep.current_t)
-                    if len(treatments) > 0:
+                    if treatments:
                         self.log.info("treatments for variable %s are: %s" % (p_value, repr(treatments)))
                         # TODO support blending of multiple treatments on param
                         # (move below operations from treatment to strategy)
-                        assert ( len(treatments) == 1 )
+                        assert len(treatments) == 1, "MDiG does not currently support multiple treatments to a parameter"
                         instance_map = treatments[0].get_variable_map(p_value, instance_value, rep)
                         if instance_map is None:
                             instance_value = treatments[0].get_altered_variable_value(p_value,instance_value)

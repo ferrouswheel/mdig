@@ -238,13 +238,14 @@ def set_log_formatter(stream_handler, color = False):
         LEVEL = CSI + "0m" + CSI + "33m"
 
         formatter = logging.Formatter(
-            TIME + "%(asctime)s" + RESET + NAME + " [%(name)s] " + RESET +
-            LEVEL + "%(levelname)s" + RESET + ": %(message)s", \
-            datefmt='%Y%m%d %H:%M:%S')
+                TIME + "%(asctime)s" + RESET + NAME + " [%(module)s:%(lineno)d] "
+                + RESET + LEVEL + "%(levelname)s" + RESET + ": %(message)s",
+                datefmt='%Y%m%d %H:%M:%S')
     else:
         #create non ANSI formatter
-        formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s",
-            datefmt='%Y%m%d %H:%M:%S')
+        formatter = logging.Formatter(
+                "%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+                datefmt='%Y%m%d %H:%M:%S')
     stream_handler.setFormatter(formatter)
 
 # call graph

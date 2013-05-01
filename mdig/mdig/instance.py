@@ -25,10 +25,7 @@ Copyright 2006, Joel Pitt
 
 import logging
 import shutil
-import re
 import os
-import time
-import pdb
 import string
 import datetime
 import dateutil.parser
@@ -94,7 +91,7 @@ class DispersalInstance:
         
         try:
             self.log.debug(str(self))
-        except DispersalInstanceException, e:
+        except DispersalInstanceException:
             # just pass if we have issue with accessing any of the data for now
             # (otherwise it makes impossible to instantiate and fix the instance
             pass
@@ -240,11 +237,8 @@ class DispersalInstance:
         d = os.path.join(db,loc,mapset,'mdig')
         return d
 
-    def run(self):
+    def _purge_extraneous_replicates(self):
         num_reps = self.experiment.get_num_replicates()
-        # Catch when somebody has decreased the reps and there
-        # are more reps saved than the new number expected
-        self.init_mapset()
         if num_reps < len(self.replicates):
             self.log.info("More replicates stored than expected." + \
                     " Extra replicates will be discarded.")
@@ -256,32 +250,30 @@ class DispersalInstance:
                 else:
                     to_remove.append(self.replicates[i])
             # Remove those unneeded
-            for r in to_remove: self.remove_rep(r)
+            for r in to_remove:
+                self.remove_rep(r)
             # Keep enough to satisfy replicates wanted
             # (these may get rerun if they are incomplete)
             self.replicates = new_reps
 
+    def run(self):
+        # Catch when somebody has decreased the reps and there
+        # are more reps saved than the new number expected
+        self.init_mapset()
+        self._purge_extraneous_replicates()
+
         # Process replicates that exist but are incomplete
         for rep in [x for x in self.replicates if not x.complete]:
-            self._run_replicate(rep)
+            rep.run()
     
         # Create and process replicates that are missing
+        num_reps = self.experiment.get_num_replicates()
         while len(self.replicates) < num_reps:
             rep = Replicate(None,self)
-            self._run_replicate(rep)
+            rep.run()
             for l in self.listeners:
                 if "replicate_complete" in dir(l):
                     l.replicate_complete(rep)
-
-    def _run_replicate(self, rep):
-        """
-        Run a singular replicate.
-        """
-        #try:
-        rep.run()
-        #except Exception, e:
-        #   self.log.error(repr(e))
-        #   pdb.set_trace()
 
     def run_command_on_replicates(self, cmd_string, ls=None, times=None):
         """ run_command_on_replicates runs a command across all
@@ -301,9 +293,9 @@ class DispersalInstance:
         self.set_region()
         if not self.is_complete():
             self.log.warning("Instance [%s] is incomplete, but will " +
-                    "continue anyway" % i)
+                    "continue anyway" % self)
             
-        ac = analysiscommand(cmd_string)
+        ac = AnalysisCommand(cmd_string)
         for r in self.replicates:
             for ls_id in ls:
                 saved_maps = r.get_saved_maps(ls_id)

@@ -291,8 +291,7 @@ class Lifestage:
                 self.tempmap = "wibble_foss"
                 grass_i.mapcalc(self.tempmap, 'if(isnull("%s"),"%s","%s")' %
                                (t_area, temp_map_names[0], temp_map_names[1]))
-                grass_i.copy_map(self.tempmap, temp_map_names[
-                                 1], overwrite=True)
+                grass_i.copy_map(self.tempmap, temp_map_names[1], overwrite=True)
             temp_map_names.reverse()
 
     def analyses(self):

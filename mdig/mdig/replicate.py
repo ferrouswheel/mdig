@@ -286,7 +286,7 @@ class Replicate:
                 # at the expense of cpu time
                 self.grass_i.null_bitmask(self.get_previous_map(ls_id),generate=False)
 
-    def run(self,remove_null=False):
+    def run(self, remove_null=False):
         self.reset()
         self.active = True
         self.instance.add_active_rep(self)
@@ -318,14 +318,15 @@ class Replicate:
             # Create temporary map names
             # - input is in [0], output in [1]
             self.temp_map_names[ls_key] = [
-                grass.get_g().generate_map_name(ls_key),
-                grass.get_g().generate_map_name(ls_key)
+                self.grass_i.generate_map_name(ls_key),
+                self.grass_i.generate_map_name(ls_key)
             ]
             
             # copy initial map to temporary source map, overwrite if necessary
-            self.grass_i.copy_map( \
-                    initial_maps[ls_key].get_map_filename(), \
-                    self.temp_map_names[ls_key][0],True)
+            self.grass_i.copy_map(
+                    initial_maps[ls_key].get_map_filename(),
+                    self.temp_map_names[ls_key][0],
+                    True)
             
             # Set up phenology maps (LS initialises them on init)
             ls = exp.get_lifestage(ls_key)
@@ -333,7 +334,7 @@ class Replicate:
             for a in ls.analyses():
                 a.pre_run(self)
         
-        # If in debug mode print out the names of the initial maps
+        # Log the names of the initial maps
         if self.log.getEffectiveLevel() <= logging.DEBUG:
             str_maps=''
             for m in initial_maps.values():
@@ -384,8 +385,8 @@ class Replicate:
                     ls_key = lifestage.name
                     self.log.log(logging.INFO, 'Interval %d - Lifestage "%s"' \
                             ' started',current_interval,ls_key)
-                    lifestage.run(current_interval,self,self.temp_map_names[ls_key],strategy)
-                self.log.log(logging.INFO, 'Interval %d completed.',current_interval)
+                    lifestage.run(current_interval, self,self.temp_map_names[ls_key], strategy)
+                self.log.log(logging.INFO, 'Interval %d completed.', current_interval)
 
             # Run Analyses for each lifestage
             for ls_id in ls_keys:
@@ -472,7 +473,6 @@ class Replicate:
                         
     def fire_time_completed(self,t):
         for l in self.instance.listeners:
-            #pdb.set_trace()
             if "replicate_update" in dir(l):
                 ls_filename = l.replicate_update(self,t)
             

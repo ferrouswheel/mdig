@@ -302,7 +302,7 @@ class GRASSInterface:
         """ Use g.gisenv to update gisrc file from environment variables """
         var_list = [ "GISDBASE", "LOCATION_NAME", "MAPSET" ]
         for v in var_list:
-            output = subprocess.Popen("g.gisenv set=%s=\"%s\"" % (v,self.grass_vars[v]),
+            subprocess.Popen("g.gisenv set=%s=\"%s\"" % (v,self.grass_vars[v]),
                     shell=True, stdout=subprocess.PIPE).communicate()[0]
 
     def get_gis_env(self):
@@ -462,7 +462,6 @@ class GRASSInterface:
         
         if self.filename and self.filename.find(".png") != -1 and not self.output_is_temporary:
             # If output file is a .png and not temporary
-            c = self.config
             if not dest_dir and os.path.isdir(os.path.dirname(self.filename)):
                 # use path in filename
                 dest_dir = os.path.dirname(self.filename)
@@ -706,7 +705,7 @@ class GRASSInterface:
         if old_mapset:
             self.change_mapset(old_mapset)
             
-    def mapcalc(self,map_name,expression):
+    def mapcalc(self, map_name, expression):
         map_name='"' + map_name + '"' 
         self.run_command("r.mapcalc", to_input="%s = %s\nend\n"%(map_name,expression))
 #p = Popen("r.mapcalc", shell=True,
@@ -960,15 +959,13 @@ class GRASSInterface:
             print "Dropping to pdb.\nYou can try to continue by entering c<enter>, or quit with q<enter>."
             import pdb; pdb.set_trace()
     
-    def run_command(self, command_string, log_level=logging.DEBUG, to_input=""):
-        self.log.log(log_level, "exec: " + command_string)
+    def run_command(self, command_string, log_level=logging.DEBUG, to_input=''):
+        log_input = ''
+        if to_input:
+            log_input = ' <<< "' + to_input + '"'
+        self.log.log(log_level, "exec: " + command_string + log_input)
         ret = None
         
-        # lvl = logging.getLogger("mdig").getEffectiveLevel()
-        # Not sure why we do this, assuming the log level from the first handler is silly
-        #lvl = logging.WARNING
-        #if logging.getLogger("mdig").handlers:
-            #lvl = logging.getLogger("mdig").handlers[0].level
         p = Popen(command_string, shell=True, stdout=subprocess.PIPE, \
                 stdin=subprocess.PIPE,stderr=subprocess.PIPE)
         
