@@ -166,7 +166,7 @@ else
     awk_script="
     BEGIN {accum = 0; max_clump_size=${max_clump_size}; max_total_size=${max_total_size}}
     {
-    if (max_clump_size == 0 || \$2 < max_clump_size) {
+    if (max_clump_size == 0 || \$2 <= max_clump_size) {
         sumarea=\$2+accum;
         if (sumarea <= max_total_size) {
             print \$1 \" = 1\";
