@@ -29,6 +29,8 @@ from subprocess import Popen
 import StringIO
 import tempfile
 
+from mdig.tempresource import trm
+
 class MapNotFoundException (Exception):
     def __init__(self, _map_name=""):
         self.map_name = _map_name
@@ -39,6 +41,9 @@ class MapNotFoundException (Exception):
 class SetMapsetException (Exception): pass        
 class SetRegionException (Exception): pass        
 class CommandException (Exception): pass        
+class InitMapException(Exception): pass
+class EnvironmentException(EnvironmentError): pass
+
     
 class GRASSCommandException (Exception):
     def __init__(self, cmd_string="", stderr="", exit_code=0):
@@ -55,28 +60,6 @@ import config
 
 grass_i = None
 
-# NO LONGER NEEDED, handled internally by Python
-# For portability of popen:
-#if sys.platform == "win32":                # on a Windows port
-#   try:
-#       import win32pipe
-#       popen = win32pipe.popen
-#   except ImportError:
-#       raise ImportError, "The win32pipe module could not be found"
-#else:                                      # else on POSIX box
-#import os
-popen = os.popen
-
-##### removeNullOutput shouldn't be needed now we use subprocess module
-# null_output is where the output of commands go when they are not wanted.
-#if sys.platform == "win32":                # on a Windows port
-#    null_output = "mdig-null"
-#    def removeNullOutput():
-#        os.remove(null_output)
-#else:
-#    null_output = "/dev/null"
-#    def removeNullOutput():
-#        pass
 
 def get_g(create=True):
     global grass_i
@@ -88,15 +71,10 @@ def get_g(create=True):
             logging.getLogger("mdig.grass").debug("No GRASSInterface and not creating new one")
     return grass_i
 
-class InitMapException(Exception):
-    pass
-
-class EnvironmentException(EnvironmentError):
-    pass
-
 class GRASSInterface:
 
-    grass_var_names = [ "GISRC", "GISBASE",
+    grass_var_names = [
+            "GISRC", "GISBASE",
             "GISDBASE", "LOCATION_NAME", "MAPSET",
             "GRASS_GNUPLOT",
             "GRASS_WIDTH",
@@ -108,7 +86,8 @@ class GRASSInterface:
             "GRASS_MESSAGE_FORMAT",
             "GRASS_TRUECOLOR",
             "GRASS_TRANSPARENT",
-            "GRASS_PNG_AUTO_WRITE" ]
+            "GRASS_PNG_AUTO_WRITE"
+            ]
     # subset of grass vars that indicate we are in GRASS
     grass_indicators = [ "GISRC", "GISBASE", "GRASS_GNUPLOT", "GRASS_HTML_BROWSER" ]
     old_region="mdig_temp_region"
@@ -404,12 +383,6 @@ class GRASSInterface:
         else:
             self.run_command('r.null -r map=%s' % filename, logging.DEBUG);
 
-    def _temp_filename(self, prefix, suffix):
-        """ mkstemp annoying opens a unix file descriptor instead of just creating a filename """
-        f, filename = tempfile.mkstemp(prefix=prefix, suffix=suffix)
-        os.close(f)
-        return filename
-    
     def set_output(self, filename=".png", width=480, height=480, display="default"):
         # close output before setting new one, even if it's the same filename
         if self.filename:
@@ -419,7 +392,7 @@ class GRASSInterface:
         if self.filename == ".png":
             # If .png is specified, we randomly generate a filename and treat as
             # temporary
-            self.filename = self._temp_filename(prefix='mdig_output', suffix='.png')
+            self.filename = trm.temp_filename(prefix='mdig_output', suffix='.png')
             self.output_is_temporary = True
 
         # display must always check the same file
@@ -431,7 +404,7 @@ class GRASSInterface:
         # once close_output is called.
 
         if display and display not in self.displays:
-            temp_filename = self._temp_filename(prefix='mdig_display', suffix='.png')
+            temp_filename = trm.temp_filename(prefix='mdig_display', suffix='.png')
             self.displays[display] = (self.filename, temp_filename, None)
             # start display process only when close_output is called
         elif display:
@@ -439,7 +412,7 @@ class GRASSInterface:
             oldd = self.displays[display]
             self.displays[display] = (self.filename, oldd[1], oldd[2])
             
-        self.temp_output_file = self._temp_filename(prefix='mdig_temp_output', suffix='.png')
+        self.temp_output_file = trm.temp_filename(prefix='mdig_temp_output', suffix='.png')
 
         # set variables
         os.environ['GRASS_RENDER_IMMEDIATE'] = 'TRUE'
@@ -490,7 +463,7 @@ class GRASSInterface:
             break
 
         # delete temp_output_file
-        os.remove(self.temp_output_file)
+        trm.release(self.temp_output_file)
         self.filename = None
 
     def spawn_display(self, fileToWatch):

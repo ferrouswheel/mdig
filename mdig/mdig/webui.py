@@ -251,10 +251,10 @@ def del_model(model):
 @view('run.tpl')
 @validate(model=validate_model_name)
 def run_model(model):
+    global models_in_queue
     qsize = work_q.qsize()
     m_name = model.get_name()
     exists = False
-    global models_in_queue
     rerun = False
     started = None
     i_specified = None

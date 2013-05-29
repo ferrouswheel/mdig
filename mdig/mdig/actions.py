@@ -203,6 +203,11 @@ class RunAction(Action):
                 help="Do lifestage transitions by individual (Warning: very slow)",
                 action="store_true",
                 dest="ls_trans_individual")
+        self.parser.add_option("-j","--instance",
+                help="Run a particular instance",
+                action="store",
+                dest="instance",
+                type="int")
         self.parser.add_option("-z","--ignore-div-by-zero",
                 help="Ignore div by zero when carrying out lifestage transitions",
                 action="store_true",
@@ -250,22 +255,35 @@ class RunAction(Action):
             self.log.debug("Calculating lifestage transitions by individual. This is slow.")
             for i in mdig_model.get_lifestage_transitions():
                 i.by_individual = True
+
         if self.options.ls_trans_ignore_div_by_zero:
             self.log.debug("Will ignoring division by zero errors in lifestage transition.")
             for i in mdig_model.get_lifestage_transitions():
                 i.t_matrix.ignore_div_by_zero = True
+
         if self.options.reps is not None:
             mdig_model.set_num_replicates(self.options.reps)
-        if self.options.rerun_instances:
-            self.log.debug("Resetting model so all replicates will be rerun")
-            mdig_model.reset_instances()
-        elif mdig_model.is_complete():
+
+        if not self.options.rerun_instances and mdig_model.is_complete():
             self.log.error("Model is up to date (use -a to force reset and rerun instances)")
             sys.exit(mdig.mdig_exit_codes['up_to_date'])
-        mdig_model.run()
-        time_taken = mdig_model.end_time - mdig_model.start_time
-        mdig_model.log_instance_times()
-        print "Total time taken: %s" % time_taken
+
+        if self.options.instance:
+            selected_instance = mdig_model.get_instances()[self.options.instance]
+            if self.options.rerun_instances:
+                self.log.debug("Resetting model so all replicates will be rerun")
+                selected_instance.reset()
+            selected_instance.run()
+        else:
+            if self.options.rerun_instances:
+                self.log.debug("Resetting model so all replicates will be rerun")
+                mdig_model.reset_instances()
+            mdig_model.run()
+        if mdig_model.total_time_taken:
+            mdig_model.log_instance_times()
+            print "Total time taken: %s" % mdig_model.total_time_taken
+        else:
+            print "Nothing to do."
 
 class AnalysisAction(Action):
     description = "Perform analysis on a model and create occupancy envelopes"

@@ -18,8 +18,8 @@
 import logging
 import string
 
-import grass
-
+from mdig.grass import get_g
+from mdig.tempresource import trm
 
 class Event:
     """
@@ -98,6 +98,8 @@ class Event:
                             a = ("VAR", v.attrib["id"])
                         elif v.tag == "seed":
                             a = ("SEED", None)
+                        elif v.tag == "reportFile":
+                            a = ("REPORT_FILE", None)
                     params[node.attrib["name"]]=a
                 elif node.tag == "input":
                     # Default input that doesn't change, only for Treatments
@@ -122,6 +124,10 @@ class Event:
         out_param = self.get_output_name()
         if out_param is not None:
             template_p[out_param] = ("OUT", out_name)
+
+        # Some commands report some interesting information to aggregate,
+        # like r.mdig.survival's AREA_EVALUATED
+        report_file = None
 
         s_name = rep.instance.strategy
         s = rep.instance.experiment.get_management_strategy(s_name)
@@ -152,6 +158,9 @@ class Event:
                     self.log.info("Variable %s has None value for this instance" % p_name)
             elif p_type == "SEED":
                 p[p_name] = rep.random.randint(-2.14748e+09,2.14748e+09)
+            elif p_type == "REPORT_FILE":
+                report_file = trm.temp_filename(prefix='mdig_event_report')
+                p[p_name] = report_file
             elif p_type in ["VALUE", "MAP", "IN", "OUT"]:
                 p[p_name] = p_value
             elif p_type == "FLAG":
@@ -161,8 +170,21 @@ class Event:
         
         cmd=self.create_cmd_string(p)
         
-        grass.get_g().remove_map(out_name)
-        grass.get_g().run_command(cmd)
+        get_g().remove_map(out_name)
+        get_g().run_command(cmd)
+
+        if report_file:
+            values = self.read_report_file(report_file)
+
+    def read_report_file(self, filename):
+        results = {}
+        with open(filename, 'r') as f:
+            for l in f.readlines():
+                ll = l.strip().split('=')
+                assert len(ll) == 2, "Badly formatted report file line: %s" % l
+                results[ll[0]] = ll[1]
+        import pdb; pdb.set_trace()
+        return results
 
     def get_map_resources(self,model):
         var_maps = model.get_variable_maps()
@@ -174,7 +196,7 @@ class Event:
                 maps.append(p[1])
             elif p[0] == "VAR":
                 maps.extend(var_maps[p[1]])
-        maps_w_mapset = grass.get_g().find_mapsets(maps)
+        maps_w_mapset = get_g().find_mapsets(maps)
         return maps_w_mapset
 
     def create_cmd_string(self,params):

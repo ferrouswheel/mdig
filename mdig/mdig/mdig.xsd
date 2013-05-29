@@ -348,9 +348,7 @@
         <xsd:choice>
             <xsd:group ref="valueOrVariableGroup"/>
             <xsd:element name="seed"/>
-             <!-- Obsolete due to input and output attributes of event -->
-             <!-- <xsd:element name="inputMap"/> -->
-             <!-- <xsd:element name="outputMap"/> -->
+            <xsd:element name="reportFile"/>
         </xsd:choice>
         <xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>

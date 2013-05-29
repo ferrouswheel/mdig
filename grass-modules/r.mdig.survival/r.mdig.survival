@@ -191,11 +191,13 @@ then
          echo "Make reclass map"
     fi
   if [ $GIS_FLAG_I -eq 1 ]; then
+      # The inverted category selection
       echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
               if ("2" in parts) { print parts[1],"thru",parts[2],"= NULL" } else { \
               print $i,"= NULL"}}} END { printf "* = *\nend\n" }' | \
               r.reclass input=$GIS_OPT_INPUT output=$TEMP_RECLASS
   else
+      # Normal category selection
       echo $GIS_OPT_CATS | awk -F"," '{for(i=1;i<=NF;i++) {split($i,parts,"-");\
               if ("2" in parts) { print parts[1],"thru",parts[2],"= 1" } else { \
               print $i,"= 1"}}} END { printf "* = NULL\nend\n" }' | \
@@ -203,10 +205,11 @@ then
   fi
 else
   # We need to copy the map, because later we may need to remember how it's
-  # affected by any MASK that is present (is we need to use r.mask for stat creation).
+  # affected by any MASK that is present (we need to use r.mask for stat creation).
   g.copy rast=$GIS_OPT_INPUT,$TEMP_RECLASS
 fi
 
+# TEMP_RECLASS now reflects the population that will be evaluated
 MAP_AREA_TEMP="0.0"
 get_map_area() {
     MAP_AREA_TEMP=`r.stats -cni input=$1 | awk 'BEGIN {a=0} {a=a+$2} END {print a}'`
@@ -216,13 +219,14 @@ if [ -n "$GIS_OPT_MAX" ]
 then
 if [ $GIS_FLAG_E -eq 1 ]; then
 # Alternative that finds sites to remove using r.random to select GIS_OPT_MAX points 
-# but no guarantee that these are removed, they are evaluated to normal chance
+# but no guarantee that these are removed, they are evaluated by normal chance
     TEMP_RANDOM_SELECT=mdig.survival.randomselect
     TEMP_STDERR_OUT=mdig.survival.stderr
     eval `g.region -pg`
     # convert the maximum area into the number of points
-    # WARNING: this won't be exact as surface area is dependent on geodetic datum
-    # and projection... this is just a simple hack that should do for our purposes
+    echo "WARNING: the max area evaluated won't be exact as surface area is
+dependent on geodetic datum and projection. This is a simple approximation
+based on resolution of raster, but it should do for our purposes."
     POINTS=`echo "scale = ${BC_SCALE}; $GIS_OPT_MAX / ($nsres * $ewres)" | bc`
     #if [ $SURVIVAL_VALUE -eq 1 -a \
     echo "Area of $GIS_OPT_MAX equals $POINTS points"

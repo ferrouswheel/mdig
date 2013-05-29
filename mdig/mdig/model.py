@@ -478,11 +478,19 @@ class DispersalModel(object):
         self.active = False
         self.end_time = datetime.now()
 
+    @property
+    def total_time_taken(self):
+        if self.start_time and self.end_time:
+            return str(self.end_time - self.start_time)
+        else:
+            return None
+
     def log_instance_times(self):
         self.log.info("Average time to run replicates for each instance:")
         for i in self.get_instances():
-            if i.enabled:
-                self.log.info("%s: %s" % (str(i), str(i.get_average_time())))
+            av_time = i.get_average_time()
+            if av_time:
+                self.log.info("%s: %s" % (str(i), str(av_time)))
         
     def is_complete(self):
         for i in self.get_instances():

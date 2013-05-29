@@ -450,7 +450,6 @@ class DispersalInstance:
             sum_time += i
         if len(self.rep_times) > 0:
             return sum_time / len(self.rep_times)
-        return None
     
     def reset(self):
         while len(self.replicates) > 0:
