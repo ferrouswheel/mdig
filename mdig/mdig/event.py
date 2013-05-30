@@ -18,7 +18,7 @@
 import logging
 import string
 
-from mdig.grass import get_g
+import grass
 from mdig.tempresource import trm
 
 class Event:
@@ -170,8 +170,8 @@ class Event:
         
         cmd=self.create_cmd_string(p)
         
-        get_g().remove_map(out_name)
-        get_g().run_command(cmd)
+        grass.get_g().remove_map(out_name)
+        grass.get_g().run_command(cmd)
 
         if report_file:
             values = self.read_report_file(report_file)
@@ -196,7 +196,7 @@ class Event:
                 maps.append(p[1])
             elif p[0] == "VAR":
                 maps.extend(var_maps[p[1]])
-        maps_w_mapset = get_g().find_mapsets(maps)
+        maps_w_mapset = grass.get_g().find_mapsets(maps)
         return maps_w_mapset
 
     def create_cmd_string(self,params):
