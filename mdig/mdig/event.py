@@ -140,8 +140,9 @@ class Event:
             # print 'value is', value
             if p_type == "VAR":
                 instance_value = rep.instance.get_var(p_value)
+                instance_map = None
                 treatments = []
-                if s is not None:
+                if s:
                     treatments = s.get_treatments_for_param(p_value,rep.current_t)
                     if treatments:
                         self.log.info("treatments for variable %s are: %s" % (p_value, repr(treatments)))
@@ -151,11 +152,18 @@ class Event:
                         instance_map = treatments[0].get_variable_map(p_value, instance_value, rep)
                         if instance_map is None:
                             instance_value = treatments[0].get_altered_variable_value(p_value,instance_value)
-                            assert( instance_value is not None )
-                if instance_value is not None:
+                            assert instance_value is not None
+                if instance_value:
                     p[p_name]=instance_value
+                    self.log.debug("Variable %s has value %s for this instance" %
+                            (p_name, instance_value))
+                elif instance_map:
+                    p[p_name]=instance_map
+                    self.log.debug("Variable %s is map %s for this instance" %
+                            (p_name, instance_map))
                 else:
-                    self.log.info("Variable %s has None value for this instance" % p_name)
+                    self.log.debug("Variable %s has None value for this instance" %
+                            p_name)
             elif p_type == "SEED":
                 p[p_name] = rep.random.randint(-2.14748e+09,2.14748e+09)
             elif p_type == "REPORT_FILE":

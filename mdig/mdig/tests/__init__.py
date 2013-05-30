@@ -44,3 +44,6 @@ def teardown():
     # Delete test repository
     if len(test_dir) > 0:
         shutil.rmtree(test_dir)
+
+    from mdig.tempresource import trm
+    trm.cleanup()
