@@ -57,7 +57,6 @@ class Lifestage:
         # Load name
         if "name" in self.xml_node.attrib.keys():
             self.name = self.xml_node.attrib["name"]
-            self.log = logging.getLogger("mdig.lifestage."+self.name)
         else:
             raise Exception("Can't find name of lifestage")
 
@@ -130,7 +129,10 @@ class Lifestage:
                     # ranges and their means
                     p_mapname = n.text.strip()
 
-                    self.p_map_names[region_id] = GrassMap(p_mapname)
+                    assert False, "Phenology maps currently broken"
+                    # What on earth is region_id?
+                    # hiding this to avoid the region_id showing pyflakes.
+                    #self.p_map_names[region_id] = GrassMap(p_mapname)
 
                     sums = [0]*n_bins
                     bin_counts = [0]*n_bins
@@ -246,7 +248,8 @@ class Lifestage:
                 mask = self.get_phenology_mask(interval, rep.instance.r_id)
                 grass_i.make_mask(mask)
 
-            e.run(temp_map_names[0], temp_map_names[1], rep, self.populationBased)
+            metrics = e.run(temp_map_names[0], temp_map_names[1], rep, self.populationBased)
+            rep.save_event_metrics(self, e, metrics, interval)
 
             if len(p_intervals) > 1:
                 # Remove mask because we can't access anything outside of it
@@ -281,7 +284,9 @@ class Lifestage:
 
             # Mask so that only treatment area is affected
             grass_i.make_mask(t_area)
-            t.get_event().run(temp_map_names[0], temp_map_names[1], rep, False)
+            e = t.get_event()
+            metrics = e.run(temp_map_names[0], temp_map_names[1], rep, False)
+            rep.save_event_metrics(self, e, metrics, interval, treatment=t)
 
             # Remove mask when done
             grass_i.make_mask(None)

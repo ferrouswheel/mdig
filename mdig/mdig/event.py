@@ -173,8 +173,10 @@ class Event:
         grass.get_g().remove_map(out_name)
         grass.get_g().run_command(cmd)
 
+        metrics = {}
         if report_file:
-            values = self.read_report_file(report_file)
+            metrics = self.read_report_file(report_file)
+        return metrics
 
     def read_report_file(self, filename):
         results = {}
@@ -183,7 +185,6 @@ class Event:
                 ll = l.strip().split('=')
                 assert len(ll) == 2, "Badly formatted report file line: %s" % l
                 results[ll[0]] = ll[1]
-        import pdb; pdb.set_trace()
         return results
 
     def get_map_resources(self,model):

@@ -56,6 +56,7 @@ class Replicate:
         self.r_index = r_index
         # used to calculate time taken to complete
         self.start_time = None
+        self.metrics = {}
 
         if node is None:
             if instance is None:
@@ -286,18 +287,14 @@ class Replicate:
                 # at the expense of cpu time
                 self.grass_i.null_bitmask(self.get_previous_map(ls_id),generate=False)
 
-    def run(self, remove_null=False):
-        self.reset()
-        self.active = True
-        self.instance.add_active_rep(self)
-        
-        exp = self.instance.experiment
-        
+    def _log_replicate_start(self):
         var_dict = None
         if self.instance.var_keys:
             var_dict = dict(zip(self.instance.var_keys, self.instance.variables)) 
-        rep_info_str = "Replicate %d/%d of exp. instance" % \
-            (self.instance.replicates.index(self) + 1, exp.get_num_replicates())
+        rep_info_str = "Replicate %d/%d of exp. instance" % (
+                self.instance.replicates.index(self) + 1,
+                self.instance.experiment.get_num_replicates()
+                )
         if var_dict:
             rep_info_str += " [vars: %s]" % repr(var_dict)
         if self.instance.strategy:
@@ -305,12 +302,21 @@ class Replicate:
         if config.get_config().output_level == "normal":
             print rep_info_str
         self.log.log(logging.INFO, rep_info_str)
+
+
+    def run(self, remove_null=False):
+        self.reset()
+        self.active = True
+        self.instance.add_active_rep(self)
+        
+        exp = self.instance.experiment
+        
+        self._log_replicate_start()
         
         self.instance.set_region()
         
         # Get the initial distribution maps for the region
         self.initial_maps = exp.get_initial_maps(self.instance.r_id)
-        initial_maps = self.initial_maps
 
         ls_keys = exp.get_lifestage_ids()
         
@@ -324,7 +330,7 @@ class Replicate:
             
             # copy initial map to temporary source map, overwrite if necessary
             self.grass_i.copy_map(
-                    initial_maps[ls_key].get_map_filename(),
+                    self.initial_maps[ls_key].get_map_filename(),
                     self.temp_map_names[ls_key][0],
                     True)
             
@@ -336,8 +342,8 @@ class Replicate:
         
         # Log the names of the initial maps
         if self.log.getEffectiveLevel() <= logging.DEBUG:
-            str_maps=''
-            for m in initial_maps.values():
+            str_maps = ''
+            for m in self.initial_maps.values():
                 str_maps += ' ' + m.get_map_filename()
             self.log.debug("Initial maps: " + str_maps)
         
@@ -368,12 +374,10 @@ class Replicate:
                 for ls_id in ls_keys:
                     source_maps.append(self.temp_map_names[ls_id][0])
                     dest_maps.append(self.temp_map_names[ls_id][1])
-                # Lifestage transition should automatically swap source/dest
-                # maps
+                # Lifestage transition should automatically swap source/dest maps
                 self.log.debug("Applying lifestage transition matrix")
                 ls_transition.apply_transition(ls_keys, source_maps,dest_maps)
-                # clean up the source/dest maps so that source=dest and
-                # dest=source
+                # swap the source/dest maps in preparation for next iteration
                 for ls_id in ls_keys:
                     self.temp_map_names[ls_id].reverse()
             
@@ -383,9 +387,9 @@ class Replicate:
             for current_interval, p_lifestages in phenology_iterator:
                 for lifestage in p_lifestages:
                     ls_key = lifestage.name
-                    self.log.log(logging.INFO, 'Interval %d - Lifestage "%s"' \
-                            ' started',current_interval,ls_key)
-                    lifestage.run(current_interval, self,self.temp_map_names[ls_key], strategy)
+                    self.log.log(logging.INFO, 'Interval %d - Lifestage "%s"' +
+                            ' started', current_interval, ls_key)
+                    lifestage.run(current_interval, self, self.temp_map_names[ls_key], strategy)
                 self.log.log(logging.INFO, 'Interval %d completed.', current_interval)
 
             # Run Analyses for each lifestage
@@ -409,8 +413,35 @@ class Replicate:
         self.current_t = -1
         self.complete = True
         self.clean_up()
+
+    def save_event_metrics(self, ls, event, metrics, interval, treatment=None):
+        if not metrics:
+            # Don't create misc empty dictionaries unless there are
+            # actually metrics available
+            return
+
+        self.metrics.setdefault(ls.name, dict())
+        self.metrics[ls.name].setdefault('treatments', dict())
+        self.metrics[ls.name].setdefault('events', dict())
+
+        if treatment:
+            self.metrics[ls.name]['treatments'].setdefault(treatment.index, dict())
+            store_in = self.metrics[ls.name]['treatments'][treatment.index]
+        else:
+            self.metrics[ls.name]['events'].setdefault(ls.events.index(event), dict())
+            store_in = self.metrics[ls.name]['events'][ls.events.index(event)]
+
+        for metric, val in metrics.iteritems():
+            store_in.setdefault(metric, dict())
+            if interval:
+                store_in[metric]['%d-%d' % (self.current_t, interval)] = val
+            else:
+                store_in[metric][self.current_t] = val
+
+        import pprint
+        pprint.pprint(self.metrics)
     
-    def add_analysis_result(self,ls_id,analysis_cmd):
+    def add_analysis_result(self, ls_id, analysis_cmd):
         """
         Result is a tuple with (command executed, filename of output)
         """
