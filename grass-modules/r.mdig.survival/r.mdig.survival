@@ -212,7 +212,7 @@ fi
 # TEMP_RECLASS now reflects the population that will be evaluated
 MAP_AREA_TEMP="0.0"
 get_map_area() {
-    MAP_AREA_TEMP=`r.stats -cni input=$1 | awk 'BEGIN {a=0} {a=a+$2} END {print a}'`
+    MAP_AREA_TEMP=`r.stats -ani input=$1 | awk 'BEGIN {a=0} {a=a+$2} END {print a}'`
 }
 
 if [ -n "$GIS_OPT_MAX" ]
