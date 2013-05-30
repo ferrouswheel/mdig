@@ -409,12 +409,38 @@ class Replicate:
 
         self.instance.remove_active_rep(self)
         self.instance.experiment.save_model()
+        self.save_metrics()
         self.active = False
         self.current_t = -1
         self.complete = True
         self.clean_up()
 
-    def save_event_metrics(self, ls, event, metrics, interval, treatment=None):
+    def save_metrics(self):
+        """
+        Looks like:
+        {'all': {'events': {},
+         'treatments': {0: {'AREA_EVALUATED': {'1988-1': '7',
+                                               '1989-1': '11',
+                                               '1990-1': '13',
+                                               '1991-1': '11',
+                                               '1992-1': '13'}}}}}
+        """
+        for ls, t_and_e in self.metrics.iteritems():
+            for event_type, metrics in t_and_e.iteritems():
+                for event_idx, metric in metrics.iteritems():
+                    for metric_name, time_series in metric.iteritems():
+                        base_name = self.get_img_filenames(ls, extension=False, gif=True)
+                        # TODO: add event's command name
+                        # TODO: grep for get_img_filename and make it more generic
+                        base_name += '%s_%d_%s.dat' % (event_type, event_idx, metric_name)
+                        f = open(base_name, 'w')
+                        f.write('time-interval, value\n')
+                        from operator import itemgetter
+                        for t, val in sorted(time_series.iteritems(), key=itemgetter(0)):
+                            f.write('%s, %s\n' % (t, val))
+                        f.close()
+
+    def add_event_metrics(self, ls, event, metrics, interval, treatment=None):
         if not metrics:
             # Don't create misc empty dictionaries unless there are
             # actually metrics available
@@ -437,9 +463,6 @@ class Replicate:
                 store_in[metric]['%d-%d' % (self.current_t, interval)] = val
             else:
                 store_in[metric][self.current_t] = val
-
-        import pprint
-        pprint.pprint(self.metrics)
     
     def add_analysis_result(self, ls_id, analysis_cmd):
         """
