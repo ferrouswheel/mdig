@@ -23,11 +23,15 @@ class TempResourceManager(object):
 
     def release(self, filename, resource_type=FILE):
         if resource_type == TempResourceManager.FILE:
-            os.remove(self.filename)
+            os.remove(filename)
         elif resource_type == TempResourceManager.MAP:
             pass
         elif resource_type == TempResourceManager.REGION:
             pass
+
+    def cleanup(self):
+        for file_type, filename in self.temp_files:
+            self.release(filename, file_type)
 
 
 trm = TempResourceManager()

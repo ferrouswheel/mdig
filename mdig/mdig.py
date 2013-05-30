@@ -212,6 +212,9 @@ def exit_cleanup():
     # save config changes
     config.get_config().write()
 
+    from mdig.tempresource import trm
+    trm.cleanup()
+
     logger.debug("Finished at %s" % repr(datetime.now().ctime()))
 
 def setup_logger():
