@@ -23,6 +23,7 @@ import logging
 import string
 import os
 import datetime
+from operator import itemgetter
 
 import grass 
 import config
@@ -434,10 +435,9 @@ class Replicate:
                         # TODO: grep for get_img_filename and make it more generic
                         base_name += '%s_%d_%s.dat' % (event_type, event_idx, metric_name)
                         f = open(base_name, 'w')
-                        f.write('time-interval, value\n')
-                        from operator import itemgetter
+                        f.write('time, interval, value\n')
                         for t, val in sorted(time_series.iteritems(), key=itemgetter(0)):
-                            f.write('%s, %s\n' % (t, val))
+                            f.write('%s, %s, %s\n' % (str(t[0]), str(t[1]), val))
                         f.close()
 
     def add_event_metrics(self, ls, event, metrics, interval, treatment=None):
@@ -460,7 +460,7 @@ class Replicate:
         for metric, val in metrics.iteritems():
             store_in.setdefault(metric, dict())
             if interval:
-                store_in[metric]['%d-%d' % (self.current_t, interval)] = val
+                store_in[metric][(self.current_t, interval)] = val
             else:
                 store_in[metric][self.current_t] = val
     
