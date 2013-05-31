@@ -87,7 +87,7 @@ class ExportActionTest(unittest.TestCase):
         # create mock replicate
         #instances[0].replicates = [Mock()]
         #instances[0].replicates[0].get_saved_maps.return_value = {'1':'xx','2':'yy'}
-        #instances[0].replicates[0].get_img_filenames.return_value = {'1':'xx','2':'yy'}
+        #instances[0].replicates[0].get_base_filenames.return_value = {'1':'xx','2':'yy'}
         # ea.do_instance_images(instances[0])
 	m.remove_log_handler()
 

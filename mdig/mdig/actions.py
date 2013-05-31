@@ -523,9 +523,8 @@ class StatsAction(Action):
                                 (i.get_index(), r.r_index))
                         maps = r.get_saved_maps(ls)
                         stats = g.get_univariate_stats(maps)
-                        fn = os.path.split(r.get_img_filenames(ls=ls, extension=False,
-                                gif=True))[:-5]
-                        fn = os.path.join(fn[0],self.options.analysis_filename_base + fn[1])
+                        fn = os.path.split(r.get_base_filenames(ls, single_file=True))
+                        fn = os.path.join(fn[0], self.options.analysis_filename_base + fn[1])
                         self.write_stats_to_file(stats,fn)
             else:
                 # just run on last map
@@ -887,10 +886,9 @@ class ExportAction(Action):
         output_images = self.options.output_gif or self.options.output_image 
         output_maps = self.options.output_map_pack
         if output_maps:
-            rep_filenames = r.get_img_filenames(ls, extension=False,
-                dir=self.options.outdir) 
+            rep_filenames = r.get_base_filenames(ls, output_dir=self.options.outdir) 
         elif output_images:
-            rep_filenames = r.get_img_filenames(ls, dir=self.options.outdir) 
+            rep_filenames = r.get_base_filenames(ls, extension='.png', output_dir=self.options.outdir) 
         for t in times:
             m = saved_maps[t]
             if output_images:
@@ -900,9 +898,11 @@ class ExportAction(Action):
                 map_list.append(self.export_map(m, rep_filenames[t]))
                 self.update_listeners_map_pack(None, r, ls, t)
         if self.options.output_gif:
-            self.create_gif(map_list, r.get_img_filenames(ls, gif=True, dir=self.options.outdir))
+            self.create_gif(map_list, r.get_base_filenames(ls, extension='_anim.gif',
+                single_file=True, output_dir=self.options.outdir))
         elif output_maps:
-            zip_fn = r.get_img_filenames(ls, extension=False, gif=True, dir=self.options.outdir)[:-5]
+            zip_fn = r.get_base_filenames(ls, extension='.zip', single_file=True,
+                    output_dir=self.options.outdir)
             self.zip_maps(map_list, zip_fn)
         return map_list
 

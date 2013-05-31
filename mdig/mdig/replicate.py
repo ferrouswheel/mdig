@@ -200,22 +200,22 @@ class Replicate:
         fn = i.get_map_name_base()
         fn += "_rep_" + str(i.replicates.index(self))
         return fn
-    
-    def get_img_filenames(self, ls="all", extension=True, gif=False, dir=None):
-        """ Get a dict of time:image_filename pairs for outputting maps to.
 
-        If gif is true, then returns a single string.
-        Warning: doesn't check that ls is an actual lifestage.
+    def get_base_filenames(self, ls="all", extension='', single_file=False, output_dir=None):
+        """ Get a dict of time:base_filename pairs for outputting things to.
+
+        If single_file is true, then returns a single string.
+        Warning: This doesn't check that ls is an actual lifestage.
         """
-        if dir is None:
+        if output_dir is None:
             output_dir = os.path.join(self.instance.experiment.base_dir, "output")
         else:
-            output_dir = os.path.normpath(dir)
+            output_dir = os.path.normpath(output_dir)
         fn = outputformats.create_filename(self)
-        if gif:
-            result = os.path.join(output_dir, fn + "_ls_" + ls + "_anim")
+        if single_file:
+            result = os.path.join(output_dir, fn + "_ls_" + ls)
             if extension:
-                result += '.gif'
+                result += extension
         else: 
             result = {}
             env = self.get_saved_maps(ls)
@@ -227,7 +227,7 @@ class Replicate:
             for t in times:
                 result[t] = os.path.join(output_dir, fn + "_ls_" + ls + "_" + str(t))
                 if extension:
-                    result[t] += '.png'
+                    result[t] += extension
         return result
         
     def set_seed(self,s):
@@ -418,27 +418,50 @@ class Replicate:
 
     def save_metrics(self):
         """
-        Looks like:
-        {'all': {'events': {},
-         'treatments': {0: {'AREA_EVALUATED': {'1988-1': '7',
-                                               '1989-1': '11',
-                                               '1990-1': '13',
-                                               '1991-1': '11',
-                                               '1992-1': '13'}}}}}
+        The metrics objects looks like:
+
+        {
+         'all': {
+         'events': {},
+         'treatments': {
+            0: {'AREA_EVALUATED': {'1988-1': '7',
+                                   '1989-1': '11',
+                                   '1990-1': '13',
+                                   '1991-1': '11',
+                                   '1992-1': '13'}}}}}
+
+        We implement this by flattening the nested dictionary to lists of keys
+        leading to leaf dictionaries (those with the time series). This flattening
+        is preformed by _flatten_and_map. We then run _save_data on each of these
+        leaves.
         """
-        for ls, t_and_e in self.metrics.iteritems():
-            for event_type, metrics in t_and_e.iteritems():
-                for event_idx, metric in metrics.iteritems():
-                    for metric_name, time_series in metric.iteritems():
-                        base_name = self.get_img_filenames(ls, extension=False, gif=True)
-                        # TODO: add event's command name
-                        # TODO: grep for get_img_filename and make it more generic
-                        base_name += '%s_%d_%s.dat' % (event_type, event_idx, metric_name)
-                        f = open(base_name, 'w')
-                        f.write('time, interval, value\n')
-                        for t, val in sorted(time_series.iteritems(), key=itemgetter(0)):
-                            f.write('%s, %s, %s\n' % (str(t[0]), str(t[1]), val))
-                        f.close()
+        def _flatten_and_map(the_dict, function, arg_acc=None, depth=4):
+            if arg_acc is None:
+                arg_acc = []
+            if depth == 0:
+                arg_acc.append(the_dict)
+                function(*arg_acc)
+                return
+            for key, val in the_dict.iteritems():
+                arg_acc.append(key)
+                _flatten_and_map(val, function, arg_acc, depth=depth-1)
+
+        def _save_data(ls, event_type, event, metric_name, time_series):
+            base_name = self.get_base_filenames(ls, single_file=True)
+            event_idx, event_cmd = event
+            cmd = event_cmd.replace('.', '_')
+            base_name += '_%s_%d_%s_%s.dat' % (
+                    event_type, event_idx, cmd, metric_name)
+            f = open(base_name, 'w')
+            f.write('time, interval, value\n')
+            for t, val in sorted(time_series.iteritems(), key=itemgetter(0)):
+                if int(val) > 25000000:
+                    print 'metric is very large = ', val
+                    import pdb; pdb.set_trace()
+                f.write('%s, %s, %s\n' % (str(t[0]), str(t[1]), val))
+            f.close()
+
+        _flatten_and_map(self.metrics, _save_data)
 
     def add_event_metrics(self, ls, event, metrics, interval, treatment=None):
         if not metrics:
@@ -451,11 +474,14 @@ class Replicate:
         self.metrics[ls.name].setdefault('events', dict())
 
         if treatment:
-            self.metrics[ls.name]['treatments'].setdefault(treatment.index, dict())
-            store_in = self.metrics[ls.name]['treatments'][treatment.index]
+            event_cmd = treatment.get_event().get_command()
+            ev_key = (treatment.index, event_cmd)
+            self.metrics[ls.name]['treatments'].setdefault(ev_key, dict())
+            store_in = self.metrics[ls.name]['treatments'][ev_key]
         else:
-            self.metrics[ls.name]['events'].setdefault(ls.events.index(event), dict())
-            store_in = self.metrics[ls.name]['events'][ls.events.index(event)]
+            ev_key = (ls.events.index(event), event.get_command())
+            self.metrics[ls.name]['events'].setdefault(ev_key, dict())
+            store_in = self.metrics[ls.name]['events'][ev_key]
 
         for metric, val in metrics.iteritems():
             store_in.setdefault(metric, dict())

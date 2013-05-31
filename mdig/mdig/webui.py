@@ -434,13 +434,12 @@ def show_replicate(model, instance, replicate):
         abort(404, "No such replicate, or replicate doesn't exist yet")
     rep = instance.replicates[rep_num]
     error = None
-    m_name = dm.get_name()
 
     # Scan output dir to see if gifs have been generated for this instance
     gifs_present = []
     for ls_id in instance.experiment.get_lifestage_ids():
         # if there is an envelope generated then collect it
-        fn = rep.get_img_filenames(ls=ls_id, gif=True)
+        fn = rep.get_base_filenames(ls=ls_id, single_file=True, extension='_anim.gif')
         if os.path.isfile(fn):
             # get creation time
             mtime = datetime.datetime.fromtimestamp(os.stat(fn).st_mtime)
@@ -451,8 +450,7 @@ def show_replicate(model, instance, replicate):
     # Scan output dir to see if map_packs have been generated for this instance
     map_packs_present = []
     for ls_id in instance.experiment.get_lifestage_ids():
-        fn = rep.get_img_filenames(
-            ls=ls_id, extension=False, gif=True)[:-5] + '.zip'
+        fn = rep.get_base_filenames(ls=ls_id, extension='.zip', single_file=True)
         if os.path.isfile(fn):
             # get creation time
             mtime = datetime.datetime.fromtimestamp(os.stat(fn).st_mtime)
@@ -654,7 +652,7 @@ def replicate_spread_gif(model, instance, replicate, ls_id):
         abort(404, "No such replicate, or replicate doesn't exist yet")
     r = instance.replicates[replicate]
     # do per lifestage!
-    fn = r.get_img_filenames(ls=ls_id, gif=True)
+    fn = r.get_base_filenames(ls=ls_id, extension='_anim.gif', single_file=True)
     root_dir = os.path.dirname(fn)
     send_file(os.path.basename(fn), root=root_dir)
 
@@ -676,8 +674,7 @@ def create_replicate_map_pack(model, instance, replicate, ls_id):
     submit_replicate_job(dm, idx, replicate, ls_id, action)
     purge_oldest_map_packs()
     r = instance.replicates[replicate]
-    fn = r.get_img_filenames(ls=ls_id, extension=False, gif=True)
-    fn += '.zip'
+    fn = r.get_base_filenames(ls=ls_id, extension='_anim.zip', single_file=True)
     add_to_map_pack_lfu(fn, nodate=True)
     redirect('/models/%s/instances/%d/replicates/%d' %
             (model.get_name(), idx, replicate))
@@ -696,8 +693,7 @@ def replicate_map_pack(model, instance, replicate, ls_id):
         abort(404, "No such replicate, or replicate doesn't exist yet")
     r = instance.replicates[replicate]
     # do per lifestage!
-    fn = r.get_img_filenames(ls=ls_id, extension=False, gif=True)
-    fn += '.zip'
+    fn = r.get_base_filenames(ls=ls_id, extension='_anim.zip', single_file=True)
     if os.path.isfile(fn):
         add_to_map_pack_lfu(fn)
         root_dir = os.path.dirname(fn)
