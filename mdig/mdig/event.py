@@ -21,7 +21,7 @@ import string
 import grass
 from mdig.tempresource import trm
 
-class Event:
+class Event(object):
     """
     The Event class represents the use of a singular module or command within
     the MDiG simulation. It is used for running events in the lifestage loop,

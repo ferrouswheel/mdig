@@ -159,7 +159,21 @@ class ManagementStrategy(object):
         return result  # return an empty list if there are none
 
 
-class Treatment:
+class TreatmentEvent(Event):
+    """
+    TreatmentEvent differs from a normal MDiG event in that it
+    records the population size before and after.
+    """
+
+    def run(self, in_name, out_name, rep, is_pop):
+        stats_before = grass.get_g().get_univariate_stats({0:in_name})
+        metrics = super(TreatmentEvent, self).run(in_name, out_name, rep, is_pop)
+        stats_after = grass.get_g().get_univariate_stats({0: out_name})
+        metrics['AREA_REMOVED'] = stats_before[0].get('n', 0) - stats_after[0].get('n', 0)
+        return metrics
+
+
+class Treatment(object):
 
     def __init__(self, strategy, node, t_index):
         self.strategy = strategy
@@ -312,7 +326,7 @@ class Treatment:
         if len(e_node) > 0:
             assert len(e_node) == 1
             self.treatment_type = "event"
-            self.event = Event(e_node[0])
+            self.event = TreatmentEvent(e_node[0])
         return self.event
 
     def get_map_resources(self):

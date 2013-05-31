@@ -23,6 +23,7 @@ import logging
 import string
 import os
 import datetime
+import dateutil.parser
 from operator import itemgetter
 
 import grass 
@@ -30,9 +31,99 @@ import config
 import outputformats
 import model
 from mdig.grass import MapNotFoundException
+from mdig.analysis import AnalysisOutputFileExists
 
 
-class Replicate:
+class Metric(object):
+
+    def __init__(self, replicate):
+        self.rep = replicate
+        self.metrics = {}
+
+    def _flatten_and_map(self, the_dict, function, arg_acc=None, depth=4):
+        if arg_acc is None:
+            arg_acc = []
+        if depth == 0:
+            arg_acc.append(the_dict)
+            function(*arg_acc)
+            return
+        for key, val in the_dict.iteritems():
+            sub_args = list(arg_acc)
+            sub_args.append(key)
+            try:
+                self._flatten_and_map(val, function, list(sub_args), depth=depth-1)
+            except TypeError:
+                import pdb; pdb.set_trace()
+
+
+    def _save_data(self, ls, event_type, event, metric_name, time_series):
+        base_name = self.rep.get_base_filenames(ls, single_file=True)
+        event_idx, event_cmd = event
+        cmd = event_cmd.replace('.', '_')
+        base_name += '_%s_%d_%s_%s.dat' % (event_type, event_idx, cmd, metric_name)
+        f = open(base_name, 'w')
+        f.write('time, interval, value\n')
+        for t, val in sorted(time_series.iteritems(), key=itemgetter(0)):
+            if int(val) > 25000000:
+                # TODO: remove this once simulations complete
+                print 'metric is very large = ', val
+                import pdb; pdb.set_trace()
+            f.write('%s, %s, %s\n' % (str(t[0]), str(t[1]), val))
+        f.close()
+
+
+    def save(self):
+        """
+        The metrics objects looks like:
+
+        {
+         'all': {
+             'events': {},
+             'treatments': {
+                0: {'AREA_EVALUATED': {'1988-1': '7',
+                                       '1989-1': '11',
+                                       '1990-1': '13',
+                                       '1991-1': '11',
+                                       '1992-1': '13'}}}}}
+
+        We implement this by flattening the nested dictionary to lists of keys
+        leading to leaf dictionaries (those with the time series). This flattening
+        is preformed by _flatten_and_map. We then run _save_data on each of these
+        leaves.
+        """
+        import functools
+        saver = functools.partial(Metric._save_data, self)
+        self._flatten_and_map(self.metrics, saver)
+
+    def add_event_metrics(self, ls, event, metrics, interval, treatment=None):
+        if not metrics:
+            # Don't create misc empty dictionaries unless there are
+            # actually metrics available
+            return
+
+        self.metrics.setdefault(ls.name, dict())
+        self.metrics[ls.name].setdefault('treatments', dict())
+        self.metrics[ls.name].setdefault('events', dict())
+
+        if treatment:
+            event_cmd = treatment.get_event().get_command()
+            ev_key = (treatment.index, event_cmd)
+            self.metrics[ls.name]['treatments'].setdefault(ev_key, dict())
+            store_in = self.metrics[ls.name]['treatments'][ev_key]
+        else:
+            ev_key = (ls.events.index(event), event.get_command())
+            self.metrics[ls.name]['events'].setdefault(ev_key, dict())
+            store_in = self.metrics[ls.name]['events'][ev_key]
+
+        for metric, val in metrics.iteritems():
+            store_in.setdefault(metric, dict())
+            if interval:
+                store_in[metric][(self.rep.current_t, interval)] = val
+            else:
+                store_in[metric][self.rep.current_t] = val
+
+
+class Replicate(object):
     """
     Replicate is a class for each replication simulated for an DispersalInstance
 
@@ -57,7 +148,7 @@ class Replicate:
         self.r_index = r_index
         # used to calculate time taken to complete
         self.start_time = None
-        self.metrics = {}
+        self.metrics = Metric(self)
 
         if node is None:
             if instance is None:
@@ -103,7 +194,6 @@ class Replicate:
         # every year that is expected to have map output
         if complete:
             exp = self.instance.experiment
-            period = exp.get_period()
             for ls_key in ls_keys:
                 maps = self.get_saved_maps(ls_key)
                 for t in exp.map_year_generator(ls_key):
@@ -165,11 +255,11 @@ class Replicate:
             ls_saved_maps=[]
             try:
                 ls_saved_maps = self.get_saved_maps(ls_id)
-            except grass.MapNotFoundException, e:
+            except grass.MapNotFoundException:
                 # If maps are missing, there still might be some found, even
                 # though it's unlikely
                 ls_saved_maps = self.get_saved_maps(ls_id)
-            except grass.SetMapsetException, e:
+            except grass.SetMapsetException:
                 self.log.warning("Couldn't find mapset '" + \
                         self.instance.get_mapset() + \
                         "', so forgetting about it.")
@@ -410,99 +500,21 @@ class Replicate:
 
         self.instance.remove_active_rep(self)
         self.instance.experiment.save_model()
-        self.save_metrics()
+        self.metrics.save()
+
         self.active = False
         self.current_t = -1
         self.complete = True
         self.clean_up()
 
-    def save_metrics(self):
-        """
-        The metrics objects looks like:
-
-        {
-         'all': {
-         'events': {},
-         'treatments': {
-            0: {'AREA_EVALUATED': {'1988-1': '7',
-                                   '1989-1': '11',
-                                   '1990-1': '13',
-                                   '1991-1': '11',
-                                   '1992-1': '13'}}}}}
-
-        We implement this by flattening the nested dictionary to lists of keys
-        leading to leaf dictionaries (those with the time series). This flattening
-        is preformed by _flatten_and_map. We then run _save_data on each of these
-        leaves.
-        """
-        def _flatten_and_map(the_dict, function, arg_acc=None, depth=4):
-            if arg_acc is None:
-                arg_acc = []
-            if depth == 0:
-                arg_acc.append(the_dict)
-                function(*arg_acc)
-                return
-            for key, val in the_dict.iteritems():
-                arg_acc.append(key)
-                _flatten_and_map(val, function, arg_acc, depth=depth-1)
-
-        def _save_data(ls, event_type, event, metric_name, time_series):
-            base_name = self.get_base_filenames(ls, single_file=True)
-            event_idx, event_cmd = event
-            cmd = event_cmd.replace('.', '_')
-            base_name += '_%s_%d_%s_%s.dat' % (
-                    event_type, event_idx, cmd, metric_name)
-            f = open(base_name, 'w')
-            f.write('time, interval, value\n')
-            for t, val in sorted(time_series.iteritems(), key=itemgetter(0)):
-                if int(val) > 25000000:
-                    print 'metric is very large = ', val
-                    import pdb; pdb.set_trace()
-                f.write('%s, %s, %s\n' % (str(t[0]), str(t[1]), val))
-            f.close()
-
-        _flatten_and_map(self.metrics, _save_data)
-
-    def add_event_metrics(self, ls, event, metrics, interval, treatment=None):
-        if not metrics:
-            # Don't create misc empty dictionaries unless there are
-            # actually metrics available
-            return
-
-        self.metrics.setdefault(ls.name, dict())
-        self.metrics[ls.name].setdefault('treatments', dict())
-        self.metrics[ls.name].setdefault('events', dict())
-
-        if treatment:
-            event_cmd = treatment.get_event().get_command()
-            ev_key = (treatment.index, event_cmd)
-            self.metrics[ls.name]['treatments'].setdefault(ev_key, dict())
-            store_in = self.metrics[ls.name]['treatments'][ev_key]
-        else:
-            ev_key = (ls.events.index(event), event.get_command())
-            self.metrics[ls.name]['events'].setdefault(ev_key, dict())
-            store_in = self.metrics[ls.name]['events'][ev_key]
-
-        for metric, val in metrics.iteritems():
-            store_in.setdefault(metric, dict())
-            if interval:
-                store_in[metric][(self.current_t, interval)] = val
-            else:
-                store_in[metric][self.current_t] = val
     
     def add_analysis_result(self, ls_id, analysis_cmd):
         """
         Result is a tuple with (command executed, filename of output)
         """
-        result = (analysis_cmd.cmd_string,analysis_cmd.output_fn)
-
-        mdig_config = config.get_config()
-        
-        current_dir = os.path.dirname(os.path.abspath(result[1]))
+        result = (analysis_cmd.cmd_string, analysis_cmd.output_fn)
         filename = os.path.basename(result[1])
-        destination_path = os.path.join(self.instance.experiment.base_dir, mdig_config.analysis_dir)
         
-        filename = os.path.basename(filename)
         all_ls = self.node.xpath("lifestage")
         
         ls_node = None
@@ -569,14 +581,12 @@ class Replicate:
         self.node.attrib['ts'] = datetime.datetime.now().isoformat()
 
     def get_time_stamp(self):
-        import dateutil.parser
-        # First check for old style timestamp
+        # First check for old style timestamp and convert if necessary
         try:
             ts = float(self.node.attrib['ts'])
             self.node.attrib['ts'] = datetime.datetime.fromtimestamp(ts).isoformat()
         except ValueError:
             pass
-        ###
         return dateutil.parser.parse(self.node.attrib['ts'])
     
     def add_completed_raster_map(self,t,ls,file_name,interval=1):

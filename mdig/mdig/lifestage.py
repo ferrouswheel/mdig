@@ -249,7 +249,7 @@ class Lifestage:
                 grass_i.make_mask(mask)
 
             metrics = e.run(temp_map_names[0], temp_map_names[1], rep, self.populationBased)
-            rep.add_event_metrics(self, e, metrics, interval)
+            rep.metrics.add_event_metrics(self, e, metrics, interval)
 
             if len(p_intervals) > 1:
                 # Remove mask because we can't access anything outside of it
@@ -286,7 +286,7 @@ class Lifestage:
             grass_i.make_mask(t_area)
             e = t.get_event()
             metrics = e.run(temp_map_names[0], temp_map_names[1], rep, False)
-            rep.add_event_metrics(self, e, metrics, interval, treatment=t)
+            rep.metrics.add_event_metrics(self, e, metrics, interval, treatment=t)
 
             # Remove mask when done
             grass_i.make_mask(None)
