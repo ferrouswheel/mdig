@@ -1025,7 +1025,8 @@ class ExportAction(Action):
 
     def zip_maps(self, maps, zip_fn):
         import zipfile
-        zip_fn += ".zip"
+        if not zip_fn.endswith('.zip'):
+            zip_fn += ".zip"
         if os.path.isfile(zip_fn) and not self.options.overwrite_flag:
             raise OSError("Zip file %s exists, use -o flag to overwrite" % zip_fn)
         try: 

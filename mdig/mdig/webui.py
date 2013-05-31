@@ -18,7 +18,9 @@ from model import DispersalModel, ValidationError
 import config
 import grass
 import modelrepository
+
 from mdig.instance import InstanceIncompleteException
+from mdig.modelrepository import RepositoryException
 
 app = None
 log = logging.getLogger('mdig.web')
@@ -31,11 +33,15 @@ if True:
     # reloader is nice, but it loads all module code twice and this
     # confuses the GRASS module.
     # reloader = True
+
 # where js, css, and more are kept
 resource_dir = os.path.join(root_dir, 'mdig/views/resources/')
+
 # needed for error template to find bottle...
-bottle.TEMPLATE_PATH = [os.path.join(
-    root_dir, 'mdig/views/'), os.path.join(root_dir, 'mdig/')]
+bottle.TEMPLATE_PATH = [
+        os.path.join(root_dir, 'mdig/views/'),
+        os.path.join(root_dir, 'mdig/')
+        ]
 
 # Which models are currently doing something.
 # Each item to have format: [ACTION, state]
@@ -101,15 +107,11 @@ def validate_model_name(mname):
 
 
 def validate_instance(dm, instance_idx):
-    if instance_idx < 0 or instance_idx >= len(dm.get_instances()):
-        return False
-    return True
+    return instance_idx >= 0 and instance_idx < len(dm.get_instances())
 
 
 def validate_replicate(instance, rep_num):
-    if rep_num < 0 or rep_num >= len(instance.replicates):
-        return False
-    return True
+    return rep_num >= 0 and rep_num < len(instance.replicates)
 
 
 @route('/models/', method="POST")
@@ -117,22 +119,29 @@ def validate_replicate(instance, rep_num):
 def submit_model():
     model_file = request.POST.get('new_model')
     data = model_file.file.read()
-    # use ModelRepository to add model, but we'll need to implement a method
+    # Use ModelRepository to add model, but we'll need to implement a method
     # that accepts a string and uses a temp file as a proxy.
+    error_template = { "name": mdig.version_string }
     try:
         model_name = add_model_to_repo(data)
     except ValidationError, e:
-        return {"name": mdig.version_string,
-                "error": "Error parsing model xml. Validation said:\n%s" % str(e)}
+        error_template['error'] = "Error parsing model xml. Validation said:\n%s" % str(e)
+        return error_template
     except modelrepository.RepositoryException, e:
         if "already exists" in str(e):
-            return {"name": mdig.version_string, "error": "Model already exists in repository."}
-        return {"name": mdig.version_string, "error": "Error adding model to repository: %s" % str(e)}
-    dm = mdig.repository.get_models()[model_name]
+            error_template['error'] = "Model already exists in repository."
+        else:
+            error_template['error'] = "Error adding model to repository: %s" % str(e)
+        return error_template
+    # Try to successfully load model
+    mdig.repository.get_models()[model_name]
     redirect('/')
 
 
 def get_map_pack_usage():
+    # TODO: This code is not particularly useful, since it doesn't
+    # remember map packs generated between runs of a server.
+
     # sum storage to check if we actually need to delete anything
     sum_storage_mb = 0.0
     to_remove = []
@@ -140,7 +149,7 @@ def get_map_pack_usage():
         fn, date = map_pack_lfu[i]
         try:
             sum_storage_mb += float(os.path.getsize(fn)) / (1024*1024)
-        except OSError, e:
+        except OSError:
             if date is not None:
                 to_remove.append(i)
     for i in to_remove:
@@ -149,18 +158,18 @@ def get_map_pack_usage():
 
 
 def purge_oldest_map_packs():
-    while get_map_pack_usage() > float(config.get_config()['WEB']['map_pack_storage']) \
-            and len(map_pack_lfu) > 1:
-        # If there is only one don't delete, even if it is very big
+    # If we are using too much storage, AND
+    # If there is only one don't delete, even if it is very big
+    allowed_use = float(config.get_config()['WEB']['map_pack_storage']) 
+    while get_map_pack_usage() > allowed_use and len(map_pack_lfu) > 1:
         # Delete oldest at position 0
         fn, date = map_pack_lfu[0]
         del map_pack_lfu[0]
         try:
             os.remove(fn)
         except OSError, e:
-            if "No such file" in str(e):
-                pass
-            else:
+            if "No such file" not in str(e):
+                # ignore missing files, since we're trying to remove them anyhow
                 raise e
 
 
@@ -231,8 +240,6 @@ def process_tasks():
     k = time_index.keys()
     k.sort(key=lambda x: time_index[x])
     return k, updates
-
-from mdig.modelrepository import RepositoryException
 
 
 @route('/models/:model/del', method='POST')
@@ -1055,6 +1062,10 @@ class MDiGWorker():
                 self.log.error(
                     "Unexpected exception in worker process: %s" % str(e))
                 traceback.print_exc()
+                if not s:
+                    # Very rarely, s will be None when shutting down
+                    self.running = False
+                    continue
                 # Send error notice back to web interface
                 s = s.copy()
                 s.setdefault('status', {})

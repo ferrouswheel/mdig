@@ -16,16 +16,18 @@
 #
 #  You should have received a copy of the GNU General Public License along
 #  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
+import glob
 import os
 import sys
 import logging
 
+
 try:
-    # ConfigObj from http://www.voidspace.org.uk/python/configobj.html
     from configobj import ConfigObj
 except ImportError:
     # backup in contrib dir
     from mdig.contrib.configobj import ConfigObj
+
 
 def get_home_dir():
     """ Platform-agnostic way to get user home directory """
@@ -48,6 +50,7 @@ def get_home_dir():
     return home_dir
 home_dir = get_home_dir()
         
+
 mdig_config = None
 def get_config():
     global mdig_config
@@ -56,10 +59,10 @@ def get_config():
         logging.getLogger("mdig.config").debug("Created new MDiGConfig instance")
     return mdig_config
 
+
 def find_grass_base_dir():
     # TODO find from GRASS environment if it exists
     # find from guessing /usr/local/grass*
-    import glob
     opts = []
     if sys.platform == "win32":
         if 'WINGISBASE' in os.environ:
@@ -72,6 +75,7 @@ def find_grass_base_dir():
     if len(opts) > 0:
         return opts[-1]
 
+
 def find_grassdb_dir():
     # TODO find from GRASS environment if it exists
     # find from guessing /home/user/src/mdig/test
@@ -82,6 +86,7 @@ def find_grassdb_dir():
         my_path = os.path.normpath(os.path.join(os.environ['OSGEO4W_ROOT'], 'src/mdig/test'))
         if os.path.isdir(my_path):
             return my_path
+
 
 def find_location_dir():
     # TODO find from GRASS environment if it exists
@@ -96,6 +101,7 @@ def find_location_dir():
                     os.path.isdir(os.path.join(d,'PERMANENT')):
                 return os.path.basename(d)
  
+
 class MDiGConfig(ConfigObj):
     """
     MDiGConfig contains config information for the command line options used and
