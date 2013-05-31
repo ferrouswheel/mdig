@@ -145,7 +145,7 @@ class Event:
                 if s:
                     treatments = s.get_treatments_for_param(p_value,rep.current_t)
                     if treatments:
-                        self.log.info("treatments for variable %s are: %s" % (p_value, repr(treatments)))
+                        self.log.debug("treatments for variable %s are: %s" % (p_value, repr(treatments)))
                         # TODO support blending of multiple treatments on param
                         # (move below operations from treatment to strategy)
                         assert len(treatments) == 1, "MDiG does not currently support multiple treatments to a parameter"
