@@ -298,6 +298,9 @@ else
         fi
     fi # POP_AREA != 0
 fi # GIS_FLAG_E 1 or 0
+else
+    get_map_area $TEMP_RANDOM_SELECT
+    AREA_EVALUATED=$MAP_AREA_TEMP
 fi # GIS_OPT_MAX is defined
 
 # NOTE: null values in category reclass map will mean that input is unchanged...
