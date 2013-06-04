@@ -581,15 +581,18 @@ class GRASSInterface:
             
         return res
         
-    def set_region(self,a_region=None,raster=None):
+    def set_region(self, a_region=None, raster=None):
         name = None
         mapset = None
+
         if a_region:
             import mdig.region
-            if isinstance(a_region,mdig.region.Region):
+            if isinstance(a_region, mdig.region.Region):
                 name = a_region.get_name()
                 mapset = a_region.get_mapset()
-            else: name = a_region
+            else:
+                name = a_region
+
         # Now set region
         if name:
             self.log.debug("Setting region to %s", name)
@@ -681,12 +684,6 @@ class GRASSInterface:
     def mapcalc(self, map_name, expression):
         map_name='"' + map_name + '"' 
         self.run_command("r.mapcalc", to_input="%s = %s\nend\n"%(map_name,expression))
-#p = Popen("r.mapcalc", shell=True,
-#stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-#output,stderr = p.communicate("%s = %s"%(map_name,expression))[0]
-#self.log.debug("exec: r.mapcalc %s = %s"%(map_name,expression))
-
-#self.run_command("r.mapcalc '%s=%s'" % (map_name, expression));
     
     def make_mask(self,mask_name):
         if mask_name is None:
@@ -729,20 +726,15 @@ class GRASSInterface:
         return None
 
     def update_grass_vars(self):
-        env = self.get_gis_env()
-        to_update = ["GISDBASE","LOCATION_NAME","MAPSET"]
-        self.grass_vars.update(env)
+        # TODO: can we get rid of this, it seems redundant and does nothing
+        self.grass_vars.update(self.get_gis_env())
 
     def get_mapset(self):
-        """
-        Get current mapset
-        """
+        """ Get current mapset """
         return self.grass_vars["MAPSET"]
 
     def check_mapset(self, mapset_name, location=None):
-        """
-        Check if mapset already exists
-        """
+        """ Check if mapset already exists """
         loc_str = ""
         if location:
             loc_str = " location=%s" % location
@@ -753,8 +745,7 @@ class GRASSInterface:
             return True
         return False
 
-    def change_mapset(self, mapset_name = None, location = None, create=False,
-            in_path=[]):
+    def change_mapset(self, mapset_name=None, location=None, create=False, in_path=[]):
         """
         Change to specified mapset. If create is True than create it if necessary.
         Mapsets in in_path are added to mapset search path, but must be in same
@@ -770,7 +761,7 @@ class GRASSInterface:
         if (self.get_mapset() != mapset_name) or \
                 (location and self.grass_vars["LOCATION_NAME"] != location):
             if create:
-                result = self.run_command("g.mapset -c mapset=%s%s" % (mapset_name,loc))
+                self.run_command("g.mapset -c mapset=%s%s" % (mapset_name,loc))
             else:
                 # check that the mapset actually exists
                 mapset_dir = os.path.join(self.grass_vars['GISDBASE'],
@@ -786,7 +777,7 @@ class GRASSInterface:
             self.run_command("g.mapsets addmapset=%s" % m)
         return True
 
-    def create_mdig_subdir(self,mapset,overwrite=False):
+    def create_mdig_subdir(self, mapset, overwrite=False):
         env = self.get_gis_env()
         dest_dir = os.path.join(env["GISDBASE"],env["LOCATION_NAME"],mapset,"mdig")
         if os.path.isdir(dest_dir) and overwrite:
@@ -798,7 +789,7 @@ class GRASSInterface:
         assert location
         env = self.get_gis_env()
         gisdb = env["GISDBASE"]
-        if os.path.isdir(os.path.join(gisdb,location,"PERMANENT")):
+        if os.path.isdir(os.path.join(gisdb, location, "PERMANENT")):
             return True
         return False
 
@@ -939,6 +930,8 @@ class GRASSInterface:
         self.log.log(log_level, "exec: " + command_string + log_input)
         ret = None
         
+        if 'statfile' in command_string:
+            import pdb; pdb.set_trace()
         p = Popen(command_string, shell=True, stdout=subprocess.PIPE, \
                 stdin=subprocess.PIPE,stderr=subprocess.PIPE)
         

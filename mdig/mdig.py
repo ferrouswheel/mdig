@@ -72,11 +72,9 @@ def process_options(argv):
     if len(argv) >= 1:
         action_keyword = argv[0]
     
-    the_action = None
-    if actions.mdig_actions.has_key( action_keyword ):
-        # Initialise with the class corresponding to the action
-        the_action = actions.mdig_actions[action_keyword]()
+    the_action = actions.mdig_actions.get(action_keyword, None)
     if the_action is not None:
+        the_action = the_action()
         the_action.parse_options(argv)
     else:
         if action_keyword != "--help" and \

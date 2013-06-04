@@ -63,3 +63,15 @@ def open_anything(source):
     import StringIO
     return StringIO.StringIO(str(source)) 
 
+
+def mean_std_dev(values):
+    """ Calculate mean and standard deviation of data values[]: """
+    from math import sqrt
+    length, mean, std = len(values), 0, 0
+    for value in values:
+        mean = mean + value
+    mean = mean / float(length)
+    for value in values:
+        std = std + (value - mean) ** 2
+    std = sqrt(std / float(length))
+    return mean, std

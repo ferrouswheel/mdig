@@ -171,8 +171,6 @@ class DispersalInstance:
                             my_rep = Replicate(r,self,r_index)
                             reps.append(my_rep)
                             r_index += 1
-                            #self.log.debug("rep " + repr(self.variables) + \
-                                    #" st " + repr(self.strategy) + " matches c_i " + repr(c_i))
         return reps
 
     def get_index(self):
@@ -204,8 +202,7 @@ class DispersalInstance:
         if g.check_mapset(mapset,loc):
             g.change_mapset(mapset,loc,in_path=[self.experiment.get_mapset()])
         else:
-            if not g.change_mapset(mapset,loc,True):
-                raise MapsetError("Failure to create mapset %s" % mapset)
+            g.change_mapset(mapset,loc,True)
             # create mdig dir in mapset
             try:
                 mdig_dir = g.create_mdig_subdir(mapset)
@@ -309,8 +306,7 @@ class DispersalInstance:
                     # under instance...
                     r.add_analysis_result(ls_id, ac)
 
-    def run_command_on_occupancy_envelopes(self, cmd_string, ls=None,
-            times=None):
+    def run_command_on_occupancy_envelopes(self, cmd_string, ls=None, times=None):
         """ run_command_on_occupancy_envelopes runs a command across all
         occupancy envelopes replicate maps in times, or all envelopes.
         
@@ -320,16 +316,17 @@ class DispersalInstance:
         @param times is a list of times to run command on, -ve values are interpreted
         as indices from the end of the array e.g. -1 == last map.
         """
+        mdig_config = config.get_config()
         if ls is None:
             ls = self.experiment.get_lifestage_ids().keys()
         elif not isinstance(ls, list):
             ls = [ls]
         
         if not self.is_complete():
-            self.log.error("Incomplete instance [%s]" % i)
+            self.log.error("Incomplete instance [%s]" % self)
             raise ImcompleteInstanceException()
 
-        ac = analysiscommand(cmd_string)
+        ac = AnalysisCommand(cmd_string)
         self.set_region()
         envelopes = self.get_occupancy_envelopes()
         for ls_id in ls:
@@ -460,7 +457,6 @@ class DispersalInstance:
         # the instance
         if self.get_mapset() == self.experiment.get_mapset():
             self.set_mapset(self.experiment.create_instance_mapset_name())
-
     
     def get_occupancy_envelopes(self,nolog=False):
         prob_env = {}

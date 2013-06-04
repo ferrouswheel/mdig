@@ -76,7 +76,7 @@ class Action(object):
                 dest="location",
                 default=None)
     
-    def act_on_options(self,options):
+    def act_on_options(self, options):
         if options.output_level == "debug":
             logging.getLogger("mdig").handlers[0].setLevel(logging.DEBUG)
             self.log.debug("Debug messages enabled.")
@@ -96,7 +96,7 @@ class Action(object):
             self.location = options.location
             self.log.debug("GRASS geo location manually set to " + options.location)
 
-    def parse_options(self,argv):
+    def parse_options(self, argv):
         (self.options, args) = self.parser.parse_args(argv[1:])
         if self.model_limit is not None and self.model_limit < len(args):
             self.log.error("Too many model names: " + repr(args))
@@ -468,7 +468,7 @@ class StatsAction(Action):
                 action="store_false",
                 dest="analysis_add_to_xml")
 
-    def act_on_options(self,options):
+    def act_on_options(self, options):
         Action.act_on_options(self,options)
         c = config.get_config()
         c.analysis_add_to_xml = self.options.analysis_add_to_xml
@@ -513,7 +513,7 @@ class StatsAction(Action):
                     self.write_stats_to_file(stats,fn)
             else:
                 # just run on last map
-                raise NotImplementedError("only supports running all maps current")
+                raise NotImplementedError("Only supports running all maps current")
         else:
             if self.options.analysis_step == "all":
                 for i in mdig_model.get_instances():
@@ -528,12 +528,12 @@ class StatsAction(Action):
                         self.write_stats_to_file(stats,fn)
             else:
                 # just run on last map
-                raise NotImplementedError("only supports running all maps current")
+                raise NotImplementedError("Only supports running all maps current")
 
         self.log.info("Output is in: %s" % \
                 os.path.join(mdig_model.base_dir,"output"))
 
-    def write_stats_to_file(self,stats,fn):
+    def write_stats_to_file(self, stats, fn):
         c = config.get_config()
         if os.path.isfile(fn):
             if c.overwrite_flag:
@@ -557,6 +557,91 @@ class StatsAction(Action):
                     f.write(',')
             f.write('\r\n')
         f.close()
+
+class ReduceAction(Action):
+    description = "Take a series of CSV output files and calculate average and std."
+
+    def __init__(self):
+        # TODO: refactor this and RepositoryAction to share a non-model loading
+        # parent
+        super(ReduceAction, self).__init__()
+        self.check_model = False
+        self.preload = False
+        self.init_repository = False
+        self.init_grass = False
+        # Default is to run analysis on all timesteps with maps available.
+        self.parser = OptionParser(version=mdig.version_string,
+                description = self.description,
+                usage = "%prog reduce [options] model_name")
+        self.add_options()
+        self.model_limit = None
+        self.parser.remove_option('-k')
+        self.parser.remove_option('-r')
+
+    def add_options(self):
+        Action.add_options(self)
+        self.parser.add_option("-n","--no-header",
+                help="Are the CSVs missing headers?",
+                action="store_true",
+                dest="no_header")
+        self.parser.add_option("-c","--column",
+                help="Use this column for the timeseries value we are reducing.",
+                action="store",
+                type="int",
+                dest="column")
+        self.parser.add_option("-m","--match",
+                help="Match these columns in each file",
+                action="append",
+                default=[0],
+                type="int",
+                dest="match_columns")
+        self.parser.add_option("-f","--out-file",
+                help="File to put the results in",
+                action="store",
+                dest="outfile")
+
+    def parse_options(self, argv):
+        super(ReduceAction, self).parse_options(argv)
+
+    def do_me(self, mdig_model):
+        import csv
+        from mdig.utils import mean_std_dev
+        the_files = self.model_names # extra args are put in self.model_names
+        row_keys={}
+        headers = None
+        for fn in the_files:
+            with open(fn, 'r') as f:
+                csv_reader = csv.reader(f, delimiter=',', quotechar='"', skipinitialspace=True)
+                if not self.options.no_header:
+                    headers = next(csv_reader, None)
+                for row in csv_reader:
+                    k = tuple([row[i] for i in self.options.match_columns])
+                    row_keys.setdefault(k, [])
+                    try:
+                        row_keys[k].append(float(row[self.options.column]))
+                    except ValueError:
+                        row_keys[k].append(0.0)
+                    except Exception, e:
+                        print str(e)
+                        print row
+                        import pdb; pdb.set_trace()
+        # Reduce them
+        reduced = {}
+        for k in row_keys:
+            reduced[k] = mean_std_dev(row_keys[k])
+
+        from operator import itemgetter
+        with open(self.options.outfile, 'w') as f:
+            out_file = csv.writer(f, delimiter=',', quotechar='"')
+            if headers:
+                header = [headers[i] for i in self.options.match_columns] + [
+                        'mean %s' % headers[self.options.column],
+                        'std %s' % headers[self.options.column],
+                        ]
+                out_file.writerow(header)
+            for k, val in sorted(reduced.iteritems(), key=itemgetter(0)):
+                out_file.writerow(list(k) + list(val))
+
 
 class ResetAction(Action):
     description = "Reset the model. Delete all prior instances/replicates."
@@ -1355,7 +1440,8 @@ mdig_actions = {
     "info": InfoAction,
     "reset": ResetAction,
     "remove": RemoveAction,
-    "repository": RepositoryAction
+    "repository": RepositoryAction,
+    "reduce": ReduceAction,
     }
 mdig_actions["roc"] = ROCAction
 

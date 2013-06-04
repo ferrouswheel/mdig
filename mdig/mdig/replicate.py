@@ -50,11 +50,7 @@ class Metric(object):
         for key, val in the_dict.iteritems():
             sub_args = list(arg_acc)
             sub_args.append(key)
-            try:
-                self._flatten_and_map(val, function, list(sub_args), depth=depth-1)
-            except TypeError:
-                import pdb; pdb.set_trace()
-
+            self._flatten_and_map(val, function, list(sub_args), depth=depth-1)
 
     def _save_data(self, ls, event_type, event, metric_name, time_series):
         base_name = self.rep.get_base_filenames(ls, single_file=True)
@@ -64,13 +60,12 @@ class Metric(object):
         f = open(base_name, 'w')
         f.write('time, interval, value\n')
         for t, val in sorted(time_series.iteritems(), key=itemgetter(0)):
-            if int(val) > 25000000:
-                # TODO: remove this once simulations complete
-                print 'metric is very large = ', val
-                import pdb; pdb.set_trace()
+            #if int(val) > 25000000:
+                ## TODO: remove this once simulations complete
+                #print 'metric is very large = ', val
+                #import pdb; pdb.set_trace()
             f.write('%s, %s, %s\n' % (str(t[0]), str(t[1]), val))
         f.close()
-
 
     def save(self):
         """

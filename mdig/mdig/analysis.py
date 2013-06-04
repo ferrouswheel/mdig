@@ -70,7 +70,7 @@ class Analysis:
                 for v in node:
                     a=None
                     if v.tag == "value":
-                        a=string.strip(v.text)
+                        a=v.text.strip()
                     elif v.tag == "currentMap":
                         pass
                     elif v.tag == "previousMap":
