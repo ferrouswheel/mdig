@@ -109,10 +109,25 @@ class InstanceAction(Action):
                 dest="instance",
                 type="int")
 
-    def _get_instances(self, model, default_all=False):
+    def get_instances(self, model, default_all=False):
         """ Process options and use model to return a list of instances to act on. """
         if self.options.instances:
             return [x for x in model.get_instances()
                             if x.get_index() in self.options.instances]
         elif default_all:
             return [x for x in model.get_instances() if x.enabled]
+
+    def do_me(self, mdig_model):
+        instances = self.get_instances(mdig_model)
+        if instances:
+            for instance in instances:
+                self.do_instance(instance)
+        else:
+            self.do_model(instance)
+
+    def do_model(self, mdig_model):
+        return NotImplemented
+
+    def do_instance(self, mdig_model):
+        return NotImplemented
+

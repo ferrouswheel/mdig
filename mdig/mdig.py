@@ -54,7 +54,7 @@ def usage(db):
     print usage_line
     print "\n=== Actions ==="
     print "\n".join(actions_list)
-    print """Options:
+    print """\nOptions:
 -h (--help) \t Display action specific help
 
 model_name is the name of a model within the repository.
@@ -183,9 +183,7 @@ def exit_catcher(sig, stack):
     if sig == signal.SIGINT:
         print("Caught interrupt signal")
     signal.signal(signal.SIGINT, signal.SIG_IGN)
-    
     exit_cleanup()
-    #signal.default_int_handler(sig,stack)
     sys.exit(sig)
 
 def exit_cleanup():

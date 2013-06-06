@@ -85,8 +85,7 @@ class RunAction(InstanceAction):
         c.overwrite_flag = self.options.overwrite_flag
         c.remove_null = self.options.remove_null
 
-    def do_me(self, mdig_model):
-        instances = self._get_instances(mdig_model)
+    def prerun_setup(self, mdig_model):
         if self.options.time is not None:
             self.start_time = datetime.now()
             self.end_time = self.start_time + timedelta(seconds=self.options.time * 60)
@@ -114,13 +113,24 @@ class RunAction(InstanceAction):
             self.log.error("Model is up to date (use -a to force reset and rerun instances)")
             sys.exit(mdig.mdig_exit_codes['up_to_date'])
 
-        for instance in instances:
-            if self.options.rerun_instances:
-                self.log.debug("Resetting model so all replicates will be rerun")
-                instance.reset()
-            instance.run()
+    def do_me(self, mdig_model):
+        self.prerun_setup()
+        super(RunAction, self).do_me(mdig_model)
+
+    def do_model(self, mdig_model):
+        if self.options.rerun_instances:
+            self.log.debug("Resetting model so all replicates will be rerun")
+            mdig_model.reset_instances()
+        mdig_model.run()
         if mdig_model.total_time_taken:
             mdig_model.log_instance_times()
             print "Total time taken: %s" % mdig_model.total_time_taken
         else:
             print "Nothing to do."
+
+    def do_instance(self, instance):
+        if self.options.rerun_instances:
+            self.log.debug("Resetting model so all replicates will be rerun")
+            instance.reset()
+        instance.run()
+
