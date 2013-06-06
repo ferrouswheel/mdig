@@ -7,7 +7,7 @@ from optparse import OptionParser
 import mdig
 import mdig.utils as utils
 from mdig import config
-from mdig.action.base import InstanceAction
+from mdig.actions.base import InstanceAction
 
 from mdig import displayer
 

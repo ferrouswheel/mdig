@@ -9,8 +9,6 @@ from optparse import OptionParser
 import mdig
 from mdig import config
 from mdig import grass
-from mdig.instance import InvalidLifestageException, \
-        InstanceIncompleteException, InvalidReplicateException, NoOccupancyEnvelopesException
 
 
 class ExportAction(Action):
@@ -96,6 +94,8 @@ class ExportAction(Action):
                 sys.exit("No such output dir: %s" % self.options.outdir)
     
     def do_me(self,mdig_model):
+        from mdig.instance import InvalidLifestageException, \
+                InstanceIncompleteException, InvalidReplicateException, NoOccupancyEnvelopesException
         output_images = self.options.output_gif or self.options.output_image 
         if not (output_images or self.options.output_map_pack):
             self.log.error("No type for output was specified...")
