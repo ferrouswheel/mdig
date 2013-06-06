@@ -72,14 +72,14 @@ class Metric(object):
         The metrics objects looks like:
 
         {
-         'all': {
-             'events': {},
-             'treatments': {
-                0: {'AREA_EVALUATED': {'1988-1': '7',
-                                       '1989-1': '11',
-                                       '1990-1': '13',
-                                       '1991-1': '11',
-                                       '1992-1': '13'}}}}}
+         'all': {  # lifestage
+             'events': {},    # from dispersal events
+             'treatments': {  # from management strategy treatments
+                0: {'AREA_EVALUATED': {(1988,1): '7',
+                                       (1989,1): '11',
+                                       (1990,1): '13',
+                                       (1991,1): '11',
+                                       (1992,1): '13'}}}}}
 
         We implement this by flattening the nested dictionary to lists of keys
         leading to leaf dictionaries (those with the time series). This flattening

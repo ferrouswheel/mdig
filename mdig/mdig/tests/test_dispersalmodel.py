@@ -135,7 +135,6 @@ class DispersalModelTest(unittest.TestCase):
         m = DispersalModel(fn)
         m._get_instance_w_smallest_reps_remaining = Mock()
         m._get_instance_w_smallest_reps_remaining.return_value = None
-        m.pre_run()
         m.run()
         self.assertEqual(m.active, False)
         # These are less than or equal because of VM clock being weird

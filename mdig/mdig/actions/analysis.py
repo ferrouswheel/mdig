@@ -25,14 +25,14 @@ def _update_probability_envelopes(mdig_model, instances, log, options):
     # already exist.
     if options.analysis_step == "all":
         mdig_model.update_occupancy_envelope(
-                [ls],
+                ls,
                 force=options.prob_envelope_only,
                 instances=instances
                 )
     elif options.analysis_step == "final":
         # -1 specifies the last time step
         mdig_model.update_occupancy_envelope(
-                [ls], -1, 
+                ls, -1, 
                 force=options.prob_envelope_only,
                 instances=instances
                 )

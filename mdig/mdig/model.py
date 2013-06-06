@@ -511,9 +511,6 @@ class DispersalModel(object):
             self.log.info(log_str)
             i.null_bitmask(generate)
     
-    def pre_run(self):
-        pass
-    
     def get_instances(self):
         if self.instances is None:
             self.instances = []
@@ -1247,7 +1244,7 @@ class DispersalModel(object):
             yield t
             t = t + interval
         
-    def get_map_output_interval(self,ls_id):
+    def get_map_output_interval(self, ls_id):
         """
         @todo make this obsolete, it's too much trouble to work out the logic
          for when not all past maps are available and just makes things

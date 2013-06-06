@@ -1,28 +1,3 @@
-#!/usr/bin/env python2.4
-#
-#  Copyright (C) 2006,2008 Joel Pitt, Fruition Technology
-#
-#  This file is part of Modular Dispersal In GIS.
-#
-#  Modular Dispersal In GIS is free software: you can redistribute it and/or
-#  modify it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or (at your
-#  option) any later version.
-#
-#  Modular Dispersal In GIS is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-#  Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License along
-#  with Modular Dispersal In GIS.  If not, see <http://www.gnu.org/licenses/>.
-#
-""" 
-
-Copyright 2006, Joel Pitt
-
-"""
-
 import logging
 import shutil
 import os
@@ -47,9 +22,11 @@ class InvalidReplicateException(DispersalInstanceException): pass
 class NoOccupancyEnvelopesException(DispersalInstanceException): pass
 class InstanceMetadataException(DispersalInstanceException): pass
 
+
 class DispersalInstance:
-    """ A DispersalInstance is a realisation of a combination of variables
-        for a particular region, time period, and initial conditions.
+    """
+    A DispersalInstance is a realisation of a combination of variables
+    for a particular region, time period, and initial conditions.
     """
     
     def __init__(self, node, exp, r_id, _var_keys, p_inst):
@@ -103,7 +80,8 @@ class DispersalInstance:
             self.check_mdig_files()
 
     def check_mdig_files(self):
-        """ Check that the mdig/original files exists (linking back to the
+        """
+        Check that the mdig/original files exists (linking back to the
         original model mapset) and that there is a mdig/instance_info file that
         indicates the details of the instance (since map names were getting too
         long to store all info).
@@ -318,13 +296,13 @@ class DispersalInstance:
         """
         mdig_config = config.get_config()
         if ls is None:
-            ls = self.experiment.get_lifestage_ids().keys()
+            ls = self.experiment.get_lifestage_ids()
         elif not isinstance(ls, list):
             ls = [ls]
         
         if not self.is_complete():
             self.log.error("Incomplete instance [%s]" % self)
-            raise ImcompleteInstanceException()
+            raise InstanceIncompleteException()
 
         ac = AnalysisCommand(cmd_string)
         self.set_region()
@@ -386,7 +364,6 @@ class DispersalInstance:
             r.null_bitmask(generate)
     
     def stop(self):
-        
         for ar in self.activeReps:
             self.remove_active_rep(ar)
             ar.clean_up()
@@ -407,9 +384,6 @@ class DispersalInstance:
     def clean_up(self):
         for r in self.replicates:
             r.clean_up()
-    
-    def pre_run(self):
-        pass
     
     def get_num_remaining_reps(self):
         return self.experiment.get_num_replicates() - len([x for x in self.replicates if x.complete])
@@ -458,7 +432,7 @@ class DispersalInstance:
         if self.get_mapset() == self.experiment.get_mapset():
             self.set_mapset(self.experiment.create_instance_mapset_name())
     
-    def get_occupancy_envelopes(self,nolog=False):
+    def get_occupancy_envelopes(self, nolog=False):
         prob_env = {}
         if not self.is_complete():
             if not nolog:
@@ -636,8 +610,7 @@ class DispersalInstance:
         ls = ls_list
                 
         self.log.debug("Checking whether envelopes are fresh...")
-        missing_envelopes = self.are_envelopes_fresh(ls, start, end,
-                force=force)
+        missing_envelopes = self.are_envelopes_fresh(ls, start, end, force=force)
         if not missing_envelopes:
             return
         if not self.is_complete():
@@ -695,7 +668,7 @@ class DispersalInstance:
         env.text = env_name
     
     def update_xml(self):
-        # everything else is updated as they are accessed through class methods
+        # Everything else is updated as they are accessed through class methods
         if not self.enabled:
             self.node.attrib["enabled"] = "false"
         else:
@@ -721,7 +694,6 @@ class DispersalInstance:
             s += " active: " + str(self.activeReps)
         else:
             s += " active: None"
-            #s+= " (complete/total [active]) "
         s+= " mapset: %s" % self.get_mapset()
         s += "]"
         return s
@@ -745,8 +717,4 @@ class DispersalInstance:
             s += " [Active: " + str(self.activeReps) + "]"
         else:
             s += " [Active: None] "
-            #s+= " (complete/total [active]) "
         return s
-
-class ImcompleteInstanceException(Exception): pass
-
