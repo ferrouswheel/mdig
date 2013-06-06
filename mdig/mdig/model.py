@@ -1035,13 +1035,14 @@ class DispersalModel(object):
         
         return (start_time, end_time)
     
-    def update_occupancy_envelope(self, ls=None, time=None, force=False):
-        instances = self.get_instances()
+    def update_occupancy_envelope(self, ls=None, time=None, force=False, instances=None):
+        if not instances:
+            instances = [x for x in self.get_instances() if x.enabled]
         
         if ls is None:
             ls = self.get_lifestage_ids()
         
-        for i in [x for x in instances if x.enabled]:
+        for i in instances:
             self.log.debug( "Updating prob. envelope for instance %s" % repr(i) )
             period = self.get_period()
             if time is None:
@@ -1057,8 +1058,10 @@ class DispersalModel(object):
                     sys.exit(2)
                 i.update_occupancy_envelope(ls, time, time, force=force)
                 
-    def run_command_on_maps(self,cmd,ls,times=None,prob=True):
-        for i in [x for x in self.get_instances() if x.enabled]:
+    def run_command_on_maps(self, cmd, ls, times=None, prob=True, instances=None):
+        if not instances:
+            instances = [x for x in self.get_instances() if x.enabled]
+        for i in instances:
             if not i.is_complete():
                 self.log.warning("Skipping incomplete instance " + repr(i))
                 continue

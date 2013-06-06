@@ -344,6 +344,11 @@ class AnalysisAction(Action):
                 "output with MDiG)",
                 action="store_false",
                 dest="analysis_add_to_xml")
+        self.parser.add_option("-j","--instance",
+                help="Limit to particular instance",
+                action="append",
+                dest="instances",
+                type="int")
 
     def act_on_options(self,options):
         Action.act_on_options(self,options)
@@ -353,9 +358,16 @@ class AnalysisAction(Action):
         c.analysis_print_time = self.options.analysis_print_time
         c.overwrite_flag = self.options.overwrite_flag
 
+
     def do_me(self,mdig_model):
         ls = self.options.analysis_lifestage
         
+        if self.options.instances:
+            instances = [x for x in mdig_model.get_instances()
+                            if x.get_index() in self.options.instances]
+        else:
+            instances = [x for x in mdig_model.get_instances() if x.enabled]
+
         # If only a probability envelope is to be created then don't prompt
         # for command
         if (not self.options.prob_envelope_only and 
@@ -384,12 +396,17 @@ class AnalysisAction(Action):
             # probability envelopes will be made regardless of whether they
             # already exist.
             if self.options.analysis_step == "all":
-                mdig_model.update_occupancy_envelope( ls,
-                        force=self.options.prob_envelope_only)
+                mdig_model.update_occupancy_envelope(
+                        ls,
+                        force=self.options.prob_envelope_only,
+                        instances=instances
+                        )
             elif self.options.analysis_step == "final":
                 # -1 specifies the last time step
                 mdig_model.update_occupancy_envelope(ls, -1, 
-                        force=self.options.prob_envelope_only)
+                        force=self.options.prob_envelope_only,
+                        instances=instances
+                        )
             else:
                 self.log.error("Unknown analysis step : %s" %
                         self.options.analysis_step)
@@ -412,12 +429,21 @@ class AnalysisAction(Action):
             for cmd in commands_to_run:
                 
                 if self.options.analysis_step == "all":
-                    mdig_model.run_command_on_maps(cmd[1], ls,
-                            prob=self.options.combined_analysis)
+                    mdig_model.run_command_on_maps(
+                            cmd[1],
+                            ls,
+                            prob=self.options.combined_analysis,
+                            instances=instances
+                            )
                 else:
                     # -1 specifies the last time step
-                    mdig_model.run_command_on_maps(cmd[1], ls, [-1],
-                            prob=self.options.combined_analysis)
+                    mdig_model.run_command_on_maps(
+                            cmd[1],
+                            ls,
+                            times=[-1],
+                            prob=self.options.combined_analysis,
+                            instances=instances
+                            )
 
 class StatsAction(Action):
     description = "Calculate univariate statistics for maps."
@@ -467,6 +493,11 @@ class StatsAction(Action):
                 "output with MDiG)",
                 action="store_false",
                 dest="analysis_add_to_xml")
+        self.parser.add_option("-j","--instance",
+                help="Limit to particular instance",
+                action="append",
+                dest="instances",
+                type="int")
 
     def act_on_options(self, options):
         Action.act_on_options(self,options)
@@ -478,6 +509,12 @@ class StatsAction(Action):
     def do_me(self,mdig_model):
         ls = self.options.analysis_lifestage
         
+        if self.options.instances:
+            instances = [x for x in mdig_model.get_instances()
+                            if x.get_index() in self.options.instances]
+        else:
+            instances = [x for x in mdig_model.get_instances() if x.enabled]
+
         # If a combined analysis is being run (or a prob. envelope is being
         # created) then generate the combined maps.
         if self.options.combined_analysis:
@@ -498,17 +535,17 @@ class StatsAction(Action):
             mdig_model.save_model()
             
         self.log.info("Calculating area...")
-        
+
         g=grass.get_g()
         if self.options.combined_analysis:
             if self.options.analysis_step == "all":
-                for i in mdig_model.get_instances():
+                for i in instances:
                     self.log.info("Calculating stats for instance %d" % i.get_index())
                     maps = i.get_occupancy_envelopes()[ls]
                     i.change_mapset()
                     stats=g.get_univariate_stats(maps)
                     fn = os.path.split(i.get_occ_envelope_img_filenames(ls=ls,
-                            extension=False,gif=True))[:-5]
+                            extension=False,gif=True)[:-5])
                     fn = os.path.join(fn[0],self.options.analysis_filename_base + fn[1])
                     self.write_stats_to_file(stats,fn)
             else:
@@ -516,7 +553,7 @@ class StatsAction(Action):
                 raise NotImplementedError("Only supports running all maps current")
         else:
             if self.options.analysis_step == "all":
-                for i in mdig_model.get_instances():
+                for i in instances:
                     i.change_mapset()
                     for r in i.replicates:
                         self.log.info("Calculating stats for instance %d, rep %d" % \
@@ -540,7 +577,7 @@ class StatsAction(Action):
                 os.remove(fn)
             else:
                 raise Exception("File %s already exists, -o to overwrite" % fn)
-        expected=['n','null_cells','cells','min','max','range','mean', \
+        expected=['n', 'area', 'null_cells', 'cells', 'min', 'max', 'range', 'mean',
                  'mean_of_abs', 'stddev', 'variance', 'coeff_var', 'sum']
         f = open(fn,'w')
         f.write('time,' + ','.join(expected))
@@ -829,10 +866,6 @@ class ExportAction(Action):
                 help="Overwrite existing files",
                 action="store_true",
                 dest="overwrite_flag")
-        #self.parser.add_option("-m","--mpeg",
-        #        help="Output mpeg compressed movie",
-        #        action="store_true",
-        #        dest="output_mpeg")
         self.parser.add_option("-g","--gif",
                 help="Output animated gif",
                 action="store_true",
