@@ -128,7 +128,7 @@ class RunAction(InstanceAction):
         else:
             print "Nothing to do."
 
-    def do_instance(self, instance):
+    def do_instance(self, mdig_model, instance):
         if self.options.rerun_instances:
             self.log.debug("Resetting model so all replicates will be rerun")
             instance.reset()

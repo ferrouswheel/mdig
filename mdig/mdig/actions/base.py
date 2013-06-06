@@ -99,6 +99,7 @@ class Action(object):
     def do_me(self, mdig_model):
         return NotImplemented
 
+
 class InstanceAction(Action):
 
     def add_options(self):
@@ -106,28 +107,38 @@ class InstanceAction(Action):
         self.parser.add_option("-j","--instance",
                 help="Select particular instances",
                 action="append",
-                dest="instance",
+                dest="instances",
                 type="int")
 
-    def get_instances(self, model, default_all=False):
+    def get_instances(self, model):
         """ Process options and use model to return a list of instances to act on. """
         if self.options.instances:
             return [x for x in model.get_instances()
                             if x.get_index() in self.options.instances]
-        elif default_all:
+        else:
             return [x for x in model.get_instances() if x.enabled]
 
     def do_me(self, mdig_model):
         instances = self.get_instances(mdig_model)
+
         if instances:
+            self.do_instances(mdig_model, instances)
+
+        if self.options.instances:
             for instance in instances:
-                self.do_instance(instance)
+                self.do_instance(mdig_model, instance)
         else:
-            self.do_model(instance)
+            self.do_model(mdig_model)
+
+    def do_instances(self, mdig_model, instances):
+        """ This is run in all cases """ 
+        pass
 
     def do_model(self, mdig_model):
-        return NotImplemented
+        """ This is run after do_instances if no specific instances are selected """ 
+        pass
 
-    def do_instance(self, mdig_model):
-        return NotImplemented
+    def do_instance(self, mdig_model, instance):
+        """ This is run after do_instances if specific instances are selected """ 
+        pass
 

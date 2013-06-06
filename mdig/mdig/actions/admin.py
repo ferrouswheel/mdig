@@ -160,7 +160,8 @@ class ResetAction(Action):
             mdig_model.hard_reset()
         mdig_model.save_model()
         print "Model %s reset." % mdig_model.get_name()
-        
+
+
 class AddAction(Action):
     description = "Add a model to the repository based on an xml definition."
 
@@ -187,7 +188,8 @@ class AddAction(Action):
         for m in self.model_names:
             mdig.repository.add_model(m)
         grass.get_g().clean_up()
-        
+
+
 class RemoveAction(Action):
     description = "Remove a model from the repository and delete mapset."
 
@@ -212,7 +214,8 @@ class RemoveAction(Action):
     def do_me(self,mdig_model):
         for m in self.model_names:
             mdig.repository.remove_model(m,force=self.options.force_flag)
-        
+
+
 class ListAction(Action):
     description = "List the models currently in MDiG repository."
 
@@ -262,6 +265,7 @@ class ListAction(Action):
                 print "%s [ERROR]" % (m,)
         sys.exit(0)
 
+
 class InfoAction(Action):
     description = "Display information about a model in the MDiG repository."
 
@@ -292,4 +296,3 @@ class InfoAction(Action):
             else: mstr[-1] += "No"
             print mstr
         sys.exit(0)
-
