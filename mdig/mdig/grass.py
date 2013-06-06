@@ -328,14 +328,28 @@ class GRASSInterface:
 
     def get_univariate_stats(self, maps):
         results={}
+        res = self.get_current_resolution()
         for t,m in maps.items():
             cmd = "r.univar -g map=%s" % m
             p=Popen(cmd, shell=True, stdout=subprocess.PIPE)
             output,stderr=p.communicate()
             if p.returncode != 0:
                 raise GRASSCommandException(cmd, stderr, p.returncode)
-            res=re.findall("(\w+)=([\d.]+(e-?[\d]+)?)\n",output)
-            results[t] = dict([(x[0],float(x[1])) for x in res])
+            parsed=re.findall("(\w+)=([\d.]+(e-?[\d]+)?)\n",output)
+            results[t] = dict([(x[0],float(x[1])) for x in parsed])
+            # We add in area for convenience
+            if 'n' in results[t]:
+                results[t]['area'] = results[t]['n'] * res * res
+        return results
+
+    def get_raster_range(self, m):
+        cmd = "r.info -r map=%s" % m
+        p=Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        output,stderr=p.communicate()
+        if p.returncode != 0:
+            raise GRASSCommandException(cmd, stderr, p.returncode)
+        parsed=re.findall("(\w+)=(.+)\n",output)
+        results = dict([(x[0],x[1]) for x in parsed])
         return results
 
     def normalise_map_colors(self, maps):
@@ -930,8 +944,6 @@ class GRASSInterface:
         self.log.log(log_level, "exec: " + command_string + log_input)
         ret = None
         
-        if 'statfile' in command_string:
-            import pdb; pdb.set_trace()
         p = Popen(command_string, shell=True, stdout=subprocess.PIPE, \
                 stdin=subprocess.PIPE,stderr=subprocess.PIPE)
         

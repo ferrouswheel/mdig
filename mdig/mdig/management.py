@@ -166,7 +166,7 @@ class TreatmentEvent(Event):
     """
 
     def run(self, in_name, out_name, rep, is_pop):
-        stats_before = grass.get_g().get_univariate_stats({0:in_name})
+        stats_before = grass.get_g().get_univariate_stats({0: in_name})
         metrics = super(TreatmentEvent, self).run(in_name, out_name, rep, is_pop)
         stats_after = grass.get_g().get_univariate_stats({0: out_name})
         metrics['AREA_REMOVED'] = stats_before[0].get('n', 0) - stats_after[0].get('n', 0)

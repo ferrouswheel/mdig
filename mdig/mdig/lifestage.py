@@ -282,8 +282,15 @@ class Lifestage:
             t_area = t.get_treatment_area_map(rep)
             self.log.debug("Treatment area map is %s" % t_area)
 
+            if 'NULL' in grass_i.get_raster_range(t_area).values():
+                # If mask is empty then don't run treatment, as it does
+                # nothing, and GRASS's mask system is broken.
+                # http://trac.osgeo.org/grass/ticket/1999
+                continue
+
             # Mask so that only treatment area is affected
             grass_i.make_mask(t_area)
+        
             e = t.get_event()
             metrics = e.run(temp_map_names[0], temp_map_names[1], rep, False)
             rep.metrics.add_event_metrics(self, e, metrics, interval, treatment=t)

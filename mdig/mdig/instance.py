@@ -152,7 +152,7 @@ class DispersalInstance:
                         continue
                 if self.var_keys is None:
                     for r in c_i["reps"]:
-                        my_rep = Replicate(r,self,r_index)
+                        my_rep = Replicate(r, self, r_index)
                         reps.append(my_rep)
                         r_index += 1
                 else:
@@ -168,7 +168,7 @@ class DispersalInstance:
                     if self.variables == variable_list:
                         for r in c_i["reps"]:
                             self.log.debug("loading replicate with variables " + str(self.variables))
-                            my_rep = Replicate(r,self,r_index)
+                            my_rep = Replicate(r, self, r_index)
                             reps.append(my_rep)
                             r_index += 1
         return reps

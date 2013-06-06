@@ -443,7 +443,7 @@ class Replicate(object):
 
         self.start_time = datetime.datetime.now()
         
-        for t in range(period[0],period[1]+1):
+        for t in range(period[0], period[1] + 1):
             self.current_t = t
             self.log.log(logging.INFO, "t=%d", t)
 
