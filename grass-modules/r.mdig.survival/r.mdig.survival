@@ -279,18 +279,12 @@ else
                 # rescale doing linear transform of below and above mean
                 NEW_MEAN=`echo "scale = ${BC_SCALE}; 100 - (100.0 * $GIS_OPT_MAX / $POP_AREA)" | bc`
                 echo "NEW MEAN = $NEW_MEAN"
-#TEMP_RESCALE_ABOVE=mdig.survival.newmean.above
                 TEMP_RESCALE=mdig.survival.newmean
-#r.rescale input=$GIS_OPT_SURVIVAL output=$TEMP_RESCALE_BELOW \
-#from=$min,$mean to=$min,$NEW_MEAN --o
-#r.rescale input=$GIS_OPT_SURVIVAL output=$TEMP_RESCALE_ABOVE \
-#from=$mean,$max to=$NEW_MEAN,$max --o
-#r.mapcalc $TEMP_RESCALE="if(isnull($TEMP_RESCALE_BELOW),$TEMP_RESCALE_ABOVE,$TEMP_RESCALE_BELOW)"
                 r.mapcalc $TEMP_RESCALE="if(($GIS_OPT_SURVIVAL-$mean)+$NEW_MEAN "\
                                          "> 0, ($GIS_OPT_SURVIVAL-$mean)+$NEW_MEAN, 0)"
                 GIS_OPT_SURVIVAL=$TEMP_RESCALE
-#eval `r.univar -g $GIS_OPT_SURVIVAL`
-#            echo "After rescaling mean: $mean"
+                eval `r.univar -g $GIS_OPT_SURVIVAL`
+                echo "After rescaling mean: $mean"
             fi
             r.mask -r
             # restore any mask that may have been present
