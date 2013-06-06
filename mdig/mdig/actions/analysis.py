@@ -11,7 +11,7 @@ from optparse import OptionParser
 
 
 def _update_probability_envelopes(mdig_model, instances, log, options):
-    ls = options.analysis_lifestage
+    ls = [options.analysis_lifestage] if options.analysis_lifestage else None
 
     # If a combined analysis is being run (or a prob. envelope is being
     # created) then generate the combined maps.

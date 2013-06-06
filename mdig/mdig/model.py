@@ -1043,8 +1043,7 @@ class DispersalModel(object):
             self.log.debug( "Updating prob. envelope for instance %s" % repr(i) )
             period = self.get_period()
             if time is None:
-                i.update_occupancy_envelope(ls, period[0], period[1],
-                        force=force)
+                i.update_occupancy_envelope(ls, period[0], period[1], force=force)
             else:
                 if time < 0:
                     time = time + period[1]

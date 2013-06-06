@@ -594,7 +594,7 @@ class DispersalInstance:
         except grass.SetRegionException, e:
             raise e
     
-    def update_occupancy_envelope(self, ls_list = None, start = None, end = None, force=False):
+    def update_occupancy_envelope(self, ls_list=None, start=None, end=None, force=False):
         """ Go through and update the occupancy envelopes if necessary
         Note: ls_list has to be a list or None
         """
