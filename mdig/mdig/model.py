@@ -269,7 +269,7 @@ class DispersalModel(object):
             
         return r_inst
     
-    def _get_instance_w_smallest_reps_remaining(self,instances):
+    def _get_instance_w_smallest_reps_remaining(self, instances):
         # find instance with smallest number of reps left
         
         # max_reps because instances count completed reps rather than counting
@@ -456,7 +456,7 @@ class DispersalModel(object):
     def remove_listener(self,l):
         self.listeners.remove(l)
     
-    def run(self):
+    def run(self, instances=None):
         self.active = True
         self.start_time = datetime.now()
         self.log.info("Starting simulations at " + self.start_time.isoformat())
@@ -464,7 +464,7 @@ class DispersalModel(object):
         r_instances = self._get_instances_by_region()
         
         # incomplete's keys are regions
-        for r_id,instances in r_instances.items():
+        for r_id, instances in r_instances.items():
             
             self.log.debug("Running instances in region %s", r_id)
             
