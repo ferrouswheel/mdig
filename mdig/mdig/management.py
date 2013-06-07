@@ -293,24 +293,45 @@ class Treatment(object):
         g = grass.get_g()
         # remove previous map
         g.remove_map(self.area_temp)
-        merge_str = self._get_area_merge_mapcalc_expression(replicate)
-        g.mapcalc(self.area_temp, merge_str)
+        component_areas = self._get_component_area_maps(replicate)
+        if len(component_areas) > 1:
+            merge_str = self._get_area_merge_mapcalc_expression(component_areas)
+            g.mapcalc(self.area_temp, merge_str)
+        else:
+            g.copy_map(component_areas[0], self.area_temp)
         return self.area_temp
 
-    def _get_area_merge_mapcalc_expression(self, replicate):
-        # What operation should we use to merge maps? Should be 'and' or 'or'
-        operation = self.area_node.attrib.get('combine', 'and')
-        assert(operation in ("and", "or"))
+    def _get_component_area_maps(self, replicate):
+        area_maps = []
+        last_area = None
+        for a in self.areas:
+            if self.operator == 'sequence':
+                m = a.get_treatment_area(replicate, last_area)
+                last_area = m
+                area_maps = [last_area]
+            else:
+                area_maps.append(a.get_treatment_area(replicate))
+        return area_maps
 
+    @property
+    def operator(self):
+        """ The operation used to merge maps """
+        operation = self.area_node.attrib.get('combine', 'and')
+        assert(operation in ("and", "or", "sequence"))
+        return operation
+
+    def _get_area_merge_mapcalc_expression(self, component_areas):
         # build the mapcalc expression to merge the treatment areas
         merge_str = "if("
-        for a in self.areas:
-            if operation == "and":
-                merge_str += "!isnull(%s)" % a.get_treatment_area(replicate)
+        for area_map in component_areas:
+            if self.operator == "and":
+                merge_str += "!isnull(%s)" % area_map
                 merge_str += " && "
-            else:
-                merge_str += "!isnull(%s)" % a.get_treatment_area(replicate)
+            elif self.operator == "or":
+                merge_str += "!isnull(%s)" % area_map
                 merge_str += " || "
+            else:
+                assert False, "Bad merge operator for mapcalc merge"
         # remove trailing operator
         merge_str = merge_str[:-4] + ",1,null())"
         return merge_str
@@ -475,7 +496,7 @@ class TreatmentArea:
                     self.area.filename)))
         return maps
 
-    def get_treatment_area(self, replicate):
+    def get_treatment_area(self, replicate, last_area=None):
         """
         Get the map name representing the treatment area, generating it
         dynamically if necessary.
@@ -483,8 +504,14 @@ class TreatmentArea:
         if isinstance(self.area, Event):
             if self.area_filter_output is not None:
                 grass.get_g().remove_map(self.area_filter_output)
-            dist_map = replicate.temp_map_names[self.treatment.area_ls][0]
+
+            if last_area:
+                dist_map = last_area
+            else:
+                dist_map = replicate.temp_map_names[self.treatment.area_ls][0]
+
             self.area.run(dist_map, self.area_temp, replicate, False)
+
             self.area_filter_output = self.area_temp
             return self.area_filter_output
         elif isinstance(self.area, GrassMap):

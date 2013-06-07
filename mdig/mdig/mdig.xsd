@@ -454,6 +454,7 @@
                             <xsd:restriction base="xsd:string">
                               <xsd:enumeration value="and"/>
                               <xsd:enumeration value="or"/>
+                              <xsd:enumeration value="sequence"/>
                             </xsd:restriction>
                         </xsd:simpleType>
                     </xsd:attribute>

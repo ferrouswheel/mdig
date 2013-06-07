@@ -563,12 +563,12 @@ class GRASSInterface:
                 (vector_prefix, name, name))
         self.remove_map('v____' + name)
         
-    def copy_map(self,src, dest,overwrite=False):
+    def copy_map(self, src, dest, overwrite=False):
         if overwrite:
             self.remove_map(dest)
         self.run_command('g.copy rast=%s,%s' % (src, dest), logging.DEBUG)
     
-    def rename_map(self,src,dest,overwrite=False):
+    def rename_map(self, src, dest, overwrite=False):
         if overwrite: self.remove_map(dest)
         self.run_command('g.rename rast=%s,%s' % (src, dest), logging.DEBUG)
     
@@ -945,7 +945,7 @@ class GRASSInterface:
         ret = None
         
         p = Popen(command_string, shell=True, stdout=subprocess.PIPE, \
-                stdin=subprocess.PIPE,stderr=subprocess.PIPE)
+                stdin=subprocess.PIPE, stderr=subprocess.PIPE)
         
         self.stdout, self.stderr = p.communicate(to_input)
         if self.stdout:

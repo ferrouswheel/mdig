@@ -22,7 +22,7 @@ class WebAction(Action):
 
     def do_me(self,mdig_model):
         # initialise web system - needs to create new mapset
-        from webui import start_web_service
+        from mdig.webui import start_web_service
         # start web monitoring loop
         start_web_service()
     

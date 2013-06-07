@@ -114,7 +114,7 @@ class RunAction(InstanceAction):
             sys.exit(mdig.mdig_exit_codes['up_to_date'])
 
     def do_me(self, mdig_model):
-        self.prerun_setup()
+        self.prerun_setup(mdig_model)
         super(RunAction, self).do_me(mdig_model)
 
     def do_model(self, mdig_model):

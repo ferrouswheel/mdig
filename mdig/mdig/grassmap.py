@@ -24,7 +24,6 @@ Copyright 2006, Joel Pitt
 
 import logging
 
-import config
 import grass
 
 class GrassMap:
