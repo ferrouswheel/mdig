@@ -1057,14 +1057,15 @@ class DispersalModel(object):
     def run_command_on_maps(self, cmd, ls, times=None, prob=True, instances=None):
         if not instances:
             instances = [x for x in self.get_instances() if x.enabled]
+
         for i in instances:
             if not i.is_complete():
                 self.log.warning("Skipping incomplete instance " + repr(i))
                 continue
             if prob:
-                i.run_command_on_occupancy_envelopes(cmd,ls,times)
+                i.run_command_on_occupancy_envelopes(cmd, ls, times)
             else:
-                i.run_command_on_replicates(cmd,ls,times)
+                i.run_command_on_replicates(cmd, ls, times)
         
     def add_replicate(self,completed_node):
         #search for completed/replicates node otherwise create
@@ -1098,8 +1099,7 @@ class DispersalModel(object):
         completed_node=self.xml_model.xpath(xpath_str)
         
         if len(completed_node) == 0:
-            model_node=self.xml_model.getroot()
-            completed_node=self._add_completed(r_id,var_keys,var)
+            completed_node = self._add_completed(r_id, var_keys, var)
         elif len(completed_node) == 1:
             completed_node = completed_node[0]
         else:
@@ -1109,8 +1109,6 @@ class DispersalModel(object):
         return completed_node
         
     def _add_completed(self,r_id,var_keys,var):
-        mdig_config = config.get_config()
-        
         model_node=self.xml_model.getroot()
         
         completed_node=model_node.find('instances')
@@ -1118,8 +1116,8 @@ class DispersalModel(object):
             completed_node = lxml.etree.SubElement(model_node,"instances")
         
         completed_node = lxml.etree.SubElement(completed_node,"completed")
-        
-        region_node = lxml.etree.SubElement(completed_node,"region",{"id":r_id})
+        lxml.etree.SubElement(completed_node, "region", {"id": r_id})
+
         if var_keys is not None:
             for i in range(len(var_keys)):
                 if var_keys[i] == '__management_strategy':
@@ -1138,11 +1136,7 @@ class DispersalModel(object):
         return completed_node   
     
     def get_region_ids(self):
-        nodes = self.xml_model.xpath("//regions/region/@id")
-        #r_ids = {}
-        #for node in nodes:
-        #   r_ids[node.attrib["name"]] = node
-        return nodes
+        return self.xml_model.xpath("//regions/region/@id")
         
     def get_region(self, r_id):
         if r_id in self.regions.keys():
@@ -1151,9 +1145,7 @@ class DispersalModel(object):
             nodes = self.xml_model.xpath('/model/regions/region[@id="%s"]' % r_id)
             if len(nodes) == 1:
                 r = Region(nodes[0])
-#TODO find
-                self.regions[r_id]= r
-                
+                self.regions[r_id] = r
                 return self.regions[r_id]
             else:
                 self.log.error("Could not get unique region from id '%s'" % r_id)
@@ -1166,9 +1158,10 @@ class DispersalModel(object):
                 maxInterval=max(maxInterval,max(intervals))
         return maxInterval
     
-    def phenology_iterator(self,region_id):
+    def phenology_iterator(self, region_id):
         current_interval = -1
         max_interval = self.get_max_phenology_interval(region_id)
+
         while current_interval < max_interval:
             (ls, interval)=self.get_earliest_lifestage(region_id, current_interval)
             current_interval=interval

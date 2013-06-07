@@ -120,40 +120,43 @@ class AnalysisAction(InstanceAction):
     def do_instances(self, mdig_model, instances):
         _update_probability_envelopes(mdig_model, instances, self.log, self.options)
 
-        ls = self.options.analysis_lifestage
+        if self.options.prob_envelope_only:
+            return
 
-        if not self.options.prob_envelope_only:
-            self.log.info("Running analysis command")
-            
-            commands_to_run = []
-            
-            if self.options.analysis_cmd_file is not None:
-                # get commands from files
-                self.log.warning("Reading analysis commands from files is" + \
-                       " not implemented yet.")
-                pass
+        self.log.info("Running analysis command")
+        
+        ls = self.options.analysis_lifestage
+        if ls is None:
+            ls = self.experiment.get_lifestage_ids()
+        elif not isinstance(ls, list):
+            ls = [ls]
+
+        commands_to_run = []
+        
+        if self.options.analysis_cmd_file is not None:
+            # get commands from files
+            self.log.warning("Reading analysis commands from files is not implemented yet.")
+        else:
+            # add user prompted command line to the array
+            commands_to_run.append(("user",self.analysis_command))
+        
+        for cmd in commands_to_run:
+            if self.options.analysis_step == "all":
+                mdig_model.run_command_on_maps(
+                        cmd[1],
+                        ls,
+                        prob=self.options.combined_analysis,
+                        instances=instances
+                        )
             else:
-                # add user prompted command line to the array
-                commands_to_run.append(("user",self.analysis_command))
-            
-            for cmd in commands_to_run:
-                
-                if self.options.analysis_step == "all":
-                    mdig_model.run_command_on_maps(
-                            cmd[1],
-                            ls,
-                            prob=self.options.combined_analysis,
-                            instances=instances
-                            )
-                else:
-                    # -1 specifies the last time step
-                    mdig_model.run_command_on_maps(
-                            cmd[1],
-                            ls,
-                            times=[-1],
-                            prob=self.options.combined_analysis,
-                            instances=instances
-                            )
+                # -1 specifies the last time step
+                mdig_model.run_command_on_maps(
+                        cmd[1],
+                        ls,
+                        times=[-1],
+                        prob=self.options.combined_analysis,
+                        instances=instances
+                        )
 
     def _get_analysis_command(self, ls):
         print '''
@@ -236,6 +239,11 @@ class StatsAction(InstanceAction):
         _update_probability_envelopes(mdig_model, instances, self.log, self.options)
             
         ls = self.options.analysis_lifestage
+        if ls is None:
+            ls = self.experiment.get_lifestage_ids()
+        elif not isinstance(ls, list):
+            ls = [ls]
+
         self.files_written = []
         
         self.log.info("Calculating area...")
@@ -250,7 +258,7 @@ class StatsAction(InstanceAction):
                     stats=g.get_univariate_stats(maps)
                     fn = os.path.split(i.get_occ_envelope_img_filenames(ls=ls,
                             extension=False,gif=True)[:-5])
-                    fn = os.path.join(fn[0],self.options.analysis_filename_base + fn[1])
+                    fn = os.path.join(fn[0], self.options.analysis_filename_base + fn[1])
                     self.write_stats_to_file(stats,fn)
                     self.files_written.append(fn)
             else:

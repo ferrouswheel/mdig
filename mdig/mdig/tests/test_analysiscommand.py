@@ -1,17 +1,11 @@
 import unittest
 from mock import *
 
-import os
-import pdb
-import tempfile
-import shutil
-import datetime
-
 import mdig
 from mdig import config
-from mdig import grass 
+from mdig import grass
 from mdig.model import DispersalModel
-from mdig.modelrepository import ModelRepository,RepositoryException
+from mdig.modelrepository import ModelRepository
 from mdig.analysiscommand import AnalysisCommand, OutputFileNotSetException
 from mdig import NotEnoughHistoryException
 
@@ -21,8 +15,13 @@ class AnalysisCommandTest(unittest.TestCase):
         mdig.repository = self.repo = ModelRepository()
 
     def test_constructor(self):
-        #TODO ensure that cmd_string is actually a string or streamable
-        pass
+        ac = AnalysisCommand("testing %1 %2")
+        self.assertEqual(ac.get_earliest_time(), 2)
+
+        ac2 = AnalysisCommand("testing")
+        self.assertEqual(ac2.cmd_string, 'testing')
+        self.assertEqual(ac.start_time, 0)
+        self.assertEqual(ac.output_fn, None)
 
     @patch('os.path.isfile')
     @patch('os.remove')

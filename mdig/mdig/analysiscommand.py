@@ -2,32 +2,20 @@ import re
 import logging
 import os
 import random
-import pdb
 
 import mdig
+import mdig.outputformats
+import mdig.config
 
-import outputformats
-import config
+
+class OutputFileNotSetException(Exception): pass
+
 
 class AnalysisCommand:
-    """ Wraps a command line string and associated utilities to be run on
-        multiple maps.
-
-    >>> ac = AnalysisCommand("testing %1 %2")
-    >>> ac.get_earliest_time()
-    2
-    """
+    """ Wraps a command line string to be run on multiple maps.  """
 
     def __init__ (self, cmd_string):
-        """ Initialise the analysis command
-
-        >>> ac = AnalysisCommand("testing")
-        >>> ac.cmd_string
-        'testing'
-        >>> ac.start_time
-        0
-        >>> ac.output_fn
-        """
+        """ Initialise the analysis command """
         self.cmd_string = cmd_string
         self.start_time = 0
         self.earliest_time = None
@@ -56,7 +44,7 @@ class AnalysisCommand:
 
     def get_output_filename_base(self):
         if self.output_fn_base is None:
-            mdig_config = config.get_config()
+            mdig_config = mdig.config.get_config()
             if mdig_config.analysis_filename_base is None:
                 #create random name
                 self.output_fn_base = \
@@ -68,25 +56,25 @@ class AnalysisCommand:
 
     def init_output_file(self, instance, rep=None):
         """ Initialise a new output file """
-        mdig_config = config.get_config()
+        mdig_config = mdig.config.get_config()
         tmp_fn = self.get_output_filename_base()
         #   append variable/ls/region info
         if rep:
-            tmp_fn = outputformats.create_filename(rep) + "_" + tmp_fn # + "_" + \
-                     #repr(instance.replicates.index(rep)) + "_" + tmp_fn
+            tmp_fn = mdig.outputformats.create_filename(rep) + "_" + tmp_fn
         else:
-            tmp_fn = outputformats.create_filename(instance) + "_" + tmp_fn
+            tmp_fn = mdig.outputformats.create_filename(instance) + "_" + tmp_fn
         
         # check if file exists
         if os.path.isfile(tmp_fn):
             if mdig_config.overwrite_flag:
-                self.log.warning("analysis output file " +tmp_fn+ " exists, overwriting...")
+                self.log.warning(
+                        "analysis output file %s exists, overwriting..." % tmp_fn)
                 os.remove(tmp_fn)
             else:
                 self.log.error("analysis output file exists")
                 raise mdig.OutputFileExistsException(tmp_fn)
-        self.log.info("analysis output file set to " + tmp_fn + " (path " +
-                os.getcwd() + ")")
+        self.log.info("analysis output file set to %s (path %s)" %
+                (tmp_fn, os.getcwd()) )
         self.output_fn = tmp_fn
         return tmp_fn
 
@@ -120,7 +108,7 @@ class AnalysisCommand:
             if ret is not None:
                 self.log.error("analysis command did not return 0")
     
-    def run_command_once(self,t,maps,cmd_string):
+    def run_command_once(self, t, maps,cmd_string):
         # replace %t with current time if it exists in cmd_string
         tmp_cmd_string = re.sub("%t", repr(t), cmd_string)
         
@@ -136,15 +124,15 @@ class AnalysisCommand:
                     maps[repr(self.times[t_index - map_index])], tmp_cmd_string)
         
         # Add time to the output file if option is enabled.
-        mdig_config = config.get_config()
+        mdig_config = mdig.config.get_config()
         if mdig_config.analysis_print_time:
-            file = open(self.output_fn,'a')
-            file.write('%d ' % t)
-            file.close()
+            f = open(self.output_fn,'a')
+            f.write('%d ' % t)
+            f.close()
         
         # Run command on maps
-        self.log.info("Running analysis command: " + tmp_cmd_string )
-        cmd_stdout = os.popen(tmp_cmd_string,"r")
+        self.log.info("Running analysis command: " + tmp_cmd_string)
+        cmd_stdout = os.popen(tmp_cmd_string, "r")
         stdout = cmd_stdout.read()
         ret = cmd_stdout.close()
         return ret
@@ -153,12 +141,13 @@ class AnalysisCommand:
         """ Check a list of the times against the actual stored timesteps and
             also set the time the command will run on.
 
-        @param period that times need to remain in to be valid
-        @param o_times the original list of stored/saved map times.
-        @param times a list of times to run command on, -ve values are interpreted
-        as indices from the end of the array e.g. -1 == last map.
-        @return times with -ve indices replaced and all times checked that they
-        exist
+        period - that times need to remain in to be valid
+
+        o_times - the original list of stored/saved map times.
+
+        times - a list of times to run command on, -ve values are interpreted
+        as indices from the end of the array e.g. -1 == last map. times with
+        -ve indices replaced and all times checked that they exist
         """
         # sort just in case
         o_times = list(o_times)
@@ -186,6 +175,3 @@ class AnalysisCommand:
             raise mdig.NotEnoughHistoryException()
         self.times = times
         return times
-
-class OutputFileNotSetException(Exception): pass
-

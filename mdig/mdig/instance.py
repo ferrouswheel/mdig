@@ -250,25 +250,21 @@ class DispersalInstance:
                 if "replicate_complete" in dir(l):
                     l.replicate_complete(rep)
 
-    def run_command_on_replicates(self, cmd_string, ls=None, times=None):
-        """ run_command_on_replicates runs a command across all
-        replicate maps in times
+    def run_command_on_replicates(self, cmd_string, ls, times=None):
+        """ Run a command across all replicate maps.
 
-        @param cmd_string is the command to run, with %0 for current map,
-        %1 for previous saved map, etc.
-        @param ls_id is a list of lifestages to run command on
-        @param times is a list of times to run command on, -ve values are interpreted
+        cmd_string is the command to run, with %0 for current map, %1 for
+        previous saved map, etc.
+
+        ls is a list of lifestages to run command on.
+
+        times is a list of times to run command on, -ve values are interpreted
         as indices from the end of the array e.g. -1 == last map.
         """
-        if ls is None:
-            ls = self.experiment.get_lifestage_ids().keys()
-        elif not isinstance(ls, list):
-            ls = [ls]
-
         self.set_region()
         if not self.is_complete():
-            self.log.warning("Instance [%s] is incomplete, but will " +
-                    "continue anyway" % self)
+            self.log.warning(
+                    "Instance [%s] is incomplete, but will continue anyway" % self)
             
         ac = AnalysisCommand(cmd_string)
         for r in self.replicates:
@@ -284,21 +280,18 @@ class DispersalInstance:
                     # under instance...
                     r.add_analysis_result(ls_id, ac)
 
-    def run_command_on_occupancy_envelopes(self, cmd_string, ls=None, times=None):
-        """ run_command_on_occupancy_envelopes runs a command across all
-        occupancy envelopes replicate maps in times, or all envelopes.
+    def run_command_on_occupancy_envelopes(self, cmd_string, ls, times=None):
+        """ Runs a command across occupancy envelopes
         
-        @param cmd_string is the command to run, with %0 for current map,
-        %1 for previous saved map, etc.
-        @param ls_id is a list of lifestages to run command on
-        @param times is a list of times to run command on, -ve values are interpreted
+        cmd_string is the command to run, with %0 for current map, %1 for
+        previous saved map, etc.
+
+        ls is a list of lifestages to run command on
+
+        times is a list of times to run command on, -ve values are interpreted
         as indices from the end of the array e.g. -1 == last map.
         """
         mdig_config = config.get_config()
-        if ls is None:
-            ls = self.experiment.get_lifestage_ids()
-        elif not isinstance(ls, list):
-            ls = [ls]
         
         if not self.is_complete():
             self.log.error("Incomplete instance [%s]" % self)
@@ -310,13 +303,13 @@ class DispersalInstance:
         for ls_id in ls:
             e_times = [ int(t) for t in envelopes[ls_id].keys() ]
             ac.init_output_file(self)
-            ac.set_times(self.experiment.get_period(),e_times,times)
+            ac.set_times(self.experiment.get_period(), e_times, times)
             ac.run_command(envelopes[ls_id])
 
             if mdig_config.analysis_add_to_xml:
                 # add the analysis result to xml filename
                 # under instance...
-                self.add_analysis_result(ls_id, ac) #TODO(cmd_string, tmp_fn))
+                self.add_analysis_result(ls_id, ac)
 
     def get_map_name_base(self,long_version=False):
         # Format of saved filename:
