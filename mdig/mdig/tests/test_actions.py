@@ -3,7 +3,7 @@ from mock import *
 
 import mdig
 from mdig.model import DispersalModel
-from mdig.modelrepository import ModelRepository,RepositoryException
+from mdig.modelrepository import ModelRepository
 
 from mdig import actions
 class ExportActionTest(unittest.TestCase):
@@ -67,7 +67,7 @@ class ExportActionTest(unittest.TestCase):
         #self.assertRaises(InvalidReplicateException,ea.do_instance_map_pack,instances[0])
 
         #ea.do_instance_map_pack(instances[0])
-	m.remove_log_handler()
+        m.remove_log_handler()
 
     @patch('mdig.grass.get_g')
     @patch('os.remove')
@@ -89,5 +89,5 @@ class ExportActionTest(unittest.TestCase):
         #instances[0].replicates[0].get_saved_maps.return_value = {'1':'xx','2':'yy'}
         #instances[0].replicates[0].get_base_filenames.return_value = {'1':'xx','2':'yy'}
         # ea.do_instance_images(instances[0])
-	m.remove_log_handler()
+        m.remove_log_handler()
 

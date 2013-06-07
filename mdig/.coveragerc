@@ -1,9 +1,11 @@
 [run]
+source = mdig
 omit = fabfile.py
-    */nose_plugins.py
+    mdig/contrib/*
 include = mdig*
 
 [report]
+module = mdig
 # Regexes for lines to exclude from consideration
 exclude_lines =
     # Have to re-enable the standard pragma

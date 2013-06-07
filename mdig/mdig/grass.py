@@ -363,8 +363,10 @@ class GRASSInterface:
             if len(res) == 0 or res[0][0] != 'min' or res[1][0] != 'max':
                 self.log.error("Failed to get raster range for %s. Output was:\n%s" % (m,output))
                 return None
-            if not min_val or min_val > float(res[0][1]): min_val = float(res[0][1])
-            if not max_val or max_val < float(res[1][1]): max_val = float(res[1][1])
+            if min_val is None or min_val > float(res[0][1]):
+                min_val = float(res[0][1])
+            if max_val is None or max_val < float(res[1][1]):
+                max_val = float(res[1][1])
         one_third = (min_val - max_val) / 3.0 + min_val
         two_third = 2 * (min_val - max_val) / 3.0 + min_val
         # create full-scale color table for first map

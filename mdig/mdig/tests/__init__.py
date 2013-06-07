@@ -1,5 +1,7 @@
 from mdig import config
 
+from StringIO import StringIO
+
 import os
 import logging
 import shutil
@@ -10,16 +12,18 @@ test_dir = ""
 __all__=['test_Model']
 
 def setup():
-    # This is why logging spews on nosetests
+    # Enabling this makes logging show lots of information on nosetests
     #setup_logger()
 
     # Setup config file to use test mdig.conf which refers to test GRASS db
-    config.MDiGConfig.config_file = os.path.join(os.path.dirname(__file__),'mdig.conf')
+    config.MDiGConfig.config_file = os.path.join(os.path.dirname(__file__), 'mdig.conf')
     
-    # Copy test repository
+    # Find GRASS directory
     c = config.get_config()
     c['GRASS']['GISBASE'] = config.find_grass_base_dir()
     assert c['GRASS']['GISBASE'], "Couldn't find GRASS GISBASE"
+
+    # Copy test repository
     global test_dir
     test_dir = tempfile.mkdtemp(prefix="mdig_test_")
     end_part = os.path.split(c['GRASS']['GISDBASE'])[1]
@@ -29,7 +33,7 @@ def setup():
 # Setup logger so that things are happy
 def setup_logger():
     logger = logging.getLogger("mdig")
-    #create non ANSI formatter
+    # create non ANSI formatter
     ascii_formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s",
         datefmt='%Y%m%d %H:%M:%S')
     # create handlers for each stream
@@ -47,3 +51,9 @@ def teardown():
 
     from mdig.tempresource import trm
     trm.cleanup()
+
+def string_as_xml_node(the_string):
+    from lxml import etree
+    tree = etree.parse(StringIO(the_string))
+    return tree.getroot()
+

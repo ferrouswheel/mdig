@@ -8,8 +8,8 @@ class TempResourceManager(object):
     do all tidy up in one place.
     """
     FILE = 0
-    MAP = 0
-    REGION = 0
+    MAP = 1
+    REGION = 2
 
     def __init__(self):
         self.temp_files = set()
@@ -22,6 +22,13 @@ class TempResourceManager(object):
         return filename
 
     def release(self, filename, resource_type=FILE):
+        identifier = (resource_type, filename)
+        if identifier not in self.temp_files:
+            return ValueError('No such temporary file known')
+        self._release(filename, resource_type)
+        self.temp_files.remove(identifier)
+
+    def _release(self, filename, resource_type=FILE):
         if resource_type == TempResourceManager.FILE:
             os.remove(filename)
         elif resource_type == TempResourceManager.MAP:
@@ -31,7 +38,7 @@ class TempResourceManager(object):
 
     def cleanup(self):
         for file_type, filename in self.temp_files:
-            self.release(filename, file_type)
+            self._release(filename, file_type)
 
 
 trm = TempResourceManager()

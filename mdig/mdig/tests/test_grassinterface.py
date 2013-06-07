@@ -5,6 +5,8 @@ import os
 import logging
 
 from mdig import grass 
+from mdig.grassmap import GrassMap
+from mdig.tests import string_as_xml_node
 
 class MapNotFoundExceptionTest(unittest.TestCase):
 
@@ -126,11 +128,6 @@ class GRASSInterfaceTest(unittest.TestCase):
                 g.paint_map,'a_map',layer=1)
         self.assertEqual(m_popen.call_count,2)
 
-    @patch('subprocess.Popen')
-    def test_normalise_map_colors(self,m_popen):
-        pass
-
-
     @patch('grass.Popen')
     def test_run_command_w_error(self, m_popen):
         g = self.g
@@ -142,6 +139,16 @@ class GRASSInterfaceTest(unittest.TestCase):
             g.run_command('test', log_level=logging.INFO)
         self.assertTrue(any(['stack trace' in e for e in lh.error]))
         self.assertEqual('test', context.exception.cmd)
+
+    def test_normalise_map_colors(self):
+        maps = []
+        for i in range(0,5):
+            xml = "<value>%d</value>" % (i * 10)
+            map_node = string_as_xml_node(xml)
+            maps.append(GrassMap(xml_node = map_node).get_map_filename())
+        the_range = self.g.normalise_map_colors(maps)
+        self.assertEqual(the_range, (0.0, 40.0))
+        
 
 class ListHandler(logging.Handler):
 
