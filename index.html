@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Mdig by ferrouswheel</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Mdig</h1>
+        <h2>MDiG - Modular Dispersal in GIS</h2>
+        <a href="https://github.com/ferrouswheel/mdig" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a name="mdig---modular-dispersal-in-gis" class="anchor" href="#mdig---modular-dispersal-in-gis"><span class="octicon octicon-link"></span></a>mdig - Modular Dispersal in GIS</h1>
+
+<p>mdig is simulation framework designed for people modelling dispersal processes.
+In particular the focus in the past has been around modelling <strong>invasive</strong>
+species. For example, I have used it to <a href="http://dx.doi.org/10.1890/08-1777.1" title="Predicting Argentine ant spread over the heterogeneous landscape using a spatially explicit stochastic model">model the spread of Argentine ant in New
+Zealand, and compare it to the actual invasion dynamics</a>.</p>
+
+<p>It has also been used to <a href="http://dx.doi.org/10.1016/j.ecolmodel.2011.03.023" title="Temporal limits to simulating the future spread pattern of invasive species: Buddleja davidii in Europe and New Zealand">model Buddleia daviddi</a> spread in New Zealand.</p>
+
+<p>mdig consists of two parts:</p>
+
+<ul>
+<li>The simulation manager - reads a dispersal model (in XML) and works out
+what to do. It is smart enough to:
+
+<ul>
+<li>manage the running of many replications, which are important if your simulation
+is stochastic;</li>
+<li>aggregate results;</li>
+<li>run analysis across the aggregate maps or the individual replicates;</li>
+</ul>
+</li>
+<li>The GRASS dispersal modules - these take an input distribution map, some
+parameters, and output a new distribution map. See <code>grass-modules/README</code> for
+more details.</li>
+</ul><h2>
+<a name="setup" class="anchor" href="#setup"><span class="octicon octicon-link"></span></a>Setup</h2>
+
+<h3>
+<a name="setup-grass" class="anchor" href="#setup-grass"><span class="octicon octicon-link"></span></a>Setup GRASS</h3>
+
+<p>Ideally you'd just go:</p>
+
+<pre><code>sudo apt-get install grass grass-dev
+</code></pre>
+
+<p>But due to this bug: <a href="http://trac.osgeo.org/grass/ticket/800">http://trac.osgeo.org/grass/ticket/800</a> the ubuntu release
+is broken. You'll need to build latest GRASS 6 development branch manually,
+until the fix for this bug propagates into Ubuntu. While there are full details
+on the GRASS GIS website, if you use Ubuntu 12.04 you should be able to get
+away with:</p>
+
+<pre><code># Get the source code for grass 6.4.3 (development)
+sudo apt-get install subversion
+svn checkout https://svn.osgeo.org/grass/grass/branches/develbranch_6 grass6_devel
+cd grass6_devel/
+
+# Get the dependencies
+sudo apt-get install build-essential zlib1g-dev libreadline6-dev \
+  flex bison libncurses5-dev proj libgdal-dev gdal-bin \
+  tcl8.4-dev tk8.4-dev freeglut3-dev ffmpeg libpq-dev libavcodec-dev \
+  libjpeg-dev libtiff-dev libpng12-dev postgresql libpq-dev libstdc++6 \
+  libdap-dev libgeos-dev libmysqlclient-dev libspatialite-dev \
+  libdapserver7 libgif-dev libsvn1 libjasper-dev gdal-bin uuid-dev \
+  libxerces-c2-dev libhdf5-serial-dev libgdal-dev libdb4.8 \
+  libproj-dev python-opengl unixodbc-dev fftw-dev lesstif2-dev libfreetype6-dev \
+  sqlite3 libsqlite3-dev libavcodec-dev libavformat-dev make g++ swig libxmu-dev \
+  python-dev libavutil-dev libavutil50 libswscale-dev libwxgtk2.8-dev libcairo-dev \
+  python-wxversion
+
+# Configure
+CHOST="x86_64-pc-linux-gnu" CFLAGS="-march=k8 -O2 -pipe -Wall" \
+./configure \
+     --with-tcltk-includes=/usr/include/tcl8.4 \
+     --with-motif --with-motif-includes=/usr/include/X11 \
+     --with-readline --with-cxx --with-odbc --with-sqlite \
+     --with-freetype --with-freetype-includes=/usr/include/freetype2 \
+     --without-postgres --with-proj-share=/usr/share/proj \
+     --with-ffmpeg \
+     --with-ffmpeg-includes="/usr/include/libavcodec /usr/include/libavformat /usr/include/libavutil /usr/include/libswscale" \
+     --with-wxwidgets --with-cairo --with-geos \
+     --with-python --with-postgres --with-postgres-includes=/usr/include/postgresql/ \
+     --enable-64bit 2&gt;&amp;1 | tee config_log.txt
+
+# Build and install
+make -j4 
+sudo make install
+</code></pre>
+
+<h3>
+<a name="setup-mdig-simulation-manager" class="anchor" href="#setup-mdig-simulation-manager"><span class="octicon octicon-link"></span></a>Setup mdig simulation manager</h3>
+
+<pre><code>sudo apt-get install libxml2 libxml2-dev gsl-bin libgsl0-dev imagemagick bc python-tk
+
+# Numpy and scipy are potentially finicky, so safest to install them separate
+# and in order:
+mkvirtualenv mdig
+pip install numpy
+pip install scipy
+# Rest of python dependencies should be fine, ensure you are in mdig root dir
+pip install -r requirements.txt
+</code></pre>
+
+<p>That's the core mdig simulation manager, but to install the custom GRASS
+modules:</p>
+
+<pre><code>cd grass-modules
+sudo make MODULE_TOPDIR=/usr/lib/grass64
+</code></pre>
+
+<p>Or if you installed GRASS from source, you can do something like:</p>
+
+<pre><code>export GRASS_SRC=~/src/grass64_release
+make -S MODULE_TOPDIR=$GRASS_SRC
+cd $GRASS_SRC
+make install
+</code></pre>
+
+<h2>
+<a name="troubleshooting" class="anchor" href="#troubleshooting"><span class="octicon octicon-link"></span></a>Troubleshooting</h2>
+
+<p>Older versions of requirements have some bugs to be aware of:</p>
+
+<ul>
+<li>GRASS 6.4RC5 has an annoying g.region issue that can be confusing for new users.</li>
+<li>GRASS 6.4.2 (default in Ubuntu 12.04) has a broken r.reclass that segfaults with
+long map names.</li>
+<li>GDAL &lt;1.6.0 or later, earlier versions can run into segfaults.</li>
+</ul><h2>
+<a name="testing" class="anchor" href="#testing"><span class="octicon octicon-link"></span></a>Testing</h2>
+
+<p>If you wish to run the unit tests for MDiG while developing code, then go to
+the mdig program directory ('mdig/' from the root of the source) and run:</p>
+
+<pre><code>nosetests -v
+</code></pre>
+
+<p>Or to run with code coverage analysis:</p>
+
+<pre><code>nosetests -v --with-coverage
+</code></pre>
+
+<p>You'll run a bunch of tests to check everything's working correctly.</p>
+
+<p>Note - currently only basic tests are run, more rigorous tests are needed
+(although this has been greatly improved over the last year):</p>
+
+<ul>
+<li>Additional model files that more thoroughly test the potential model types.</li>
+<li>More coverage in unit tests for components within MDiG.</li>
+<li>Comparison of the output maps from various models versus what the expected map
+should look like. For modules, create before and after maps and make sure they
+have no difference,implement as a shell script to be run within GRASS.</li>
+</ul><h2>
+<a name="use" class="anchor" href="#use"><span class="octicon octicon-link"></span></a>Use</h2>
+
+<ul>
+<li>
+<a href="http://dx.doi.org/10.1890/08-1777.1" title="Predicting Argentine ant spread over the heterogeneous landscape using a spatially explicit stochastic model">Recreating the invasion history of Argentine ant in New Zealand</a>.</li>
+<li>
+<a href="http://dx.doi.org/10.1016/j.ecolmodel.2011.03.023" title="Temporal limits to simulating the future spread pattern of invasive species: Buddleja davidii in Europe and New Zealand">Buddleia daviddi spread in New Zealand</a>.</li>
+<li>
+<a href="http://www.reeis.usda.gov/web/crisprojectpages/0222253-modeling-and-controlling-the-spread-of-invasive-species-over-heterogeneous-landscapes-melaleuca-quinquenervia-and-mimosa-pellita-in-puerto-rico.html" title="MODELING AND CONTROLLING THE SPREAD OF INVASIVE SPECIES OVER HETEROGENEOUS LANDSCAPES: MELALEUCA QUINQUENERVIA AND MIMOSA PELLITA IN PUERTO RICO.">Melaleuca quinquenervia and Mimosa pellita in Puerto Rico</a>.</li>
+</ul>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/ferrouswheel/mdig/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/ferrouswheel/mdig/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/ferrouswheel/mdig"></a> is maintained by <a href="https://github.com/ferrouswheel">ferrouswheel</a>.</p>
+
+          <p>This page was generated by <a href="pages.github.com">GitHub Pages</a> using the Architect theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
