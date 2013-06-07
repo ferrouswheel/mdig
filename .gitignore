@@ -27,3 +27,5 @@ grass-modules/**/*.tmp.html
 grass-modules/**/OBJ*
 *.swp
 *.un~
+grass-modules/config_log.txt
+mdig/.coverage
