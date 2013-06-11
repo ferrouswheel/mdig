@@ -34,7 +34,7 @@ class RunAction(InstanceAction):
                 action="store_true",
                 dest="remove_null")
         self.parser.add_option("-a","--all",
-                help="Rerun all instances, not just those that are incomplete",
+                help="Rerun instances, even those that are already complete",
                 action="store_true",
                 dest="rerun_instances")
         self.parser.add_option("-f","--force",
@@ -119,7 +119,7 @@ class RunAction(InstanceAction):
 
     def do_model(self, mdig_model):
         if self.options.rerun_instances:
-            self.log.debug("Resetting model so all replicates will be rerun")
+            self.log.debug("Resetting model so all instances and replicates will be rerun")
             mdig_model.reset_instances()
         mdig_model.run()
         if mdig_model.total_time_taken:
@@ -130,7 +130,7 @@ class RunAction(InstanceAction):
 
     def do_instance(self, mdig_model, instance):
         if self.options.rerun_instances:
-            self.log.debug("Resetting model so all replicates will be rerun")
+            self.log.debug("Resetting instance so all replicates will be rerun")
             instance.reset()
         instance.run()
 
