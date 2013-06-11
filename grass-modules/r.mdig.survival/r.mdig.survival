@@ -293,18 +293,19 @@ else
     fi # POP_AREA != 0
 fi # GIS_FLAG_E 1 or 0
 else
-    get_map_area $TEMP_RANDOM_SELECT
+    get_map_area $TEMP_RECLASS
     AREA_EVALUATED=$MAP_AREA_TEMP
-fi # GIS_OPT_MAX is defined
+fi # GIS_OPT_MAX defined or not
 
 # NOTE: null values in category reclass map will mean that input is unchanged...
 r.mapcalc "$GIS_OPT_OUTPUT=if(isnull($TEMP_RECLASS),$GIS_OPT_INPUT,if(rand(0,100)<$GIS_OPT_SURVIVAL,$GIS_OPT_INPUT,null()))"
 #g.remove rast=$TEMP_FILE_NAME > /dev/null
 
 # remove temp reclass if necessary
+if [ $DEBUG ]; then echo "Removing temp reclass map"; fi
+g.remove rast=$TEMP_RECLASS
+
 if [ $GIS_OPT_CATS ]; then
-    if [ $DEBUG ]; then echo "Removing temp reclass map"; fi
-    g.remove rast=$TEMP_RECLASS
     # -- begin stupid hack to deal with windows failing to remove reclassed_to file
     # first we use sed to remove the the map from the file
     buffer=`sed "/mdig\.survival@${MAPSET}/d" "$LOCATION/cell_misc/${GIS_OPT_INPUT}/reclassed_to"`
