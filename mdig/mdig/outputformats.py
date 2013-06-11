@@ -23,10 +23,11 @@ import mdig.grass as grass
 from mdig.instance import DispersalInstance
 from mdig.replicate import Replicate
 
+
 def create_filename(rep):
-    if isinstance(rep,Replicate):
+    if isinstance(rep, Replicate):
         fn = rep.get_map_name_base()
-    elif isinstance(rep,DispersalInstance):
+    elif isinstance(rep, DispersalInstance):
         i = rep
         fn = i.get_map_name_base()
     else:
@@ -34,6 +35,7 @@ def create_filename(rep):
         fn = None
     return fn
         
+
 class BaseOutput(object):
 
     def replicate_update(self, rep, t):
@@ -41,6 +43,7 @@ class BaseOutput(object):
 
     def create_filename(self, rep):
         return create_filename(rep)
+
 
 class PngOutput(BaseOutput):
 
@@ -70,12 +73,11 @@ class PngOutput(BaseOutput):
         fn = None
         
         if rep.instance.experiment.interval_modulus(self.interval, t) == 0:
-            
             fn = self.create_filename(rep)
             fn += "_" + repr(t) + ".png"
             self.log.debug("Writing PNG %s" % fn)
             
-            g.set_output(fn,display=None)
+            g.set_output(fn, display=None)
             g.clear_monitor()
             
             current_region = rep.instance.experiment.get_region(rep.instance.r_id)

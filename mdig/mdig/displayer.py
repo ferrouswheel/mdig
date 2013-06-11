@@ -43,7 +43,7 @@ class Displayer:
                 pass
         
         layer_index = 0
-        for l in rep.temp_map_names.keys():
+        for l in rep.temp_map_names:
             g.paint_map(rep.temp_map_names[l][0], layer=layer_index)
             layer_index += 1
         g.close_output()

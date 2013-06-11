@@ -462,7 +462,7 @@ class Replicate(object):
                     dest_maps.append(self.temp_map_names[ls_id][1])
                 # Lifestage transition should automatically swap source/dest maps
                 self.log.debug("Applying lifestage transition matrix")
-                ls_transition.apply_transition(ls_keys, source_maps,dest_maps)
+                ls_transition.apply_transition(ls_keys, source_maps, dest_maps)
                 # swap the source/dest maps in preparation for next iteration
                 for ls_id in ls_keys:
                     self.temp_map_names[ls_id].reverse()
@@ -561,7 +561,7 @@ class Replicate(object):
     def fire_time_completed(self,t):
         for l in self.instance.listeners:
             if "replicate_update" in dir(l):
-                ls_filename = l.replicate_update(self,t)
+                ls_filename = l.replicate_update(self, t)
             
                 if l.__class__ == outputformats.RasterOutput and ls_filename[0] is not None:
                     self.add_completed_raster_map(self.current_t, ls_filename[0], ls_filename[1], l.interval)

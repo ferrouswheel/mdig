@@ -131,7 +131,8 @@ class GrassMap:
             self.mapset = g.get_mapset()
             self.filename, self.map_type = g.init_map(self, map_replacements)
             self.ready = True
-        if self.mapset: return self.filename + "@" + self.mapset
+        if self.mapset:
+            return self.filename + "@" + self.mapset
         else: return self.filename
     
     def clean_up(self):

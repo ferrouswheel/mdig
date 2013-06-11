@@ -72,12 +72,10 @@ class DispersalInstance:
             # just pass if we have issue with accessing any of the data for now
             # (otherwise it makes impossible to instantiate and fix the instance
             pass
-        self.mapset_initialised = False
 
     def init_mapset(self):
-        if not self.mapset_initialised:
-            self.change_mapset()
-            self.check_mdig_files()
+        self.change_mapset()
+        self.check_mdig_files()
 
     def check_mdig_files(self):
         """
@@ -171,8 +169,7 @@ class DispersalInstance:
         self.change_mapset()
 
     def change_mapset(self):
-        """ Change the current mapset to the one associated with this instance
-        """
+        """ Change the current mapset to the one associated with this instance """
         g = grass.get_g()
         loc = self.experiment.infer_location()
         mapset = self.get_mapset()

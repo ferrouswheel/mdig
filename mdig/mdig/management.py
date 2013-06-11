@@ -492,8 +492,7 @@ class TreatmentArea:
         elif isinstance(self.area, GrassMap):
             if self.area.xml_map_type == "name":
                 g = grass.get_g()
-                maps.append((self.area.filename, g.find_mapset(
-                    self.area.filename)))
+                maps.append((self.area.filename, g.find_mapset(self.area.filename)))
         return maps
 
     def get_treatment_area(self, replicate, last_area=None):
