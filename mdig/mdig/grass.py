@@ -263,11 +263,11 @@ class GRASSInterface:
         if not os.path.isdir(self.grass_vars['GISDBASE']):
             self.log.error("GRASS DB dir doesn't exist: %s" % self.grass_vars['GISDBASE'])
             is_ok = False
-        loc_path = os.path.join(self.grass_vars['GISDBASE'],self.grass_vars['LOCATION_NAME'])
+        loc_path = os.path.join(self.grass_vars['GISDBASE'], self.grass_vars['LOCATION_NAME'])
         if is_ok and not os.path.isdir(loc_path):
             self.log.error("GRASS location dir doesn't exist: %s" % loc_path)
             is_ok = False
-        mapset_path = os.path.join(loc_path,self.grass_vars['MAPSET'])
+        mapset_path = os.path.join(loc_path, self.grass_vars['MAPSET'])
         if is_ok and not os.path.isdir(mapset_path):
             self.log.error("GRASS mapset dir doesn't exist: %s" % mapset_path)
             is_ok = False
@@ -299,6 +299,24 @@ class GRASSInterface:
     
     def clear_monitor(self):
         os.environ['GRASS_PNG_READ']="FALSE"
+
+    def check_water_populations(self, a_map, suitability_map, start_map):
+        """ Test/debug method to check populations are not showing up in the ocean!
+        
+        Suitability map should have null() for areas not allowed to survive.
+
+        Start map should have the initial population distribution (which
+        may exist in areas we don't think they should be in.
+        """
+        self.mapcalc("out_temp", "if(%s&&isnull(%s)&&isnull(%s),%s,null())" % (
+            a_map, suitability_map, start_map, a_map))
+        rng = self.get_raster_range("out_temp")
+        print rng
+        if rng['min'] != "NULL" or rng['max'] != "NULL":
+            print "Water populations detected!"
+            import pdb; pdb.set_trace()
+        else:
+            print "...ok"
 
     def paint_map(self, map_name, layer=None):
         """ Draw map_name on to the currently active GRASS monitor """
@@ -379,7 +397,7 @@ class GRASSInterface:
         output = pcolor.communicate(rule_string)[0]
         # apply first map's color table to all other maps
         for i in range(1,len(maps)):
-            pcolor= subprocess.Popen('r.colors map=%s rast=%s' % (maps[i],maps[0]), \
+            pcolor= subprocess.Popen('r.colors map=%s rast=%s' % (maps[i], maps[0]), \
                     shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         return (min_val, max_val)
         
@@ -431,18 +449,20 @@ class GRASSInterface:
         self.temp_output_file = trm.temp_filename(prefix='mdig_temp_output', suffix='.png')
 
         # set variables
-        os.environ['GRASS_RENDER_IMMEDIATE'] = 'TRUE'
-        os.environ['GRASS_TRUECOLOR'] = 'TRUE'
-        os.environ['GRASS_PNGFILE'] = 'TRUE'
-        os.environ['GRASS_WIDTH'] = repr(width)
-        os.environ['GRASS_HEIGHT'] = repr(height)
-        os.environ['GRASS_PNGFILE'] = self.temp_output_file
-        os.environ['GRASS_PNG_READ'] = "FALSE"
+        output_vars = {
+                'GRASS_RENDER_IMMEDIATE': 'TRUE',
+                'GRASS_TRUECOLOR': 'TRUE',
+                'GRASS_PNGFILE': 'TRUE',
+                'GRASS_WIDTH': repr(width),
+                'GRASS_HEIGHT': repr(height),
+                'GRASS_PNGFILE': self.temp_output_file,
+                'GRASS_PNG_READ': "FALSE",
+        }
 
         # update grass variables
-        for i in self.grass_vars:
-            if os.environ.has_key(i):
-                self.grass_vars[i] = os.environ[i]
+        for k, v in output_vars.iteritems():
+            os.environ[k] = v
+            self.grass_vars[k] = v
 
     def close_output(self, dest_dir=None):
         # copy self.temp_output_file to pid_disp_filename.png (check
@@ -502,7 +522,10 @@ class GRASSInterface:
             os.remove(self.displays[d_name][1])
             del self.displays[d_name]
             
-    def init_map(self, bmap, map_replacements={"POP_MAP": None, "START_MAP": None}):
+    def init_map(self, bmap, map_replacements=None):
+        if map_replacements is None:
+            map_replacements = {"POP_MAP": None, "START_MAP": None}
+
         name = None
         map_type = None
         if bmap.xml_map_type == "sites":
@@ -680,19 +703,24 @@ class GRASSInterface:
         else:
             return False
 
-    def remove_map(self,map_name,mapset=None):
+    def remove_map(self, map_name, mapset=None):
         # If mapset is different from the current one, then we to temporarily
         # change because grass can only alter the current mapset.
         old_mapset = None
+        
         if mapset and mapset != self.grass_vars['MAPSET']:
             old_mapset = self.grass_vars['MAPSET']
             self.change_mapset(mapset)
+
         map_type = self.check_map(map_name)
-        if map_type: self.log.debug("Removing %s map %s", map_type, map_name)
+        if map_type:
+            self.log.debug("Removing %s map %s", map_type, map_name)
+
         if map_type == 'raster':
             self.run_command('g.remove rast=%s' % map_name, logging.DEBUG)
         elif map_type == 'vector':
             self.run_command('g.remove vect=%s' % map_name, logging.DEBUG)
+
         # change back to original mapset
         if old_mapset:
             self.change_mapset(old_mapset)
@@ -784,7 +812,8 @@ class GRASSInterface:
                     loc_dir,mapset_name)
                 if not os.path.isdir(mapset_dir):
                     raise SetMapsetException("No mapset dir found: %s", mapset_dir)
-                if location: self.grass_vars["LOCATION_NAME"] = location
+                if location:
+                    self.grass_vars["LOCATION_NAME"] = location
                 self.grass_vars["MAPSET"] = mapset_name
                 self.set_gis_env()
             self.update_grass_vars()
@@ -795,7 +824,7 @@ class GRASSInterface:
 
     def create_mdig_subdir(self, mapset, overwrite=False):
         env = self.get_gis_env()
-        dest_dir = os.path.join(env["GISDBASE"],env["LOCATION_NAME"],mapset,"mdig")
+        dest_dir = os.path.join(env["GISDBASE"],env["LOCATION_NAME"], mapset, "mdig")
         if os.path.isdir(dest_dir) and overwrite:
             shutil.rmtree(dest_dir)
         os.mkdir(dest_dir)
