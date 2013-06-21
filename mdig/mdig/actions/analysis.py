@@ -227,6 +227,12 @@ class StatsAction(InstanceAction):
                 "output with MDiG)",
                 action="store_false",
                 dest="analysis_add_to_xml")
+        self.parser.add_option("-m","--mask",
+                help="Set this map as a mask before calculating statistics",
+                action="store",
+                dest="mask",
+                default=None,
+                type="string")
 
     def act_on_options(self, options):
         super(StatsAction, self).act_on_options(options)
@@ -251,32 +257,38 @@ class StatsAction(InstanceAction):
         g=grass.get_g()
         if self.options.combined_analysis:
             if self.options.analysis_step == "all":
-                for i in instances:
-                    self.log.info("Calculating stats for instance %d" % i.get_index())
-                    maps = i.get_occupancy_envelopes()[ls]
-                    i.change_mapset()
-                    stats=g.get_univariate_stats(maps)
-                    fn = os.path.split(i.get_occ_envelope_img_filenames(ls=ls,
-                            extension=False,gif=True)[:-5])
-                    fn = os.path.join(fn[0], self.options.analysis_filename_base + fn[1])
-                    self.write_stats_to_file(stats,fn)
-                    self.files_written.append(fn)
+                for l in ls:
+                    for i in instances:
+                        self.log.info("Calculating stats for instance %d" % i.get_index())
+                        maps = i.get_occupancy_envelopes()[l]
+                        i.change_mapset()
+                        g.make_mask(self.options.mask)
+                        stats=g.get_univariate_stats(maps)
+                        fn = os.path.split(i.get_occ_envelope_img_filenames(ls=l,
+                                extension=False,gif=True)[:-5])
+                        g.make_mask(None)
+                        fn = os.path.join(fn[0], self.options.analysis_filename_base + fn[1])
+                        self.write_stats_to_file(stats,fn)
+                        self.files_written.append(fn)
             else:
                 # just run on last map
                 raise NotImplementedError("Only supports running all maps current")
         else:
             if self.options.analysis_step == "all":
-                for i in instances:
-                    i.change_mapset()
-                    for r in i.replicates:
-                        self.log.info("Calculating stats for instance %d, rep %d" % \
-                                (i.get_index(), r.r_index))
-                        maps = r.get_saved_maps(ls)
-                        stats = g.get_univariate_stats(maps)
-                        fn = os.path.split(r.get_base_filenames(ls, single_file=True))
-                        fn = os.path.join(fn[0], self.options.analysis_filename_base + fn[1])
-                        self.write_stats_to_file(stats, fn)
-                        self.files_written.append(fn)
+                for l in ls:
+                    for i in instances:
+                        i.change_mapset()
+                        g.make_mask(self.options.mask)
+                        for r in i.replicates:
+                            self.log.info("Calculating stats for instance %d, rep %d" % \
+                                    (i.get_index(), r.r_index))
+                            maps = r.get_saved_maps(l)
+                            stats = g.get_univariate_stats(maps)
+                            fn = os.path.split(r.get_base_filenames(l, single_file=True))
+                            fn = os.path.join(fn[0], self.options.analysis_filename_base + fn[1])
+                            self.write_stats_to_file(stats, fn)
+                            self.files_written.append(fn)
+                        g.make_mask(None)
             else:
                 # just run on last map
                 raise NotImplementedError("Only supports running all maps current")

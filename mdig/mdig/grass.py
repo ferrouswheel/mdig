@@ -729,7 +729,7 @@ class GRASSInterface:
         map_name='"' + map_name + '"' 
         self.run_command("r.mapcalc", to_input="%s = %s\nend\n"%(map_name,expression))
     
-    def make_mask(self,mask_name):
+    def make_mask(self, mask_name):
         if mask_name is None:
             self.run_command('r.mask -r');
         else:
